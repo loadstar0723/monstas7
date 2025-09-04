@@ -3,99 +3,42 @@ name: Deploy MONSTA Platform
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
-env:
-  DOCKER_IMAGE: monsta-app
-  REGISTRY: ghcr.io
-
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest flake8
-      
-      - name: Run tests
-        run: |
-          # Add tests when available
-          echo "Tests will be added"
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}:latest
-            ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
-
-  deploy-railway:
-    needs: build
+  deploy-to-aws:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
       - uses: actions/checkout@v3
       
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
+      - name: Deploy to AWS Server
+        uses: appleboy/ssh-action@v0.1.5
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: monsta-app
-
-  deploy-render:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Deploy to Render
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
-
-  deploy-fly:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      
-      - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            # 프로젝트 디렉토리로 이동
+            cd ~/monsta-v7/monstas7
+            
+            # 최신 코드 가져오기
+            git pull origin master
+            
+            # 가상환경 활성화 및 패키지 업데이트
+            source venv/bin/activate
+            pip install -r requirements.txt --quiet
+            
+            # 기존 프로세스 종료
+            pkill -f 'streamlit.*8508' || true
+            sleep 2
+            
+            # 앱 재시작
+            nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
+            
+            # 데이터베이스 마이그레이션 (필요시)
+            # python scripts/init_database.py
+            
+            echo "✅ Deployment completed at $(date)"
+            echo "🌐 Access: http://13.209.84.93:8508"
