@@ -8,6 +8,10 @@ import os
 import hashlib
 from datetime import datetime, timedelta
 import random
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 def get_connection():
     """데이터베이스 연결"""
