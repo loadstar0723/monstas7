@@ -9,7 +9,7 @@ import logging
 from typing import List, Dict, Optional
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
-from binance.websockets import BinanceSocketManager
+# BinanceSocketManager는 python-binance v2에서 제거됨
 import pandas as pd
 import streamlit as st
 from config import BINANCE_CONFIG
