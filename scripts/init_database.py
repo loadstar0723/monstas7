@@ -62,15 +62,23 @@ def create_tables():
         conn = get_connection()
         cur = conn.cursor()
         
-        # SQL 파일 읽기
-        with open('scripts/create_tables.sql', 'r', encoding='utf-8') as f:
-            sql = f.read()
+        # 테이블 존재 확인
+        cur.execute("""
+            SELECT COUNT(*) FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = 'users'
+        """)
         
-        # 테이블 생성
-        cur.execute(sql)
-        conn.commit()
-        
-        print("✅ All tables created successfully")
+        if cur.fetchone()[0] > 0:
+            print("✅ Tables already exist, skipping creation")
+        else:
+            # SQL 파일 읽기
+            with open('scripts/create_tables.sql', 'r', encoding='utf-8') as f:
+                sql = f.read()
+            
+            # 테이블 생성
+            cur.execute(sql)
+            conn.commit()
+            print("✅ All tables created successfully")
         
         cur.close()
         conn.close()
