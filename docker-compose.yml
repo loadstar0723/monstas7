@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: monsta_postgres
+    environment:
+      POSTGRES_DB: monsta_db
+      POSTGRES_USER: monsta_user
+      POSTGRES_PASSWORD: monsta_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monsta_user -d monsta_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: monsta_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: monsta_app
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: monsta_db
+      DATABASE_USER: monsta_user
+      DATABASE_PASSWORD: monsta_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+
+volumes:
+  postgres_data:
+  redis_data:
