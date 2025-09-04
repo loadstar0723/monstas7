@@ -13,7 +13,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Send deployment start notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
+          message: |
+            🚀 MONSTA 배포 시작
+            
+            📝 커밋: ${{ github.event.head_commit.message }}
+            👤 작성자: ${{ github.actor }}
+            🔗 커밋 ID: ${{ github.sha }}
+            🌿 브랜치: ${{ github.ref_name }}
+            
+            ⏳ 배포 진행 중...
+      
       - name: Deploy to AWS Server
+        id: deploy
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: 13.209.84.93
@@ -37,8 +53,49 @@ jobs:
             # 앱 재시작
             nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
             
-            # 데이터베이스 마이그레이션 (필요시)
-            # python scripts/init_database.py
+            # 헬스 체크 (10초 대기 후)
+            sleep 10
+            if curl -f http://localhost:8508 > /dev/null 2>&1; then
+              echo "DEPLOYMENT_SUCCESS"
+            else
+              echo "DEPLOYMENT_FAILED"
+              exit 1
+            fi
             
             echo "✅ Deployment completed at $(date)"
             echo "🌐 Access: http://13.209.84.93:8508"
+      
+      - name: Send success notification
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
+          message: |
+            ✅ MONSTA 배포 성공!
+            
+            📝 커밋: ${{ github.event.head_commit.message }}
+            👤 작성자: ${{ github.actor }}
+            🕐 완료 시간: ${{ github.event.head_commit.timestamp }}
+            
+            🌐 접속 주소: http://13.209.84.93:8508
+            📊 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            🎉 배포가 성공적으로 완료되었습니다!
+      
+      - name: Send failure notification
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
+          message: |
+            ❌ MONSTA 배포 실패!
+            
+            📝 커밋: ${{ github.event.head_commit.message }}
+            👤 작성자: ${{ github.actor }}
+            🔗 커밋 ID: ${{ github.sha }}
+            
+            📋 로그 확인: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            ⚠️ 배포가 실패했습니다. 로그를 확인해주세요!

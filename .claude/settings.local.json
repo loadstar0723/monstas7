@@ -28,6 +28,10 @@
       "Read(/C:\\monsta\\monstas7\\scripts/**)",
       "Read(/C:\\monsta\\monstas7\\scripts/**)",
       "Read(/C:\\monsta\\monstas7/**)",
+      "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)",
+      "Read(/C:\\monsta\\monstas7/**)",
+      "WebFetch(domain:github.com)",
+      "Read(/C:\\monsta\\monstas7/**)",
       "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)"
     ],
     "deny": [],
