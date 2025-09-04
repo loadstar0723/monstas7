@@ -97,9 +97,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-cyan-900/30 animate-gradient"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20 animate-gradient"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -339,15 +339,21 @@ export default function Home() {
       </section>
 
       {/* AI Dashboard - 백엔드 연동 */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-purple-900/10 to-black">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
+            className="text-center mb-12"
           >
-            <AIDashboard />
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="gradient-text">🤖 AI 하이브리드 엔진</span>
+            </h2>
+            <p className="text-gray-400 text-lg">Next.js UI + Python AI = 최강 트레이딩</p>
           </motion.div>
+          
+          <AIDashboard />
         </div>
       </section>
 

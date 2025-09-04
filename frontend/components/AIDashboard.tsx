@@ -51,7 +51,7 @@ export default function AIDashboard() {
     setLoading(true)
     try {
       const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'ADAUSDT']
-      const result = await apiClient.getBatchPredictions(symbols)
+      const result = await apiClient.getBatchPredictions(symbols) as { predictions: Prediction[] }
       setPredictions(result.predictions)
     } catch (error) {
       console.error('Failed to load predictions:', error)
@@ -61,7 +61,7 @@ export default function AIDashboard() {
 
   const loadMarketAnalysis = async (symbol: string) => {
     try {
-      const analysis = await apiClient.getMarketAnalysis(symbol)
+      const analysis = await apiClient.getMarketAnalysis(symbol) as MarketAnalysis
       setMarketAnalysis(analysis)
     } catch (error) {
       console.error('Failed to load market analysis:', error)
