@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: monsta-app
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    name: monsta-platform
+    runtime: python
+    buildCommand: "./render-build.sh"
+    startCommand: "./render-start.sh"
     envVars:
       - key: PORT
         value: 8501
