@@ -9,7 +9,19 @@
       "Read(/C:\\monsta\\temp_monsta\\frontend\\components/**)",
       "Read(/C:\\monsta\\monstas7/**)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(timeout:*)",
+      "Bash(ssh:*)",
+      "Bash(curl:*)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)"
     ],
     "deny": [],
     "ask": []
