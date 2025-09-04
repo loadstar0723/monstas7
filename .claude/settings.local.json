@@ -6,7 +6,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh repo create:*)",
-      "Read(/C:\\monsta\\monstas7\\pages/**)"
+      "Read(/C:\\monsta\\monstas7\\pages/**)",
+      "Bash(gh auth:*)",
+      "Read(/C:\\Users\\dhk49\\.ssh/**)",
+      "Bash(git config:*)",
+      "Read(/C:\\monsta\\monstas7/**)",
+      "Read(/C:\\monsta\\monstas7/**)"
     ],
     "deny": [],
     "ask": []

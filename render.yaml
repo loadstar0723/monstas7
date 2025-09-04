@@ -1,0 +1,57 @@
+# Render.com deployment configuration
+services:
+  - type: web
+    name: monsta-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: monsta-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: monsta-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: monsta-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: monsta-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: monsta-db
+          property: password
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: monsta-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: monsta-redis
+          property: port
+      - key: BINANCE_API_KEY
+        sync: false
+      - key: BINANCE_API_SECRET
+        sync: false
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+
+databases:
+  - name: monsta-db
+    engine: postgres
+    plan: starter
+    version: "15"
+    postgresMajorVersion: 15
+
+services:
+  - type: redis
+    name: monsta-redis
+    plan: starter
+    maxMemoryPolicy: allkeys-lru
