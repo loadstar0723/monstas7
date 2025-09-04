@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스 (신규 설정)
+  postgres:
+    image: postgres:15-alpine
+    container_name: monsta-v7-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: monsta_v7
+      POSTGRES_PASSWORD: monsta_v7_secure_2024
+      POSTGRES_DB: monsta_db_v7
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5437:5432"  # 포트 변경 (기존 프로젝트와 충돌 방지)
+    volumes:
+      - monsta_v7_postgres_data:/var/lib/postgresql/data
+      - ./scripts/create_tables.sql:/docker-entrypoint-initdb.d/01-create-tables.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monsta_v7"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monsta_v7_network
+
+  # Redis 캐시 (신규 설정)
+  redis:
+    image: redis:7-alpine
+    container_name: monsta-v7-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass monsta_v7_redis_2024
+    ports:
+      - "6387:6379"  # 포트 변경
+    volumes:
+      - monsta_v7_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monsta_v7_network
+
+  # MONSTA 앱 (신규 설정)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: monsta-v7-app
+    restart: always
+    ports:
+      - "8507:8501"  # 포트 변경
+    environment:
+      - DATABASE_URL=postgresql://monsta_v7:monsta_v7_secure_2024@postgres:5432/monsta_db_v7
+      - REDIS_URL=redis://:monsta_v7_redis_2024@redis:6379/0
+      - BINANCE_API_KEY=${BINANCE_API_KEY}
+      - BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - monsta_v7_network
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 5 &&
+        python scripts/init_database.py &&
+        streamlit run app.py
+      "
+
+  # Nginx (선택사항 - 리버스 프록시)
+  nginx:
+    image: nginx:alpine
+    container_name: monsta-v7-nginx
+    restart: always
+    ports:
+      - "8080:80"  # 포트 변경
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+    depends_on:
+      - app
+    networks:
+      - monsta_v7_network
+
+# 볼륨 정의 (신규 이름)
+volumes:
+  monsta_v7_postgres_data:
+    name: monsta_v7_postgres_data
+  monsta_v7_redis_data:
+    name: monsta_v7_redis_data
+
+# 네트워크 정의 (신규 이름)
+networks:
+  monsta_v7_network:
+    name: monsta_v7_network
+    driver: bridge
