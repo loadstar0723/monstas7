@@ -114,7 +114,7 @@ export default function Sidebar() {
                       }
                     `}
                   >
-                    <Icon size={20} className="flex-shrink-0" />
+                    <Icon size={20} className="flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <AnimatePresence>
                       {(isOpen || isHovered) && (
                         <motion.div
@@ -163,7 +163,7 @@ export default function Sidebar() {
                     href={item.path}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
                   >
-                    <Icon size={20} className="flex-shrink-0" />
+                    <Icon size={20} className="flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <AnimatePresence>
                       {(isOpen || isHovered) && (
                         <motion.span

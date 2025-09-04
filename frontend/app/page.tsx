@@ -95,91 +95,157 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20"></div>
-        <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-cyan-900/30 animate-gradient"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+        <div className="relative z-10 px-4 sm:px-6 lg:px-8">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 1, ease: "easeOut" }}
             className="max-w-7xl mx-auto text-center"
           >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              <span className="gradient-text">퀀텀 AI가 창조하는</span>
-              <br />
-              <span className="text-white">크립토 유니버스</span>{' '}
-              <span className="gradient-text">MONSTA</span>
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-purple-600/20 to-cyan-600/20 border border-purple-500/30 mb-6">
+                <span className="animate-pulse w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                <span className="text-sm font-medium">AI Trading System Active</span>
+              </div>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-7xl xl:text-8xl font-black mb-6">
+              <motion.span 
+                className="block gradient-text"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                퀀텀 AI가 창조하는
+              </motion.span>
+              <motion.span 
+                className="block text-white mt-2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                크립토 유니버스
+              </motion.span>
+              <motion.span 
+                className="block mt-4"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, type: "spring" }}
+              >
+                <span className="gradient-text text-6xl md:text-8xl xl:text-9xl neon-text">MONSTA</span>
+              </motion.span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-400 mb-8 max-w-3xl mx-auto">
-              Crypto Universe Created by Quantum Intelligence
-            </p>
+            <motion.p 
+              className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto font-light"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              11개의 AI 모델이 24시간 당신의 자산을 지키고 키웁니다
+            </motion.p>
             
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-5xl mx-auto">
               <motion.div 
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="bg-gray-900/50 backdrop-blur rounded-xl p-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="stat-card group"
+                whileHover={{ scale: 1.05 }}
               >
-                <div className="text-3xl font-bold text-purple-400">11</div>
-                <div className="text-gray-400 text-sm">AI 모델</div>
+                <div className="relative z-10">
+                  <div className="text-4xl font-bold gradient-text mb-1">11</div>
+                  <div className="text-gray-400 text-sm uppercase tracking-wider">AI Models</div>
+                </div>
               </motion.div>
               <motion.div 
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-                className="bg-gray-900/50 backdrop-blur rounded-xl p-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+                className="stat-card group"
+                whileHover={{ scale: 1.05 }}
               >
-                <div className="text-3xl font-bold text-blue-400">24/7</div>
-                <div className="text-gray-400 text-sm">자동 트레이딩</div>
+                <div className="relative z-10">
+                  <div className="text-4xl font-bold text-cyan-400">24/7</div>
+                  <div className="text-gray-400 text-sm uppercase tracking-wider">Auto Trading</div>
+                </div>
               </motion.div>
               <motion.div 
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="bg-gray-900/50 backdrop-blur rounded-xl p-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+                className="stat-card group"
+                whileHover={{ scale: 1.05 }}
               >
-                <div className="text-3xl font-bold text-green-400">91.5%</div>
-                <div className="text-gray-400 text-sm">예측 정확도</div>
+                <div className="relative z-10">
+                  <div className="text-4xl font-bold text-emerald-400">91.5%</div>
+                  <div className="text-gray-400 text-sm uppercase tracking-wider">Accuracy</div>
+                </div>
               </motion.div>
               <motion.div 
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-                className="bg-gray-900/50 backdrop-blur rounded-xl p-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.3 }}
+                className="stat-card group"
+                whileHover={{ scale: 1.05 }}
               >
-                <div className="text-3xl font-bold text-yellow-400">50K+</div>
-                <div className="text-gray-400 text-sm">활성 사용자</div>
+                <div className="relative z-10">
+                  <div className="text-4xl font-bold text-amber-400">50K+</div>
+                  <div className="text-gray-400 text-sm uppercase tracking-wider">Active Users</div>
+                </div>
               </motion.div>
             </div>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.4 }}
+            >
               <Link 
                 href="/signup" 
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                className="btn-primary inline-flex items-center justify-center text-lg glow-effect"
               >
-                <FaRocket className="inline mr-2" />
+                <FaRocket className="mr-2" />
                 7일 무료 체험 시작
               </Link>
               <Link 
                 href="/demo" 
-                className="px-8 py-4 border-2 border-purple-600 rounded-lg text-lg font-semibold hover:bg-purple-600/20 transition-all"
+                className="px-8 py-4 border-2 border-purple-500/50 rounded-lg text-lg font-semibold bg-transparent backdrop-blur hover:bg-purple-600/10 hover:border-purple-400 transition-all"
               >
                 라이브 데모 보기
               </Link>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Market Overview */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 gradient-text">
-            🔥 실시간 시장 현황
-          </h2>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="gradient-text">실시간 시장 현황</span>
+            </h2>
+            <p className="text-gray-400 text-lg">주요 암호화폐 실시간 가격 및 변동률</p>
+          </motion.div>
           
           {isLoading ? (
             <div className="flex justify-center">
@@ -188,34 +254,47 @@ export default function Home() {
           ) : (
             <>
               {/* Main Coins */}
-              <div className="grid md:grid-cols-4 gap-6 mb-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {topCoins.map((coin, index) => (
                   <motion.div 
                     key={coin.symbol}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-800 card-hover cursor-pointer"
+                    className="glass-card p-6 cursor-pointer group"
                     onClick={() => setSelectedSymbol(`BINANCE:${coin.symbol}`)}
+                    whileHover={{ scale: 1.02 }}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xl font-bold">{coin.symbol.replace('USDT', '')}/USDT</h3>
-                        <p className="text-gray-400 text-sm">Binance</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold">
+                            {coin.symbol.slice(0, 2)}
+                          </div>
+                          <h3 className="text-xl font-bold">{coin.symbol.replace('USDT', '')}</h3>
+                        </div>
+                        <p className="text-gray-500 text-xs uppercase tracking-wider">USDT Pair</p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold backdrop-blur ${
                         coin.priceChangePercent > 0 
-                          ? 'bg-green-500/20 text-green-400' 
-                          : 'bg-red-500/20 text-red-400'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
                       }`}>
-                        {coin.priceChangePercent > 0 ? '+' : ''}{coin.priceChangePercent.toFixed(2)}%
+                        {coin.priceChangePercent > 0 ? '↑' : '↓'} {Math.abs(coin.priceChangePercent).toFixed(2)}%
                       </span>
                     </div>
-                    <div className="text-2xl font-bold mb-2">
-                      ${coin.price.toLocaleString()}
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      거래량: ${(coin.quoteVolume / 1000000).toFixed(1)}M
+                    <div className="space-y-2">
+                      <div>
+                        <div className="text-3xl font-bold group-hover:gradient-text transition-all">
+                          ${coin.price.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-800">
+                        <span className="text-gray-500 text-xs">24h Volume</span>
+                        <span className="text-gray-300 text-sm font-medium">
+                          ${(coin.quoteVolume / 1000000).toFixed(1)}M
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -226,12 +305,29 @@ export default function Home() {
       </section>
 
       {/* TradingView Chart */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 section-gradient">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">📊 Professional Trading Chart</h2>
-          <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-            <TradingViewWidget symbol={selectedSymbol} height={600} />
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="gradient-text">Professional Trading Chart</span>
+            </h2>
+            <p className="text-gray-400 text-lg">TradingView 고급 차트로 실시간 분석</p>
+          </motion.div>
+          <motion.div 
+            className="gradient-border"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="gradient-border-content p-0">
+              <TradingViewWidget symbol={selectedSymbol} height={600} />
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -243,9 +339,15 @@ export default function Home() {
       </section>
 
       {/* AI Dashboard - 백엔드 연동 */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <AIDashboard />
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <AIDashboard />
+          </motion.div>
         </div>
       </section>
 

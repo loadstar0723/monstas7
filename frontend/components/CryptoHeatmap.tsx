@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 interface HeatmapItem {
   symbol: string
@@ -49,15 +50,15 @@ export default function CryptoHeatmap() {
   }
 
   const getColorByChange = (change: number) => {
-    if (change > 10) return 'bg-green-500'
-    if (change > 5) return 'bg-green-400'
-    if (change > 2) return 'bg-green-300'
-    if (change > 0) return 'bg-green-200'
-    if (change === 0) return 'bg-gray-500'
-    if (change > -2) return 'bg-red-200'
-    if (change > -5) return 'bg-red-300'
-    if (change > -10) return 'bg-red-400'
-    return 'bg-red-500'
+    if (change > 10) return 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/50'
+    if (change > 5) return 'bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-emerald-400/40'
+    if (change > 2) return 'bg-gradient-to-br from-green-400 to-green-500 shadow-green-400/30'
+    if (change > 0) return 'bg-gradient-to-br from-green-300 to-green-400 shadow-green-300/20'
+    if (change === 0) return 'bg-gradient-to-br from-gray-500 to-gray-600 shadow-gray-500/20'
+    if (change > -2) return 'bg-gradient-to-br from-red-300 to-red-400 shadow-red-300/20'
+    if (change > -5) return 'bg-gradient-to-br from-red-400 to-red-500 shadow-red-400/30'
+    if (change > -10) return 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/40'
+    return 'bg-gradient-to-br from-red-600 to-red-700 shadow-red-600/50'
   }
 
   const getSizeByVolume = (volume: number, index: number) => {
@@ -95,100 +96,123 @@ export default function CryptoHeatmap() {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-white">🔥 실시간 암호화폐 히트맵</h2>
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <div className="w-3 h-3 bg-green-500 rounded animate-pulse"></div>
-          <span>Live</span>
-        </div>
+    <motion.div 
+      className="relative"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      <div className="text-center mb-12">
+        <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <span className="gradient-text">실시간 암호화폐 히트맵</span>
+        </h2>
+        <p className="text-gray-400 text-lg">거래량 기준 상위 100개 코인의 실시간 현황</p>
       </div>
-      
-      <p className="text-gray-400 mb-4">거래량 기준 상위 100개 코인 | 크기: 거래량 | 색상: 24시간 변동률</p>
-      
-      <div className="grid grid-cols-12 gap-1 auto-rows-min">
-        {heatmapData.map((coin, index) => (
-          <div
-            key={coin.symbol}
-            className={`
-              ${getColorByChange(coin.change)}
-              ${getSizeByVolume(coin.volume, index)}
-              p-2 rounded-lg cursor-pointer hover:opacity-80 transition-all
-              flex flex-col justify-center items-center text-center
-              min-h-[60px] hover:scale-105 hover:z-10
-              transform transition-transform duration-200
-              shadow-lg
-            `}
-            title={`${coin.name}: $${formatPrice(coin.price)} (${coin.change > 0 ? '+' : ''}${coin.change.toFixed(2)}%)`}
-          >
-            <div className="font-bold text-black dark:text-black">
-              {coin.name}
-            </div>
-            <div className="text-xs text-black/90 dark:text-black/90 font-bold">
-              ${formatPrice(coin.price)}
-            </div>
-            <div className="text-xs text-black/90 dark:text-black/90 font-semibold">
-              {coin.change > 0 ? '+' : ''}{coin.change.toFixed(1)}%
-            </div>
-            {index < 10 && (
-              <div className="text-xs text-black/80 dark:text-black/80 font-medium mt-1">
-                {formatVolume(coin.volume)}
+
+      <div className="gradient-border">
+        <div className="gradient-border-content bg-gray-900/95">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-600/20 to-emerald-600/10 border border-emerald-500/30">
+                <span className="animate-pulse w-2 h-2 bg-emerald-400 rounded-full"></span>
+                <span className="text-sm font-medium text-emerald-400">LIVE</span>
               </div>
-            )}
+              <span className="text-gray-500 text-sm">10초마다 업데이트</span>
+            </div>
+            <div className="text-sm text-gray-500">
+              크기: 거래량 | 색상: 24h 변동률
+            </div>
           </div>
-        ))}
-      </div>
+      
+          <div className="grid grid-cols-12 gap-2 auto-rows-min">
+            {heatmapData.map((coin, index) => (
+              <motion.div
+                key={coin.symbol}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.005, type: "spring", stiffness: 300 }}
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+                className={`
+                  ${getColorByChange(coin.change)}
+                  ${getSizeByVolume(coin.volume, index)}
+                  p-3 rounded-xl cursor-pointer
+                  flex flex-col justify-center items-center text-center
+                  min-h-[60px] shadow-xl border border-white/10
+                  backdrop-blur-sm relative overflow-hidden group
+                `}
+                title={`${coin.name}: $${formatPrice(coin.price)} (${coin.change > 0 ? '+' : ''}${coin.change.toFixed(2)}%)`}
+              >
+                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10">
+                  <div className="font-black text-white drop-shadow-lg">
+                    {coin.name}
+                  </div>
+                  <div className="text-xs text-white/90 font-bold drop-shadow">
+                    ${formatPrice(coin.price)}
+                  </div>
+                  <div className={`text-xs font-bold mt-1 ${
+                    coin.change > 0 ? 'text-white' : 'text-white/90'
+                  }`}>
+                    {coin.change > 0 ? '↑' : '↓'} {Math.abs(coin.change).toFixed(1)}%
+                  </div>
+                  {index < 10 && (
+                    <div className="text-xs text-white/80 font-medium mt-1">
+                      {formatVolume(coin.volume)}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
 
-      {/* 범례 */}
-      <div className="mt-6 space-y-3">
-        <div className="flex items-center justify-center gap-4 text-sm">
-          <span className="text-gray-300 font-semibold">📈 가격 변동률:</span>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-green-500 rounded"></span>
-            <span className="text-gray-400">+10% 이상</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-green-300 rounded"></span>
-            <span className="text-gray-400">+2~10%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-gray-500 rounded"></span>
-            <span className="text-gray-400">-2~+2%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-red-300 rounded"></span>
-            <span className="text-gray-400">-10~-2%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-red-500 rounded"></span>
-            <span className="text-gray-400">-10% 이하</span>
+          {/* 범례 */}
+          <div className="mt-8 grid md:grid-cols-2 gap-6">
+            <div className="glass-card p-4">
+              <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">가격 변동률</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded shadow-lg"></span>
+                  <span className="text-gray-400">+10% 이상</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded shadow-lg"></span>
+                  <span className="text-gray-400">+2~10%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-gradient-to-br from-gray-500 to-gray-600 rounded shadow-lg"></span>
+                  <span className="text-gray-400">-2~+2%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-gradient-to-br from-red-400 to-red-500 rounded shadow-lg"></span>
+                  <span className="text-gray-400">-10~-2%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-card p-4">
+              <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">거래량 크기</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded shadow-lg"></span>
+                  <span className="text-gray-400">Top 3</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 bg-gradient-to-br from-purple-600 to-purple-700 rounded shadow-lg"></span>
+                  <span className="text-gray-400">Top 10</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 bg-gradient-to-br from-purple-600 to-purple-700 rounded shadow-lg"></span>
+                  <span className="text-gray-400">Top 30</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-gradient-to-br from-purple-600 to-purple-700 rounded shadow-lg"></span>
+                  <span className="text-gray-400">기타</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="flex items-center justify-center gap-4 text-sm">
-          <span className="text-gray-300 font-semibold">📊 거래량 크기:</span>
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 bg-gray-600 rounded"></span>
-            <span className="text-gray-400">초대형 (Top 3)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 bg-gray-600 rounded"></span>
-            <span className="text-gray-400">대형 (Top 10)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 bg-gray-600 rounded"></span>
-            <span className="text-gray-400">중형 (Top 30)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-gray-600 rounded"></span>
-            <span className="text-gray-400">소형</span>
-          </div>
-        </div>
       </div>
-
-      <div className="mt-4 text-center text-xs text-gray-500">
-        데이터 제공: Binance | 실시간 업데이트 (10초)
-      </div>
-    </div>
+    </motion.div>
   )
 }

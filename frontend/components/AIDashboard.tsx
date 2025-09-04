@@ -93,59 +93,93 @@ export default function AIDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* AI 예측 카드들 */}
       <div>
-        <h2 className="text-2xl font-bold mb-4 gradient-text">
-          <FaRobot className="inline mr-2" />
-          AI 실시간 예측
-        </h2>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="gradient-text">AI 실시간 예측</span>
+          </h2>
+          <p className="text-gray-400 text-lg">11개 AI 모델의 종합 분석 결과</p>
+        </motion.div>
         
         {loading ? (
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {predictions.map((pred, index) => (
               <motion.div
                 key={pred.symbol}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800"
+                className="glass-card p-6 group"
+                whileHover={{ scale: 1.02 }}
               >
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-bold">{pred.symbol.replace('USDT', '')}</h3>
-                    <p className="text-gray-400 text-sm">
-                      {pred.models_agree}/11 모델 동의
-                    </p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+                        <FaBrain className="text-white text-sm" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">{pred.symbol.replace('USDT', '')}</h3>
+                        <p className="text-gray-500 text-xs">
+                          {pred.models_agree}/11 Models
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${getPredictionColor(pred.prediction)}`}>
-                    {pred.prediction}
+                  <span className={`px-4 py-2 rounded-lg text-sm font-bold backdrop-blur ${
+                    pred.prediction === 'BUY' 
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                      : pred.prediction === 'SELL'
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  }`}>
+                    {pred.prediction === 'BUY' ? '🚀 BUY' : pred.prediction === 'SELL' ? '📉 SELL' : '⏸ HOLD'}
                   </span>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">신뢰도</span>
-                      <span>{(pred.confidence * 100).toFixed(1)}%</span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-500 uppercase text-xs tracking-wider">Confidence</span>
+                      <span className="font-bold text-white">{(pred.confidence * 100).toFixed(1)}%</span>
                     </div>
-                    {getConfidenceBar(pred.confidence)}
+                    <div className="relative">
+                      <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                        <motion.div 
+                          className={`h-2 rounded-full ${
+                            pred.confidence > 0.8 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 
+                            pred.confidence > 0.6 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 
+                            'bg-gradient-to-r from-red-500 to-red-400'
+                          }`}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${pred.confidence * 100}%` }}
+                          transition={{ duration: 1, delay: index * 0.1 }}
+                        />
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-400">목표가:</span>
-                      <div className="font-bold text-green-400">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/20">
+                      <span className="text-gray-500 text-xs uppercase tracking-wider">Target</span>
+                      <div className="font-bold text-emerald-400 text-lg mt-1">
                         ${pred.target_price.toLocaleString()}
                       </div>
                     </div>
-                    <div>
-                      <span className="text-gray-400">손절가:</span>
-                      <div className="font-bold text-red-400">
+                    <div className="bg-red-500/10 rounded-lg p-3 border border-red-500/20">
+                      <span className="text-gray-500 text-xs uppercase tracking-wider">Stop Loss</span>
+                      <div className="font-bold text-red-400 text-lg mt-1">
                         ${pred.stop_loss.toLocaleString()}
                       </div>
                     </div>
@@ -160,23 +194,44 @@ export default function AIDashboard() {
       {/* 기술적 분석 */}
       {marketAnalysis && (
         <div>
-          <h2 className="text-2xl font-bold mb-4 gradient-text">
-            <FaChartLine className="inline mr-2" />
-            기술적 분석 - {selectedSymbol}
-          </h2>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="gradient-text">기술적 분석</span>
+            </h2>
+            <p className="text-gray-400 text-lg">{selectedSymbol} 실시간 지표 분석</p>
+          </motion.div>
           
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-6">
             {/* RSI */}
-            <div className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800">
-              <h4 className="font-bold mb-2">RSI</h4>
-              <div className="text-3xl font-bold mb-2">
+            <motion.div 
+              className="glass-card p-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-bold text-lg">RSI</h4>
+                <FaChartLine className="text-purple-400" />
+              </div>
+              <div className="text-4xl font-bold mb-2 gradient-text">
                 {marketAnalysis.technical_indicators.rsi.toFixed(2)}
               </div>
-              <div className="text-sm text-gray-400">
-                {marketAnalysis.technical_indicators.rsi > 70 ? '과매수' : 
-                 marketAnalysis.technical_indicators.rsi < 30 ? '과매도' : '중립'}
+              <div className={`text-sm font-medium ${
+                marketAnalysis.technical_indicators.rsi > 70 ? 'text-red-400' : 
+                marketAnalysis.technical_indicators.rsi < 30 ? 'text-emerald-400' : 
+                'text-gray-400'
+              }`}>
+                {marketAnalysis.technical_indicators.rsi > 70 ? '⚠️ 과매수 구간' : 
+                 marketAnalysis.technical_indicators.rsi < 30 ? '🟢 과매도 구간' : 
+                 '🟡 중립 구간'}
               </div>
-            </div>
+            </motion.div>
 
             {/* MACD */}
             <div className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800">
