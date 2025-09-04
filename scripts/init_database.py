@@ -39,15 +39,15 @@ def create_database():
         
         if not exists:
             cur.execute("CREATE DATABASE monsta_db")
-            print("✅ Database 'monsta_db' created successfully")
+            print("Database 'monsta_db' created successfully")
         else:
-            print("ℹ️ Database 'monsta_db' already exists")
+            print("Database 'monsta_db' already exists")
         
         cur.close()
         conn.close()
         
     except Exception as e:
-        print(f"❌ Error creating database: {e}")
+        print(f"Error creating database: {e}")
         return False
     
     return True
@@ -72,7 +72,7 @@ def create_tables():
         conn.close()
         
     except Exception as e:
-        print(f"❌ Error creating tables: {e}")
+        print(f"Error creating tables: {e}")
         return False
     
     return True
@@ -94,7 +94,7 @@ def insert_initial_data():
         
         result = cur.fetchone()
         if result:
-            print(f"✅ Headquarters account created (ID: {result[0]})")
+            print(f"Headquarters account created (ID: {result[0]})")
         
         # 2. 총판 계정 생성
         for i in range(1, 4):
@@ -116,7 +116,7 @@ def insert_initial_data():
                 """, (user_id[0], f'총판 {i}', 40.0))
                 
                 dist_id = cur.fetchone()
-                print(f"✅ Distributor {i} created (ID: {dist_id[0]})")
+                print(f"Distributor {i} created (ID: {dist_id[0]})")
                 
                 # 3. 각 총판당 대리점 생성
                 for j in range(1, 6):
@@ -224,7 +224,7 @@ def insert_initial_data():
 
 def main():
     """메인 실행 함수"""
-    print("🚀 Starting database initialization...")
+    print("Starting database initialization...")
     print("-" * 50)
     
     # 1. 데이터베이스 생성
@@ -240,8 +240,8 @@ def main():
         return
     
     print("-" * 50)
-    print("✨ Database initialization completed successfully!")
-    print("\n📝 Login Credentials:")
+    print("Database initialization completed successfully!")
+    print("\nLogin Credentials:")
     print("   Headquarters: admin@monsta.com / admin123")
     print("   Distributor1: dist1@monsta.com / dist1123")
     print("   Agency1_1: agency1_1@monsta.com / agency11123")
