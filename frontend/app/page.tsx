@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import TradingViewWidget from '@/components/TradingViewWidget'
 import CryptoHeatmap from '@/components/CryptoHeatmap'
+import AIDashboard from '@/components/AIDashboard'
 import { FaRocket, FaChartLine, FaRobot, FaTelegram, FaGlobe } from 'react-icons/fa'
 
 interface MarketData {
@@ -241,50 +242,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI Features */}
+      {/* AI Dashboard - 백엔드 연동 */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 gradient-text">
-            🤖 AI 트레이딩 시스템
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-800"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-4">
-                <FaRobot size={32} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">11개 AI 모델 앙상블</h3>
-              <p className="text-gray-400">GPT-4, Claude, LSTM 등 최첨단 AI 모델을 결합한 정확한 예측 시스템</p>
-              <div className="mt-4 text-green-400 font-bold">예측 정확도: 91.5%</div>
-            </motion.div>
-
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-800"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center mb-4">
-                <FaChartLine size={32} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">실시간 기술적 분석</h3>
-              <p className="text-gray-400">30개 이상의 기술적 지표를 실시간으로 분석하여 최적의 진입/청산 시점 포착</p>
-              <div className="mt-4 text-blue-400 font-bold">분석 지표: 30+</div>
-            </motion.div>
-
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-800"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4">
-                <FaTelegram size={32} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">24/7 자동 트레이딩</h3>
-              <p className="text-gray-400">텔레그램 봇과 연동된 완전 자동화 트레이딩 시스템으로 24시간 수익 창출</p>
-              <div className="mt-4 text-yellow-400 font-bold">가동률: 99.9%</div>
-            </motion.div>
-          </div>
+          <AIDashboard />
         </div>
       </section>
 
