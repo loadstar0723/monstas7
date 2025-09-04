@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: monsta-platform
+    name: monsta-trading-v7
     runtime: python
     buildCommand: "./render-build.sh"
     startCommand: "./render-start.sh"
