@@ -11,7 +11,9 @@
       "Read(/C:\\Users\\dhk49\\.ssh/**)",
       "Bash(git config:*)",
       "Read(/C:\\monsta\\monstas7/**)",
-      "Read(/C:\\monsta\\monstas7/**)"
+      "Read(/C:\\monsta\\monstas7/**)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": [],
     "ask": []
