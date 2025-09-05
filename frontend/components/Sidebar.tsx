@@ -13,13 +13,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 const menuItems = [
   { icon: FaHome, label: '홈', path: '/', badge: null },
   { icon: FaChartLine, label: '실시간 트레이딩', path: '/trading', badge: 'LIVE' },
-  { icon: FaRobot, label: 'AI 분석', path: '/ai-analysis', badge: '11 Models' },
   { icon: FaBriefcase, label: '포트폴리오', path: '/portfolio', badge: null },
-  { icon: FaHistory, label: '백테스팅', path: '/backtesting', badge: null },
-  { icon: FaTelegram, label: '텔레그램 봇', path: '/telegram', badge: 'HOT' },
+  { icon: FaRobot, label: 'AI 분석', path: '/analytics', badge: 'AI' },
+  { icon: FaHistory, label: '백테스팅', path: '/backtesting', badge: '준비중' },
+  { icon: FaTelegram, label: '자동매매 봇', path: '/autobot', badge: 'HOT' },
   { icon: FaUsers, label: '소셜 트레이딩', path: '/social', badge: 'NEW' },
-  { icon: FaGraduationCap, label: '교육센터', path: '/education', badge: null },
-  { icon: FaNewspaper, label: '뉴스 & 분석', path: '/news', badge: null },
+  { icon: FaGraduationCap, label: '마켓 리서치', path: '/research', badge: null },
+  { icon: FaNewspaper, label: '뉴스 & 시그널', path: '/news', badge: null },
 ]
 
 const bottomMenuItems = [
