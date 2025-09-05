@@ -92,7 +92,12 @@
       "Bash(rm:*)",
       "Bash(node:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(gh repo list:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/cleanup-server.yml)",
+      "Bash(start https://github.com/loadstar0723/monsta-ai-trading/settings)",
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/cleanup-monsta-ai.yml)"
     ],
     "deny": [],
     "ask": []

@@ -89,8 +89,16 @@ jobs:
                 exit 1
             }
             
+            # 가짜 데이터 감지 (실전 배포 전 필수 검증)
+            echo "2️⃣ Mock 데이터 감지 시작..."
+            node scripts/detect-mock-data.js || {
+                echo "❌ 가짜 데이터 발견! 실전 배포 중단"
+                echo "💡 해결방법: 모든 mock/fake 데이터를 실제 API로 교체하세요"
+                exit 1
+            }
+            
             # 타입 체크 (타입 에러 사전 차단)
-            echo "2️⃣ TypeScript 타입 체크 중..."
+            echo "3️⃣ TypeScript 타입 체크 중..."
             npx tsc --noEmit || {
                 echo "❌ TypeScript 타입 에러 발견!"
                 echo "💡 해결방법: 타입 에러를 먼저 수정하세요"
@@ -98,13 +106,13 @@ jobs:
             }
             
             # ESLint 체크 (코드 품질 검증)
-            echo "3️⃣ ESLint 검사 중..."
+            echo "4️⃣ ESLint 검사 중..."
             npm run lint || {
                 echo "⚠️ Lint 경고가 있지만 계속 진행합니다..."
             }
             
             # 프로덕션 빌드 (최종 검증)
-            echo "4️⃣ 프로덕션 빌드 테스트 중..."
+            echo "5️⃣ 프로덕션 빌드 테스트 중..."
             npm run build || {
                 echo "❌ 빌드 실패! 다음 사항을 확인하세요:"
                 echo "  - 함수명이 숫자로 시작하지 않는지 (예: 30Page → IndicatorsPage)"

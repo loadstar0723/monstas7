@@ -16,7 +16,15 @@ npx prisma generate || {
     exit 1
 }
 
-echo "2️⃣ 빌드 테스트..."
+echo "2️⃣ 가짜 데이터 감지 중..."
+node scripts/detect-mock-data.js || {
+    echo "❌ 가짜 데이터 발견! push 중단"
+    echo "💡 실전 배포를 위해 모든 mock/fake 데이터를 실제 데이터로 교체하세요"
+    cd $ORIGINAL_DIR
+    exit 1
+}
+
+echo "3️⃣ 빌드 테스트..."
 npm run build || {
     echo "❌ 빌드 실패! 다음 사항을 확인하세요:"
     echo "  - 함수명이 숫자로 시작하는지 확인"

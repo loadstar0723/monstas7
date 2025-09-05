@@ -10,10 +10,11 @@
     "clean": "rmdir /s /q .next 2>nul",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "pre-deploy": "npm run fix:prisma && npm run test:build",
+    "pre-deploy": "npm run fix:prisma && npm run detect:mock && npm run test:build",
     "test:build": "npm run build",
     "fix:prisma": "npx prisma generate",
-    "deploy:check": "npm run lint && npm run typecheck && npm run test:build"
+    "deploy:check": "npm run lint && npm run typecheck && npm run detect:mock && npm run test:build",
+    "detect:mock": "node scripts/detect-mock-data.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
