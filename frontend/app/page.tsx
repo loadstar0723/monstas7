@@ -96,11 +96,11 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20 animate-gradient"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-20">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-transparent to-cyan-900/5 animate-gradient"></div>
+          <div className="absolute top-1/3 left-1/3 w-48 h-48 bg-purple-500/[0.02] rounded-full filter blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-cyan-500/[0.02] rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -121,9 +121,9 @@ export default function Home() {
               </div>
             </motion.div>
             
-            <h1 className="text-5xl md:text-7xl xl:text-8xl font-black mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 relative z-20">
               <motion.span 
-                className="block gradient-text"
+                className="block gradient-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
@@ -131,7 +131,7 @@ export default function Home() {
                 퀀텀 AI가 창조하는
               </motion.span>
               <motion.span 
-                className="block text-white mt-2"
+                className="block text-white mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
@@ -139,12 +139,36 @@ export default function Home() {
                 크립토 유니버스
               </motion.span>
               <motion.span 
-                className="block mt-4"
+                className="block mt-6 relative"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, type: "spring" }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 120, damping: 10 }}
               >
-                <span className="gradient-text text-6xl md:text-8xl xl:text-9xl neon-text">MONSTA</span>
+                <div className="relative inline-block">
+                  {/* 배경 글로우 - 매우 은은하게 */}
+                  <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-purple-600/10 to-pink-600/10 scale-110"></div>
+                  
+                  <span className="relative inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-black tracking-wider transform hover:scale-105 transition-transform duration-300" 
+                    style={{
+                      background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #8B5CF6 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      textShadow: '0 10px 40px rgba(139, 92, 246, 0.5)',
+                      filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+                      letterSpacing: '0.08em'
+                  }}>
+                    MONSTA
+                  </span>
+                  
+                  {/* 언더라인 효과 */}
+                  <motion.div 
+                    className="h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent mt-4"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 1, duration: 0.8 }}
+                  />
+                </div>
               </motion.span>
             </h1>
             <motion.p 
@@ -157,7 +181,7 @@ export default function Home() {
             </motion.p>
             
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 max-w-5xl mx-auto px-4">
               <motion.div 
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -166,8 +190,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="relative z-10">
-                  <div className="text-4xl font-bold gradient-text mb-1">11</div>
-                  <div className="text-gray-400 text-sm uppercase tracking-wider">AI Models</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1">11</div>
+                  <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">AI Models</div>
                 </div>
               </motion.div>
               <motion.div 
@@ -178,8 +202,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="relative z-10">
-                  <div className="text-4xl font-bold text-cyan-400">24/7</div>
-                  <div className="text-gray-400 text-sm uppercase tracking-wider">Auto Trading</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyan-400">24/7</div>
+                  <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Auto Trading</div>
                 </div>
               </motion.div>
               <motion.div 
@@ -190,8 +214,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="relative z-10">
-                  <div className="text-4xl font-bold text-emerald-400">91.5%</div>
-                  <div className="text-gray-400 text-sm uppercase tracking-wider">Accuracy</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">91.5%</div>
+                  <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Accuracy</div>
                 </div>
               </motion.div>
               <motion.div 
@@ -202,8 +226,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="relative z-10">
-                  <div className="text-4xl font-bold text-amber-400">50K+</div>
-                  <div className="text-gray-400 text-sm uppercase tracking-wider">Active Users</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-400">50K+</div>
+                  <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Active Users</div>
                 </div>
               </motion.div>
             </div>
@@ -217,14 +241,14 @@ export default function Home() {
             >
               <Link 
                 href="/signup" 
-                className="btn-primary inline-flex items-center justify-center text-lg glow-effect"
+                className="btn-primary inline-flex items-center justify-center text-sm sm:text-base md:text-lg glow-effect px-4 sm:px-6 md:px-8 py-3 sm:py-4"
               >
                 <FaRocket className="mr-2" />
                 7일 무료 체험 시작
               </Link>
               <Link 
                 href="/demo" 
-                className="px-8 py-4 border-2 border-purple-500/50 rounded-lg text-lg font-semibold bg-transparent backdrop-blur hover:bg-purple-600/10 hover:border-purple-400 transition-all"
+                className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-2 border-purple-500/50 rounded-lg text-sm sm:text-base md:text-lg font-semibold bg-transparent backdrop-blur hover:bg-purple-600/10 hover:border-purple-400 transition-all"
               >
                 라이브 데모 보기
               </Link>
