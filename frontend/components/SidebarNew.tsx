@@ -698,33 +698,49 @@ export default function SidebarNew() {
         <div className="flex flex-col h-full">
           {/* 헤더 */}
           <div className="relative p-4 border-b border-gray-800/50 bg-gray-900/30">
-            {/* X 닫기 버튼 */}
-            <motion.button
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              whileHover={{ rotate: 90, scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 p-2 bg-gray-800/50 hover:bg-red-500/20 
-                       rounded-lg border border-gray-700 hover:border-red-500/50 
-                       transition-all group z-10"
-            >
-              <FaTimes className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
-            </motion.button>
-
-            {/* 로고 가운데 정렬 */}
-            <div className="flex items-center justify-center mb-4 pt-2">
-              {!isCollapsed ? (
+            {/* MONSTA 로고 + 검색바 + 닫기 버튼 한 줄 배치 */}
+            {!isCollapsed ? (
+              <div className="flex items-center gap-3 mb-4">
+                {/* MONSTA 로고 */}
                 <Link 
                   href="/"
-                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  className="hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
                   onClick={() => setIsOpen(false)}
                 >
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                     MONSTA
                   </h1>
                 </Link>
-              ) : (
+
+                {/* 검색바 */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="메뉴 검색..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                    className="w-full px-3 py-2 bg-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500"
+                  />
+                  <FaSearch className="absolute right-3 top-2.5 text-gray-400 text-sm pointer-events-none" />
+                </div>
+
+                {/* X 닫기 버튼 */}
+                <motion.button
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 bg-gray-800/50 hover:bg-red-500/20 rounded-lg border border-gray-700 hover:border-red-500/50 transition-all group flex-shrink-0"
+                >
+                  <FaTimes className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
+                </motion.button>
+              </div>
+            ) : (
+              /* 접힌 상태 - M 로고만 표시 */
+              <div className="flex items-center justify-center mb-4">
                 <Link 
                   href="/"
                   className="hover:opacity-80 transition-opacity cursor-pointer"
@@ -735,15 +751,15 @@ export default function SidebarNew() {
                     M
                   </span>
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
 
 
             {/* 헤더 접기/펼치기 버튼 */}
             {!isCollapsed && (
               <button
                 onClick={toggleHeaderCollapsed}
-                className="w-full mb-3 flex items-center justify-between px-3 py-2 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all group"
+                className="w-full flex items-center justify-between px-3 py-2 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all group"
                 title={isHeaderCollapsed ? "메뉴 정보 펼치기" : "메뉴 정보 접기"}
               >
                 <div className="flex items-center gap-2">
@@ -866,25 +882,9 @@ export default function SidebarNew() {
               </div>
             )}
 
-            {/* 검색바 - 헤더가 접혀도 검색은 항상 표시 (중요 기능) */}
-            {!isCollapsed && (
-              <div className="relative">
-              <input
-                type="text"
-                placeholder="메뉴 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                className="w-full px-3 py-2 bg-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500"
-              />
-              <FaSearch className="absolute right-3 top-2.5 text-gray-400 text-sm pointer-events-none" />
-            </div>
-            )}
-
             {/* 검색 결과 */}
             {!isCollapsed && isSearchFocused && searchTerm && (
-              <div className="absolute top-24 left-4 right-4 bg-gray-800 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+              <div className="absolute top-16 left-4 right-4 bg-gray-800 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
                 {searchResults.length > 0 ? (
                   <>
                     {searchResults.map((item, idx) => {
