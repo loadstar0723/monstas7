@@ -97,7 +97,10 @@
       "Bash(gh workflow run:*)",
       "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/cleanup-server.yml)",
       "Bash(start https://github.com/loadstar0723/monsta-ai-trading/settings)",
-      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/cleanup-monsta-ai.yml)"
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/cleanup-monsta-ai.yml)",
+      "Read(//c/Users/dhk49/Pictures/monsta aws/**)",
+      "Bash(tree:*)",
+      "Read(//c/Users/dhk49/**)"
     ],
     "deny": [],
     "ask": []
