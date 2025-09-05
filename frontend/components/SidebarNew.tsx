@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -29,7 +29,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaBan
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -78,708 +78,630 @@ interface MenuItem {
   description?: string
 }
 
+// 카테고리 그룹 정의 (새로운 그룹핑)
+type CategoryGroup = 'trading' | 'analysis' | 'community' | 'management'
+
 // 카테고리별 색상 테마 (20개)
 const categoryThemes = {
-  signals: { color: 'from-cyan-600 to-blue-600', bgColor: 'bg-cyan-500/20', borderColor: 'border-cyan-500/30' },
-  quant: { color: 'from-purple-600 to-indigo-600', bgColor: 'bg-purple-500/20', borderColor: 'border-purple-500/30' },
-  microstructure: { color: 'from-pink-600 to-rose-600', bgColor: 'bg-pink-500/20', borderColor: 'border-pink-500/30' },
-  technical: { color: 'from-blue-600 to-indigo-600', bgColor: 'bg-blue-500/20', borderColor: 'border-blue-500/30' },
-  ai: { color: 'from-violet-600 to-purple-600', bgColor: 'bg-violet-500/20', borderColor: 'border-violet-500/30' },
-  automation: { color: 'from-green-600 to-emerald-600', bgColor: 'bg-green-500/20', borderColor: 'border-green-500/30' },
-  telegram: { color: 'from-sky-600 to-blue-600', bgColor: 'bg-sky-500/20', borderColor: 'border-sky-500/30' },
-  gaming: { color: 'from-orange-600 to-red-600', bgColor: 'bg-orange-500/20', borderColor: 'border-orange-500/30' },
-  macro: { color: 'from-teal-600 to-cyan-600', bgColor: 'bg-teal-500/20', borderColor: 'border-teal-500/30' },
-  crypto: { color: 'from-yellow-600 to-amber-600', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30' },
-  news: { color: 'from-lime-600 to-green-600', bgColor: 'bg-lime-500/20', borderColor: 'border-lime-500/30' },
-  events: { color: 'from-amber-600 to-orange-600', bgColor: 'bg-amber-500/20', borderColor: 'border-amber-500/30' },
-  risk: { color: 'from-red-600 to-rose-600', bgColor: 'bg-red-500/20', borderColor: 'border-red-500/30' },
-  portfolio: { color: 'from-indigo-600 to-blue-600', bgColor: 'bg-indigo-500/20', borderColor: 'border-indigo-500/30' },
-  members: { color: 'from-slate-600 to-gray-600', bgColor: 'bg-slate-500/20', borderColor: 'border-slate-500/30' },
-  payment: { color: 'from-emerald-600 to-green-600', bgColor: 'bg-emerald-500/20', borderColor: 'border-emerald-500/30' },
-  marketing: { color: 'from-fuchsia-600 to-pink-600', bgColor: 'bg-fuchsia-500/20', borderColor: 'border-fuchsia-500/30' },
-  analytics: { color: 'from-blue-700 to-indigo-700', bgColor: 'bg-blue-600/20', borderColor: 'border-blue-600/30' },
-  education: { color: 'from-purple-700 to-pink-700', bgColor: 'bg-purple-600/20', borderColor: 'border-purple-600/30' },
-  system: { color: 'from-gray-700 to-slate-700', bgColor: 'bg-gray-600/20', borderColor: 'border-gray-600/30' }
+  signals: { color: 'from-cyan-600 to-blue-600', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/20', icon: FaSignal },
+  quant: { color: 'from-purple-600 to-indigo-600', bgColor: 'bg-purple-500/10', borderColor: 'border-purple-500/20', icon: FaChartBar },
+  microstructure: { color: 'from-pink-600 to-rose-600', bgColor: 'bg-pink-500/10', borderColor: 'border-pink-500/20', icon: BiRadar },
+  technical: { color: 'from-blue-600 to-indigo-600', bgColor: 'bg-blue-500/10', borderColor: 'border-blue-500/20', icon: MdShowChart },
+  ai: { color: 'from-violet-600 to-purple-600', bgColor: 'bg-violet-500/10', borderColor: 'border-violet-500/20', icon: FaBrain },
+  automation: { color: 'from-green-600 to-emerald-600', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20', icon: FaRobot },
+  telegram: { color: 'from-sky-600 to-blue-600', bgColor: 'bg-sky-500/10', borderColor: 'border-sky-500/20', icon: FaTelegram },
+  gaming: { color: 'from-orange-600 to-red-600', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/20', icon: FaGamepad },
+  macro: { color: 'from-teal-600 to-cyan-600', bgColor: 'bg-teal-500/10', borderColor: 'border-teal-500/20', icon: FaGlobe },
+  crypto: { color: 'from-yellow-600 to-amber-600', bgColor: 'bg-yellow-500/10', borderColor: 'border-yellow-500/20', icon: FaBitcoin },
+  news: { color: 'from-lime-600 to-green-600', bgColor: 'bg-lime-500/10', borderColor: 'border-lime-500/20', icon: FaNewspaper },
+  events: { color: 'from-amber-600 to-orange-600', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20', icon: FaCalendar },
+  risk: { color: 'from-red-600 to-rose-600', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20', icon: FaShieldAlt },
+  portfolio: { color: 'from-indigo-600 to-blue-600', bgColor: 'bg-indigo-500/10', borderColor: 'border-indigo-500/20', icon: FaWallet },
+  members: { color: 'from-slate-600 to-gray-600', bgColor: 'bg-slate-500/10', borderColor: 'border-slate-500/20', icon: FaUsers },
+  payment: { color: 'from-emerald-600 to-green-600', bgColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/20', icon: FaCreditCard },
+  marketing: { color: 'from-fuchsia-600 to-pink-600', bgColor: 'bg-fuchsia-500/10', borderColor: 'border-fuchsia-500/20', icon: FaBullhorn },
+  analytics: { color: 'from-blue-700 to-indigo-700', bgColor: 'bg-blue-600/10', borderColor: 'border-blue-600/20', icon: MdAnalytics },
+  education: { color: 'from-rose-600 to-pink-600', bgColor: 'bg-rose-500/10', borderColor: 'border-rose-500/20', icon: FaGraduationCap },
+  system: { color: 'from-gray-600 to-slate-600', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', icon: FaCog }
 }
 
-// 종합 메뉴 구조 (20개 카테고리, 300+ 항목)
+// 카테고리 그룹 정의
+const categoryGroups = {
+  trading: {
+    title: '🚀 트레이딩',
+    categories: ['signals', 'quant', 'microstructure', 'technical', 'automation'],
+    color: 'from-blue-600/20 to-purple-600/20',
+    borderColor: 'border-blue-500/30'
+  },
+  analysis: {
+    title: '📊 분석 & AI',
+    categories: ['ai', 'risk', 'portfolio', 'macro', 'crypto'],
+    color: 'from-purple-600/20 to-pink-600/20',
+    borderColor: 'border-purple-500/30'
+  },
+  community: {
+    title: '🌐 커뮤니티',
+    categories: ['telegram', 'gaming', 'news', 'events', 'education'],
+    color: 'from-green-600/20 to-teal-600/20',
+    borderColor: 'border-green-500/30'
+  },
+  management: {
+    title: '⚙️ 관리',
+    categories: ['members', 'payment', 'marketing', 'analytics', 'system'],
+    color: 'from-gray-600/20 to-slate-600/20',
+    borderColor: 'border-gray-500/30'
+  }
+}
+
+// 메뉴 구조 정의 (20개 카테고리, 301개 항목)
 const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[] } } = {
   signals: {
     title: '📡 프리미엄 시그널',
     items: [
       { icon: FaSignal, label: '스마트 머니 시그널', path: '/signals/smart-money', badge: 'HOT', category: 'signals', isHot: true },
-      { icon: FaWater, label: '내부자 플로우', path: '/signals/insider', category: 'signals', minTier: 'Gold' },
-      { icon: FaExchangeAlt, label: '거래소간 재정거래', path: '/signals/arbitrage', category: 'signals', minTier: 'Platinum' },
-      { icon: FaPercentage, label: '펀딩 레이트 시그널', path: '/signals/funding', category: 'signals' },
-      { icon: BiTargetLock, label: '옵션 플로우', path: '/signals/options', category: 'signals', minTier: 'Diamond' },
-      { icon: FaCoins, label: 'DeFi TVL 시그널', path: '/signals/defi-tvl', category: 'signals' },
-      { icon: FaDollarSign, label: '스테이블코인 플로우', path: '/signals/stablecoin', category: 'signals' },
-      { icon: FaMicrochip, label: '채굴풀 시그널', path: '/signals/mining', category: 'signals', minTier: 'Silver' },
-      { icon: FaSkull, label: '청산 알림', path: '/signals/liquidation', badge: '위험', category: 'signals' },
-      { icon: FaWhatsapp, label: '고래 알림', path: '/signals/whale', category: 'signals', isPremium: true },
+      { icon: FaWhatsapp, label: '고래 추적기', path: '/signals/whale-tracker', category: 'signals' },
+      { icon: FaBinoculars, label: '인사이더 플로우', path: '/signals/insider-flow', category: 'signals', isPremium: true },
+      { icon: FaSkull, label: '청산 히트맵', path: '/signals/liquidation', category: 'signals' },
+      { icon: FaExchangeAlt, label: 'DEX 플로우', path: '/signals/dex-flow', category: 'signals' },
+      { icon: FaCalculator, label: '펀딩 비율', path: '/signals/funding-rate', category: 'signals' },
+      { icon: BiTargetLock, label: '비정상 옵션', path: '/signals/unusual-options', category: 'signals' },
+      { icon: FaVolumeUp, label: '소셜 감성', path: '/signals/social-sentiment', category: 'signals' },
+      { icon: MdGraphicEq, label: '공포탐욕 지수', path: '/signals/fear-greed', category: 'signals' },
+      { icon: FaDollarSign, label: '차익거래 기회', path: '/signals/arbitrage', category: 'signals', isNew: true }
     ]
   },
   quant: {
-    title: '🧠 퀀트 전략',
+    title: '📈 퀀트 전략',
     items: [
-      { icon: BiLineChart, label: '평균 회귀', path: '/quant/mean-reversion', category: 'quant' },
-      { icon: FaRocket, label: '모멘텀 전략', path: '/quant/momentum', badge: 'PRO', category: 'quant', minTier: 'Gold' },
-      { icon: FaBalanceScale, label: '통계적 차익거래', path: '/quant/stat-arb', category: 'quant', minTier: 'Platinum' },
-      { icon: BiNetworkChart, label: '페어 트레이딩', path: '/quant/pairs', category: 'quant' },
-      { icon: FaShieldAlt, label: '시장 중립 전략', path: '/quant/neutral', category: 'quant', minTier: 'Diamond' },
-      { icon: FaBolt, label: '초고속 매매(HFT)', path: '/quant/hft', badge: '극속', category: 'quant', minTier: 'Black', isAlpha: true },
-      { icon: FaBrain, label: '머신러닝 전략', path: '/quant/ml', category: 'quant', minTier: 'Gold' },
-      { icon: FaBitcoin, label: '크립토 특화', path: '/quant/crypto', category: 'quant' },
-      { icon: BiCube, label: '팩터 모델', path: '/quant/factor', category: 'quant', minTier: 'Platinum' },
-      { icon: FaInfinity, label: '공적분 분석', path: '/quant/cointegration', category: 'quant' },
+      { icon: MdAutoGraph, label: '백테스팅', path: '/quant/backtesting', category: 'quant' },
+      { icon: FaInfinity, label: '그리드 봇', path: '/quant/grid-bot', category: 'quant', isHot: true },
+      { icon: MdSwapHoriz, label: '페어 트레이딩', path: '/quant/pair-trading', category: 'quant' },
+      { icon: BiBot, label: '마켓 메이킹', path: '/quant/market-making', category: 'quant', isPremium: true },
+      { icon: MdAutorenew, label: 'DCA 봇', path: '/quant/dca', category: 'quant' },
+      { icon: FaChartArea, label: '평균회귀', path: '/quant/mean-reversion', category: 'quant' },
+      { icon: BiTrendingUp, label: '모멘텀', path: '/quant/momentum', category: 'quant' },
+      { icon: FaChartPie, label: '옵션 전략', path: '/quant/options', category: 'quant' },
+      { icon: BiGrid, label: '차익거래 봇', path: '/quant/arbitrage', category: 'quant', isNew: true },
+      { icon: FaRocket, label: '전략 빌더', path: '/quant/strategy-builder', category: 'quant' }
     ]
   },
   microstructure: {
-    title: '🔮 시장 미시구조',
+    title: '🔬 마이크로 구조',
     items: [
-      { icon: BiBarChart, label: '호가창 불균형', path: '/micro/imbalance', category: 'microstructure' },
-      { icon: FaWaveSquare, label: '미세구조 노이즈', path: '/micro/noise', category: 'microstructure', minTier: 'Gold' },
-      { icon: BiPulse, label: '틱 데이터 분석', path: '/micro/tick', category: 'microstructure' },
-      { icon: BiScatterChart, label: '거래 크기 분포', path: '/micro/size', category: 'microstructure' },
-      { icon: FaEye, label: '스푸핑 감지', path: '/micro/spoofing', badge: '감지', category: 'microstructure' },
-      { icon: FaRadiation, label: '워시 트레이딩 감지', path: '/micro/wash', category: 'microstructure' },
-      { icon: FaCrosshairs, label: '프론트러닝 분석', path: '/micro/frontrun', category: 'microstructure', minTier: 'Diamond' },
-      { icon: FaBullseye, label: '샌드위치 공격 모니터', path: '/micro/sandwich', badge: 'MEV', category: 'microstructure' },
-      { icon: BiRadar, label: '레이턴시 차익거래', path: '/micro/latency', category: 'microstructure', minTier: 'Black' },
-      { icon: FaChess, label: '시장 조작', path: '/micro/manipulation', category: 'microstructure' },
+      { icon: BiRadar, label: '오더플로우', path: '/microstructure/orderflow', category: 'microstructure', isHot: true },
+      { icon: FaLayerGroup, label: '오더북 히트맵', path: '/microstructure/orderbook', category: 'microstructure' },
+      { icon: FaWater, label: '유동성 풀', path: '/microstructure/liquidity', category: 'microstructure' },
+      { icon: BiPulse, label: '풋프린트 차트', path: '/microstructure/footprint', category: 'microstructure', isPremium: true },
+      { icon: MdBubbleChart, label: '임밸런스', path: '/microstructure/imbalance', category: 'microstructure' },
+      { icon: FaRadiation, label: '스푸핑 감지', path: '/microstructure/spoofing', category: 'microstructure' },
+      { icon: BiNetworkChart, label: 'HFT 패턴', path: '/microstructure/hft', category: 'microstructure' },
+      { icon: MdTimeline, label: '테이프 리딩', path: '/microstructure/tape-reading', category: 'microstructure' },
+      { icon: FaBolt, label: '스윕 감지', path: '/microstructure/sweep', category: 'microstructure' },
+      { icon: FaFingerprint, label: '핀 바', path: '/microstructure/pin', category: 'microstructure', isNew: true }
     ]
   },
   technical: {
     title: '📊 기술적 분석',
     items: [
-      { icon: FaChartLine, label: '이동평균선', path: '/technical/ma', category: 'technical' },
-      { icon: MdShowChart, label: 'RSI/MACD/스토캐스틱', path: '/technical/indicators', category: 'technical' },
-      { icon: MdCandlestickChart, label: '엘리어트 파동', path: '/technical/elliott', badge: 'PRO', category: 'technical', minTier: 'Gold' },
-      { icon: FaWaveSquare, label: '와이코프 방법', path: '/technical/wyckoff', category: 'technical', minTier: 'Platinum' },
-      { icon: FaChessQueen, label: '스마트 머니 컨셉', path: '/technical/smc', badge: 'HOT', category: 'technical', isHot: true },
-      { icon: BiGrid, label: '오더 플로우', path: '/technical/orderflow', category: 'technical', minTier: 'Gold' },
-      { icon: FaChartArea, label: '마켓 프로파일', path: '/technical/profile', category: 'technical' },
-      { icon: FaVolumeUp, label: '볼륨 프로파일', path: '/technical/volume', category: 'technical' },
-      { icon: BiData, label: 'CVD/델타', path: '/technical/cvd', category: 'technical' },
-      { icon: FaAnchor, label: '지지/저항 자동탐지', path: '/technical/support', category: 'technical' },
-      { icon: MdShowChart, label: 'OFI 분석', path: '/technical/ofi', badge: 'NEW', category: 'technical', isNew: true },
-      { icon: FaFire, label: '유동성 사냥', path: '/technical/liquidity', category: 'technical', minTier: 'Diamond' },
-      { icon: FaSkull, label: '오비추어리 패턴', path: '/technical/obituary', category: 'technical', minTier: 'Black', isAlpha: true },
-      { icon: FaPuzzlePiece, label: '하모닉 패턴', path: '/technical/harmonic', category: 'technical' },
-      { icon: BiShapePolygon, label: '피보나치 도구', path: '/technical/fibonacci', category: 'technical' },
+      { icon: MdShowChart, label: '지표', path: '/technical/indicators', category: 'technical' },
+      { icon: FaProjectDiagram, label: '패턴 인식', path: '/technical/patterns', category: 'technical' },
+      { icon: FaBalanceScale, label: '지지저항', path: '/technical/support', category: 'technical' },
+      { icon: MdCandlestickChart, label: '볼륨 프로파일', path: '/technical/profile', category: 'technical', isPremium: true },
+      { icon: FaWaveSquare, label: '엘리엇 파동', path: '/technical/elliott', category: 'technical' },
+      { icon: FaRing, label: '피보나치', path: '/technical/fibonacci', category: 'technical' },
+      { icon: BiShapePolygon, label: '하모닉 패턴', path: '/technical/harmonic', category: 'technical' },
+      { icon: FaChessQueen, label: '와이코프', path: '/technical/wyckoff', category: 'technical' },
+      { icon: MdStackedLineChart, label: 'SMC', path: '/technical/smc', category: 'technical', isHot: true },
+      { icon: BiBarChart, label: 'CVD', path: '/technical/cvd', category: 'technical' },
+      { icon: MdDataUsage, label: 'OI 플로우', path: '/technical/ofi', category: 'technical' },
+      { icon: BiCylinder, label: '볼륨 분석', path: '/technical/volume', category: 'technical' },
+      { icon: FaWater, label: '유동성 맵', path: '/technical/liquidity', category: 'technical', isNew: true },
+      { icon: FaSkull, label: '청산 차트', path: '/technical/obituary', category: 'technical' }
     ]
   },
   ai: {
-    title: '🤖 AI/ML 분석',
+    title: '🤖 AI 분석',
     items: [
-      { icon: FaRobot, label: 'GPT-4 분석', path: '/ai/gpt4', badge: 'AI', category: 'ai', isHot: true },
-      { icon: FaBrain, label: 'Claude 요약', path: '/ai/claude', category: 'ai' },
-      { icon: BiAnalyse, label: 'LSTM 예측', path: '/ai/lstm', category: 'ai', minTier: 'Gold' },
-      { icon: BiStats, label: 'GRU 모델', path: '/ai/gru', category: 'ai' },
-      { icon: MdTimeline, label: 'ARIMA 시계열', path: '/ai/arima', category: 'ai' },
-      { icon: FaDna, label: 'Random Forest', path: '/ai/rf', category: 'ai' },
-      { icon: FaAtom, label: 'XGBoost', path: '/ai/xgboost', category: 'ai', minTier: 'Silver' },
-      { icon: FaMagic, label: 'LightGBM', path: '/ai/lightgbm', category: 'ai' },
-      { icon: BiPyramid, label: 'BERT 감성분석', path: '/ai/bert', category: 'ai', minTier: 'Platinum' },
-      { icon: FaInfinity, label: 'Transformer', path: '/ai/transformer', category: 'ai', minTier: 'Diamond' },
-      { icon: FaSpaceShuttle, label: 'GAN 시나리오', path: '/ai/gan', badge: '최첨단', category: 'ai', minTier: 'Black' },
-      { icon: BiCylinder, label: 'Freqtrade 통합', path: '/ai/freqtrade', category: 'ai' },
-      { icon: MdAutoGraph, label: '앙상블 스코어', path: '/ai/ensemble', badge: '종합', category: 'ai' },
+      { icon: FaBrain, label: 'GPT 예측', path: '/ai/gpt', category: 'ai', isHot: true },
+      { icon: BiAnalyse, label: '패턴 인식 AI', path: '/ai/pattern-recognition', category: 'ai' },
+      { icon: FaAtom, label: '신경망 예측', path: '/ai/neural', category: 'ai' },
+      { icon: MdAutoGraph, label: '감성 분석', path: '/ai/sentiment', category: 'ai' },
+      { icon: FaDna, label: '가격 예측', path: '/ai/predictions', category: 'ai', isPremium: true },
+      { icon: BiData, label: '앙상블 모델', path: '/ai/ensemble', category: 'ai' },
+      { icon: FaFlask, label: '강화학습', path: '/ai/reinforcement', category: 'ai' },
+      { icon: BiScatterChart, label: '클러스터링', path: '/ai/clustering', category: 'ai' },
+      { icon: FaLightbulb, label: '이상 탐지', path: '/ai/anomaly', category: 'ai' },
+      { icon: FaMagic, label: '자연어 처리', path: '/ai/nlp', category: 'ai' },
+      { icon: FaSpaceShuttle, label: '양자 컴퓨팅', path: '/ai/quantum', category: 'ai', isAlpha: true }
     ]
   },
   automation: {
-    title: '⚡ 자동매매 봇',
+    title: '⚙️ 자동화',
     items: [
-      { icon: BiBot, label: 'Grid Bot', path: '/bots/grid', category: 'automation' },
-      { icon: MdAutorenew, label: 'DCA Bot', path: '/bots/dca', category: 'automation' },
-      { icon: FaRocket, label: 'Sniper Bot', path: '/bots/sniper', badge: '극속', category: 'automation', minTier: 'Platinum' },
-      { icon: FaMicrochip, label: 'MEV Bot', path: '/bots/mev', badge: 'PRO', category: 'automation', minTier: 'Diamond' },
-      { icon: FaExchangeAlt, label: 'Arbitrage Bot', path: '/bots/arbitrage', category: 'automation', minTier: 'Gold' },
-      { icon: FaBalanceScale, label: 'Market Making Bot', path: '/bots/market-making', category: 'automation', minTier: 'Black' },
-      { icon: FaHistory, label: 'Backtesting', path: '/bots/backtest', category: 'automation' },
-      { icon: BiTargetLock, label: 'Strategy Builder', path: '/bots/builder', category: 'automation' },
-      { icon: FaFlask, label: 'Walk-Forward', path: '/bots/walk-forward', category: 'automation', minTier: 'Gold' },
-      { icon: FaDice, label: 'Monte Carlo', path: '/bots/monte-carlo', category: 'automation' },
-      { icon: FaShieldAlt, label: 'Risk Manager', path: '/bots/risk', category: 'automation' },
+      { icon: FaRobot, label: '자동 트레이딩', path: '/automation/copy-trading', category: 'automation', isHot: true },
+      { icon: BiBot, label: 'API 봇', path: '/automation/api-bot', category: 'automation' },
+      { icon: FaCodeBranch, label: '웹훅 트레이딩', path: '/automation/webhook', category: 'automation' },
+      { icon: FaCubes, label: '파인스크립트', path: '/automation/pine-script', category: 'automation' },
+      { icon: FaNetworkWired, label: '전략 빌더', path: '/automation/builder', category: 'automation', isPremium: true },
+      { icon: FaStream, label: '페이퍼 트레이딩', path: '/automation/paper-trading', category: 'automation' },
+      { icon: MdSpeed, label: '성능 모니터링', path: '/automation/performance', category: 'automation' },
+      { icon: FaShieldAlt, label: '리스크 관리', path: '/automation/risk-management', category: 'automation' },
+      { icon: FaCloud, label: '클라우드 봇', path: '/automation/cloud', category: 'automation', isNew: true },
+      { icon: FaStore, label: '봇 마켓플레이스', path: '/automation/marketplace', category: 'automation' }
     ]
   },
   telegram: {
-    title: '💬 텔레그램 봇',
+    title: '💬 텔레그램',
     items: [
-      { icon: FaTelegram, label: '실시간 시그널', path: '/telegram/signals', badge: 'LIVE', category: 'telegram', isHot: true },
-      { icon: FaPaperPlane, label: '원클릭 자동매매', path: '/telegram/auto', category: 'telegram', minTier: 'Silver' },
-      { icon: FaGamepad, label: '퀵배틀 게임', path: '/telegram/battle', badge: 'GAME', category: 'telegram', isNew: true },
-      { icon: FaTrophy, label: '토너먼트', path: '/telegram/tournament', category: 'telegram' },
-      { icon: FaChartPie, label: '예측 차트 이미지', path: '/telegram/charts', category: 'telegram' },
-      { icon: FaGlobe, label: '10개 언어 지원', path: '/telegram/language', category: 'telegram' },
-      { icon: FaBell, label: '커스텀 알림', path: '/telegram/alerts', category: 'telegram' },
-      { icon: FaUsers, label: '그룹 관리', path: '/telegram/groups', category: 'telegram', minRole: ['본사', '총판'] },
-      { icon: FaBroadcastTower, label: '방송 채널', path: '/telegram/broadcast', category: 'telegram' },
-      { icon: FaRobot, label: '봇 설정', path: '/telegram/settings', category: 'telegram' },
+      { icon: FaTelegram, label: '봇 설정', path: '/telegram/setup', category: 'telegram' },
+      { icon: FaBell, label: '알림 설정', path: '/telegram/alerts', category: 'telegram', isHot: true },
+      { icon: FaPaperPlane, label: '시그널 전송', path: '/telegram/signals', category: 'telegram' },
+      { icon: FaComment, label: '명령어 관리', path: '/telegram/commands', category: 'telegram' },
+      { icon: FaUsers, label: '그룹 관리', path: '/telegram/groups', category: 'telegram' },
+      { icon: BiStats, label: '통계 봇', path: '/telegram/stats', category: 'telegram' },
+      { icon: FaGamepad, label: '게임 봇', path: '/telegram/games', category: 'telegram', isNew: true },
+      { icon: FaExchangeAlt, label: '트레이딩 봇', path: '/telegram/trading', category: 'telegram' },
+      { icon: FaCrown, label: '프리미엄 채널', path: '/telegram/premium', category: 'telegram', isPremium: true },
+      { icon: FaGlobe, label: '다국어 지원', path: '/telegram/multi-language', category: 'telegram' }
     ]
   },
   gaming: {
-    title: '🎮 게임화 & 소셜',
+    title: '🎮 게이미피케이션',
     items: [
-      { icon: FaTrophy, label: '트레이딩 대회', path: '/gaming/competition', badge: 'LIVE', category: 'gaming' },
-      { icon: FaGamepad, label: '퀵배틀', path: '/gaming/quick-battle', category: 'gaming', isNew: true },
-      { icon: FaMedal, label: '리더보드', path: '/gaming/leaderboard', category: 'gaming' },
+      { icon: FaTrophy, label: '트레이딩 배틀', path: '/gaming/trading-battle', category: 'gaming', isHot: true },
+      { icon: MdLeaderboard, label: '리더보드', path: '/gaming/leaderboard', category: 'gaming' },
       { icon: FaAward, label: '업적 시스템', path: '/gaming/achievements', category: 'gaming' },
-      { icon: FaStar, label: '레벨/경험치', path: '/gaming/levels', category: 'gaming' },
-      { icon: FaGem, label: '뱃지 컬렉션', path: '/gaming/badges', category: 'gaming' },
-      { icon: FaGift, label: '일일 퀘스트', path: '/gaming/quests', category: 'gaming' },
-      { icon: BiNetworkChart, label: '카피 트레이딩', path: '/gaming/copy', badge: '인기', category: 'gaming', minTier: 'Gold' },
-      { icon: FaVideo, label: '라이브 스트리밍', path: '/gaming/streaming', category: 'gaming' },
-      { icon: FaComments, label: '트레이딩 룸', path: '/gaming/rooms', category: 'gaming' },
-      { icon: FaHandshake, label: '멘토 매칭', path: '/gaming/mentor', category: 'gaming', minTier: 'Platinum' },
-      { icon: FaTheaterMasks, label: 'VIP 라운지', path: '/gaming/vip', badge: 'VIP', category: 'gaming', minTier: 'Diamond' },
+      { icon: FaGift, label: '리워드 센터', path: '/gaming/rewards', category: 'gaming' },
+      { icon: FaDice, label: '예측 게임', path: '/gaming/prediction', category: 'gaming' },
+      { icon: FaChess, label: '페이퍼 대회', path: '/gaming/paper-competition', category: 'gaming' },
+      { icon: FaTheaterMasks, label: '소셜 트레이딩', path: '/gaming/social-trading', category: 'gaming' },
+      { icon: FaGem, label: 'NFT 리워드', path: '/gaming/nft', category: 'gaming', isNew: true },
+      { icon: FaUsers, label: '길드 시스템', path: '/gaming/guild', category: 'gaming' },
+      { icon: FaPuzzlePiece, label: '메타버스', path: '/gaming/metaverse', category: 'gaming', isAlpha: true }
     ]
   },
   macro: {
-    title: '🌐 글로벌 매크로',
+    title: '🌍 매크로 경제',
     items: [
-      { icon: FaUniversity, label: '연준 정책 추적', path: '/macro/fed', category: 'macro' },
-      { icon: FaMoneyBillWave, label: '글로벌 유동성', path: '/macro/liquidity', category: 'macro' },
-      { icon: FaDollarSign, label: '달러 강세', path: '/macro/dollar', category: 'macro' },
-      { icon: FaChartBar, label: '인플레 기대치', path: '/macro/inflation', category: 'macro' },
-      { icon: FaExclamationTriangle, label: '리스크 온/오프', path: '/macro/risk', badge: '중요', category: 'macro' },
-      { icon: BiStats, label: '상관관계 분석', path: '/macro/correlation', category: 'macro', minTier: 'Gold' },
-      { icon: FaFlag, label: '지정학적 리스크', path: '/macro/geopolitical', category: 'macro' },
-      { icon: FaNewspaper, label: '규제 영향', path: '/macro/regulatory', category: 'macro' },
-      { icon: FaCalculator, label: '금리', path: '/macro/rates', category: 'macro' },
-      { icon: FaPiggyBank, label: '중앙은행 동향', path: '/macro/central-banks', category: 'macro' },
+      { icon: FaGlobe, label: '경제 지표', path: '/macro/indicators', category: 'macro' },
+      { icon: FaUniversity, label: '중앙은행', path: '/macro/central-banks', category: 'macro', isHot: true },
+      { icon: FaPercentage, label: '금리', path: '/macro/interest-rates', category: 'macro' },
+      { icon: FaMoneyBillWave, label: 'DXY 지수', path: '/macro/dxy', category: 'macro' },
+      { icon: FaPiggyBank, label: '인플레이션', path: '/macro/inflation', category: 'macro' },
+      { icon: BiLineChart, label: '채권', path: '/macro/bonds', category: 'macro' },
+      { icon: FaCoins, label: '원자재', path: '/macro/commodities', category: 'macro' },
+      { icon: MdSwapHoriz, label: '외환', path: '/macro/forex', category: 'macro' },
+      { icon: FaFlag, label: '지정학', path: '/macro/geopolitics', category: 'macro' },
+      { icon: FaCalendar, label: '경제 캘린더', path: '/macro/calendar', category: 'macro', isPremium: true }
     ]
   },
   crypto: {
-    title: '💎 크립토 네이티브',
+    title: '🪙 크립토',
     items: [
-      { icon: BiLineChart, label: 'NVT 시그널', path: '/crypto/nvt', category: 'crypto' },
-      { icon: BiBarChart, label: 'MVRV Z-Score', path: '/crypto/mvrv', category: 'crypto', minTier: 'Silver' },
-      { icon: BiPieChart, label: 'SOPR 분석', path: '/crypto/sopr', category: 'crypto' },
-      { icon: FaMicrochip, label: 'Puell 멀티플', path: '/crypto/puell', category: 'crypto' },
-      { icon: FaInfinity, label: 'S2F 모델', path: '/crypto/s2f', category: 'crypto' },
-      { icon: FaWaveSquare, label: 'HODL 웨이브', path: '/crypto/hodl', category: 'crypto', minTier: 'Gold' },
-      { icon: FaExchangeAlt, label: '거래소 플로우', path: '/crypto/exchange', category: 'crypto' },
-      { icon: FaDollarSign, label: '스테이블코인 비율', path: '/crypto/stablecoin', category: 'crypto' },
-      { icon: BiCoinStack, label: '비트코인 도미넌스', path: '/crypto/dominance', category: 'crypto' },
-      { icon: FaEthereum, label: 'ETH 번 레이트', path: '/crypto/eth-burn', category: 'crypto' },
-      { icon: FaCoins, label: '알트코인 시즌', path: '/crypto/altseason', badge: 'HOT', category: 'crypto' },
+      { icon: FaBitcoin, label: '실시간 차트', path: '/crypto/live', category: 'crypto' },
+      { icon: FaEthereum, label: '온체인 분석', path: '/crypto/onchain', category: 'crypto', isHot: true },
+      { icon: BiCoinStack, label: 'DeFi 모니터', path: '/crypto/defi', category: 'crypto' },
+      { icon: FaGem, label: 'NFT 트래커', path: '/crypto/nft', category: 'crypto' },
+      { icon: FaChartLine, label: '도미넌스', path: '/crypto/dominance', category: 'crypto' },
+      { icon: FaMedal, label: '알트시즌', path: '/crypto/altseason', category: 'crypto' },
+      { icon: FaDatabase, label: '시가총액', path: '/crypto/marketcap', category: 'crypto' },
+      { icon: FaKey, label: '스테이킹', path: '/crypto/staking', category: 'crypto' },
+      { icon: FaMicrochip, label: '채굴 정보', path: '/crypto/mining', category: 'crypto' },
+      { icon: FaLayerGroup, label: '레이어2', path: '/crypto/layer2', category: 'crypto', isNew: true }
     ]
   },
   news: {
-    title: '📰 뉴스 & 미디어',
+    title: '📰 뉴스 & 리서치',
     items: [
-      { icon: FaNewspaper, label: 'AI 크롤링 뉴스', path: '/news/ai-crawl', badge: '100+', category: 'news' },
-      { icon: FaBrain, label: 'AI 재작성', path: '/news/ai-rewrite', category: 'news' },
-      { icon: FaSearch, label: '투자자 관점 분석', path: '/news/investor', category: 'news' },
-      { icon: FaYoutube, label: 'YouTube 통합', path: '/news/youtube', category: 'news' },
-      { icon: FaTwitter, label: 'Twitter 센티멘트', path: '/news/twitter', category: 'news' },
-      { icon: FaGlobe, label: '추천 사이트', path: '/news/sites', category: 'news' },
-      { icon: FaEnvelope, label: '뉴스레터', path: '/news/newsletter', category: 'news' },
-      { icon: FaMicrophone, label: '팟캐스트', path: '/news/podcast', category: 'news' },
-      { icon: FaBook, label: '리서치 리포트', path: '/news/research', category: 'news', minTier: 'Gold' },
-      { icon: FaComment, label: '전문가 의견', path: '/news/experts', category: 'news' },
+      { icon: FaNewspaper, label: '실시간 뉴스', path: '/news/realtime', category: 'news' },
+      { icon: BiAnalyse, label: 'AI 요약', path: '/news/ai-summary', category: 'news', isHot: true },
+      { icon: FaSearch, label: '리서치 보고서', path: '/news/research', category: 'news' },
+      { icon: FaVolumeUp, label: '감성 분석', path: '/news/sentiment', category: 'news' },
+      { icon: FaBook, label: '시장 분석', path: '/news/analysis', category: 'news' },
+      { icon: FaHandshake, label: '파트너십', path: '/news/partnerships', category: 'news' },
+      { icon: FaLock, label: '규제 뉴스', path: '/news/regulation', category: 'news' },
+      { icon: FaExclamationTriangle, label: '해킹 알림', path: '/news/hacks', category: 'news' },
+      { icon: FaDollarSign, label: '펀딩 뉴스', path: '/news/funding', category: 'news' },
+      { icon: FaStar, label: '인플루언서', path: '/news/influencers', category: 'news', isPremium: true }
     ]
   },
   events: {
-    title: '⚡ 실시간 이벤트',
+    title: '📅 이벤트',
     items: [
-      { icon: FaRocket, label: '거래소 상장', path: '/events/listings', badge: 'NEW', category: 'events', isNew: true },
-      { icon: FaHandshake, label: '파트너십 발표', path: '/events/partnerships', category: 'events' },
-      { icon: FaNetworkWired, label: '메인넷 런칭', path: '/events/mainnet', category: 'events' },
-      { icon: FaGift, label: '포크/에어드랍', path: '/events/airdrop', category: 'events' },
-      { icon: FaFire, label: '버닝 이벤트', path: '/events/burning', category: 'events' },
-      { icon: FaCoins, label: '스테이킹 리워드', path: '/events/staking', category: 'events' },
-      { icon: FaPercentage, label: 'DeFi 수익률', path: '/events/yields', category: 'events' },
+      { icon: FaCalendar, label: '이벤트 캘린더', path: '/events/calendar', category: 'events' },
+      { icon: FaGift, label: '에어드랍', path: '/events/airdrops', category: 'events', isHot: true },
+      { icon: FaRocket, label: 'IEO/IDO', path: '/events/ieo', category: 'events' },
+      { icon: BiCalendarEvent, label: '메인넷 런칭', path: '/events/mainnet', category: 'events' },
+      { icon: FaKey, label: '토큰 언락', path: '/events/unlocks', category: 'events' },
+      { icon: FaCrown, label: '스테이킹', path: '/events/staking', category: 'events' },
       { icon: FaVoteYea, label: '거버넌스 투표', path: '/events/governance', category: 'events' },
-      { icon: FaCalendar, label: '토큰 언락', path: '/events/unlocks', badge: '중요', category: 'events' },
-      { icon: FaMicrochip, label: '프로토콜 업그레이드', path: '/events/upgrades', category: 'events' },
+      { icon: FaGem, label: 'NFT 드롭', path: '/events/nft-drops', category: 'events' },
+      { icon: FaBitcoin, label: '반감기', path: '/events/halving', category: 'events' },
+      { icon: FaServer, label: '업그레이드', path: '/events/upgrades', category: 'events' },
+      { icon: FaMicrophone, label: 'AMA 세션', path: '/events/ama', category: 'events', isNew: true },
+      { icon: FaUniversity, label: '컨퍼런스', path: '/events/conferences', category: 'events' },
+      { icon: FaPercentage, label: '이자 농사', path: '/events/yields', category: 'events', isPremium: true }
     ]
   },
   risk: {
-    title: '🔍 리스크 모니터',
+    title: '🛡️ 리스크 관리',
     items: [
-      { icon: FaFire, label: '청산 히트맵', path: '/risk/liquidation', badge: '위험', category: 'risk' },
-      { icon: FaExclamationTriangle, label: '연쇄 청산 리스크', path: '/risk/cascade', category: 'risk' },
-      { icon: FaBolt, label: '플래시 크래시 알림', path: '/risk/flash', category: 'risk' },
-      { icon: FaSkull, label: '러그풀 탐지기', path: '/risk/rugpull', category: 'risk' },
-      { icon: FaShieldAlt, label: '스마트 컨트렉트 리스크', path: '/risk/contract', category: 'risk' },
-      { icon: FaNetworkWired, label: '브릿지 해킹 모니터', path: '/risk/bridge', category: 'risk' },
-      { icon: FaUniversity, label: '거래소 지급능력', path: '/risk/solvency', category: 'risk', minTier: 'Gold' },
-      { icon: MdQueryStats, label: '시스템 리스크 지수', path: '/risk/systemic', category: 'risk', minTier: 'Platinum' },
-      { icon: FaRadiation, label: '블랙스원 알림', path: '/risk/blackswan', badge: '극한', category: 'risk', minTier: 'Diamond' },
-      { icon: BiAlarm, label: '리스크 대시보드', path: '/risk/dashboard', category: 'risk' },
+      { icon: FaCalculator, label: '포지션 계산기', path: '/risk/calculator', category: 'risk' },
+      { icon: FaShieldAlt, label: '손절 설정', path: '/risk/stop-loss', category: 'risk' },
+      { icon: BiBarChart, label: 'VaR 분석', path: '/risk/var', category: 'risk', isPremium: true },
+      { icon: FaChartLine, label: '드로다운', path: '/risk/drawdown', category: 'risk' },
+      { icon: FaBalanceScale, label: '헷징 전략', path: '/risk/hedging', category: 'risk' },
+      { icon: FaDice, label: '켈리 공식', path: '/risk/kelly', category: 'risk' },
+      { icon: BiPieChart, label: '포지션 사이징', path: '/risk/position-sizing', category: 'risk' },
+      { icon: FaExclamationTriangle, label: '스트레스 테스트', path: '/risk/stress-test', category: 'risk' },
+      { icon: BiScatterChart, label: '상관관계', path: '/risk/correlation', category: 'risk' },
+      { icon: FaChess, label: '시나리오 분석', path: '/risk/scenario', category: 'risk', isNew: true }
     ]
   },
   portfolio: {
     title: '💼 포트폴리오',
     items: [
-      { icon: FaBriefcase, label: '자산 대시보드', path: '/portfolio/assets', category: 'portfolio' },
-      { icon: FaCalculator, label: '포지션 크기', path: '/portfolio/sizing', category: 'portfolio' },
-      { icon: FaBalanceScale, label: '리스크/리워드', path: '/portfolio/risk-reward', category: 'portfolio' },
-      { icon: FaChartBar, label: '최대 드로다운', path: '/portfolio/drawdown', category: 'portfolio' },
-      { icon: FaChartArea, label: '포트폴리오 히트맵', path: '/portfolio/heatmap', category: 'portfolio' },
-      { icon: BiStats, label: 'VaR 계산', path: '/portfolio/var', category: 'portfolio', minTier: 'Gold' },
-      { icon: BiNetworkChart, label: '상관관계 매트릭스', path: '/portfolio/correlation', category: 'portfolio' },
+      { icon: FaBriefcase, label: '포트폴리오 개요', path: '/portfolio/overview', category: 'portfolio' },
       { icon: FaChartPie, label: '자산 배분', path: '/portfolio/allocation', category: 'portfolio' },
-      { icon: MdAnalytics, label: '성과 분석', path: '/portfolio/performance', category: 'portfolio' },
-      { icon: FaWallet, label: '지갑 추적', path: '/portfolio/wallets', category: 'portfolio' },
+      { icon: BiLineChart, label: '성과 분석', path: '/portfolio/performance', category: 'portfolio' },
+      { icon: FaDollarSign, label: '손익 현황', path: '/portfolio/pnl', category: 'portfolio' },
+      { icon: FaHistory, label: '거래 내역', path: '/portfolio/history', category: 'portfolio' },
+      { icon: FaBalanceScale, label: '리밸런싱', path: '/portfolio/rebalancing', category: 'portfolio', isPremium: true },
+      { icon: MdAnalytics, label: '샤프 비율', path: '/portfolio/sharpe', category: 'portfolio' },
+      { icon: BiScatterChart, label: '상관관계', path: '/portfolio/correlation', category: 'portfolio' },
+      { icon: FaCalculator, label: '세금 계산', path: '/portfolio/tax', category: 'portfolio' },
+      { icon: FaWallet, label: '지갑 연동', path: '/portfolio/wallets', category: 'portfolio' },
+      { icon: BiData, label: '최적화', path: '/portfolio/optimization', category: 'portfolio', isNew: true },
+      { icon: FaEye, label: '추적 관리', path: '/portfolio/tracking', category: 'portfolio' },
+      { icon: FaServer, label: '백업/복원', path: '/portfolio/export', category: 'portfolio' },
+      { icon: FaCloud, label: '데이터 가져오기', path: '/portfolio/import', category: 'portfolio' },
+      { icon: FaExclamationTriangle, label: 'VaR 분석', path: '/portfolio/var', category: 'portfolio' }
     ]
   },
   members: {
     title: '👥 회원 관리',
     items: [
-      { icon: FaUsers, label: '전체 회원 조회', path: '/members/all', category: 'members', minRole: ['본사'] },
-      { icon: FaUserTie, label: '역할 관리', path: '/members/roles', category: 'members', minRole: ['본사'] },
-      { icon: FaKey, label: '권한 설정', path: '/members/permissions', category: 'members', minRole: ['본사'] },
-      { icon: FaStore, label: '총판 관리', path: '/members/distributors', category: 'members', minRole: ['본사'] },
-      { icon: FaHandshake, label: '대리점 관리', path: '/members/agencies', category: 'members', minRole: ['본사', '총판'] },
-      { icon: FaGem, label: '구독자 관리', path: '/members/subscribers', category: 'members', minRole: ['본사', '총판', '대리점'] },
-      { icon: BiTimer, label: '활동 로그', path: '/members/logs', category: 'members', minRole: ['본사'] },
-      { icon: FaEnvelope, label: '대량 메시지', path: '/members/broadcast', category: 'members', minRole: ['본사', '총판'] },
-      { icon: FaSkull, label: '블랙리스트', path: '/members/blacklist', category: 'members', minRole: ['본사'] },
-      { icon: FaCrown, label: 'VIP 관리', path: '/members/vip', category: 'members', minRole: ['본사'] },
+      { icon: FaUsers, label: '회원 목록', path: '/members/list', category: 'members' },
+      { icon: FaUserTie, label: '역할 관리', path: '/members/roles', category: 'members' },
+      { icon: FaKey, label: '권한 설정', path: '/members/permissions', category: 'members' },
+      { icon: FaCrown, label: 'VIP 관리', path: '/members/vip', category: 'members', isPremium: true },
+      { icon: FaHandshake, label: '추천인 관리', path: '/members/referral', category: 'members' },
+      { icon: BiStats, label: '활동 통계', path: '/members/activity', category: 'members' },
+      { icon: FaEnvelope, label: '고객 지원', path: '/members/support', category: 'members' },
+      { icon: FaLock, label: 'KYC 인증', path: '/members/kyc', category: 'members' },
+      { icon: FaBan, label: '차단 관리', path: '/members/ban', category: 'members' },
+      { icon: FaDatabase, label: '대량 처리', path: '/members/bulk', category: 'members', isNew: true }
     ]
   },
   payment: {
-    title: '💰 결제 & 정산',
+    title: '💳 결제 관리',
     items: [
-      { icon: FaDollarSign, label: '매출 대시보드', path: '/payment/revenue', category: 'payment', minRole: ['본사'] },
-      { icon: FaMoneyBillWave, label: '정산 관리', path: '/payment/settlement', category: 'payment', minRole: ['본사', '총판'] },
-      { icon: FaPercentage, label: '수수료 설정', path: '/payment/commission', category: 'payment', minRole: ['본사'] },
-      { icon: FaHandshake, label: '리퍼럴 정산', path: '/payment/referral', category: 'payment' },
-      { icon: FaBitcoin, label: '암호화폐 결제', path: '/payment/crypto', category: 'payment' },
-      { icon: FaCreditCard, label: '카드 결제', path: '/payment/card', category: 'payment' },
-      { icon: FaWallet, label: '출금 관리', path: '/payment/withdrawal', category: 'payment' },
-      { icon: FaReceipt, label: '세금계산서', path: '/payment/tax', category: 'payment', minRole: ['본사', '총판'] },
-      { icon: FaGift, label: '쿠폰 시스템', path: '/payment/coupon', category: 'payment' },
-      { icon: FaInfinity, label: '정기 구독', path: '/payment/subscription', category: 'payment' },
+      { icon: FaCreditCard, label: '결제 수단', path: '/payment/methods', category: 'payment' },
+      { icon: FaWallet, label: '구독 플랜', path: '/payment/plans', category: 'payment' },
+      { icon: FaHistory, label: '결제 내역', path: '/payment/history', category: 'payment' },
+      { icon: FaReceipt, label: '인보이스', path: '/payment/invoices', category: 'payment' },
+      { icon: FaGift, label: '쿠폰 관리', path: '/payment/coupon', category: 'payment' },
+      { icon: FaHandshake, label: '추천 보상', path: '/payment/referral', category: 'payment' },
+      { icon: FaBitcoin, label: '크립토 결제', path: '/payment/crypto', category: 'payment', isHot: true },
+      { icon: FaMoneyBillWave, label: '출금 관리', path: '/payment/withdrawal', category: 'payment' },
+      { icon: FaCalculator, label: '세금 보고서', path: '/payment/tax', category: 'payment' },
+      { icon: FaCreditCard, label: '카드 관리', path: '/payment/card', category: 'payment', isNew: true }
     ]
   },
   marketing: {
-    title: '📢 마케팅',
+    title: '📣 마케팅',
     items: [
-      { icon: FaBullhorn, label: '캠페인 관리', path: '/marketing/campaigns', category: 'marketing', minRole: ['본사', '총판'] },
-      { icon: FaTicketAlt, label: '쿠폰 발행', path: '/marketing/coupons', category: 'marketing' },
-      { icon: FaUsers, label: '추천인 프로그램', path: '/marketing/referral', category: 'marketing' },
-      { icon: FaCalendar, label: '이벤트 관리', path: '/marketing/events', category: 'marketing' },
-      { icon: FaShare, label: 'SNS 연동', path: '/marketing/social', category: 'marketing' },
+      { icon: FaBullhorn, label: '캠페인 관리', path: '/marketing/campaigns', category: 'marketing' },
+      { icon: FaAd, label: '광고 관리', path: '/marketing/analytics', category: 'marketing' },
       { icon: FaEnvelope, label: '이메일 마케팅', path: '/marketing/email', category: 'marketing' },
-      { icon: FaChartLine, label: 'A/B 테스팅', path: '/marketing/ab-test', category: 'marketing', minTier: 'Gold' },
-      { icon: FaGift, label: '보상 시스템', path: '/marketing/rewards', category: 'marketing' },
-      { icon: FaBroadcastTower, label: '푸시 알림', path: '/marketing/push', category: 'marketing' },
-      { icon: FaAd, label: '광고 관리', path: '/marketing/ads', category: 'marketing', minRole: ['본사'] },
+      { icon: FaShare, label: '소셜 미디어', path: '/marketing/social', category: 'marketing' },
+      { icon: FaHandshake, label: '제휴 프로그램', path: '/marketing/affiliate', category: 'marketing', isPremium: true },
+      { icon: FaGift, label: '리워드 프로그램', path: '/marketing/rewards', category: 'marketing' },
+      { icon: FaRoute, label: '추천 프로그램', path: '/marketing/referral', category: 'marketing' },
+      { icon: FaTicketAlt, label: '이벤트 관리', path: '/marketing/events', category: 'marketing' },
+      { icon: FaPercentage, label: '할인 쿠폰', path: '/marketing/coupons', category: 'marketing' },
+      { icon: BiAnalyse, label: 'A/B 테스트', path: '/marketing/ab-test', category: 'marketing', isNew: true }
     ]
   },
   analytics: {
-    title: '📊 비즈니스 분석',
+    title: '📊 애널리틱스',
     items: [
-      { icon: MdAnalytics, label: '실시간 대시보드', path: '/analytics/dashboard', category: 'analytics', minRole: ['본사'] },
-      { icon: BiStats, label: '가입 통계', path: '/analytics/signup', category: 'analytics', minRole: ['본사', '총판'] },
-      { icon: FaChartBar, label: '이탈률 분석', path: '/analytics/churn', category: 'analytics', minRole: ['본사'] },
-      { icon: FaDollarSign, label: 'LTV 분석', path: '/analytics/ltv', category: 'analytics', minRole: ['본사'] },
-      { icon: BiPieChart, label: 'CAC 분석', path: '/analytics/cac', category: 'analytics', minRole: ['본사'] },
-      { icon: MdTimeline, label: '코호트 분석', path: '/analytics/cohort', category: 'analytics', minRole: ['본사'] },
-      { icon: FaFilter, label: '퍼널 분석', path: '/analytics/funnel', category: 'analytics', minRole: ['본사'] },
-      { icon: BiLineChart, label: '수익 예측', path: '/analytics/forecast', category: 'analytics', minRole: ['본사'] },
-      { icon: FaRoute, label: '고객 여정', path: '/analytics/journey', category: 'analytics', minRole: ['본사'] },
-      { icon: MdLeaderboard, label: '실적 순위', path: '/analytics/ranking', category: 'analytics' },
+      { icon: MdAnalytics, label: '대시보드', path: '/analytics/dashboard', category: 'analytics' },
+      { icon: FaChartBar, label: '사용자 분석', path: '/analytics/users', category: 'analytics' },
+      { icon: BiStats, label: '수익 분석', path: '/analytics/revenue', category: 'analytics' },
+      { icon: FaFilter, label: '퍼널 분석', path: '/analytics/funnel', category: 'analytics' },
+      { icon: BiLineChart, label: '코호트 분석', path: '/analytics/cohort', category: 'analytics', isPremium: true },
+      { icon: FaChartArea, label: '리텐션', path: '/analytics/retention', category: 'analytics' },
+      { icon: MdQueryStats, label: '예측 분석', path: '/analytics/predictive', category: 'analytics' },
+      { icon: FaBook, label: '리포트', path: '/analytics/reports', category: 'analytics' },
+      { icon: FaDatabase, label: '데이터 내보내기', path: '/analytics/export', category: 'analytics' },
+      { icon: BiAnalyse, label: 'A/B 테스트', path: '/analytics/ab-test', category: 'analytics', isNew: true }
     ]
   },
   education: {
-    title: '🎓 교육 센터',
+    title: '🎓 교육',
     items: [
-      { icon: FaGraduationCap, label: '트레이딩 아카데미', path: '/education/academy', category: 'education' },
-      { icon: FaBook, label: '전략 가이드', path: '/education/strategy', category: 'education' },
+      { icon: FaBook, label: '기초 강의', path: '/education/basics', category: 'education' },
+      { icon: MdShowChart, label: '기술적 분석', path: '/education/technical', category: 'education' },
+      { icon: FaGlobe, label: '펀더멘탈', path: '/education/fundamental', category: 'education' },
+      { icon: FaBrain, label: '투자 심리', path: '/education/psychology', category: 'education' },
+      { icon: FaShieldAlt, label: '리스크 관리', path: '/education/risk', category: 'education' },
+      { icon: FaChess, label: '전략 강의', path: '/education/strategies', category: 'education', isPremium: true },
+      { icon: FaEthereum, label: 'DeFi 교육', path: '/education/defi', category: 'education' },
+      { icon: FaBook, label: '용어 사전', path: '/education/glossary', category: 'education' },
       { icon: FaVideo, label: '웨비나', path: '/education/webinar', category: 'education' },
-      { icon: FaUserGraduate, label: '1:1 멘토링', path: '/education/mentoring', category: 'education', minTier: 'Platinum' },
-      { icon: FaCertificate, label: '인증서 발급', path: '/education/certificate', category: 'education' },
-      { icon: FaChalkboardTeacher, label: '초급 코스', path: '/education/beginner', category: 'education' },
-      { icon: FaUserTie, label: '중급 코스', path: '/education/intermediate', category: 'education', minTier: 'Silver' },
-      { icon: FaCrown, label: '고급 코스', path: '/education/advanced', category: 'education', minTier: 'Gold' },
-      { icon: FaRocket, label: '전문가 코스', path: '/education/expert', category: 'education', minTier: 'Diamond' },
-      { icon: FaUsers, label: '커뮤니티', path: '/education/community', category: 'education' },
+      { icon: FaCertificate, label: '자격증 과정', path: '/education/certification', category: 'education', isNew: true }
     ]
   },
   system: {
     title: '⚙️ 시스템 설정',
     items: [
-      { icon: FaUser, label: '프로필', path: '/system/profile', category: 'system' },
-      { icon: FaCog, label: '일반 설정', path: '/system/settings', category: 'system' },
-      { icon: FaShieldAlt, label: '보안 설정', path: '/system/security', category: 'system' },
-      { icon: FaKey, label: 'API 키 관리', path: '/system/api-keys', category: 'system' },
-      { icon: FaExchangeAlt, label: '거래소 연동', path: '/system/exchanges', category: 'system' },
-      { icon: FaDatabase, label: '백업 & 복구', path: '/system/backup', category: 'system', minTier: 'Silver' },
-      { icon: FaServer, label: '서버 상태', path: '/system/status', category: 'system' },
-      { icon: FaCloud, label: '클라우드 동기화', path: '/system/sync', category: 'system', minTier: 'Gold' },
-      { icon: FaGlobe, label: '언어 설정', path: '/system/language', category: 'system' },
+      { icon: FaUser, label: '계정 설정', path: '/system/account', category: 'system' },
+      { icon: FaBell, label: '알림 설정', path: '/system/notifications', category: 'system' },
+      { icon: FaLock, label: '보안 설정', path: '/system/security', category: 'system' },
+      { icon: FaKey, label: 'API 키', path: '/system/api', category: 'system' },
+      { icon: FaNetworkWired, label: '연동 관리', path: '/system/integrations', category: 'system' },
       { icon: FaMoon, label: '테마 설정', path: '/system/theme', category: 'system' },
+      { icon: FaGlobe, label: '언어 설정', path: '/system/language', category: 'system' },
+      { icon: FaDatabase, label: '백업/복원', path: '/system/backup', category: 'system' },
+      { icon: FaShieldAlt, label: '개인정보', path: '/system/privacy', category: 'system' },
+      { icon: FaCog, label: '고급 설정', path: '/system/advanced', category: 'system', isPremium: true }
     ]
   }
 }
 
 export default function SidebarNew() {
-  const [isOpen, setIsOpen] = useState(true)
-  const [isHovered, setIsHovered] = useState(false)
-  const [expandedCategories, setExpandedCategories] = useState<MenuCategory[]>(['signals'])
   const pathname = usePathname()
-  
-  // 임시 사용자 정보 (나중에 실제 인증 시스템과 연동)
-  const [currentUser] = useState({
-    role: '본사' as UserRole,
-    tier: 'Black' as SubscriptionTier,
-    name: '관리자'
-  })
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['trading'])
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
 
-  const toggleSidebar = () => setIsOpen(!isOpen)
-  
-  const toggleCategory = (category: MenuCategory) => {
+  // 검색 결과 필터링
+  const searchResults = useMemo(() => {
+    if (!searchTerm) return []
+    
+    const results: MenuItem[] = []
+    Object.values(menuStructure).forEach(category => {
+      category.items.forEach(item => {
+        if (item.label.toLowerCase().includes(searchTerm.toLowerCase())) {
+          results.push(item)
+        }
+      })
+    })
+    return results
+  }, [searchTerm])
+
+  // 그룹 토글
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(group) 
+        ? prev.filter(g => g !== group)
+        : [...prev, group]
+    )
+  }
+
+  // 카테고리 토글
+  const toggleCategory = (category: string) => {
     setExpandedCategories(prev => 
       prev.includes(category) 
         ? prev.filter(c => c !== category)
         : [...prev, category]
     )
   }
-  
-  // 역할 기반 접근 권한 확인
-  const hasRoleAccess = (minRole?: UserRole[]) => {
-    if (!minRole) return true
-    return minRole.includes(currentUser.role)
-  }
-  
-  // 구독 등급 기반 접근 권한 확인
-  const hasTierAccess = (minTier?: SubscriptionTier) => {
-    if (!minTier) return true
-    const tiers: SubscriptionTier[] = ['Free', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Black']
-    const currentTierIndex = tiers.indexOf(currentUser.tier)
-    const requiredTierIndex = tiers.indexOf(minTier)
-    return currentTierIndex >= requiredTierIndex
-  }
-  
-  // 메뉴 아이템 필터링
-  const filterMenuItems = (items: MenuItem[]) => {
-    return items.filter(item => 
-      hasRoleAccess(item.minRole) && hasTierAccess(item.minTier)
-    )
-  }
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* 모바일 메뉴 버튼 */}
       <button
-        onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 rounded-lg text-white"
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-900 text-white"
       >
-        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+        {isOpen ? <FaTimes /> : <FaBars />}
       </button>
 
-      {/* Sidebar */}
-      <motion.aside
+      {/* 사이드바 */}
+      <motion.div
         initial={{ x: -300 }}
-        animate={{ x: 0 }}
-        className={`
-          fixed left-0 top-0 h-screen z-40
-          bg-gradient-to-b from-gray-900 via-gray-900 to-black
-          border-r border-gray-800
-          transition-all duration-300 ease-in-out
-          flex flex-col overflow-hidden
-          ${isOpen ? 'w-64' : 'w-20'}
-        `}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        animate={{ x: isOpen ? 0 : -300 }}
+        className={`fixed left-0 top-0 h-screen bg-gray-900 text-white z-40 overflow-hidden flex flex-col
+                   ${isOpen ? 'w-72' : 'w-0 lg:w-72'} lg:translate-x-0 transition-all duration-300`}
       >
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-800">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">M</span>
+        <div className="flex flex-col h-full">
+          {/* 헤더 */}
+          <div className="p-4 border-b border-gray-800">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                MONSTA AI
+              </h1>
+              <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
             </div>
-            <AnimatePresence>
-              {(isOpen || isHovered) && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="flex flex-col"
-                >
-                  <span className="text-white font-bold text-xl">MONSTA</span>
-                  <span className="text-gray-400 text-xs">World #1 Trading</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Link>
-        </div>
 
-        {/* Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          className="hidden lg:block absolute -right-3 top-9 w-6 h-6 bg-gray-800 rounded-full border border-gray-700 text-white text-xs hover:bg-gray-700 transition-colors"
-        >
-          {isOpen ? '◀' : '▶'}
-        </button>
-
-        {/* Main Menu */}
-        <nav 
-          className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar" 
-          style={{ 
-            maxHeight: 'calc(100vh - 140px)',
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#4B5563 transparent'
-          }}
-        >
-          <div className="space-y-3">
-            {Object.entries(menuStructure).map(([category, section]) => {
-              const theme = categoryThemes[category as MenuCategory]
-              const isExpanded = expandedCategories.includes(category as MenuCategory)
-              const filteredItems = filterMenuItems(section.items)
-              
-              if (filteredItems.length === 0) return null
-              
-              return (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-1"
-                >
-                  {/* Category Header */}
-                  <button
-                    onClick={() => toggleCategory(category as MenuCategory)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all
-                      ${theme.bgColor} ${theme.borderColor} border
-                      hover:brightness-110 group
-                    `}
-                  >
-                    <AnimatePresence>
-                      {(isOpen || isHovered) && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-sm font-bold text-white"
-                        >
-                          {section.title}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    <motion.span
-                      animate={{ rotate: isExpanded ? 180 : 0 }}
-                      className="text-gray-400 group-hover:text-white"
-                    >
-                      ▼
-                    </motion.span>
-                  </button>
-                  
-                  {/* Category Items */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.ul
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="space-y-1 pl-2"
-                      >
-                        {filteredItems.map((item, index) => {
-                          const Icon = item.icon
-                          const isActive = pathname === item.path
-                          const isLocked = !hasTierAccess(item.minTier)
-                          
-                          return (
-                            <motion.li
-                              key={item.path}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.02 }}
-                            >
-                              <Link
-                                href={isLocked ? '#' : item.path}
-                                className={`
-                                  flex items-center gap-3 px-3 py-2 rounded-lg
-                                  transition-all duration-200 relative group
-                                  ${isActive 
-                                    ? `bg-gradient-to-r ${theme.color} text-white shadow-lg` 
-                                    : isLocked
-                                    ? 'text-gray-600 hover:text-gray-500 bg-gray-900/50 cursor-not-allowed'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                                  }
-                                `}
-                                onClick={isLocked ? (e) => e.preventDefault() : undefined}
-                              >
-                                <div className="relative">
-                                  <Icon size={18} className="flex-shrink-0" />
-                                  {isLocked && (
-                                    <FaLock size={10} className="absolute -bottom-1 -right-1 text-yellow-500" />
-                                  )}
-                                </div>
-                                <AnimatePresence>
-                                  {(isOpen || isHovered) && (
-                                    <motion.div
-                                      initial={{ opacity: 0 }}
-                                      animate={{ opacity: 1 }}
-                                      exit={{ opacity: 0 }}
-                                      className="flex-1 flex items-center justify-between"
-                                    >
-                                      <span className={`font-medium text-sm ${
-                                        isLocked ? 'opacity-50' : ''
-                                      }`}>
-                                        {item.label}
-                                      </span>
-                                      <div className="flex items-center gap-1">
-                                        {item.minTier && !hasTierAccess(item.minTier) && (
-                                          <span className="px-1.5 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded-full font-bold">
-                                            {item.minTier}
-                                          </span>
-                                        )}
-                                        {item.isAlpha && (
-                                          <span className="px-1.5 py-0.5 text-xs bg-black text-yellow-400 border border-yellow-400 rounded-full font-bold">
-                                            ALPHA
-                                          </span>
-                                        )}
-                                        {item.badge && (
-                                          <span className={`
-                                            px-1.5 py-0.5 text-xs rounded-full font-bold
-                                            ${item.badge === 'LIVE' ? 'bg-red-500 text-white animate-pulse' :
-                                              item.badge === 'HOT' || item.isHot ? 'bg-orange-500 text-white' :
-                                              item.badge === 'NEW' || item.isNew ? 'bg-green-500 text-white' :
-                                              item.badge === 'PRO' ? 'bg-purple-500 text-white' :
-                                              item.badge === 'VIP' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white' :
-                                              item.badge === 'AI' ? 'bg-blue-500 text-white' :
-                                              item.badge === 'GAME' ? 'bg-pink-500 text-white' :
-                                              item.badge === 'MEV' ? 'bg-red-600 text-white' :
-                                              item.badge === '극속' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' :
-                                              item.badge === '최첨단' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
-                                              item.badge === '종합' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' :
-                                              item.badge === '위험' ? 'bg-red-600 text-white' :
-                                              item.badge === '극한' ? 'bg-black text-red-500 border border-red-500' :
-                                              item.badge === '중요' ? 'bg-yellow-500 text-black' :
-                                              item.badge === '인기' ? 'bg-pink-500 text-white' :
-                                              item.badge === '100+' ? 'bg-blue-600 text-white' :
-                                              'bg-gray-700 text-gray-300'}
-                                          `}>
-                                            {item.badge}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </Link>
-                            </motion.li>
-                          )
-                        })}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )
-            })}
-          </div>
-        </nav>
-
-        {/* User Info & Subscription */}
-        <div className="p-4 border-t border-gray-800">
-          <AnimatePresence>
-            {(isOpen || isHovered) && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-3"
-              >
-                {/* User Status */}
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${
-                      currentUser.tier === 'Black' ? 'from-black to-gray-800 border-2 border-yellow-400' :
-                      currentUser.tier === 'Diamond' ? 'from-cyan-400 to-blue-500' :
-                      currentUser.tier === 'Platinum' ? 'from-gray-300 to-gray-500' :
-                      currentUser.tier === 'Gold' ? 'from-yellow-400 to-yellow-600' :
-                      currentUser.tier === 'Silver' ? 'from-gray-400 to-gray-600' :
-                      'from-green-400 to-blue-500'
-                    }`}>
-                      <FaCrown className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-white text-sm font-medium">{currentUser.name}</p>
-                      <span className="px-1.5 py-0.5 text-xs bg-red-500/20 text-red-400 rounded font-bold">
-                        {currentUser.role}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className={`text-xs font-bold ${
-                        currentUser.tier === 'Black' ? 'text-yellow-400' :
-                        currentUser.tier === 'Diamond' ? 'text-cyan-400' :
-                        currentUser.tier === 'Platinum' ? 'text-gray-300' :
-                        currentUser.tier === 'Gold' ? 'text-yellow-500' :
-                        currentUser.tier === 'Silver' ? 'text-gray-400' :
-                        'text-green-400'
-                      }`}>
-                        {currentUser.tier} {currentUser.tier === 'Black' ? '∞' : 'Plan'}
-                      </p>
-                      {currentUser.tier === 'Black' && (
-                        <span className="text-xs text-yellow-400">무제한</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Role & Tier Info */}
-                <div className="text-xs space-y-1 p-2 bg-gray-800/50 rounded-lg">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">접근 권한:</span>
-                    <span className="text-gray-400">{currentUser.role} 레벨</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">구독 등급:</span>
-                    <span className="text-gray-400">{currentUser.tier}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">활성 메뉴:</span>
-                    <span className="text-gray-400">300+ 기능</span>
-                  </div>
-                </div>
-                
-                {/* Upgrade Button (Black 등급이 아닌 경우만) */}
-                {currentUser.tier !== 'Black' && (
-                  <button className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-bold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg">
-                    ⚡ 업그레이드
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {!isOpen && !isHovered && (
+            {/* 검색바 */}
             <div className="relative">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br mx-auto ${
-                currentUser.tier === 'Black' ? 'from-black to-gray-800 border-2 border-yellow-400' :
-                currentUser.tier === 'Diamond' ? 'from-cyan-400 to-blue-500' :
-                currentUser.tier === 'Platinum' ? 'from-gray-300 to-gray-500' :
-                currentUser.tier === 'Gold' ? 'from-yellow-400 to-yellow-600' :
-                currentUser.tier === 'Silver' ? 'from-gray-400 to-gray-600' :
-                'from-green-400 to-blue-500'
-              }`}>
-                <FaCrown className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs" />
-              </div>
+              <input
+                type="text"
+                placeholder="메뉴 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                className="w-full px-3 py-2 bg-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <FaSearch className="absolute right-3 top-2.5 text-gray-400 text-sm" />
             </div>
-          )}
-        </div>
-      </motion.aside>
 
-      {/* Mobile Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            onClick={toggleSidebar}
-            className="lg:hidden fixed inset-0 bg-black z-30"
-          />
-        )}
-      </AnimatePresence>
+            {/* 검색 결과 */}
+            {isSearchFocused && searchResults.length > 0 && (
+              <div className="absolute top-24 left-4 right-4 bg-gray-800 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                {searchResults.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.path}
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition-colors"
+                    onClick={() => {
+                      setSearchTerm('')
+                      setIsOpen(false)
+                    }}
+                  >
+                    <item.icon className="text-sm" />
+                    <span className="text-sm">{item.label}</span>
+                    {item.badge && (
+                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                        item.isHot ? 'bg-red-500' : 
+                        item.isNew ? 'bg-green-500' : 
+                        item.isPremium ? 'bg-yellow-500' : 'bg-blue-500'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 메뉴 그룹 */}
+          <div className="flex-1 overflow-y-auto px-2 py-4 custom-scrollbar">
+            {Object.entries(categoryGroups).map(([groupKey, group]) => (
+              <div key={groupKey} className="mb-4">
+                {/* 그룹 헤더 */}
+                <button
+                  onClick={() => toggleGroup(groupKey)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg mb-2
+                            bg-gradient-to-r ${group.color} border ${group.borderColor}
+                            hover:opacity-90 transition-all`}
+                >
+                  <span className="text-sm font-bold">{group.title}</span>
+                  {expandedGroups.includes(groupKey) ? 
+                    <FaChevronDown className="text-xs" /> : 
+                    <FaChevronRight className="text-xs" />
+                  }
+                </button>
+
+                {/* 그룹 내 카테고리 */}
+                <AnimatePresence>
+                  {expandedGroups.includes(groupKey) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {group.categories.map(categoryKey => {
+                        const category = menuStructure[categoryKey as MenuCategory]
+                        const theme = categoryThemes[categoryKey as MenuCategory]
+                        const isExpanded = expandedCategories.includes(categoryKey)
+                        
+                        return (
+                          <div key={categoryKey} className="mb-2 ml-2">
+                            {/* 카테고리 헤더 */}
+                            <button
+                              onClick={() => toggleCategory(categoryKey)}
+                              className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg
+                                        ${theme.bgColor} ${theme.borderColor} border
+                                        hover:bg-gray-800/50 transition-all text-left`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <theme.icon className="text-xs" />
+                                <span className="text-xs font-medium">{category.title}</span>
+                                <span className="text-[10px] text-gray-400">
+                                  ({category.items.length})
+                                </span>
+                              </div>
+                              {isExpanded ? 
+                                <FaChevronDown className="text-[10px]" /> : 
+                                <FaChevronRight className="text-[10px]" />
+                              }
+                            </button>
+
+                            {/* 카테고리 아이템 */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="mt-1 ml-4"
+                                >
+                                  {category.items.map((item, idx) => (
+                                    <Link
+                                      key={idx}
+                                      href={item.path}
+                                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
+                                                hover:bg-gray-800 transition-all
+                                                ${pathname === item.path ? 'bg-gray-800 border-l-2 border-purple-500' : ''}`}
+                                      onClick={() => setIsOpen(false)}
+                                    >
+                                      <item.icon className="text-[10px]" />
+                                      <span className="flex-1">{item.label}</span>
+                                      {item.isHot && (
+                                        <span className="text-[10px] px-1.5 py-0.5 bg-red-500 rounded-full">
+                                          HOT
+                                        </span>
+                                      )}
+                                      {item.isNew && (
+                                        <span className="text-[10px] px-1.5 py-0.5 bg-green-500 rounded-full">
+                                          NEW
+                                        </span>
+                                      )}
+                                      {item.isPremium && (
+                                        <FaCrown className="text-yellow-500 text-[10px]" />
+                                      )}
+                                    </Link>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+
+          {/* 하단 정보 */}
+          <div className="p-4 border-t border-gray-800 text-xs text-gray-400">
+            <div className="flex items-center justify-between mb-2">
+              <span>총 {Object.values(menuStructure).reduce((acc, cat) => acc + cat.items.length, 0)}개 메뉴</span>
+              <span>20개 카테고리</span>
+            </div>
+            <div className="text-center text-[10px]">
+              © 2024 MONSTA AI Trading
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 오버레이 */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.5);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 246, 0.7);
+        }
+      `}</style>
     </>
   )
 }
