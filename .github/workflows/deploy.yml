@@ -69,6 +69,13 @@ jobs:
             echo "🎨 Building Next.js Frontend..."
             cd ../frontend
             
+            # 환경 변수 설정
+            echo "Setting environment variables..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            EOF
+            
             # Node.js 버전 확인
             node -v || {
                 echo "Node.js not found, installing..."

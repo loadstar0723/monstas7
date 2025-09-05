@@ -90,3 +90,5 @@
 - Frontend/Backend 독립 실행
 - PM2로 프로세스 관리
 - 병렬 처리로 성능 향상
+
+GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으로 되게한다.
