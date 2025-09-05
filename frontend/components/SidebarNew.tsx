@@ -786,7 +786,8 @@ export default function SidebarNew() {
           <div className="relative p-4 border-b border-gray-800/50 bg-gray-900/30">
             {/* MONSTA 로고 + 검색바 + 닫기 버튼 한 줄 배치 */}
             {!isCollapsed ? (
-              <div className="flex items-center gap-3 mb-4">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
                 {/* MONSTA 로고 */}
                 <Link 
                   href="/"
@@ -823,10 +824,33 @@ export default function SidebarNew() {
                 >
                   <FaTimes className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
                 </motion.button>
+                </div>
+                
+                {/* 현재 사용자 등급 표시 */}
+                <div className={`mb-3 p-2.5 rounded-lg bg-gradient-to-r ${tierConfig[userTier].bgColor} border ${tierConfig[userTier].borderColor || 'border-gray-700/50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">내 등급:</span>
+                      <span className={`text-sm font-bold ${tierConfig[userTier].color}`}>
+                        {tierConfig[userTier].icon} {userTier}
+                      </span>
+                    </div>
+                    <Link 
+                      href="/subscription/benefits"
+                      onClick={() => setIsOpen(false)}
+                      className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      업그레이드 →
+                    </Link>
+                  </div>
+                  <div className="mt-1 text-[10px] text-gray-500">
+                    {tierConfig[userTier].description}
+                  </div>
+                </div>
               </div>
             ) : (
-              /* 접힌 상태 - M 로고만 표시 */
-              <div className="flex items-center justify-center mb-4">
+              /* 접힌 상태 - M 로고와 등급 아이콘 표시 */
+              <div className="flex flex-col items-center gap-2 mb-4">
                 <Link 
                   href="/"
                   className="hover:opacity-80 transition-opacity cursor-pointer"
@@ -837,6 +861,10 @@ export default function SidebarNew() {
                     M
                   </span>
                 </Link>
+                {/* 접힌 상태에서도 등급 아이콘 표시 */}
+                <span className={`text-lg ${tierConfig[userTier].color}`} title={`${userTier} 등급`}>
+                  {tierConfig[userTier].icon}
+                </span>
               </div>
             )}
 
@@ -1064,6 +1092,11 @@ export default function SidebarNew() {
                         const theme = categoryThemes[categoryKey as MenuCategory]
                         const isExpanded = expandedCategories.includes(categoryKey)
                         
+                        // 카테고리 등급 확인
+                        const categoryMinTier = categoryMinTiers[categoryKey]
+                        const categoryTierInfo = categoryMinTier ? tierConfig[categoryMinTier] : null
+                        const canAccessCategory = categoryMinTier ? tierLevels[userTier] >= tierLevels[categoryMinTier] : true
+                        
                         // 그룹별 카테고리 스타일
                         const categoryStyle = {
                           trading: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20',
@@ -1079,14 +1112,25 @@ export default function SidebarNew() {
                               onClick={() => toggleCategory(categoryKey)}
                               className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg
                                         border transition-all text-left
-                                        ${categoryStyle[groupKey as keyof typeof categoryStyle]}`}
+                                        ${categoryStyle[groupKey as keyof typeof categoryStyle]}
+                                        ${!canAccessCategory ? 'opacity-60' : ''}`}
+                              title={!canAccessCategory ? `${categoryMinTier} 등급 이상 필요 (현재: ${userTier})` : undefined}
                             >
-                              <div className="flex items-center gap-2">
-                                <theme.icon className={`text-xs ${theme.iconColor || 'text-gray-400'}`} />
-                                <span className="text-xs font-medium text-gray-300">{category.title}</span>
-                                <span className={`text-[10px] ${group.accentColor} opacity-50`}>
+                              <div className="flex items-center gap-2 flex-1">
+                                <theme.icon className={`text-xs ${!canAccessCategory ? 'text-gray-500' : theme.iconColor || 'text-gray-400'}`} />
+                                <span className={`text-xs font-medium ${!canAccessCategory ? 'text-gray-500' : 'text-gray-300'}`}>{category.title}</span>
+                                <span className={`text-[10px] ${!canAccessCategory ? 'text-gray-600' : group.accentColor} opacity-50`}>
                                   {category.items.length}
                                 </span>
+                                {/* 카테고리 등급 배지 */}
+                                {categoryMinTier && categoryMinTier !== 'Starter' && (
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold ml-auto
+                                                ${!canAccessCategory 
+                                                  ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50' 
+                                                  : `${categoryTierInfo?.bgColor} ${categoryTierInfo?.color}`}`}>
+                                    {categoryTierInfo?.icon} {categoryMinTier.toUpperCase()}
+                                  </span>
+                                )}
                               </div>
                               {isExpanded ? 
                                 <FaChevronDown className={`text-[10px] ${group.accentColor} opacity-60`} /> : 
@@ -1110,14 +1154,29 @@ export default function SidebarNew() {
                                     const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category]
                                     const requiredTierInfo = requiredTier ? tierConfig[requiredTier] : null
                                     
+                                    // 등급별 배경색 설정
+                                    const getTierBackground = () => {
+                                      if (!requiredTier || requiredTier === 'Starter') return ''
+                                      if (!canAccess) return 'bg-gradient-to-r from-gray-800/50 to-gray-900/50'
+                                      
+                                      switch(requiredTier) {
+                                        case 'Advance': return 'bg-gradient-to-r from-blue-900/20 to-transparent'
+                                        case 'Platinum': return 'bg-gradient-to-r from-purple-900/20 to-transparent'
+                                        case 'Signature': return 'bg-gradient-to-r from-amber-900/20 to-transparent'
+                                        case 'Master': return 'bg-gradient-to-r from-red-900/20 to-transparent'
+                                        case 'Infinity': return 'bg-gradient-to-r from-purple-900/20 via-pink-900/10 to-transparent'
+                                        default: return ''
+                                      }
+                                    }
+                                    
                                     return (
-                                      <div key={idx} className="flex items-center gap-1 group">
+                                      <div key={idx} className="flex items-center gap-1 group relative">
                                         <Link
                                           href={canAccess ? item.path : '#'}
                                           className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
-                                                    hover:bg-gray-800/50 transition-all relative
-                                                    ${!canAccess ? 'opacity-50 cursor-not-allowed' : ''}
-                                                    ${pathname === item.path ? 'bg-gray-800/30 text-purple-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                                    transition-all relative ${getTierBackground()}
+                                                    ${!canAccess ? 'opacity-60 cursor-not-allowed border border-gray-700/50' : 'hover:bg-gray-800/50'}
+                                                    ${pathname === item.path ? 'bg-gray-800/30 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-gray-200'}`}
                                           onClick={(e) => {
                                             if (!canAccess) {
                                               e.preventDefault()
@@ -1127,17 +1186,28 @@ export default function SidebarNew() {
                                               setIsOpen(false)
                                             }
                                           }}
-                                          title={!canAccess ? `${item.minTier} 등급 필요` : undefined}
+                                          title={!canAccess 
+                                            ? `${requiredTier} 등급 이상 필요 (현재: ${userTier})`
+                                            : requiredTier && requiredTier !== 'Starter' 
+                                              ? `${requiredTier} 등급부터 사용 가능`
+                                              : undefined}
                                         >
                                           <item.icon className={`text-[10px] ${theme.iconColor || 'text-gray-500'}`} />
                                           <span className="flex-1">{item.label}</span>
-                                          {!canAccess && (
-                                            <FaLock className="text-gray-500 text-[10px]" />
-                                          )}
-                                          {item.minTier && canAccess && (
-                                            <span className={`text-[9px] px-1 py-0.5 rounded ${requiredTierInfo?.bgColor} ${requiredTierInfo?.color}`}>
-                                              {requiredTierInfo?.icon}
-                                            </span>
+                                          
+                                          {/* 등급 표시 - 더 크고 명확하게 */}
+                                          {requiredTier && requiredTier !== 'Starter' && (
+                                            <div className="flex items-center gap-1">
+                                              {!canAccess && (
+                                                <FaLock className="text-gray-500 text-[10px]" />
+                                              )}
+                                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold
+                                                            ${!canAccess 
+                                                              ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50' 
+                                                              : `${requiredTierInfo?.bgColor} ${requiredTierInfo?.color}`}`}>
+                                                {requiredTierInfo?.icon} {requiredTier.slice(0, 3).toUpperCase()}
+                                              </span>
+                                            </div>
                                           )}
                                           {item.isHot && (
                                             <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
