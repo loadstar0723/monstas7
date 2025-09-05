@@ -77,7 +77,11 @@
       "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
       "Read(/C:\\monsta\\monstas7\\frontend/**)",
       "Read(/C:\\monsta\\monstas7\\frontend/**)",
-      "Read(/C:\\monsta\\monstas7\\frontend\\components/**)"
+      "Read(/C:\\monsta\\monstas7\\frontend\\components/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\components/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
+      "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)",
+      "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)"
     ],
     "deny": [],
     "ask": []
