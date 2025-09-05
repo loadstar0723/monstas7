@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSidebar } from '@/contexts/SidebarContext'
 import { 
   FaHome, FaChartLine, FaRobot, FaBriefcase, FaHistory,
   FaTelegram, FaUsers, FaGraduationCap, FaNewspaper,
@@ -464,7 +465,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
 
 export default function SidebarNew() {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, setIsOpen } = useSidebar()
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['trading'])
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
@@ -620,65 +621,86 @@ export default function SidebarNew() {
 
   return (
     <>
-      {/* 모바일 메뉴 버튼 */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white shadow-lg transition-all"
+      {/* 햄버거 메뉴 버튼 - 항상 표시 (데스크톱 & 모바일) */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsOpen(true)}
+        className="fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 
+                   border border-gray-700 hover:border-purple-500/50 shadow-xl hover:shadow-purple-500/20 
+                   transition-all group"
       >
-        {isOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
-      </button>
+        <div className="relative">
+          <FaBars className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+          {/* 알림 점 */}
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+        </div>
+      </motion.button>
 
-      {/* 사이드바 */}
-      <div
-        className={`fixed left-0 top-0 h-full bg-gray-900 text-white z-40 overflow-hidden flex flex-col
-                   ${isCollapsed ? 'w-16' : 'w-72'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-all duration-300 ease-in-out`}
-      >
+      {/* 오버레이 제거 - 투명 클릭 영역만 유지 */}
+      <AnimatePresence>
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 사이드바 - 슬라이드 애니메이션 */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ x: -320 }}
+            animate={{ x: 0 }}
+            exit={{ x: -320 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={`fixed left-0 top-0 h-full bg-gradient-to-b from-gray-950 via-gray-900 to-black 
+                       border-r border-gray-800 shadow-2xl z-50 overflow-hidden flex flex-col
+                       ${isCollapsed ? 'w-20' : 'w-80'}`}
+          >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
-          <div className="p-4 border-b border-gray-800">
-            <div className="flex items-center justify-between mb-4">
+          <div className="relative p-4 border-b border-gray-800/50 bg-gray-900/30">
+            {/* X 닫기 버튼 */}
+            <motion.button
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              whileHover={{ rotate: 90, scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 p-2 bg-gray-800/50 hover:bg-red-500/20 
+                       rounded-lg border border-gray-700 hover:border-red-500/50 
+                       transition-all group z-10"
+            >
+              <FaTimes className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
+            </motion.button>
+
+            {/* 로고 가운데 정렬 */}
+            <div className="flex items-center justify-center mb-4 pt-2">
               {!isCollapsed ? (
-                <>
-                  <Link 
-                    href="/"
-                    className="hover:opacity-80 transition-opacity cursor-pointer"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      MONSTA AI
-                    </h1>
-                  </Link>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
-                    <button 
-                      onClick={toggleCollapsed}
-                      className="hidden lg:block p-1.5 hover:bg-gray-800 rounded transition-colors"
-                      title="접기"
-                    >
-                      <FaChevronDown className="text-gray-400 text-sm transform -rotate-90" />
-                    </button>
-                  </div>
-                </>
+                <Link 
+                  href="/"
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    MONSTA
+                  </h1>
+                </Link>
               ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <Link 
-                    href="/"
-                    className="hover:opacity-80 transition-opacity cursor-pointer"
-                    onClick={() => setIsOpen(false)}
-                    title="홈으로"
-                  >
-                    <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      M
-                    </span>
-                  </Link>
-                  <button 
-                    onClick={toggleCollapsed}
-                    className="p-1.5 hover:bg-gray-800 rounded transition-colors"
-                    title="펼치기"
-                  >
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </button>
-                </div>
+                <Link 
+                  href="/"
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  onClick={() => setIsOpen(false)}
+                  title="홈으로"
+                >
+                  <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    M
+                  </span>
+                </Link>
               )}
             </div>
 
@@ -1022,20 +1044,14 @@ export default function SidebarNew() {
                 <span className="text-[11px]">20개 카테고리</span>
               </div>
               <div className="text-center text-[10px] text-gray-500">
-                © 2024 MONSTA AI
+                © 2024 MONSTA
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 오버레이 */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-60 z-30 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {

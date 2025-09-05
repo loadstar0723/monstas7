@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SidebarNew from "@/components/SidebarNew";
 import AuthProvider from "@/components/AuthProvider";
+import { SidebarProvider } from "@/contexts/SidebarContext";
+import MainContent from "@/components/MainContent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,15 +27,12 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${inter.className} bg-black text-white antialiased`}>
         <AuthProvider>
-          <div className="flex h-screen overflow-hidden">
-            <SidebarNew />
-            <main className="flex-1 lg:ml-72 overflow-y-auto">
-              <div className="lg:hidden h-14 bg-gray-900 fixed top-0 left-0 right-0 z-40"></div>
-              <div className="lg:pt-0 pt-14 px-4 sm:px-6 lg:px-8 pb-8">
-                {children}
-              </div>
-            </main>
-          </div>
+          <SidebarProvider>
+            <div className="min-h-screen">
+              <SidebarNew />
+              <MainContent>{children}</MainContent>
+            </div>
+          </SidebarProvider>
         </AuthProvider>
       </body>
     </html>

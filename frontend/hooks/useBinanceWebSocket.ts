@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import WebSocketManager, { CryptoPrice } from '@/lib/websocketManager';
+import WebSocketManager from '@/lib/websocketManager';
 
-export { CryptoPrice };
+// CryptoPrice type import
+import type { CryptoPrice } from '@/lib/websocketManager';
+export type { CryptoPrice };
 
 export function useBinanceWebSocket() {
   const [prices, setPrices] = useState<CryptoPrice[]>([]);

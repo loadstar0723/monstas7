@@ -27,6 +27,11 @@ CREATE TABLE users (
     language VARCHAR(5) DEFAULT 'ko',
     timezone VARCHAR(50) DEFAULT 'Asia/Seoul',
     
+    -- Role & Hierarchy (영업 구조)
+    user_role VARCHAR(20) DEFAULT '구독자',
+    parent_user_id UUID REFERENCES users(id),
+    commission_rate DECIMAL(5, 2) DEFAULT 0, -- 수수료율 (%)
+    
     -- Subscription
     subscription_tier VARCHAR(20) DEFAULT 'FREE',
     subscription_start_date TIMESTAMP,
@@ -49,7 +54,9 @@ CREATE TABLE users (
     deleted_at TIMESTAMP,
     
     CONSTRAINT check_subscription_tier 
-        CHECK (subscription_tier IN ('FREE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'BLACK'))
+        CHECK (subscription_tier IN ('FREE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'BLACK')),
+    CONSTRAINT check_user_role 
+        CHECK (user_role IN ('본사', '총판', '대리점', '구독자', '게스트'))
 );
 
 -- Indexes
@@ -341,7 +348,77 @@ CREATE TABLE api_keys (
 );
 ```
 
-### 10. Audit Log (감사 로그)
+### 10. Business Hierarchy (영업 계층 구조)
+```sql
+CREATE TABLE business_hierarchy (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    
+    -- Hierarchy Info
+    level INTEGER NOT NULL, -- 1:본사, 2:총판, 3:대리점, 4:구독자
+    parent_id UUID REFERENCES business_hierarchy(id),
+    path TEXT, -- 계층 경로 (예: "본사ID/총판ID/대리점ID")
+    
+    -- Commission Settings
+    commission_rate DECIMAL(5, 2) NOT NULL DEFAULT 0,
+    commission_type VARCHAR(20) DEFAULT 'PERCENTAGE', -- PERCENTAGE, FIXED
+    min_commission DECIMAL(10, 2) DEFAULT 0,
+    max_commission DECIMAL(10, 2),
+    
+    -- 리퍼럴 시스템 (구독자용)
+    referral_code VARCHAR(20) UNIQUE,
+    referral_commission_rate DECIMAL(5, 2) DEFAULT 5.0, -- 구독자 리퍼럴 수수료 (기본 5%)
+    referral_tier_bonus JSONB, -- 티어별 보너스 설정
+    total_referrals INTEGER DEFAULT 0,
+    active_referrals INTEGER DEFAULT 0,
+    
+    -- Performance
+    total_sales DECIMAL(20, 2) DEFAULT 0,
+    total_commission_earned DECIMAL(20, 2) DEFAULT 0,
+    total_commission_paid DECIMAL(20, 2) DEFAULT 0,
+    total_referral_commission DECIMAL(20, 2) DEFAULT 0, -- 리퍼럴로 얻은 수수료
+    active_downlines INTEGER DEFAULT 0,
+    
+    -- Status
+    is_active BOOLEAN DEFAULT TRUE,
+    approved_at TIMESTAMP,
+    approved_by UUID REFERENCES users(id),
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(user_id)
+);
+
+-- 수수료 정산 테이블
+CREATE TABLE commission_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    
+    -- Transaction Info
+    from_user_id UUID NOT NULL REFERENCES users(id),
+    to_user_id UUID NOT NULL REFERENCES users(id),
+    transaction_id UUID REFERENCES transactions(id),
+    subscription_id UUID REFERENCES subscriptions(id),
+    
+    -- Commission Details
+    base_amount DECIMAL(20, 2) NOT NULL,
+    commission_rate DECIMAL(5, 2) NOT NULL,
+    commission_amount DECIMAL(20, 2) NOT NULL,
+    
+    -- Status
+    status VARCHAR(20) DEFAULT 'PENDING',
+    processed_at TIMESTAMP,
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_commission_status 
+        CHECK (status IN ('PENDING', 'APPROVED', 'PAID', 'CANCELLED'))
+);
+```
+
+### 11. Audit Log (감사 로그)
 ```sql
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

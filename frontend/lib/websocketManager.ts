@@ -7,6 +7,9 @@ export interface CryptoPrice {
   lastUpdate: number;
 }
 
+// Named export 추가
+export { CryptoPrice as CryptoPriceType }
+
 interface BinanceStreamData {
   s: string;  // Symbol
   c: string;  // Current price
