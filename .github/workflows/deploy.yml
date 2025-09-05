@@ -46,19 +46,50 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt --quiet
             
-            # 기존 프로세스 종료
-            pkill -f 'streamlit.*8508' || true
-            sleep 2
+            # 포트 사용 중인 프로세스 확인 및 종료
+            echo "Checking port 8508..."
+            sudo lsof -ti:8508 | xargs -r sudo kill -9 || true
+            
+            # 기존 streamlit 프로세스 모두 종료
+            pkill -f 'streamlit' || true
+            sleep 3
+            
+            # 포트 8508이 비어있는지 확인
+            if lsof -Pi :8508 -sTCP:LISTEN -t >/dev/null ; then
+                echo "Port 8508 is still in use, forcing cleanup..."
+                sudo fuser -k 8508/tcp || true
+                sleep 2
+            fi
             
             # 앱 재시작
             nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
+            echo "Started Streamlit on port 8508"
             
-            # 헬스 체크 (10초 대기 후)
-            sleep 10
+            # 헬스 체크 (15초 대기 후)
+            sleep 15
+            
+            # 프로세스 실행 확인
+            if pgrep -f "streamlit.*8508" > /dev/null; then
+              echo "Streamlit process is running"
+            else
+              echo "Streamlit process not found, trying to start again..."
+              nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
+              sleep 10
+            fi
+            
+            # 포트 리스닝 확인
+            if lsof -Pi :8508 -sTCP:LISTEN -t >/dev/null ; then
+              echo "Port 8508 is listening"
+            else
+              echo "Port 8508 is not listening"
+            fi
+            
+            # 최종 헬스 체크
             if curl -f http://localhost:8508 > /dev/null 2>&1; then
               echo "DEPLOYMENT_SUCCESS"
             else
-              echo "DEPLOYMENT_FAILED"
+              echo "DEPLOYMENT_FAILED - Checking logs..."
+              tail -n 50 app.log
               exit 1
             fi
             

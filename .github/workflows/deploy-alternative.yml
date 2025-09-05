@@ -1,0 +1,54 @@
+name: Deploy with Alternative Port
+
+on:
+  workflow_dispatch:
+    inputs:
+      port:
+        description: 'Port number to deploy on'
+        required: false
+        default: '8509'
+        type: string
+
+jobs:
+  deploy-alternative:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to Alternative Port
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            PORT=${{ github.event.inputs.port }}
+            echo "Deploying on port $PORT"
+            
+            # 프로젝트 디렉토리로 이동
+            cd ~/monsta-v7/monstas7
+            
+            # 최신 코드 가져오기
+            git pull origin master
+            
+            # 가상환경 활성화
+            source venv/bin/activate
+            
+            # 해당 포트의 기존 프로세스 종료
+            sudo lsof -ti:$PORT | xargs -r sudo kill -9 || true
+            
+            # Streamlit 실행 (다른 포트)
+            nohup streamlit run app.py --server.port=$PORT --server.address=0.0.0.0 > app_$PORT.log 2>&1 &
+            
+            sleep 10
+            
+            # 헬스 체크
+            if curl -f http://localhost:$PORT > /dev/null 2>&1; then
+              echo "✅ Successfully deployed on port $PORT"
+              echo "🌐 Access: http://13.209.84.93:$PORT"
+            else
+              echo "❌ Deployment failed on port $PORT"
+              tail -n 30 app_$PORT.log
+              exit 1
+            fi
