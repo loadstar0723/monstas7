@@ -22,6 +22,13 @@ export default function TradingPage() {
   const [orderBook, setOrderBook] = useState<OrderBookData>({ bids: [], asks: [] })
   const [recentTrades, setRecentTrades] = useState<TradeData[]>([])
   const [volume24h, setVolume24h] = useState(0)
+  const [high24h, setHigh24h] = useState(0)
+  const [low24h, setLow24h] = useState(0)
+  const [isAutoTrade, setIsAutoTrade] = useState(false)
+  const [orderType, setOrderType] = useState<'LIMIT' | 'MARKET'>('LIMIT')
+  const [orderSide, setOrderSide] = useState<'BUY' | 'SELL'>('BUY')
+  const [orderPrice, setOrderPrice] = useState('')
+  const [orderAmount, setOrderAmount] = useState('')
 
   // Binance WebSocket 실시간 가격
   useEffect(() => {
@@ -32,6 +39,8 @@ export default function TradingPage() {
       setCurrentPrice(parseFloat(data.c))
       setPriceChange(parseFloat(data.P))
       setVolume24h(parseFloat(data.v))
+      setHigh24h(parseFloat(data.h))
+      setLow24h(parseFloat(data.l))
     }
 
     return () => ws.close()
@@ -89,53 +98,106 @@ export default function TradingPage() {
           <p className="text-gray-400">Binance 실시간 거래 데이터</p>
         </div>
 
+        {/* 심볼 선택 및 AI 자동매매 */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex gap-2">
+            <select 
+              value={selectedSymbol}
+              onChange={(e) => setSelectedSymbol(e.target.value)}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 font-medium"
+            >
+              <option value="BTCUSDT">BTC/USDT</option>
+              <option value="ETHUSDT">ETH/USDT</option>
+              <option value="BNBUSDT">BNB/USDT</option>
+              <option value="SOLUSDT">SOL/USDT</option>
+              <option value="XRPUSDT">XRP/USDT</option>
+              <option value="ADAUSDT">ADA/USDT</option>
+              <option value="DOGEUSDT">DOGE/USDT</option>
+              <option value="AVAXUSDT">AVAX/USDT</option>
+            </select>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsAutoTrade(!isAutoTrade)}
+              className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+                isAutoTrade 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-800 text-gray-400 border border-gray-700'
+              }`}
+            >
+              🤖 AI 자동매매 {isAutoTrade ? 'ON' : 'OFF'}
+            </motion.button>
+          </div>
+          
+          <div className="text-sm text-gray-400">
+            마지막 업데이트: {new Date().toLocaleTimeString()}
+          </div>
+        </div>
+
         {/* 가격 정보 */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="glass-card p-6"
+            className="glass-card p-4"
           >
-            <div className="text-sm text-gray-400 mb-2">현재가</div>
-            <div className={`text-2xl font-bold ${priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="text-xs text-gray-400 mb-1">현재가</div>
+            <div className={`text-xl font-bold ${priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
               ${formatPrice(currentPrice)}
             </div>
-          </motion.div>
-
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="glass-card p-6"
-          >
-            <div className="text-sm text-gray-400 mb-2">24시간 변동</div>
-            <div className={`text-2xl font-bold ${priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+            <div className="text-xs mt-1">
+              {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
             </div>
           </motion.div>
 
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="glass-card p-6"
+            className="glass-card p-4"
           >
-            <div className="text-sm text-gray-400 mb-2">24시간 거래량</div>
-            <div className="text-2xl font-bold text-blue-500">
+            <div className="text-xs text-gray-400 mb-1">24시간 최고</div>
+            <div className="text-xl font-bold text-green-400">
+              ${formatPrice(high24h)}
+            </div>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="glass-card p-4"
+          >
+            <div className="text-xs text-gray-400 mb-1">24시간 최저</div>
+            <div className="text-xl font-bold text-red-400">
+              ${formatPrice(low24h)}
+            </div>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="glass-card p-4"
+          >
+            <div className="text-xs text-gray-400 mb-1">24시간 거래량</div>
+            <div className="text-xl font-bold text-blue-400">
               {(volume24h / 1000000).toFixed(2)}M
             </div>
           </motion.div>
 
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="glass-card p-6"
+            className="glass-card p-4"
           >
-            <div className="text-sm text-gray-400 mb-2">심볼 선택</div>
-            <select 
-              value={selectedSymbol}
-              onChange={(e) => setSelectedSymbol(e.target.value)}
-              className="bg-gray-800 text-white px-3 py-1 rounded border border-gray-700 w-full"
-            >
-              <option value="BTCUSDT">BTC/USDT</option>
-              <option value="ETHUSDT">ETH/USDT</option>
-              <option value="BNBUSDT">BNB/USDT</option>
-              <option value="SOLUSDT">SOL/USDT</option>
-            </select>
+            <div className="text-xs text-gray-400 mb-1">오더북 스프레드</div>
+            <div className="text-xl font-bold text-yellow-400">
+              0.01%
+            </div>
+          </motion.div>
+
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="glass-card p-4"
+          >
+            <div className="text-xs text-gray-400 mb-1">RSI</div>
+            <div className="text-xl font-bold text-purple-400">
+              65.4
+            </div>
           </motion.div>
         </div>
 
@@ -182,11 +244,113 @@ export default function TradingPage() {
           {/* 차트 영역 */}
           <div className="glass-card p-6 lg:col-span-2">
             <h3 className="text-xl font-bold mb-4 gradient-text">차트</h3>
-            <div className="h-96 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-500 bg-gray-900 rounded-lg mb-4">
               <div className="text-center">
                 <div className="text-6xl mb-4">📈</div>
                 <p>TradingView 차트 통합 예정</p>
                 <p className="text-sm mt-2">실시간 캔들스틱 차트</p>
+              </div>
+            </div>
+            
+            {/* 주문 입력 섹션 */}
+            <div className="border-t border-gray-700 pt-4">
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setOrderType('LIMIT')}
+                  className={`flex-1 py-2 rounded font-medium ${
+                    orderType === 'LIMIT'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-800 text-gray-400'
+                  }`}
+                >
+                  지정가
+                </button>
+                <button
+                  onClick={() => setOrderType('MARKET')}
+                  className={`flex-1 py-2 rounded font-medium ${
+                    orderType === 'MARKET'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-800 text-gray-400'
+                  }`}
+                >
+                  시장가
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <button
+                    onClick={() => setOrderSide('BUY')}
+                    className={`w-full py-2 rounded-lg font-bold mb-3 ${
+                      orderSide === 'BUY'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-800 text-gray-400 border border-gray-700'
+                    }`}
+                  >
+                    매수
+                  </button>
+                  
+                  {orderType === 'LIMIT' && (
+                    <input
+                      type="number"
+                      placeholder="가격"
+                      value={orderPrice}
+                      onChange={(e) => setOrderPrice(e.target.value)}
+                      className="w-full mb-2 px-3 py-2 bg-gray-800 rounded border border-gray-700 text-white"
+                    />
+                  )}
+                  
+                  <input
+                    type="number"
+                    placeholder="수량"
+                    value={orderAmount}
+                    onChange={(e) => setOrderAmount(e.target.value)}
+                    className="w-full mb-3 px-3 py-2 bg-gray-800 rounded border border-gray-700 text-white"
+                  />
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg"
+                  >
+                    매수 주문
+                  </motion.button>
+                </div>
+                
+                <div>
+                  <button
+                    onClick={() => setOrderSide('SELL')}
+                    className={`w-full py-2 rounded-lg font-bold mb-3 ${
+                      orderSide === 'SELL'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-800 text-gray-400 border border-gray-700'
+                    }`}
+                  >
+                    매도
+                  </button>
+                  
+                  {orderType === 'LIMIT' && (
+                    <input
+                      type="number"
+                      placeholder="가격"
+                      className="w-full mb-2 px-3 py-2 bg-gray-800 rounded border border-gray-700 text-white"
+                    />
+                  )}
+                  
+                  <input
+                    type="number"
+                    placeholder="수량"
+                    className="w-full mb-3 px-3 py-2 bg-gray-800 rounded border border-gray-700 text-white"
+                  />
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg"
+                  >
+                    매도 주문
+                  </motion.button>
+                </div>
               </div>
             </div>
           </div>
