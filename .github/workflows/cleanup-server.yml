@@ -1,0 +1,153 @@
+name: Clean Up Old Projects
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup:
+        description: 'Create backup before deletion'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  cleanup-aws-server:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clean up old projects on AWS server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            echo "🧹 서버 정리 시작..."
+            
+            # 현재 사용 중인 프로젝트 경로
+            CURRENT_PROJECT="~/monsta-v7/monstas7"
+            
+            # 백업 옵션
+            BACKUP_OPTION="${{ github.event.inputs.backup }}"
+            
+            # 1. 현재 프로젝트 확인
+            echo "📁 현재 디렉토리 상태:"
+            ls -la ~/ | head -20
+            
+            # 2. 기존 monsta 관련 디렉토리 찾기 (현재 프로젝트 제외)
+            echo ""
+            echo "🔍 삭제할 프로젝트 검색 중..."
+            OLD_DIRS=$(find ~/ -maxdepth 2 -type d -name "*monsta*" -o -name "*streamlit*" -o -name "*test*" 2>/dev/null | grep -v "monsta-v7/monstas7" || true)
+            
+            # 백업 생성 (옵션)
+            if [ "$BACKUP_OPTION" = "true" ] && [ ! -z "$OLD_DIRS" ]; then
+                echo "💾 백업 생성 중..."
+                BACKUP_DIR=~/backups/cleanup_$(date +%Y%m%d_%H%M%S)
+                mkdir -p $BACKUP_DIR
+                
+                for dir in $OLD_DIRS; do
+                    if [ -d "$dir" ]; then
+                        dir_name=$(basename "$dir")
+                        echo "백업: $dir_name"
+                        tar -czf "$BACKUP_DIR/${dir_name}.tar.gz" "$dir" 2>/dev/null || true
+                    fi
+                done
+                echo "✅ 백업 완료: $BACKUP_DIR"
+            fi
+            
+            # 3. 기존 프로젝트 삭제
+            echo ""
+            echo "🗑️ 기존 프로젝트 삭제 중..."
+            
+            # 명시적으로 삭제할 디렉토리들
+            DIRS_TO_DELETE=(
+                ~/monsta
+                ~/monsta-old
+                ~/monsta-test
+                ~/monsta-project
+                ~/streamlit-app
+                ~/test-monsta
+                ~/monsta-backup
+                ~/monsta-v1
+                ~/monsta-v2
+                ~/monsta-v3
+                ~/monsta-v4
+                ~/monsta-v5
+                ~/monsta-v6
+            )
+            
+            for dir in "${DIRS_TO_DELETE[@]}"; do
+                if [ -d "$dir" ] && [ "$dir" != "$CURRENT_PROJECT" ]; then
+                    echo "삭제: $dir"
+                    rm -rf "$dir"
+                fi
+            done
+            
+            # 추가로 발견된 디렉토리 삭제
+            for dir in $OLD_DIRS; do
+                if [ -d "$dir" ] && [ "$dir" != "$CURRENT_PROJECT" ]; then
+                    echo "삭제: $dir"
+                    rm -rf "$dir"
+                fi
+            done
+            
+            # 4. PM2 프로세스 정리 (현재 프로세스 유지)
+            echo ""
+            echo "🔧 PM2 정리..."
+            pm2 list
+            
+            # monsta-nextjs 제외하고 다른 프로세스 삭제
+            pm2 list | grep -v "monsta-nextjs" | grep "│" | awk '{print $4}' | while read app; do
+                if [ ! -z "$app" ] && [ "$app" != "name" ] && [ "$app" != "monsta-nextjs" ]; then
+                    pm2 delete "$app" 2>/dev/null || true
+                fi
+            done
+            
+            pm2 save --force
+            
+            # 5. 불필요한 Python 가상환경 삭제
+            echo ""
+            echo "🐍 Python 가상환경 정리..."
+            find ~/ -maxdepth 3 -name "venv" -type d | grep -v "monsta-v7" | while read venv; do
+                echo "삭제: $venv"
+                rm -rf "$venv"
+            done
+            
+            # 6. 시스템 캐시 정리
+            echo ""
+            echo "🧹 캐시 정리..."
+            npm cache clean --force 2>/dev/null || true
+            pip cache purge 2>/dev/null || true
+            
+            # 7. 디스크 사용량 확인
+            echo ""
+            echo "💾 정리 후 디스크 상태:"
+            df -h /
+            echo ""
+            echo "홈 디렉토리 크기:"
+            du -sh ~/
+            echo ""
+            echo "남은 디렉토리:"
+            ls -la ~/ | grep "^d" | tail -n +2
+            
+            echo ""
+            echo "✅ 서버 정리 완료!"
+            echo "📌 현재 활성 프로젝트: $CURRENT_PROJECT"
+            
+      - name: Send cleanup notification
+        uses: appleboy/telegram-action@master
+        if: always()
+        with:
+          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
+          message: |
+            🧹 AWS 서버 정리 완료
+            
+            📝 작업: 기존 프로젝트 삭제
+            💾 백업: ${{ github.event.inputs.backup }}
+            👤 실행자: ${{ github.actor }}
+            
+            ✅ 현재 프로젝트만 유지됨:
+            - ~/monsta-v7/monstas7
