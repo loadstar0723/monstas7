@@ -516,6 +516,62 @@ export default function SidebarNew() {
               <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
             </div>
 
+            {/* 사용자 정보 섹션 */}
+            <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <FaUserTie className="text-purple-400" />
+                  <span className="text-sm font-bold">관리자</span>
+                </div>
+                <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
+                  본사
+                </span>
+              </div>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">구독 등급:</span>
+                  <span className="flex items-center gap-1">
+                    <FaCrown className="text-yellow-500 text-[10px]" />
+                    <span className="font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">Black ∞</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">활성 메뉴:</span>
+                  <span className="text-green-400 font-semibold">300+ 기능</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">접근 권한:</span>
+                  <span className="text-purple-400">무제한</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 즐겨찾기 섹션 */}
+            <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <FaStar className="text-yellow-500 text-xs" />
+                <span className="text-xs font-semibold text-gray-300">즐겨찾기</span>
+              </div>
+              <div className="space-y-1">
+                <Link href="/signals/monsta" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
+                  <FaSignal className="text-cyan-400 text-[10px]" />
+                  <span>실시간 시그널</span>
+                </Link>
+                <Link href="/quant/backtest" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
+                  <FaChartBar className="text-purple-400 text-[10px]" />
+                  <span>백테스팅</span>
+                </Link>
+                <Link href="/automation/grid" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
+                  <FaRobot className="text-green-400 text-[10px]" />
+                  <span>그리드봇</span>
+                </Link>
+                <Link href="/portfolio/overview" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
+                  <FaWallet className="text-blue-400 text-[10px]" />
+                  <span>포트폴리오</span>
+                </Link>
+              </div>
+            </div>
+
             {/* 검색바 */}
             <div className="relative">
               <input
