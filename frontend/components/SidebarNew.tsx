@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSidebar } from '@/contexts/SidebarContext'
+import { tierLevels, categoryMinTiers, menuTierOverrides } from '@/lib/tierConfig'
 import { 
   FaHome, FaChartLine, FaRobot, FaBriefcase, FaHistory,
   FaTelegram, FaUsers, FaGraduationCap, FaNewspaper,
@@ -53,18 +54,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 // 사용자 역할 정의
 type UserRole = '본사' | '총판' | '대리점' | '구독자' | '게스트'
 
-// 구독 등급 정의 (프리미엄 등급 체계)
+// 구독 등급 정의 (프리미엄 등급 체계) - tierConfig에서 import
 type SubscriptionTier = 'Starter' | 'Advance' | 'Platinum' | 'Signature' | 'Master' | 'Infinity'
-
-// 등급별 레벨 (높을수록 더 많은 권한)
-const tierLevels: Record<SubscriptionTier, number> = {
-  'Starter': 1,
-  'Advance': 2,
-  'Platinum': 3,
-  'Signature': 4,
-  'Master': 5,
-  'Infinity': 6
-}
 
 // 등급별 설정
 const tierConfig = {
@@ -553,8 +544,22 @@ export default function SidebarNew() {
   
   // 사용자가 메뉴에 접근 가능한지 확인
   const canAccessMenu = (item: MenuItem): boolean => {
-    if (!item.minTier) return true // 등급 제한이 없으면 모두 접근 가능
-    return tierLevels[userTier] >= tierLevels[item.minTier]
+    // 메뉴별 등급 오버라이드 확인
+    const requiredTier = menuTierOverrides[item.path] || item.minTier
+    
+    // 카테고리 기본 등급 확인
+    const categoryTier = categoryMinTiers[item.category]
+    
+    // 가장 높은 등급 요구사항 적용
+    let finalRequiredTier: SubscriptionTier = 'Starter'
+    
+    if (requiredTier) {
+      finalRequiredTier = requiredTier
+    } else if (categoryTier) {
+      finalRequiredTier = categoryTier
+    }
+    
+    return tierLevels[userTier] >= tierLevels[finalRequiredTier]
   }
 
   // localStorage에서 설정 불러오기
@@ -1101,7 +1106,9 @@ export default function SidebarNew() {
                                 >
                                   {category.items.map((item, idx) => {
                                     const canAccess = canAccessMenu(item)
-                                    const requiredTierInfo = item.minTier ? tierConfig[item.minTier] : null
+                                    // 실제 필요한 등급 확인
+                                    const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category]
+                                    const requiredTierInfo = requiredTier ? tierConfig[requiredTier] : null
                                     
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
@@ -1114,7 +1121,8 @@ export default function SidebarNew() {
                                           onClick={(e) => {
                                             if (!canAccess) {
                                               e.preventDefault()
-                                              alert(`이 메뉴는 ${item.minTier} 등급 이상 사용 가능합니다.`)
+                                              const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category] || 'Starter'
+                                              alert(`이 메뉴는 ${requiredTier} 등급 이상 사용 가능합니다.`)
                                             } else {
                                               setIsOpen(false)
                                             }
