@@ -92,3 +92,28 @@
 - 병렬 처리로 성능 향상
 
 GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으로 되게한다.
+
+1. WebSocket 연결 관리
+
+  ## 🔌 WebSocket 연결 가이드라인
+  - WebSocket Manager는 싱글톤 패턴으로 구현 (lib/websocketManager.ts)
+  - 페이지 이동 시에도 연결 유지를 위해 전역 관리
+  - 자동 재연결 로직 포함 (최대 5회 시도)
+  - 실시간 데이터는 무조건 WebSocket 사용 (폴링 금지)
+
+  ## 🔄 개발 프로세스
+  1. 기능 구현 전 관련 파일 Read로 확인
+  2. 기존 패턴/스타일 따라가기
+  3. 실제 데이터만 사용 (mock 절대 금지)
+  4. 커밋 메시지 한글로 명확하게
+  5. 푸시하면 GitHub Actions 자동 배포
+
+  ## ⚡ 성능 체크리스트
+  - [ ] WebSocket 싱글톤 패턴 적용
+  - [ ] 불필요한 re-render 방지
+  - [ ] 이미지 lazy loading
+  - [ ] 코드 스플리팅 적용
+  - [ ] 불필요한 console.log 제거
+
+
+  
