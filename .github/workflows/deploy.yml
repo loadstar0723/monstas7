@@ -42,58 +42,41 @@ jobs:
             # 최신 코드 가져오기
             git pull origin master
             
-            # 1. FastAPI Backend 시작 (포트 8000)
-            echo "Starting FastAPI Backend..."
-            cd backend
-            source ../venv/bin/activate
+            # Streamlit 앱 재시작 (임시 - 서버가 죽지 않도록)
+            source venv/bin/activate
             pip install -r requirements.txt --quiet
-            pkill -f "uvicorn.*8000" || true
-            nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
             
-            # 2. Next.js Frontend 빌드 및 시작 (포트 3000)
-            echo "Building Next.js Frontend..."
-            cd ../frontend
-            npm install
-            npm run build
+            # 기존 프로세스 종료
+            pkill -f "streamlit.*8508" || true
+            sleep 2
             
-            # PM2로 실행
-            pm2 stop monsta-hybrid || true
-            pm2 delete monsta-hybrid || true
-            pm2 start npm --name "monsta-hybrid" -- start
-            pm2 save
+            # Streamlit 재시작
+            nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
+            echo "Started Streamlit on port 8508"
             
-            # 헬스 체크 (20초 대기 후)
-            sleep 20
+            # 헬스 체크 (15초 대기 후)
+            sleep 15
             
-            # Backend 헬스 체크
-            if curl -f http://localhost:8000/health > /dev/null 2>&1; then
-              echo "✅ Backend is running on port 8000"
+            # 프로세스 실행 확인
+            if pgrep -f "streamlit.*8508" > /dev/null; then
+              echo "Streamlit process is running"
             else
-              echo "❌ Backend health check failed"
-              tail -n 30 backend/backend.log
+              echo "Streamlit process not found, trying to start again..."
+              nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
+              sleep 10
             fi
             
-            # Frontend 헬스 체크
-            if pm2 list | grep -q "monsta-hybrid.*online"; then
-              echo "✅ Frontend is running on port 3000"
-            else
-              echo "❌ Frontend is not running"
-              pm2 logs monsta-hybrid --lines 30
-              exit 1
-            fi
-            
-            # 최종 통합 체크
-            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+            # 최종 헬스 체크
+            if curl -f http://localhost:8508 > /dev/null 2>&1; then
               echo "DEPLOYMENT_SUCCESS"
             else
-              echo "DEPLOYMENT_FAILED"
+              echo "DEPLOYMENT_FAILED - Checking logs..."
+              tail -n 50 app.log
               exit 1
             fi
             
-            echo "✅ Hybrid Platform Deployment completed at $(date)"
-            echo "🌐 Frontend: http://13.209.84.93:3000"
-            echo "🔧 Backend API: http://13.209.84.93:8000"
-            echo "📊 Health Check: http://13.209.84.93:8000/health"
+            echo "✅ Deployment completed at $(date)"
+            echo "🌐 Access: http://13.209.84.93:8508"
       
       - name: Send success notification
         if: success()
@@ -108,8 +91,7 @@ jobs:
             👤 작성자: ${{ github.actor }}
             🕐 완료 시간: ${{ github.event.head_commit.timestamp }}
             
-            🌐 Frontend: http://13.209.84.93:3000
-            🔧 Backend API: http://13.209.84.93:8000
+            🌐 접속 주소: http://13.209.84.93:8508
             📊 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             🎉 배포가 성공적으로 완료되었습니다!

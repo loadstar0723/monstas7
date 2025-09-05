@@ -62,8 +62,8 @@ Next.js 와 Streamlit 의 장점만을 활용하여 오직 통합 하나의 하�
 
   1. Next.js Fast Refresh - 코드 변경 시 즉시 브라우저에 반영 (HMR: Hot Module Replacement)
   2. 프론트엔드/백엔드 분리 - 각각 독립적으로 최적화되어 실행
-    - Frontend (3000): UI 변경사항 즉시 반영
-    - Backend (8000): API는 별도로 실행되어 프론트 변경에 영향 없음
+    - Frontend : UI 변경사항 즉시 반영
+    - Backend : API는 별도로 실행되어 프론트 변경에 영향 없음
   3. 개발 서버 최적화 - npm run dev로 실행 중이라 변경사항 실시간 감지
   4. CSS-in-JS 없음 - 순수 Tailwind CSS로 스타일 처리가 빨라짐
   5. 병렬 처리 - Frontend와 Backend가 동시에 독립적으로 작동
