@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import TradingViewChart from '@/components/TradingViewChart'
+import CryptoTicker from '@/components/CryptoTicker'
 import CryptoHeatmap from '@/components/CryptoHeatmap'
 import AIDashboard from '@/components/AIDashboard'
 import TradingViewSeasonalWidget from '@/components/TradingViewSeasonalWidget'
@@ -240,21 +241,21 @@ export default function Home() {
             
             {/* CTA Buttons */}
             <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-6 justify-center mt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.4 }}
             >
               <Link 
                 href="/signup" 
-                className="btn-primary inline-flex items-center justify-center text-sm sm:text-base md:text-lg glow-effect px-4 sm:px-6 md:px-8 py-3 sm:py-4"
+                className="btn-primary inline-flex items-center justify-center text-sm sm:text-base md:text-lg glow-effect px-6 sm:px-8 md:px-10 py-4 sm:py-5"
               >
-                <FaRocket className="mr-2" />
+                <FaRocket className="mr-3" />
                 7일 무료 체험 시작
               </Link>
               <Link 
                 href="/demo" 
-                className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-2 border-purple-500/50 rounded-lg text-sm sm:text-base md:text-lg font-semibold bg-transparent backdrop-blur hover:bg-purple-600/10 hover:border-purple-400 transition-all"
+                className="px-6 sm:px-8 md:px-10 py-4 sm:py-5 border-2 border-purple-500/50 rounded-lg text-sm sm:text-base md:text-lg font-semibold bg-transparent backdrop-blur hover:bg-purple-600/10 hover:border-purple-400 transition-all"
               >
                 라이브 데모 보기
               </Link>
@@ -264,36 +265,51 @@ export default function Home() {
       </section>
 
       {/* 구독자 일일 대시보드 - 매일 체크하는 핵심 정보 */}
-      <section className="bg-gradient-to-b from-purple-900/20 to-black border-b border-purple-500/20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <section className="bg-gradient-to-b from-purple-900/20 to-black border-b border-purple-500/20 mt-16">
+        <div className="max-w-7xl mx-auto px-4 py-12">
           {/* 상단 알림 바 */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30"
+            className="mb-10 p-6 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl border border-yellow-500/30"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="animate-pulse text-2xl">🔥</span>
-                <div>
-                  <span className="font-bold text-yellow-400">오늘의 특별 시그널:</span>
-                  <span className="ml-2">BTC 돌파 예상 - AI 신뢰도 95% | ETH 메이저 업데이트 D-2 | 공포탐욕지수 72 (탐욕)</span>
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <span className="animate-pulse text-3xl">🔥</span>
+                <div className="flex flex-col gap-2">
+                  <span className="font-bold text-lg text-yellow-400">오늘의 특별 시그널</span>
+                  <div className="flex flex-col sm:flex-row gap-3 text-sm">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                      BTC 돌파 예상 - AI 신뢰도 95%
+                    </span>
+                    <span className="hidden sm:inline text-gray-500">|</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      ETH 메이저 업데이트 D-2
+                    </span>
+                    <span className="hidden sm:inline text-gray-500">|</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                      공포탐욕지수 72 (탐욕)
+                    </span>
+                  </div>
                 </div>
               </div>
-              <button className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-bold hover:bg-yellow-500/30 transition-all">
+              <button className="px-6 py-3 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-bold hover:bg-yellow-500/30 transition-all whitespace-nowrap">
                 자세히 보기
               </button>
             </div>
           </motion.div>
 
           {/* 개인화된 정보 카드들 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
             {/* 내 포트폴리오 현황 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="glass-card p-4 border border-green-500/20"
+              className="glass-card p-6 border border-green-500/20"
             >
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-gray-400">내 포트폴리오</span>
@@ -309,7 +325,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="glass-card p-4 border border-purple-500/20"
+              className="glass-card p-6 border border-purple-500/20"
             >
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-gray-400">AI 오늘의 추천</span>
@@ -325,7 +341,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="glass-card p-4 border border-blue-500/20"
+              className="glass-card p-6 border border-blue-500/20"
             >
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-gray-400">봇 수익 (24h)</span>
@@ -341,7 +357,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
-              className="glass-card p-4 border border-red-500/20"
+              className="glass-card p-6 border border-red-500/20"
             >
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-gray-400">긴급 알림</span>
@@ -487,77 +503,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Market Overview */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="gradient-text">실시간 시장 현황</span>
-            </h2>
-            <p className="text-gray-400 text-lg">주요 암호화폐 실시간 가격 및 변동률</p>
-          </motion.div>
-          
-          {isLoading ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
-            </div>
-          ) : (
-            <>
-              {/* Main Coins - 8개로 확장 */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {topCoins.map((coin, index) => (
-                  <motion.div 
-                    key={coin.symbol}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="glass-card p-6 cursor-pointer group"
-                    onClick={() => setSelectedSymbol(`BINANCE:${coin.symbol}`)}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold">
-                            {coin.symbol.slice(0, 2)}
-                          </div>
-                          <h3 className="text-xl font-bold">{coin.symbol.replace('USDT', '')}</h3>
-                        </div>
-                        <p className="text-gray-500 text-xs uppercase tracking-wider">USDT Pair</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold backdrop-blur ${
-                        coin.priceChangePercent > 0 
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      }`}>
-                        {coin.priceChangePercent > 0 ? '↑' : '↓'} {Math.abs(coin.priceChangePercent).toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-3xl font-bold group-hover:gradient-text transition-all">
-                          ${coin.price.toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-800">
-                        <span className="text-gray-500 text-xs">24h Volume</span>
-                        <span className="text-gray-300 text-sm font-medium">
-                          ${(coin.quoteVolume / 1000000).toFixed(1)}M
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
+      {/* Real-time Crypto Ticker */}
+      <CryptoTicker />
 
       {/* TradingView Chart */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 section-gradient">
