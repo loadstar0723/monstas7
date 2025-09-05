@@ -1,0 +1,124 @@
+name: Clean Up monsta-ai-trading
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup-monsta-ai:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clean up monsta-ai-trading from AWS server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            echo "🧹 monsta-ai-trading 정리 시작..."
+            
+            # 1. 홈 디렉토리에서 관련 폴더 찾기
+            echo "📁 관련 디렉토리 검색 중..."
+            find ~/ -maxdepth 3 -type d -name "*monsta-ai*" -o -name "*ai-trading*" 2>/dev/null | while read dir; do
+                echo "발견: $dir"
+            done
+            
+            # 2. PM2에서 관련 프로세스 정리
+            echo ""
+            echo "🔧 PM2 프로세스 정리..."
+            pm2 list | grep -E "monsta-ai|ai-trading" | awk '{print $4}' | while read app; do
+                if [ ! -z "$app" ] && [ "$app" != "name" ]; then
+                    echo "PM2 프로세스 삭제: $app"
+                    pm2 delete "$app" 2>/dev/null || true
+                fi
+            done
+            
+            # 3. 디렉토리 삭제
+            echo ""
+            echo "🗑️ 디렉토리 삭제 중..."
+            
+            # 명시적으로 삭제할 디렉토리들
+            DIRS_TO_DELETE=(
+                ~/monsta-ai-trading
+                ~/monsta-ai
+                ~/ai-trading
+                ~/projects/monsta-ai-trading
+                ~/workspace/monsta-ai-trading
+            )
+            
+            for dir in "${DIRS_TO_DELETE[@]}"; do
+                if [ -d "$dir" ]; then
+                    echo "삭제: $dir"
+                    rm -rf "$dir"
+                fi
+            done
+            
+            # 4. Docker 컨테이너/이미지 정리 (있다면)
+            echo ""
+            echo "🐳 Docker 정리..."
+            docker ps -a | grep -E "monsta-ai|ai-trading" | awk '{print $1}' | while read container; do
+                if [ ! -z "$container" ]; then
+                    echo "Docker 컨테이너 삭제: $container"
+                    docker rm -f "$container" 2>/dev/null || true
+                fi
+            done
+            
+            docker images | grep -E "monsta-ai|ai-trading" | awk '{print $3}' | while read image; do
+                if [ ! -z "$image" ]; then
+                    echo "Docker 이미지 삭제: $image"
+                    docker rmi -f "$image" 2>/dev/null || true
+                fi
+            done
+            
+            # 5. 시스템 서비스 확인 (systemd)
+            echo ""
+            echo "⚙️ 시스템 서비스 확인..."
+            sudo systemctl list-units --all | grep -E "monsta-ai|ai-trading" | awk '{print $1}' | while read service; do
+                if [ ! -z "$service" ]; then
+                    echo "서비스 중지 및 비활성화: $service"
+                    sudo systemctl stop "$service" 2>/dev/null || true
+                    sudo systemctl disable "$service" 2>/dev/null || true
+                fi
+            done
+            
+            # 6. nginx 설정 정리
+            echo ""
+            echo "🌐 Nginx 설정 정리..."
+            if [ -f /etc/nginx/sites-enabled/monsta-ai-trading ]; then
+                sudo rm /etc/nginx/sites-enabled/monsta-ai-trading
+                sudo rm /etc/nginx/sites-available/monsta-ai-trading 2>/dev/null || true
+                sudo nginx -s reload
+                echo "Nginx 설정 삭제됨"
+            fi
+            
+            # 7. 최종 확인
+            echo ""
+            echo "📊 정리 후 확인:"
+            echo "남은 디렉토리:"
+            ls -la ~/ | grep -E "monsta|trading" || echo "  관련 디렉토리 없음"
+            
+            echo ""
+            echo "PM2 프로세스:"
+            pm2 list | grep -E "monsta|trading" || echo "  관련 프로세스 없음"
+            
+            echo ""
+            echo "✅ monsta-ai-trading 정리 완료!"
+            
+      - name: Send cleanup notification
+        uses: appleboy/telegram-action@master
+        if: always()
+        with:
+          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
+          message: |
+            🧹 monsta-ai-trading 정리 완료
+            
+            📝 작업: monsta-ai-trading 완전 삭제
+            🗑️ GitHub 레포지토리 & AWS 서버 정리
+            👤 실행자: ${{ github.actor }}
+            
+            ✅ 정리 항목:
+            - AWS 서버 디렉토리
+            - PM2 프로세스
+            - Docker 컨테이너/이미지
+            - Nginx 설정
