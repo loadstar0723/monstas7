@@ -101,7 +101,10 @@
       "Read(//c/Users/dhk49/Pictures/monsta aws/**)",
       "Bash(tree:*)",
       "Read(//c/Users/dhk49/**)",
-      "Bash(start http://localhost:3000)"
+      "Bash(start http://localhost:3000)",
+      "Bash(git checkout:*)",
+      "Bash(start http://localhost:3001)",
+      "Bash(gh workflow view:*)"
     ],
     "deny": [],
     "ask": []

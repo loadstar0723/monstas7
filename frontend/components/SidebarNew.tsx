@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -29,7 +29,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaBan
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaBan, FaClock
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -81,55 +81,67 @@ interface MenuItem {
 // 카테고리 그룹 정의 (새로운 그룹핑)
 type CategoryGroup = 'trading' | 'analysis' | 'community' | 'management'
 
-// 카테고리별 색상 테마 (20개)
+// 카테고리별 색상 테마 - 미니멀하고 통일된 디자인
 const categoryThemes = {
-  signals: { color: 'from-cyan-600 to-blue-600', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/20', icon: FaSignal },
-  quant: { color: 'from-purple-600 to-indigo-600', bgColor: 'bg-purple-500/10', borderColor: 'border-purple-500/20', icon: FaChartBar },
-  microstructure: { color: 'from-pink-600 to-rose-600', bgColor: 'bg-pink-500/10', borderColor: 'border-pink-500/20', icon: BiRadar },
-  technical: { color: 'from-blue-600 to-indigo-600', bgColor: 'bg-blue-500/10', borderColor: 'border-blue-500/20', icon: MdShowChart },
-  ai: { color: 'from-violet-600 to-purple-600', bgColor: 'bg-violet-500/10', borderColor: 'border-violet-500/20', icon: FaBrain },
-  automation: { color: 'from-green-600 to-emerald-600', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20', icon: FaRobot },
-  telegram: { color: 'from-sky-600 to-blue-600', bgColor: 'bg-sky-500/10', borderColor: 'border-sky-500/20', icon: FaTelegram },
-  gaming: { color: 'from-orange-600 to-red-600', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/20', icon: FaGamepad },
-  macro: { color: 'from-teal-600 to-cyan-600', bgColor: 'bg-teal-500/10', borderColor: 'border-teal-500/20', icon: FaGlobe },
-  crypto: { color: 'from-yellow-600 to-amber-600', bgColor: 'bg-yellow-500/10', borderColor: 'border-yellow-500/20', icon: FaBitcoin },
-  news: { color: 'from-lime-600 to-green-600', bgColor: 'bg-lime-500/10', borderColor: 'border-lime-500/20', icon: FaNewspaper },
-  events: { color: 'from-amber-600 to-orange-600', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20', icon: FaCalendar },
-  risk: { color: 'from-red-600 to-rose-600', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20', icon: FaShieldAlt },
-  portfolio: { color: 'from-indigo-600 to-blue-600', bgColor: 'bg-indigo-500/10', borderColor: 'border-indigo-500/20', icon: FaWallet },
-  members: { color: 'from-slate-600 to-gray-600', bgColor: 'bg-slate-500/10', borderColor: 'border-slate-500/20', icon: FaUsers },
-  payment: { color: 'from-emerald-600 to-green-600', bgColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/20', icon: FaCreditCard },
-  marketing: { color: 'from-fuchsia-600 to-pink-600', bgColor: 'bg-fuchsia-500/10', borderColor: 'border-fuchsia-500/20', icon: FaBullhorn },
-  analytics: { color: 'from-blue-700 to-indigo-700', bgColor: 'bg-blue-600/10', borderColor: 'border-blue-600/20', icon: MdAnalytics },
-  education: { color: 'from-rose-600 to-pink-600', bgColor: 'bg-rose-500/10', borderColor: 'border-rose-500/20', icon: FaGraduationCap },
-  system: { color: 'from-gray-600 to-slate-600', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', icon: FaCog }
+  signals: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaSignal, iconColor: 'text-cyan-500' },
+  quant: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaChartBar, iconColor: 'text-purple-500' },
+  microstructure: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: BiRadar, iconColor: 'text-pink-500' },
+  technical: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: MdShowChart, iconColor: 'text-blue-500' },
+  ai: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaBrain, iconColor: 'text-violet-500' },
+  automation: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaRobot, iconColor: 'text-green-500' },
+  telegram: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaTelegram, iconColor: 'text-sky-500' },
+  gaming: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaGamepad, iconColor: 'text-orange-500' },
+  macro: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaGlobe, iconColor: 'text-teal-500' },
+  crypto: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaBitcoin, iconColor: 'text-yellow-500' },
+  news: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaNewspaper, iconColor: 'text-lime-500' },
+  events: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCalendar, iconColor: 'text-amber-500' },
+  risk: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaShieldAlt, iconColor: 'text-red-500' },
+  portfolio: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaWallet, iconColor: 'text-indigo-500' },
+  members: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaUsers, iconColor: 'text-slate-400' },
+  payment: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCreditCard, iconColor: 'text-emerald-500' },
+  marketing: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaBullhorn, iconColor: 'text-fuchsia-500' },
+  analytics: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: MdAnalytics, iconColor: 'text-blue-500' },
+  education: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaGraduationCap, iconColor: 'text-rose-500' },
+  system: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCog, iconColor: 'text-gray-500' }
 }
 
-// 카테고리 그룹 정의
+// 카테고리 그룹 정의 - 구분된 색상
 const categoryGroups = {
   trading: {
-    title: '🚀 트레이딩',
+    title: '트레이딩',
     categories: ['signals', 'quant', 'microstructure', 'technical', 'automation'],
-    color: 'from-blue-600/20 to-purple-600/20',
-    borderColor: 'border-blue-500/30'
+    color: 'from-purple-600/20 to-purple-700/10',
+    borderColor: 'border-purple-500/30',
+    iconEmoji: '📈',
+    accentColor: 'text-purple-400',
+    hoverColor: 'hover:bg-purple-800/30'
   },
   analysis: {
-    title: '📊 분석 & AI',
+    title: '분석 & AI',
     categories: ['ai', 'risk', 'portfolio', 'macro', 'crypto'],
-    color: 'from-purple-600/20 to-pink-600/20',
-    borderColor: 'border-purple-500/30'
+    color: 'from-blue-600/20 to-blue-700/10',
+    borderColor: 'border-blue-500/30',
+    iconEmoji: '🧠',
+    accentColor: 'text-blue-400',
+    hoverColor: 'hover:bg-blue-800/30'
   },
   community: {
-    title: '🌐 커뮤니티',
+    title: '커뮤니티',
     categories: ['telegram', 'gaming', 'news', 'events', 'education'],
-    color: 'from-green-600/20 to-teal-600/20',
-    borderColor: 'border-green-500/30'
+    color: 'from-emerald-600/20 to-emerald-700/10',
+    borderColor: 'border-emerald-500/30',
+    iconEmoji: '👥',
+    accentColor: 'text-emerald-400',
+    hoverColor: 'hover:bg-emerald-800/30'
   },
   management: {
-    title: '⚙️ 관리',
+    title: '관리',
     categories: ['members', 'payment', 'marketing', 'analytics', 'system'],
-    color: 'from-gray-600/20 to-slate-600/20',
-    borderColor: 'border-gray-500/30'
+    color: 'from-amber-600/20 to-amber-700/10',
+    borderColor: 'border-amber-500/30',
+    iconEmoji: '⚙️',
+    accentColor: 'text-amber-400',
+    hoverColor: 'hover:bg-amber-800/30'
   }
 }
 
@@ -457,6 +469,108 @@ export default function SidebarNew() {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['trading'])
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [recentVisits, setRecentVisits] = useState<{path: string, timestamp: number}[]>([])
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  // localStorage에서 설정 불러오기
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('monsta_favorites')
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites))
+    }
+    
+    // 최근 방문 기록 불러오기
+    const savedRecent = localStorage.getItem('monsta_recent_visits')
+    if (savedRecent) {
+      setRecentVisits(JSON.parse(savedRecent))
+    }
+    
+    // 접힘 상태 불러오기
+    const savedCollapsed = localStorage.getItem('monsta_sidebar_collapsed')
+    if (savedCollapsed) {
+      setIsCollapsed(JSON.parse(savedCollapsed))
+    }
+  }, [])
+
+  // 경로 변경 시 최근 방문 기록 업데이트
+  useEffect(() => {
+    if (pathname && pathname !== '/') {
+      const newVisit = { path: pathname, timestamp: Date.now() }
+      setRecentVisits(prev => {
+        // 중복 제거 및 최대 5개 유지
+        const filtered = prev.filter(v => v.path !== pathname)
+        const updated = [newVisit, ...filtered].slice(0, 5)
+        localStorage.setItem('monsta_recent_visits', JSON.stringify(updated))
+        return updated
+      })
+    }
+  }, [pathname])
+
+  // 사이드바 접힘 토글
+  const toggleCollapsed = () => {
+    setIsCollapsed(prev => {
+      const newState = !prev
+      localStorage.setItem('monsta_sidebar_collapsed', JSON.stringify(newState))
+      return newState
+    })
+  }
+
+  // 즐겨찾기 토글 함수
+  const toggleFavorite = (path: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setFavorites(prev => {
+      const newFavorites = prev.includes(path) 
+        ? prev.filter(p => p !== path)
+        : [...prev, path]
+      localStorage.setItem('monsta_favorites', JSON.stringify(newFavorites))
+      return newFavorites
+    })
+  }
+
+  // 즐겨찾기 메뉴 아이템 가져오기
+  const getFavoriteItems = () => {
+    const items: MenuItem[] = []
+    Object.values(menuStructure).forEach(category => {
+      category.items.forEach(item => {
+        if (favorites.includes(item.path)) {
+          items.push(item)
+        }
+      })
+    })
+    return items
+  }
+
+  // 최근 방문 메뉴 아이템 가져오기
+  const getRecentItems = () => {
+    const items: (MenuItem & { timestamp: number })[] = []
+    recentVisits.forEach(visit => {
+      Object.values(menuStructure).forEach(category => {
+        category.items.forEach(item => {
+          if (item.path === visit.path) {
+            items.push({ ...item, timestamp: visit.timestamp })
+          }
+        })
+      })
+    })
+    return items
+  }
+
+  // 상대 시간 포맷팅 함수
+  const formatRelativeTime = (timestamp: number) => {
+    const now = Date.now()
+    const diff = now - timestamp
+    const seconds = Math.floor(diff / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+
+    if (days > 0) return `${days}일 전`
+    if (hours > 0) return `${hours}시간 전`
+    if (minutes > 0) return `${minutes}분 전`
+    return '방금 전'
+  }
 
   // 검색 결과 필터링
   const searchResults = useMemo(() => {
@@ -504,20 +618,42 @@ export default function SidebarNew() {
       {/* 사이드바 */}
       <div
         className={`fixed left-0 top-0 h-full bg-gray-900 text-white z-40 overflow-hidden flex flex-col
-                   w-72 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out`}
+                   ${isCollapsed ? 'w-16' : 'w-72'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-all duration-300 ease-in-out`}
       >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
           <div className="p-4 border-b border-gray-800">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                MONSTA AI
-              </h1>
-              <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
+              {!isCollapsed ? (
+                <>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    MONSTA AI
+                  </h1>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
+                    <button 
+                      onClick={toggleCollapsed}
+                      className="hidden lg:block p-1.5 hover:bg-gray-800 rounded transition-colors"
+                      title="접기"
+                    >
+                      <FaChevronDown className="text-gray-400 text-sm transform -rotate-90" />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button 
+                  onClick={toggleCollapsed}
+                  className="w-full flex justify-center p-1.5 hover:bg-gray-800 rounded transition-colors"
+                  title="펼치기"
+                >
+                  <FaChevronRight className="text-gray-400 text-sm" />
+                </button>
+              )}
             </div>
 
             {/* 사용자 정보 섹션 */}
-            <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
+            {!isCollapsed && (
+              <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <FaUserTie className="text-purple-400" />
@@ -545,35 +681,86 @@ export default function SidebarNew() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* 즐겨찾기 섹션 */}
-            <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
+            {!isCollapsed && (
+              <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2 px-1">
                 <FaStar className="text-yellow-500 text-xs" />
                 <span className="text-xs font-semibold text-gray-300">즐겨찾기</span>
+                <span className="text-[10px] text-gray-500">({favorites.length})</span>
               </div>
               <div className="space-y-1">
-                <Link href="/signals/monsta" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
-                  <FaSignal className="text-cyan-400 text-[10px]" />
-                  <span>실시간 시그널</span>
-                </Link>
-                <Link href="/quant/backtest" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
-                  <FaChartBar className="text-purple-400 text-[10px]" />
-                  <span>백테스팅</span>
-                </Link>
-                <Link href="/automation/grid" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
-                  <FaRobot className="text-green-400 text-[10px]" />
-                  <span>그리드봇</span>
-                </Link>
-                <Link href="/portfolio/overview" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs">
-                  <FaWallet className="text-blue-400 text-[10px]" />
-                  <span>포트폴리오</span>
-                </Link>
+                {getFavoriteItems().length > 0 ? (
+                  getFavoriteItems().map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1">
+                      <Link 
+                        href={item.path} 
+                        className="flex-1 flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <item.icon className="text-[10px]" />
+                        <span>{item.label}</span>
+                      </Link>
+                      <button 
+                        onClick={(e) => toggleFavorite(item.path, e)}
+                        className="p-1 hover:bg-gray-700/50 rounded"
+                      >
+                        <FaStar className="text-yellow-500 text-[10px]" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-[11px] text-gray-500 text-center py-2">
+                    메뉴 옆 ☆를 클릭하여 추가
+                  </div>
+                )}
               </div>
             </div>
+            )}
+
+            {/* 최근 방문 섹션 */}
+            {!isCollapsed && recentVisits.length > 0 && (
+              <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="flex items-center gap-2">
+                    <FaClock className="text-blue-500 text-xs" />
+                    <span className="text-xs font-semibold text-gray-300">최근 방문</span>
+                    <span className="text-[10px] text-gray-500">({recentVisits.length})</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setRecentVisits([])
+                      localStorage.removeItem('monsta_recent_visits')
+                    }}
+                    className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    지우기
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  {getRecentItems().map((item, idx) => (
+                    <Link 
+                      key={idx}
+                      href={item.path} 
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 transition-all text-xs group"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <item.icon className="text-[10px] flex-shrink-0" />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      <span className="text-[10px] text-gray-500 group-hover:text-gray-400">
+                        {formatRelativeTime(item.timestamp)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 검색바 */}
-            <div className="relative">
+            {!isCollapsed && (
+              <div className="relative">
               <input
                 type="text"
                 placeholder="메뉴 검색..."
@@ -585,24 +772,47 @@ export default function SidebarNew() {
               />
               <FaSearch className="absolute right-3 top-2.5 text-gray-400 text-sm pointer-events-none" />
             </div>
+            )}
 
             {/* 검색 결과 */}
-            {isSearchFocused && searchResults.length > 0 && (
+            {!isCollapsed && isSearchFocused && searchTerm && (
               <div className="absolute top-24 left-4 right-4 bg-gray-800 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                {searchResults.map((item, idx) => (
-                  <Link
-                    key={idx}
-                    href={item.path}
-                    className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition-colors"
-                    onClick={() => {
-                      setSearchTerm('')
-                      setIsOpen(false)
-                    }}
-                  >
-                    <item.icon className="text-sm" />
-                    <span className="text-sm">{item.label}</span>
-                    {item.badge && (
-                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                {searchResults.length > 0 ? (
+                  <>
+                    {searchResults.map((item, idx) => {
+                  // 검색어 하이라이트 처리
+                  const highlightText = (text: string) => {
+                    const searchLower = searchTerm.toLowerCase()
+                    const textLower = text.toLowerCase()
+                    const index = textLower.indexOf(searchLower)
+                    
+                    if (index === -1) return text
+                    
+                    return (
+                      <>
+                        {text.slice(0, index)}
+                        <span className="bg-purple-600/50 text-purple-200 font-semibold rounded px-0.5">
+                          {text.slice(index, index + searchTerm.length)}
+                        </span>
+                        {text.slice(index + searchTerm.length)}
+                      </>
+                    )
+                  }
+                  
+                  return (
+                    <Link
+                      key={idx}
+                      href={item.path}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition-colors"
+                      onClick={() => {
+                        setSearchTerm('')
+                        setIsOpen(false)
+                      }}
+                    >
+                      <item.icon className="text-sm" />
+                      <span className="text-sm">{highlightText(item.label)}</span>
+                      {item.badge && (
+                        <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
                         item.isHot ? 'bg-red-500' : 
                         item.isNew ? 'bg-green-500' : 
                         item.isPremium ? 'bg-yellow-500' : 'bg-blue-500'
@@ -611,7 +821,16 @@ export default function SidebarNew() {
                       </span>
                     )}
                   </Link>
-                ))}
+                  )
+                })}
+                  </>
+                ) : (
+                  <div className="px-4 py-8 text-center">
+                    <FaSearch className="text-gray-600 text-2xl mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">검색 결과가 없습니다</p>
+                    <p className="text-gray-500 text-xs mt-1">"{searchTerm}"</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -625,12 +844,15 @@ export default function SidebarNew() {
                   onClick={() => toggleGroup(groupKey)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg mb-2
                             bg-gradient-to-r ${group.color} border ${group.borderColor}
-                            hover:opacity-90 transition-all active:scale-95`}
+                            ${group.hoverColor} transition-all duration-200 shadow-sm`}
                 >
-                  <span className="text-sm font-bold">{group.title}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{group.iconEmoji}</span>
+                    <span className={`text-sm font-bold ${group.accentColor}`}>{group.title}</span>
+                  </div>
                   {expandedGroups.includes(groupKey) ? 
-                    <FaChevronDown className="text-xs" /> : 
-                    <FaChevronRight className="text-xs" />
+                    <FaChevronDown className={`text-xs ${group.accentColor}`} /> : 
+                    <FaChevronRight className={`text-xs ${group.accentColor}`} />
                   }
                 </button>
 
@@ -648,25 +870,33 @@ export default function SidebarNew() {
                         const theme = categoryThemes[categoryKey as MenuCategory]
                         const isExpanded = expandedCategories.includes(categoryKey)
                         
+                        // 그룹별 카테고리 스타일
+                        const categoryStyle = {
+                          trading: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20',
+                          analysis: 'bg-blue-900/10 border-blue-700/20 hover:bg-blue-800/20',
+                          community: 'bg-emerald-900/10 border-emerald-700/20 hover:bg-emerald-800/20',
+                          management: 'bg-amber-900/10 border-amber-700/20 hover:bg-amber-800/20'
+                        }
+                        
                         return (
                           <div key={categoryKey} className="mb-2 ml-2">
                             {/* 카테고리 헤더 */}
                             <button
                               onClick={() => toggleCategory(categoryKey)}
                               className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg
-                                        ${theme.bgColor} ${theme.borderColor} border
-                                        hover:bg-gray-800/50 transition-all text-left active:scale-95`}
+                                        border transition-all text-left
+                                        ${categoryStyle[groupKey as keyof typeof categoryStyle]}`}
                             >
                               <div className="flex items-center gap-2">
-                                <theme.icon className="text-xs" />
-                                <span className="text-xs font-medium">{category.title}</span>
-                                <span className="text-[10px] text-gray-400">
-                                  ({category.items.length})
+                                <theme.icon className={`text-xs ${theme.iconColor || 'text-gray-400'}`} />
+                                <span className="text-xs font-medium text-gray-300">{category.title}</span>
+                                <span className={`text-[10px] ${group.accentColor} opacity-50`}>
+                                  {category.items.length}
                                 </span>
                               </div>
                               {isExpanded ? 
-                                <FaChevronDown className="text-[10px]" /> : 
-                                <FaChevronRight className="text-[10px]" />
+                                <FaChevronDown className={`text-[10px] ${group.accentColor} opacity-60`} /> : 
+                                <FaChevronRight className={`text-[10px] ${group.accentColor} opacity-60`} />
                               }
                             </button>
 
@@ -681,30 +911,46 @@ export default function SidebarNew() {
                                   className="mt-1 ml-4"
                                 >
                                   {category.items.map((item, idx) => (
-                                    <Link
-                                      key={idx}
-                                      href={item.path}
-                                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
-                                                hover:bg-gray-800 transition-all
-                                                ${pathname === item.path ? 'bg-gray-800 border-l-2 border-purple-500' : ''}`}
-                                      onClick={() => setIsOpen(false)}
-                                    >
-                                      <item.icon className="text-[10px]" />
-                                      <span className="flex-1">{item.label}</span>
-                                      {item.isHot && (
-                                        <span className="text-[10px] px-1.5 py-0.5 bg-red-500 rounded-full">
-                                          HOT
-                                        </span>
-                                      )}
-                                      {item.isNew && (
-                                        <span className="text-[10px] px-1.5 py-0.5 bg-green-500 rounded-full">
-                                          NEW
-                                        </span>
-                                      )}
-                                      {item.isPremium && (
-                                        <FaCrown className="text-yellow-500 text-[10px]" />
-                                      )}
-                                    </Link>
+                                    <div key={idx} className="flex items-center gap-1 group">
+                                      <Link
+                                        href={item.path}
+                                        className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
+                                                  hover:bg-gray-800/50 transition-all
+                                                  ${pathname === item.path ? 'bg-gray-800/30 text-purple-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                        onClick={() => setIsOpen(false)}
+                                      >
+                                        <item.icon className={`text-[10px] ${theme.iconColor || 'text-gray-500'}`} />
+                                        <span className="flex-1">{item.label}</span>
+                                        {item.isHot && (
+                                          <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
+                                            HOT
+                                          </span>
+                                        )}
+                                        {item.isNew && (
+                                          <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                                            NEW
+                                          </span>
+                                        )}
+                                        {item.isPremium && (
+                                          <FaCrown className="text-yellow-500/70 text-[10px]" />
+                                        )}
+                                      </Link>
+                                      <button
+                                        onClick={(e) => toggleFavorite(item.path, e)}
+                                        className={`p-1 hover:bg-gray-700/50 rounded transition-all ${
+                                          favorites.includes(item.path) ? 'opacity-100' : 'opacity-30 group-hover:opacity-100'
+                                        }`}
+                                        title={favorites.includes(item.path) ? "즐겨찾기 제거" : "즐겨찾기 추가"}
+                                      >
+                                        <FaStar 
+                                          className={`text-[11px] transition-all ${
+                                            favorites.includes(item.path) 
+                                              ? 'text-yellow-400 drop-shadow-lg' 
+                                              : 'text-gray-400 hover:text-yellow-400 hover:scale-110'
+                                          }`} 
+                                        />
+                                      </button>
+                                    </div>
                                   ))}
                                 </motion.div>
                               )}
