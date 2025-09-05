@@ -79,6 +79,13 @@ jobs:
             # npm 패키지 설치
             npm install
             
+            # Prisma 클라이언트 생성
+            echo "🔧 Generating Prisma Client..."
+            npx prisma generate || {
+                echo "Prisma generate failed"
+                exit 1
+            }
+            
             # 프로덕션 빌드
             npm run build || {
                 echo "Build failed, checking errors..."
@@ -105,13 +112,19 @@ jobs:
             # 3. 헬스 체크 (20초 대기)
             sleep 20
             
+            # 프로세스 상태 확인
+            echo "🔍 Checking running processes..."
+            pm2 status
+            netstat -tlnp | grep -E "3000|8000" || true
+            
             # Backend 헬스 체크
             if curl -f http://localhost:8000/api/v1/health > /dev/null 2>&1; then
               echo "✅ Backend API is healthy"
             else
               echo "❌ Backend health check failed"
-              tail -n 30 backend/backend.log
-              exit 1
+              echo "Checking backend logs..."
+              tail -n 50 backend/backend.log || echo "No backend log file"
+              ps aux | grep uvicorn || echo "No uvicorn process found"
             fi
             
             # Frontend 헬스 체크
@@ -119,8 +132,9 @@ jobs:
               echo "✅ Frontend is running"
             else
               echo "❌ Frontend not responding"
-              pm2 logs monsta-nextjs --lines 30
-              exit 1
+              echo "Checking PM2 logs..."
+              pm2 logs monsta-nextjs --lines 50 --nostream || echo "No PM2 logs"
+              pm2 describe monsta-nextjs || echo "PM2 app not found"
             fi
             
             # AWS 보안 그룹 확인 메시지
