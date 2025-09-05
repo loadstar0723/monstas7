@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-export default function 30Page() {
+export default function IndicatorsPage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
