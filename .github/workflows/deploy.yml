@@ -19,7 +19,7 @@ jobs:
           to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
           token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 MONSTA 배포 시작
+            🚀 MONSTA Next.js + FastAPI 배포 시작
             
             📝 커밋: ${{ github.event.head_commit.message }}
             👤 작성자: ${{ github.actor }}
@@ -28,7 +28,7 @@ jobs:
             
             ⏳ 배포 진행 중...
       
-      - name: Deploy to AWS Server
+      - name: Deploy Next.js + FastAPI to AWS
         id: deploy
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -42,41 +42,96 @@ jobs:
             # 최신 코드 가져오기
             git pull origin master
             
-            # Streamlit 앱 재시작 (임시 - 서버가 죽지 않도록)
-            source venv/bin/activate
-            pip install -r requirements.txt --quiet
+            # Streamlit 프로세스 완전 제거
+            pkill -f streamlit || true
             
-            # 기존 프로세스 종료
-            pkill -f "streamlit.*8508" || true
-            sleep 2
+            # 1. FastAPI Backend 시작 (포트 8000)
+            echo "🔧 Starting FastAPI Backend..."
+            cd backend
             
-            # Streamlit 재시작
-            nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
-            echo "Started Streamlit on port 8508"
-            
-            # 헬스 체크 (15초 대기 후)
-            sleep 15
-            
-            # 프로세스 실행 확인
-            if pgrep -f "streamlit.*8508" > /dev/null; then
-              echo "Streamlit process is running"
-            else
-              echo "Streamlit process not found, trying to start again..."
-              nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
-              sleep 10
+            # Python 가상환경 확인 및 생성
+            if [ ! -d "../venv" ]; then
+                python3 -m venv ../venv
             fi
             
-            # 최종 헬스 체크
-            if curl -f http://localhost:8508 > /dev/null 2>&1; then
-              echo "DEPLOYMENT_SUCCESS"
+            source ../venv/bin/activate
+            pip install -r requirements.txt --quiet
+            
+            # 기존 FastAPI 프로세스 종료
+            pkill -f "uvicorn.*8000" || true
+            sleep 2
+            
+            # FastAPI 시작
+            nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
+            echo "✅ FastAPI started on port 8000"
+            
+            # 2. Next.js Frontend 빌드 및 시작 (포트 3000)
+            echo "🎨 Building Next.js Frontend..."
+            cd ../frontend
+            
+            # Node.js 버전 확인
+            node -v || {
+                echo "Node.js not found, installing..."
+                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            }
+            
+            # npm 패키지 설치
+            npm install
+            
+            # 프로덕션 빌드
+            npm run build || {
+                echo "Build failed, checking errors..."
+                exit 1
+            }
+            
+            # PM2 설치 확인
+            which pm2 || {
+                echo "Installing PM2..."
+                sudo npm install -g pm2
+            }
+            
+            # 기존 PM2 프로세스 제거
+            pm2 stop all || true
+            pm2 delete all || true
+            
+            # PM2로 Next.js 시작
+            pm2 start npm --name "monsta-nextjs" -- start
+            pm2 save
+            pm2 startup || true
+            
+            echo "✅ Next.js started with PM2"
+            
+            # 3. 헬스 체크 (20초 대기)
+            sleep 20
+            
+            # Backend 헬스 체크
+            if curl -f http://localhost:8000/api/v1/health > /dev/null 2>&1; then
+              echo "✅ Backend API is healthy"
             else
-              echo "DEPLOYMENT_FAILED - Checking logs..."
-              tail -n 50 app.log
+              echo "❌ Backend health check failed"
+              tail -n 30 backend/backend.log
               exit 1
             fi
             
+            # Frontend 헬스 체크
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Frontend is running"
+            else
+              echo "❌ Frontend not responding"
+              pm2 logs monsta-nextjs --lines 30
+              exit 1
+            fi
+            
+            # AWS 보안 그룹 확인 메시지
+            echo "📌 Important: Make sure AWS Security Group allows:"
+            echo "   - Port 3000 (Next.js Frontend)"
+            echo "   - Port 8000 (FastAPI Backend)"
+            
             echo "✅ Deployment completed at $(date)"
-            echo "🌐 Access: http://13.209.84.93:8508"
+            echo "🌐 Frontend: http://13.209.84.93:3000"
+            echo "🔧 Backend API: http://13.209.84.93:8000"
+            echo "📊 Health Check: http://13.209.84.93:8000/api/v1/health"
       
       - name: Send success notification
         if: success()
@@ -91,10 +146,11 @@ jobs:
             👤 작성자: ${{ github.actor }}
             🕐 완료 시간: ${{ github.event.head_commit.timestamp }}
             
-            🌐 접속 주소: http://13.209.84.93:8508
+            🌐 Frontend: http://13.209.84.93:3000
+            🔧 Backend API: http://13.209.84.93:8000
             📊 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
-            🎉 배포가 성공적으로 완료되었습니다!
+            🎉 Next.js + FastAPI 하이브리드 시스템 배포 완료!
       
       - name: Send failure notification
         if: failure()
