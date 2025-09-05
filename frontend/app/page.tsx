@@ -3,11 +3,18 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import TradingViewChart from '@/components/TradingViewChart'
-import CryptoTicker from '@/components/CryptoTicker'
-import CryptoHeatmap from '@/components/CryptoHeatmap'
-import AIDashboard from '@/components/AIDashboard'
-import TradingViewSeasonalWidget from '@/components/TradingViewSeasonalWidget'
+import dynamic from 'next/dynamic'
+import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
+
+// 동적 import로 초기 로딩 속도 개선
+const TradingViewChart = dynamic(() => import('@/components/TradingViewChart'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800/50 rounded-xl animate-pulse"></div>
+})
+const CryptoTicker = dynamic(() => import('@/components/CryptoTicker'), { ssr: false })
+const CryptoHeatmap = dynamic(() => import('@/components/CryptoHeatmap'), { ssr: false })
+const AIDashboard = dynamic(() => import('@/components/AIDashboard'), { ssr: false })
+const TradingViewSeasonalWidget = dynamic(() => import('@/components/TradingViewSeasonalWidget'), { ssr: false })
 import { 
   FaRocket, FaChartLine, FaRobot, FaTelegram, FaGlobe, 
   FaChevronRight, FaBook, FaChartBar, FaShieldAlt, FaBrain, 
@@ -36,26 +43,118 @@ export default function Home() {
   }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSymbol, setSelectedSymbol] = useState('BINANCE:BTCUSDT')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // 초기 데이터 로드
     fetchMarketData()
-    const interval = setInterval(fetchMarketData, 5000)
-    return () => clearInterval(interval)
+    
+    // WebSocket 연결
+    const ws = getBinanceWebSocket()
+    
+    if (ws) {
+      // BTC WebSocket 구독
+      ws.subscribe('BTCUSDT', (data) => {
+        setBtcData({
+          symbol: data.symbol,
+          price: data.price,
+          change: data.change,
+          volume: (data.volume / 1000000).toFixed(1) + 'M',
+          high: data.high,
+          low: data.low
+        })
+      })
+      
+      // ETH WebSocket 구독
+      ws.subscribe('ETHUSDT', (data) => {
+        setEthData({
+          symbol: data.symbol,
+          price: data.price,
+          change: data.change,
+          volume: (data.volume / 1000000).toFixed(1) + 'M',
+          high: data.high,
+          low: data.low
+        })
+      })
+      
+      // 기타 코인들 WebSocket 구독
+      const otherSymbols = ['BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT']
+      otherSymbols.forEach(symbol => {
+        ws.subscribe(symbol, (data) => {
+          setTopCoins(prev => {
+            const updated = [...prev]
+            const index = updated.findIndex(coin => coin.symbol === symbol)
+            if (index !== -1) {
+              updated[index] = {
+                symbol: data.symbol,
+                price: data.price,
+                priceChangePercent: data.change,
+                quoteVolume: data.volume
+              }
+            }
+            return updated
+          })
+        })
+      })
+    }
+    
+    // 폴백으로 5초마다 HTTP 호출 (웹소켓 연결 실패 시)
+    const interval = setInterval(fetchMarketData, 30000) // 30초로 증가
+    
+    return () => {
+      clearInterval(interval)
+      // WebSocket 구독 해제
+      if (ws) {
+        ws.unsubscribe('BTCUSDT')
+        ws.unsubscribe('ETHUSDT')
+        otherSymbols.forEach(symbol => ws.unsubscribe(symbol))
+      }
+    }
   }, [])
 
   const fetchMarketData = async () => {
     try {
+      setError(null)
       const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT']
       const promises = symbols.map(symbol => 
         fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`)
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) throw new Error('API 응답 실패')
+            return res.json()
+          })
           .catch(() => null)
       )
       
       const results = await Promise.all(promises)
       const validResults = results.filter(r => r !== null)
       
-      if (validResults.length > 0) {
+      // API 호출이 모두 실패한 경우 폴백 데이터 사용
+      if (validResults.length === 0) {
+        // 폴백 데이터 설정
+        setBtcData({
+          symbol: 'BTCUSDT',
+          price: 97500.00,
+          change: 2.5,
+          volume: '2500M',
+          high: 98000,
+          low: 96000
+        })
+        setEthData({
+          symbol: 'ETHUSDT',
+          price: 3750.00,
+          change: 3.2,
+          volume: '1200M',
+          high: 3800,
+          low: 3700
+        })
+        setTopCoins([
+          { symbol: 'BTCUSDT', price: 97500, priceChangePercent: 2.5, quoteVolume: 2500000000 },
+          { symbol: 'ETHUSDT', price: 3750, priceChangePercent: 3.2, quoteVolume: 1200000000 },
+          { symbol: 'BNBUSDT', price: 690, priceChangePercent: 1.8, quoteVolume: 500000000 },
+          { symbol: 'SOLUSDT', price: 240, priceChangePercent: 4.5, quoteVolume: 800000000 }
+        ])
+        setError('실시간 데이터를 가져올 수 없습니다. 샘플 데이터를 표시 중입니다.')
+      } else if (validResults.length > 0) {
         // BTC 데이터
         const btcPrice = validResults.find((p: Record<string, string>) => p.symbol === 'BTCUSDT')
         if (btcPrice) {
@@ -96,12 +195,42 @@ export default function Home() {
       }
     } catch (error) {
       console.error('마켓 데이터 로드 실패:', error)
+      setError('데이터를 불러오는 중 오류가 발생했습니다.')
+      // 에러 발생 시에도 폴백 데이터 제공
+      setBtcData({
+        symbol: 'BTCUSDT',
+        price: 97500.00,
+        change: 2.5,
+        volume: '2500M',
+        high: 98000,
+        low: 96000
+      })
+      setEthData({
+        symbol: 'ETHUSDT',
+        price: 3750.00,
+        change: 3.2,
+        volume: '1200M',
+        high: 3800,
+        low: 3700
+      })
+      setTopCoins([
+        { symbol: 'BTCUSDT', price: 97500, priceChangePercent: 2.5, quoteVolume: 2500000000 },
+        { symbol: 'ETHUSDT', price: 3750, priceChangePercent: 3.2, quoteVolume: 1200000000 },
+        { symbol: 'BNBUSDT', price: 690, priceChangePercent: 1.8, quoteVolume: 500000000 },
+        { symbol: 'SOLUSDT', price: 240, priceChangePercent: 4.5, quoteVolume: 800000000 }
+      ])
       setIsLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen">
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-2 rounded-lg backdrop-blur-sm">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
       {/* Hero Section - 최상단 위치 */}
       <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20">
         <div className="absolute inset-0 z-0">
