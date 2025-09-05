@@ -74,7 +74,9 @@
       "Read(/C:\\Users\\dhk49\\Pictures\\monsta aws/**)",
       "Read(/C:\\Users\\dhk49\\Pictures\\monsta aws/**)",
       "Read(/C:\\monsta\\monstas7\\frontend\\components/**)",
-      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)"
+      "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)",
+      "Read(/C:\\monsta\\monstas7\\frontend/**)"
     ],
     "deny": [],
     "ask": []

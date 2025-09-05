@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
+    "dev:clean": "rmdir /s /q .next 2>nul && next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3000",
+    "clean": "rmdir /s /q .next 2>nul",
     "lint": "eslint"
   },
   "dependencies": {
