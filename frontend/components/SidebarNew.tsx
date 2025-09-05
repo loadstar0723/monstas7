@@ -780,49 +780,49 @@ export default function SidebarNew() {
                 {searchResults.length > 0 ? (
                   <>
                     {searchResults.map((item, idx) => {
-                  // 검색어 하이라이트 처리
-                  const highlightText = (text: string) => {
-                    const searchLower = searchTerm.toLowerCase()
-                    const textLower = text.toLowerCase()
-                    const index = textLower.indexOf(searchLower)
-                    
-                    if (index === -1) return text
-                    
-                    return (
-                      <>
-                        {text.slice(0, index)}
-                        <span className="bg-purple-600/50 text-purple-200 font-semibold rounded px-0.5">
-                          {text.slice(index, index + searchTerm.length)}
-                        </span>
-                        {text.slice(index + searchTerm.length)}
-                      </>
-                    )
-                  }
-                  
-                  return (
-                    <Link
-                      key={idx}
-                      href={item.path}
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition-colors"
-                      onClick={() => {
-                        setSearchTerm('')
-                        setIsOpen(false)
-                      }}
-                    >
-                      <item.icon className="text-sm" />
-                      <span className="text-sm">{highlightText(item.label)}</span>
-                      {item.badge && (
-                        <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
-                        item.isHot ? 'bg-red-500' : 
-                        item.isNew ? 'bg-green-500' : 
-                        item.isPremium ? 'bg-yellow-500' : 'bg-blue-500'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                  )
-                })}
+                      // 검색어 하이라이트 처리
+                      const highlightText = (text: string) => {
+                        const searchLower = searchTerm.toLowerCase()
+                        const textLower = text.toLowerCase()
+                        const index = textLower.indexOf(searchLower)
+                        
+                        if (index === -1) return text
+                        
+                        return (
+                          <>
+                            {text.slice(0, index)}
+                            <span className="bg-purple-600/50 text-purple-200 font-semibold rounded px-0.5">
+                              {text.slice(index, index + searchTerm.length)}
+                            </span>
+                            {text.slice(index + searchTerm.length)}
+                          </>
+                        )
+                      }
+                      
+                      return (
+                        <Link
+                          key={idx}
+                          href={item.path}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition-colors"
+                          onClick={() => {
+                            setSearchTerm('')
+                            setIsOpen(false)
+                          }}
+                        >
+                          <item.icon className="text-sm" />
+                          <span className="text-sm">{highlightText(item.label)}</span>
+                          {item.badge && (
+                            <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                              item.isHot ? 'bg-red-500' : 
+                              item.isNew ? 'bg-green-500' : 
+                              item.isPremium ? 'bg-yellow-500' : 'bg-blue-500'
+                            }`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      )
+                    })}
                   </>
                 ) : (
                   <div className="px-4 py-8 text-center">
