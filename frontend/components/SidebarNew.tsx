@@ -30,7 +30,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaChevronUp, FaBan, FaClock
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaChevronUp, FaBan, FaClock, FaQuestionCircle
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -528,7 +528,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaHistory, label: '구독 내역', path: '/subscription/history', category: 'subscription' },
       { icon: FaCreditCard, label: '결제 관리', path: '/subscription/billing', category: 'subscription' },
       { icon: FaPercentage, label: '할인 & 프로모션', path: '/subscription/promotions', category: 'subscription' },
-      { icon: FaUserFriends, label: '추천 프로그램', path: '/subscription/referral', category: 'subscription' },
+      { icon: FaUsers, label: '추천 프로그램', path: '/subscription/referral', category: 'subscription' },
       { icon: FaQuestionCircle, label: '등급 가이드', path: '/subscription/guide', category: 'subscription' },
       { icon: FaStar, label: 'VIP 전용', path: '/subscription/vip', category: 'subscription', minTier: 'Master' }
     ]
