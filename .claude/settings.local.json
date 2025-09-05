@@ -90,7 +90,9 @@
       "Read(/C:\\monsta\\monstas7\\components/**)",
       "Read(/C:\\monsta\\monstas7/**)",
       "Bash(rm:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma:*)"
     ],
     "deny": [],
     "ask": []

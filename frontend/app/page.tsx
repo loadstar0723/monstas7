@@ -38,7 +38,7 @@ export default function Home() {
 
   const fetchMarketData = async () => {
     try {
-      const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT']
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT']
       const promises = symbols.map(symbol => 
         fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`)
           .then(res => res.json())
@@ -278,8 +278,8 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {/* Main Coins */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Main Coins - 8개로 확장 */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {topCoins.map((coin, index) => (
                   <motion.div 
                     key={coin.symbol}
