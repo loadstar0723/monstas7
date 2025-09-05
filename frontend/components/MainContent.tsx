@@ -32,7 +32,7 @@ export default function MainContent({ children }: { children: React.ReactNode })
           </div>
           
           <div className="flex items-center gap-4">
-            <ThemeToggle />
+            {/* <ThemeToggle /> */}
           </div>
         </div>
       </header>
