@@ -53,15 +53,71 @@ import { motion, AnimatePresence } from 'framer-motion'
 // 사용자 역할 정의
 type UserRole = '본사' | '총판' | '대리점' | '구독자' | '게스트'
 
-// 구독 등급 정의
-type SubscriptionTier = 'Free' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond' | 'Black'
+// 구독 등급 정의 (프리미엄 등급 체계)
+type SubscriptionTier = 'Starter' | 'Advance' | 'Platinum' | 'Signature' | 'Master' | 'Infinity'
 
-// 메뉴 카테고리 정의 (20개로 확장)
+// 등급별 레벨 (높을수록 더 많은 권한)
+const tierLevels: Record<SubscriptionTier, number> = {
+  'Starter': 1,
+  'Advance': 2,
+  'Platinum': 3,
+  'Signature': 4,
+  'Master': 5,
+  'Infinity': 6
+}
+
+// 등급별 설정
+const tierConfig = {
+  'Starter': { 
+    color: 'text-gray-400', 
+    bgColor: 'bg-gray-600/20 border border-gray-600/30', 
+    icon: '✨', 
+    label: 'Starter',
+    description: '기본 패키지'
+  },
+  'Advance': { 
+    color: 'text-blue-400', 
+    bgColor: 'bg-blue-600/20 border border-blue-500/30', 
+    icon: '💎', 
+    label: 'Advance',
+    description: '고급 기능'
+  },
+  'Platinum': { 
+    color: 'text-purple-400', 
+    bgColor: 'bg-purple-600/20 border border-purple-500/30', 
+    icon: '👑', 
+    label: 'Platinum',
+    description: '프리미엄 전략'
+  },
+  'Signature': { 
+    color: 'text-amber-400', 
+    bgColor: 'bg-amber-600/20 border border-amber-500/30', 
+    icon: '🏆', 
+    label: 'Signature',
+    description: '시그니처 도구'
+  },
+  'Master': { 
+    color: 'text-red-400', 
+    bgColor: 'bg-red-600/20 border border-red-500/30', 
+    icon: '🔥', 
+    label: 'Master',
+    description: '마스터 클래스'
+  },
+  'Infinity': { 
+    color: 'text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text', 
+    bgColor: 'bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-yellow-600/20 border border-purple-500/30', 
+    icon: '⚡', 
+    label: 'Infinity ∞',
+    description: '무제한 액세스'
+  }
+}
+
+// 메뉴 카테고리 정의 (21개로 확장 - subscription 추가)
 type MenuCategory = 
   'signals' | 'quant' | 'microstructure' | 'technical' | 'ai' | 
   'automation' | 'telegram' | 'gaming' | 'macro' | 'crypto' | 
   'news' | 'events' | 'risk' | 'portfolio' | 'members' | 
-  'payment' | 'marketing' | 'analytics' | 'education' | 'system'
+  'payment' | 'marketing' | 'analytics' | 'education' | 'system' | 'subscription'
 
 // 메뉴 아이템 타입
 interface MenuItem {
@@ -103,7 +159,8 @@ const categoryThemes = {
   marketing: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaBullhorn, iconColor: 'text-fuchsia-500' },
   analytics: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: MdAnalytics, iconColor: 'text-blue-500' },
   education: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaGraduationCap, iconColor: 'text-rose-500' },
-  system: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCog, iconColor: 'text-gray-500' }
+  system: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCog, iconColor: 'text-gray-500' },
+  subscription: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCrown, iconColor: 'text-yellow-500' }
 }
 
 // 카테고리 그룹 정의 - 구분된 색상
@@ -137,7 +194,7 @@ const categoryGroups = {
   },
   management: {
     title: '관리',
-    categories: ['members', 'payment', 'marketing', 'analytics', 'system'],
+    categories: ['members', 'payment', 'subscription', 'marketing', 'analytics', 'system'],
     color: 'from-amber-600/20 to-amber-700/10',
     borderColor: 'border-amber-500/30',
     iconEmoji: '⚙️',
@@ -153,7 +210,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
     items: [
       { icon: FaSignal, label: '스마트 머니 시그널', path: '/signals/smart-money', badge: 'HOT', category: 'signals', isHot: true },
       { icon: FaWhatsapp, label: '고래 추적기', path: '/signals/whale-tracker', category: 'signals' },
-      { icon: FaBinoculars, label: '인사이더 플로우', path: '/signals/insider-flow', category: 'signals', isPremium: true },
+      { icon: FaBinoculars, label: '인사이더 플로우', path: '/signals/insider-flow', category: 'signals', minTier: 'Signature' },
       { icon: FaSkull, label: '청산 히트맵', path: '/signals/liquidation', category: 'signals' },
       { icon: FaExchangeAlt, label: 'DEX 플로우', path: '/signals/dex-flow', category: 'signals' },
       { icon: FaCalculator, label: '펀딩 비율', path: '/signals/funding-rate', category: 'signals' },
@@ -169,7 +226,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: MdAutoGraph, label: '백테스팅', path: '/quant/backtesting', category: 'quant' },
       { icon: FaInfinity, label: '그리드 봇', path: '/quant/grid-bot', category: 'quant', isHot: true },
       { icon: MdSwapHoriz, label: '페어 트레이딩', path: '/quant/pair-trading', category: 'quant' },
-      { icon: BiBot, label: '마켓 메이킹', path: '/quant/market-making', category: 'quant', isPremium: true },
+      { icon: BiBot, label: '마켓 메이킹', path: '/quant/market-making', category: 'quant', minTier: 'Master' },
       { icon: MdAutorenew, label: 'DCA 봇', path: '/quant/dca', category: 'quant' },
       { icon: FaChartArea, label: '평균회귀', path: '/quant/mean-reversion', category: 'quant' },
       { icon: BiTrendingUp, label: '모멘텀', path: '/quant/momentum', category: 'quant' },
@@ -184,7 +241,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: BiRadar, label: '오더플로우', path: '/microstructure/orderflow', category: 'microstructure', isHot: true },
       { icon: FaLayerGroup, label: '오더북 히트맵', path: '/microstructure/orderbook', category: 'microstructure' },
       { icon: FaWater, label: '유동성 풀', path: '/microstructure/liquidity', category: 'microstructure' },
-      { icon: BiPulse, label: '풋프린트 차트', path: '/microstructure/footprint', category: 'microstructure', isPremium: true },
+      { icon: BiPulse, label: '풋프린트 차트', path: '/microstructure/footprint', category: 'microstructure', minTier: 'Master' },
       { icon: MdBubbleChart, label: '임밸런스', path: '/microstructure/imbalance', category: 'microstructure' },
       { icon: FaRadiation, label: '스푸핑 감지', path: '/microstructure/spoofing', category: 'microstructure' },
       { icon: BiNetworkChart, label: 'HFT 패턴', path: '/microstructure/hft', category: 'microstructure' },
@@ -199,7 +256,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: MdShowChart, label: '지표', path: '/technical/indicators', category: 'technical' },
       { icon: FaProjectDiagram, label: '패턴 인식', path: '/technical/patterns', category: 'technical' },
       { icon: FaBalanceScale, label: '지지저항', path: '/technical/support', category: 'technical' },
-      { icon: MdCandlestickChart, label: '볼륨 프로파일', path: '/technical/profile', category: 'technical', isPremium: true },
+      { icon: MdCandlestickChart, label: '볼륨 프로파일', path: '/technical/profile', category: 'technical', minTier: 'Platinum' },
       { icon: FaWaveSquare, label: '엘리엇 파동', path: '/technical/elliott', category: 'technical' },
       { icon: FaRing, label: '피보나치', path: '/technical/fibonacci', category: 'technical' },
       { icon: BiShapePolygon, label: '하모닉 패턴', path: '/technical/harmonic', category: 'technical' },
@@ -219,13 +276,13 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: BiAnalyse, label: '패턴 인식 AI', path: '/ai/pattern-recognition', category: 'ai' },
       { icon: FaAtom, label: '신경망 예측', path: '/ai/neural', category: 'ai' },
       { icon: MdAutoGraph, label: '감성 분석', path: '/ai/sentiment', category: 'ai' },
-      { icon: FaDna, label: '가격 예측', path: '/ai/predictions', category: 'ai', isPremium: true },
+      { icon: FaDna, label: '가격 예측', path: '/ai/predictions', category: 'ai', minTier: 'Platinum' },
       { icon: BiData, label: '앙상블 모델', path: '/ai/ensemble', category: 'ai' },
       { icon: FaFlask, label: '강화학습', path: '/ai/reinforcement', category: 'ai' },
       { icon: BiScatterChart, label: '클러스터링', path: '/ai/clustering', category: 'ai' },
       { icon: FaLightbulb, label: '이상 탐지', path: '/ai/anomaly', category: 'ai' },
       { icon: FaMagic, label: '자연어 처리', path: '/ai/nlp', category: 'ai' },
-      { icon: FaSpaceShuttle, label: '양자 컴퓨팅', path: '/ai/quantum', category: 'ai', isAlpha: true }
+      { icon: FaSpaceShuttle, label: '양자 컴퓨팅', path: '/ai/quantum', category: 'ai', minTier: 'Infinity' }
     ]
   },
   automation: {
@@ -235,7 +292,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: BiBot, label: 'API 봇', path: '/automation/api-bot', category: 'automation' },
       { icon: FaCodeBranch, label: '웹훅 트레이딩', path: '/automation/webhook', category: 'automation' },
       { icon: FaCubes, label: '파인스크립트', path: '/automation/pine-script', category: 'automation' },
-      { icon: FaNetworkWired, label: '전략 빌더', path: '/automation/builder', category: 'automation', isPremium: true },
+      { icon: FaNetworkWired, label: '전략 빌더', path: '/automation/builder', category: 'automation', minTier: 'Signature' },
       { icon: FaStream, label: '페이퍼 트레이딩', path: '/automation/paper-trading', category: 'automation' },
       { icon: MdSpeed, label: '성능 모니터링', path: '/automation/performance', category: 'automation' },
       { icon: FaShieldAlt, label: '리스크 관리', path: '/automation/risk-management', category: 'automation' },
@@ -254,7 +311,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: BiStats, label: '통계 봇', path: '/telegram/stats', category: 'telegram' },
       { icon: FaGamepad, label: '게임 봇', path: '/telegram/games', category: 'telegram', isNew: true },
       { icon: FaExchangeAlt, label: '트레이딩 봇', path: '/telegram/trading', category: 'telegram' },
-      { icon: FaCrown, label: '프리미엄 채널', path: '/telegram/premium', category: 'telegram', isPremium: true },
+      { icon: FaCrown, label: '프리미엄 채널', path: '/telegram/premium', category: 'telegram', minTier: 'Advance' },
       { icon: FaGlobe, label: '다국어 지원', path: '/telegram/multi-language', category: 'telegram' }
     ]
   },
@@ -270,7 +327,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaTheaterMasks, label: '소셜 트레이딩', path: '/gaming/social-trading', category: 'gaming' },
       { icon: FaGem, label: 'NFT 리워드', path: '/gaming/nft', category: 'gaming', isNew: true },
       { icon: FaUsers, label: '길드 시스템', path: '/gaming/guild', category: 'gaming' },
-      { icon: FaPuzzlePiece, label: '메타버스', path: '/gaming/metaverse', category: 'gaming', isAlpha: true }
+      { icon: FaPuzzlePiece, label: '메타버스', path: '/gaming/metaverse', category: 'gaming', minTier: 'Infinity' }
     ]
   },
   macro: {
@@ -458,7 +515,22 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaGlobe, label: '언어 설정', path: '/system/language', category: 'system' },
       { icon: FaDatabase, label: '백업/복원', path: '/system/backup', category: 'system' },
       { icon: FaShieldAlt, label: '개인정보', path: '/system/privacy', category: 'system' },
-      { icon: FaCog, label: '고급 설정', path: '/system/advanced', category: 'system', isPremium: true }
+      { icon: FaCog, label: '고급 설정', path: '/system/advanced', category: 'system', minTier: 'Platinum' }
+    ]
+  },
+  subscription: {
+    title: '👑 등급 & 구독',
+    items: [
+      { icon: FaCrown, label: '현재 등급', path: '/subscription/current', category: 'subscription' },
+      { icon: FaChartBar, label: '등급 비교', path: '/subscription/compare', category: 'subscription' },
+      { icon: FaRocket, label: '업그레이드', path: '/subscription/upgrade', category: 'subscription' },
+      { icon: FaGift, label: '등급 혜택', path: '/subscription/benefits', category: 'subscription' },
+      { icon: FaHistory, label: '구독 내역', path: '/subscription/history', category: 'subscription' },
+      { icon: FaCreditCard, label: '결제 관리', path: '/subscription/billing', category: 'subscription' },
+      { icon: FaPercentage, label: '할인 & 프로모션', path: '/subscription/promotions', category: 'subscription' },
+      { icon: FaUserFriends, label: '추천 프로그램', path: '/subscription/referral', category: 'subscription' },
+      { icon: FaQuestionCircle, label: '등급 가이드', path: '/subscription/guide', category: 'subscription' },
+      { icon: FaStar, label: 'VIP 전용', path: '/subscription/vip', category: 'subscription', minTier: 'Master' }
     ]
   }
 }
@@ -475,6 +547,15 @@ export default function SidebarNew() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  
+  // 현재 사용자 등급 (실제로는 API나 Context에서 가져와야 함)
+  const [userTier, setUserTier] = useState<SubscriptionTier>('Infinity') // 임시로 Infinity 설정
+  
+  // 사용자가 메뉴에 접근 가능한지 확인
+  const canAccessMenu = (item: MenuItem): boolean => {
+    if (!item.minTier) return true // 등급 제한이 없으면 모두 접근 가능
+    return tierLevels[userTier] >= tierLevels[item.minTier]
+  }
 
   // localStorage에서 설정 불러오기
   useEffect(() => {
@@ -792,7 +873,7 @@ export default function SidebarNew() {
                   <span className="text-gray-400">구독 등급:</span>
                   <span className="flex items-center gap-1">
                     <FaCrown className="text-yellow-500 text-[10px]" />
-                    <span className="font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">Black ∞</span>
+                    <span className="font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">Infinity ∞</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -1018,31 +1099,49 @@ export default function SidebarNew() {
                                   transition={{ duration: 0.2 }}
                                   className="mt-1 ml-4"
                                 >
-                                  {category.items.map((item, idx) => (
-                                    <div key={idx} className="flex items-center gap-1 group">
-                                      <Link
-                                        href={item.path}
-                                        className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
-                                                  hover:bg-gray-800/50 transition-all
-                                                  ${pathname === item.path ? 'bg-gray-800/30 text-purple-400' : 'text-gray-400 hover:text-gray-200'}`}
-                                        onClick={() => setIsOpen(false)}
-                                      >
-                                        <item.icon className={`text-[10px] ${theme.iconColor || 'text-gray-500'}`} />
-                                        <span className="flex-1">{item.label}</span>
-                                        {item.isHot && (
-                                          <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
-                                            HOT
-                                          </span>
-                                        )}
-                                        {item.isNew && (
-                                          <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-                                            NEW
-                                          </span>
-                                        )}
-                                        {item.isPremium && (
-                                          <FaCrown className="text-yellow-500/70 text-[10px]" />
-                                        )}
-                                      </Link>
+                                  {category.items.map((item, idx) => {
+                                    const canAccess = canAccessMenu(item)
+                                    const requiredTierInfo = item.minTier ? tierConfig[item.minTier] : null
+                                    
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1 group">
+                                        <Link
+                                          href={canAccess ? item.path : '#'}
+                                          className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
+                                                    hover:bg-gray-800/50 transition-all relative
+                                                    ${!canAccess ? 'opacity-50 cursor-not-allowed' : ''}
+                                                    ${pathname === item.path ? 'bg-gray-800/30 text-purple-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                          onClick={(e) => {
+                                            if (!canAccess) {
+                                              e.preventDefault()
+                                              alert(`이 메뉴는 ${item.minTier} 등급 이상 사용 가능합니다.`)
+                                            } else {
+                                              setIsOpen(false)
+                                            }
+                                          }}
+                                          title={!canAccess ? `${item.minTier} 등급 필요` : undefined}
+                                        >
+                                          <item.icon className={`text-[10px] ${theme.iconColor || 'text-gray-500'}`} />
+                                          <span className="flex-1">{item.label}</span>
+                                          {!canAccess && (
+                                            <FaLock className="text-gray-500 text-[10px]" />
+                                          )}
+                                          {item.minTier && canAccess && (
+                                            <span className={`text-[9px] px-1 py-0.5 rounded ${requiredTierInfo?.bgColor} ${requiredTierInfo?.color}`}>
+                                              {requiredTierInfo?.icon}
+                                            </span>
+                                          )}
+                                          {item.isHot && (
+                                            <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
+                                              HOT
+                                            </span>
+                                          )}
+                                          {item.isNew && (
+                                            <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                                              NEW
+                                            </span>
+                                          )}
+                                        </Link>
                                       <button
                                         onClick={(e) => toggleFavorite(item.path, e)}
                                         className={`p-1 hover:bg-gray-700/50 rounded transition-all ${
@@ -1059,7 +1158,8 @@ export default function SidebarNew() {
                                         />
                                       </button>
                                     </div>
-                                  ))}
+                                    )
+                                  })}
                                 </motion.div>
                               )}
                             </AnimatePresence>
