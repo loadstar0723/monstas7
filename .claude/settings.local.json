@@ -109,7 +109,9 @@
       "WebFetch(domain:13.209.84.93)",
       "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/deploy.yml)",
       "Bash(start http://localhost:3005)",
-      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/simple-deploy.yml)"
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/simple-deploy.yml)",
+      "Bash(mv:*)",
+      "Bash(start http://localhost:3006)"
     ],
     "deny": [],
     "ask": []

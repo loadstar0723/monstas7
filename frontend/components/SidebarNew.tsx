@@ -30,7 +30,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaBan, FaClock
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaChevronUp, FaBan, FaClock
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -473,6 +473,8 @@ export default function SidebarNew() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [recentVisits, setRecentVisits] = useState<{path: string, timestamp: number}[]>([])
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   // localStorage에서 설정 불러오기
   useEffect(() => {
@@ -492,6 +494,29 @@ export default function SidebarNew() {
     if (savedCollapsed) {
       setIsCollapsed(JSON.parse(savedCollapsed))
     }
+    
+    // 헤더 접힘 상태 불러오기
+    const savedHeaderCollapsed = localStorage.getItem('monsta_header_collapsed')
+    if (savedHeaderCollapsed) {
+      setIsHeaderCollapsed(JSON.parse(savedHeaderCollapsed))
+    }
+  }, [])
+
+  // 모바일 감지 및 자동 헤더 접기
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768
+      setIsMobile(mobile)
+      
+      // 모바일에서 처음 로드 시 헤더 자동 접기
+      if (mobile && !localStorage.getItem('monsta_header_collapsed')) {
+        setIsHeaderCollapsed(true)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // 키보드 단축키 (Ctrl+H로 홈으로 이동)
@@ -526,6 +551,15 @@ export default function SidebarNew() {
     setIsCollapsed(prev => {
       const newState = !prev
       localStorage.setItem('monsta_sidebar_collapsed', JSON.stringify(newState))
+      return newState
+    })
+  }
+
+  // 헤더 접힘 토글
+  const toggleHeaderCollapsed = () => {
+    setIsHeaderCollapsed(prev => {
+      const newState = !prev
+      localStorage.setItem('monsta_header_collapsed', JSON.stringify(newState))
       return newState
     })
   }
@@ -722,8 +756,29 @@ export default function SidebarNew() {
               )}
             </Link>
 
-            {/* 사용자 정보 섹션 */}
+            {/* 헤더 접기/펼치기 버튼 - 모바일에서만 표시 */}
             {!isCollapsed && (
+              <button
+                onClick={toggleHeaderCollapsed}
+                className="mx-4 mb-3 flex items-center justify-between px-3 py-2 
+                         bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all group"
+                title={isHeaderCollapsed ? "메뉴 정보 펼치기" : "메뉴 정보 접기"}
+              >
+                <div className="flex items-center gap-2">
+                  <FaFilter className="text-gray-400 text-sm" />
+                  <span className="text-xs text-gray-400">
+                    {isHeaderCollapsed ? "메뉴 정보 보기" : "메뉴 정보 숨기기"}
+                  </span>
+                </div>
+                {isHeaderCollapsed ? 
+                  <FaChevronDown className="text-gray-400 text-xs" /> : 
+                  <FaChevronUp className="text-gray-400 text-xs" />
+                }
+              </button>
+            )}
+
+            {/* 사용자 정보 섹션 - 헤더가 펼쳐진 경우에만 표시 */}
+            {!isCollapsed && !isHeaderCollapsed && (
               <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -754,8 +809,8 @@ export default function SidebarNew() {
             </div>
             )}
 
-            {/* 즐겨찾기 섹션 */}
-            {!isCollapsed && (
+            {/* 즐겨찾기 섹션 - 헤더가 펼쳐진 경우에만 표시 */}
+            {!isCollapsed && !isHeaderCollapsed && (
               <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2 px-1">
                 <FaStar className="text-yellow-500 text-xs" />
@@ -791,8 +846,8 @@ export default function SidebarNew() {
             </div>
             )}
 
-            {/* 최근 방문 섹션 */}
-            {!isCollapsed && recentVisits.length > 0 && (
+            {/* 최근 방문 섹션 - 헤더가 펼쳐진 경우에만 표시 */}
+            {!isCollapsed && !isHeaderCollapsed && recentVisits.length > 0 && (
               <div className="mb-4 p-2 bg-gray-800/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2 px-1">
                   <div className="flex items-center gap-2">
@@ -829,7 +884,7 @@ export default function SidebarNew() {
               </div>
             )}
 
-            {/* 검색바 */}
+            {/* 검색바 - 헤더가 접혀도 검색은 항상 표시 (중요 기능) */}
             {!isCollapsed && (
               <div className="relative">
               <input
