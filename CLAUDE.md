@@ -77,4 +77,17 @@ Next.js 와 Streamlit 의 장점만을 활용하여 오직 통합 하나의 하�
 
   각 각페이지별로 모듈화해서 시스템과 연동, 독립적 경쟁력과 에러방지, 안정성확보   
 
+  재 하이브리드 구조:
+
+  사용자 → Next.js (Frontend) → FastAPI (Backend) → AI/ML 모델
+           포트 3000            포트 8000         Python AI
+
+*** Next.js + FastAPI 전용 시스템           
+
+📊 하이브리드 구조의 장점:
+
+  - Next.js: 빠른 UI, 실시간 업데이트
+  - FastAPI: Python AI/ML 모델 실행
+  - 완벽한 통합: API를 통한 자연스러운 연결
+
   

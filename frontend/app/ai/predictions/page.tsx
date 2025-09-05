@@ -3,15 +3,27 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+import { apiClient } from '@/lib/api'
+
 export default function AIPage() {
-  const [data, setData] = useState(null)
+  const [predictions, setPredictions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // TODO: API 호출로 실제 데이터 가져오기
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+    // 실제 AI API 호출
+    async function fetchPredictions() {
+      try {
+        const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
+        const data = await apiClient.getBatchPredictions(symbols)
+        setPredictions(data)
+      } catch (error) {
+        console.error('AI 예측 로드 실패:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchPredictions()
   }, [])
 
   return (
