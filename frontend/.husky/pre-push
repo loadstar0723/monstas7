@@ -1,0 +1,30 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Push 전 자동 검증 시작..."
+
+# 현재 디렉토리 저장
+ORIGINAL_DIR=$(pwd)
+
+# frontend 디렉토리로 이동
+cd frontend
+
+echo "1️⃣ Prisma Client 확인..."
+npx prisma generate || {
+    echo "❌ Prisma 에러! push 중단"
+    cd $ORIGINAL_DIR
+    exit 1
+}
+
+echo "2️⃣ 빌드 테스트..."
+npm run build || {
+    echo "❌ 빌드 실패! 다음 사항을 확인하세요:"
+    echo "  - 함수명이 숫자로 시작하는지 확인"
+    echo "  - import 에러 확인"
+    echo "  - 문법 에러 확인"
+    cd $ORIGINAL_DIR
+    exit 1
+}
+
+echo "✅ 모든 검증 통과! Push를 진행합니다..."
+cd $ORIGINAL_DIR

@@ -79,18 +79,41 @@ jobs:
             # npm 패키지 설치
             npm install
             
-            # Prisma 클라이언트 생성
-            echo "🔧 Generating Prisma Client..."
+            # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
+            echo "🔍 배포 전 검증 시작..."
+            
+            # Prisma 클라이언트 생성 (Internal Server Error 방지)
+            echo "1️⃣ Prisma Client 생성 중..."
             npx prisma generate || {
-                echo "Prisma generate failed"
+                echo "❌ Prisma generate failed - Internal Server Error 예방 실패"
                 exit 1
             }
             
-            # 프로덕션 빌드
-            npm run build || {
-                echo "Build failed, checking errors..."
+            # 타입 체크 (타입 에러 사전 차단)
+            echo "2️⃣ TypeScript 타입 체크 중..."
+            npx tsc --noEmit || {
+                echo "❌ TypeScript 타입 에러 발견!"
+                echo "💡 해결방법: 타입 에러를 먼저 수정하세요"
                 exit 1
             }
+            
+            # ESLint 체크 (코드 품질 검증)
+            echo "3️⃣ ESLint 검사 중..."
+            npm run lint || {
+                echo "⚠️ Lint 경고가 있지만 계속 진행합니다..."
+            }
+            
+            # 프로덕션 빌드 (최종 검증)
+            echo "4️⃣ 프로덕션 빌드 테스트 중..."
+            npm run build || {
+                echo "❌ 빌드 실패! 다음 사항을 확인하세요:"
+                echo "  - 함수명이 숫자로 시작하지 않는지 (예: 30Page → IndicatorsPage)"
+                echo "  - import 에러가 없는지"
+                echo "  - 문법 에러가 없는지"
+                exit 1
+            }
+            
+            echo "✅ 모든 검증 통과! 배포를 계속합니다..."
             
             # PM2 설치 확인
             which pm2 || {
