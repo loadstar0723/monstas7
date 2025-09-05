@@ -493,6 +493,19 @@ export default function SidebarNew() {
     }
   }, [])
 
+  // 키보드 단축키 (Ctrl+H로 홈으로 이동)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'h') {
+        e.preventDefault()
+        window.location.href = '/'
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [])
+
   // 경로 변경 시 최근 방문 기록 업데이트
   useEffect(() => {
     if (pathname && pathname !== '/') {
@@ -626,9 +639,15 @@ export default function SidebarNew() {
             <div className="flex items-center justify-between mb-4">
               {!isCollapsed ? (
                 <>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    MONSTA AI
-                  </h1>
+                  <Link 
+                    href="/"
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      MONSTA AI
+                    </h1>
+                  </Link>
                   <div className="flex items-center gap-2">
                     <span className="text-xs px-2 py-1 bg-purple-600 rounded-full">v7.0</span>
                     <button 
@@ -641,15 +660,45 @@ export default function SidebarNew() {
                   </div>
                 </>
               ) : (
-                <button 
-                  onClick={toggleCollapsed}
-                  className="w-full flex justify-center p-1.5 hover:bg-gray-800 rounded transition-colors"
-                  title="펼치기"
-                >
-                  <FaChevronRight className="text-gray-400 text-sm" />
-                </button>
+                <div className="flex flex-col items-center gap-2">
+                  <Link 
+                    href="/"
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    onClick={() => setIsOpen(false)}
+                    title="홈으로"
+                  >
+                    <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      M
+                    </span>
+                  </Link>
+                  <button 
+                    onClick={toggleCollapsed}
+                    className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                    title="펼치기"
+                  >
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* 홈 버튼 */}
+            <Link
+              href="/"
+              className={`mx-4 mb-3 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 
+                        bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30
+                        border border-purple-500/30 rounded-lg transition-all group`}
+              onClick={() => setIsOpen(false)}
+              title="홈으로"
+            >
+              <FaHome className={`${isCollapsed ? 'text-lg' : 'text-base'} text-purple-400 group-hover:text-purple-300 transition-colors`} />
+              {!isCollapsed && (
+                <>
+                  <span className="font-semibold text-sm">홈</span>
+                  <span className="ml-auto text-xs text-gray-500">Ctrl+H</span>
+                </>
+              )}
+            </Link>
 
             {/* 사용자 정보 섹션 */}
             {!isCollapsed && (
