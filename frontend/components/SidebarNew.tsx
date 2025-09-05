@@ -26,7 +26,10 @@ import {
   FaPaperPlane, FaComment, FaComments, FaVideo, FaMicrophone,
   FaHeadphones, FaKeyboard, FaMouse, FaDesktop, FaMobile,
   FaTablet, FaLaptop, FaTv, FaGamepad as FaController, 
-  FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter
+  FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
+  FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
+  FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
+  FaShare, FaMoon, FaFilter, FaCreditCard
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -40,7 +43,7 @@ import {
   MdAutoGraph, MdAutorenew, MdSwapHoriz, MdTimeline,
   MdShowChart, MdCandlestickChart, MdStackedLineChart,
   MdMultilineChart, MdSignalCellularAlt, MdSpeed,
-  MdWaterfall, MdBubbleChart, MdScatterPlot, MdPieChart,
+  MdBubbleChart, MdScatterPlot, MdPieChart,
   MdDonutLarge, MdBarChart, MdEqualizer, MdGraphicEq,
   MdLeaderboard, MdAnalytics, MdQueryStats, MdDataUsage
 } from 'react-icons/md'
@@ -159,7 +162,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaVolumeUp, label: 'Volume Profile', path: '/technical/volume', category: 'technical' },
       { icon: BiData, label: 'CVD/Delta', path: '/technical/cvd', category: 'technical' },
       { icon: FaAnchor, label: '지지/저항 자동탐지', path: '/technical/support', category: 'technical' },
-      { icon: MdWaterfall, label: 'OFI Analysis', path: '/technical/ofi', badge: 'NEW', category: 'technical', isNew: true },
+      { icon: MdShowChart, label: 'OFI Analysis', path: '/technical/ofi', badge: 'NEW', category: 'technical', isNew: true },
       { icon: FaFire, label: '유동성 사냥', path: '/technical/liquidity', category: 'technical', minTier: 'Diamond' },
       { icon: FaSkull, label: '오비추어리 패턴', path: '/technical/obituary', category: 'technical', minTier: 'Black', isAlpha: true },
       { icon: FaPuzzlePiece, label: 'Harmonic Patterns', path: '/technical/harmonic', category: 'technical' },
@@ -288,7 +291,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaFire, label: 'Burning Events', path: '/events/burning', category: 'events' },
       { icon: FaCoins, label: 'Staking Rewards', path: '/events/staking', category: 'events' },
       { icon: FaPercentage, label: 'DeFi Yields', path: '/events/yields', category: 'events' },
-      { icon: FaBallotCheck, label: 'Governance Votes', path: '/events/governance', category: 'events' },
+      { icon: FaVoteYea, label: 'Governance Votes', path: '/events/governance', category: 'events' },
       { icon: FaCalendar, label: 'Token Unlocks', path: '/events/unlocks', badge: '중요', category: 'events' },
       { icon: FaMicrochip, label: 'Protocol Upgrades', path: '/events/upgrades', category: 'events' },
     ]
@@ -318,7 +321,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaChartArea, label: 'Portfolio Heatmap', path: '/portfolio/heatmap', category: 'portfolio' },
       { icon: BiStats, label: 'VAR 계산', path: '/portfolio/var', category: 'portfolio', minTier: 'Gold' },
       { icon: BiNetworkChart, label: 'Correlation Matrix', path: '/portfolio/correlation', category: 'portfolio' },
-      { icon: FaPieChart, label: 'Asset Allocation', path: '/portfolio/allocation', category: 'portfolio' },
+      { icon: FaChartPie, label: 'Asset Allocation', path: '/portfolio/allocation', category: 'portfolio' },
       { icon: MdAnalytics, label: 'Performance Analytics', path: '/portfolio/performance', category: 'portfolio' },
       { icon: FaWallet, label: 'Wallet Tracker', path: '/portfolio/wallets', category: 'portfolio' },
     ]
@@ -359,7 +362,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaBullhorn, label: '캠페인 관리', path: '/marketing/campaigns', category: 'marketing', minRole: ['본사', '총판'] },
       { icon: FaTicketAlt, label: '쿠폰 발행', path: '/marketing/coupons', category: 'marketing' },
       { icon: FaUsers, label: '추천인 프로그램', path: '/marketing/referral', category: 'marketing' },
-      { icon: FaCalendarCheck, label: '이벤트 관리', path: '/marketing/events', category: 'marketing' },
+      { icon: FaCalendar, label: '이벤트 관리', path: '/marketing/events', category: 'marketing' },
       { icon: FaShare, label: 'SNS 연동', path: '/marketing/social', category: 'marketing' },
       { icon: FaEnvelope, label: '이메일 마케팅', path: '/marketing/email', category: 'marketing' },
       { icon: FaChartLine, label: 'A/B 테스팅', path: '/marketing/ab-test', category: 'marketing', minTier: 'Gold' },
@@ -377,7 +380,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaDollarSign, label: 'LTV 분석', path: '/analytics/ltv', category: 'analytics', minRole: ['본사'] },
       { icon: BiPieChart, label: 'CAC 분석', path: '/analytics/cac', category: 'analytics', minRole: ['본사'] },
       { icon: MdTimeline, label: '코호트 분석', path: '/analytics/cohort', category: 'analytics', minRole: ['본사'] },
-      { icon: FaFunnel, label: '퍼널 분석', path: '/analytics/funnel', category: 'analytics', minRole: ['본사'] },
+      { icon: FaFilter, label: '퍼널 분석', path: '/analytics/funnel', category: 'analytics', minRole: ['본사'] },
       { icon: BiLineChart, label: '수익 예측', path: '/analytics/forecast', category: 'analytics', minRole: ['본사'] },
       { icon: FaRoute, label: 'Customer Journey', path: '/analytics/journey', category: 'analytics', minRole: ['본사'] },
       { icon: MdLeaderboard, label: '실적 순위', path: '/analytics/ranking', category: 'analytics' },
@@ -479,6 +482,7 @@ export default function SidebarNew() {
           bg-gradient-to-b from-gray-900 via-gray-900 to-black
           border-r border-gray-800
           transition-all duration-300 ease-in-out
+          flex flex-col overflow-hidden
           ${isOpen ? 'w-64' : 'w-20'}
         `}
         onMouseEnter={() => setIsHovered(true)}
@@ -515,7 +519,14 @@ export default function SidebarNew() {
         </button>
 
         {/* Main Menu */}
-        <nav className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        <nav 
+          className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar" 
+          style={{ 
+            maxHeight: 'calc(100vh - 140px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#4B5563 transparent'
+          }}
+        >
           <div className="space-y-3">
             {Object.entries(menuStructure).map(([category, section]) => {
               const theme = categoryThemes[category as MenuCategory]

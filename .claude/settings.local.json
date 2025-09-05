@@ -82,7 +82,15 @@
       "Read(/C:\\monsta\\monstas7\\frontend\\app/**)",
       "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)",
       "Read(/C:\\monsta\\monstas7\\.github\\workflows/**)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Read(/C:\\Users\\dhk49/**)",
+      "Bash(chmod:*)",
+      "Read(/C:\\monsta\\monstas7\\frontend\\components/**)",
+      "Read(/C:\\monsta\\monstas7\\pages/**)",
+      "Read(/C:\\monsta\\monstas7\\components/**)",
+      "Read(/C:\\monsta\\monstas7/**)",
+      "Bash(rm:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
