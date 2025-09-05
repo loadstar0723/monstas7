@@ -31,7 +31,7 @@ export default function CryptoHeatmap() {
       const usdtPairs = allTickers
         .filter((ticker: Record<string, string>) => ticker.symbol.endsWith('USDT'))
         .sort((a: Record<string, string>, b: Record<string, string>) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .slice(0, 100)
+        .slice(0, 30)
         .map((ticker: Record<string, string>) => ({
           symbol: ticker.symbol,
           name: ticker.symbol.replace('USDT', ''),
@@ -106,7 +106,7 @@ export default function CryptoHeatmap() {
         <h2 className="text-4xl md:text-5xl font-bold mb-4">
           <span className="gradient-text">실시간 암호화폐 히트맵</span>
         </h2>
-        <p className="text-gray-400 text-lg">거래량 기준 상위 100개 코인의 실시간 현황</p>
+        <p className="text-gray-400 text-lg">거래량 기준 상위 30개 코인의 실시간 현황</p>
       </div>
 
       <div className="gradient-border">

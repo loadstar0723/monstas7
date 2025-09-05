@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import TradingViewWidget from '@/components/TradingViewWidget'
+import TradingViewChart from '@/components/TradingViewChart'
 import CryptoHeatmap from '@/components/CryptoHeatmap'
 import AIDashboard from '@/components/AIDashboard'
+import TradingViewSeasonalWidget from '@/components/TradingViewSeasonalWidget'
 import { FaRocket, FaChartLine, FaRobot, FaTelegram, FaGlobe } from 'react-icons/fa'
 
 interface MarketData {
@@ -324,9 +325,19 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="gradient-border-content p-0">
-              <TradingViewWidget symbol={selectedSymbol} height={600} />
+            <div className="gradient-border-content p-0" style={{ minHeight: '500px' }}>
+              <TradingViewChart symbol={selectedSymbol} height={500} />
             </div>
+          </motion.div>
+
+          {/* TradingView Seasonal Analysis */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-8"
+          >
+            <TradingViewSeasonalWidget symbol={selectedSymbol} />
           </motion.div>
         </div>
       </section>

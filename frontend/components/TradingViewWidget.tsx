@@ -13,7 +13,7 @@ interface TradingViewWidgetProps {
 function TradingViewWidget({ 
   symbol = 'BINANCE:BTCUSDT',
   theme = 'dark',
-  height = 610,
+  height = 500,
   width = '100%',
   locale = 'kr'
 }: TradingViewWidgetProps) {
@@ -37,22 +37,18 @@ function TradingViewWidget({
       "enable_publishing": false,
       "allow_symbol_change": true,
       "calendar": false,
-      "support_host": "https://www.tradingview.com",
-      "studies": [
-        "STD;MACD",
-        "STD;RSI"
-      ],
-      "container_id": "tradingview_advanced"
+      "support_host": "https://www.tradingview.com"
     })
 
     const widgetContainer = document.createElement("div")
     widgetContainer.className = "tradingview-widget-container"
     widgetContainer.style.height = `${height}px`
     widgetContainer.style.width = width
-
+    
     const widgetDiv = document.createElement("div")
-    widgetDiv.id = "tradingview_advanced"
+    widgetDiv.className = "tradingview-widget-container__widget"
     widgetDiv.style.height = "100%"
+    widgetDiv.style.width = "100%"
 
     widgetContainer.appendChild(widgetDiv)
     widgetContainer.appendChild(script)
