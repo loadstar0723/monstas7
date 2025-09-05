@@ -28,6 +28,9 @@ const config: Config = {
             'background-position': 'right center'
           }
         }
+      },
+      padding: {
+        'safe': 'env(safe-area-inset-bottom)',
       }
     },
   },
