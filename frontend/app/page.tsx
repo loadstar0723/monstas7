@@ -101,6 +101,9 @@ export default function Home() {
     // 폴백으로 5초마다 HTTP 호출 (웹소켓 연결 실패 시)
     const interval = setInterval(fetchMarketData, 30000) // 30초로 증가
     
+    // otherSymbols 정의
+    const otherSymbols = ['BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT']
+    
     return () => {
       clearInterval(interval)
       // WebSocket 구독 해제

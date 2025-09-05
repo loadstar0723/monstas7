@@ -130,40 +130,12 @@ export default function TradingViewSeasonalWidget({
     try {
       setIsLoading(true)
       
-      // 실제 코인 역사 데이터 가져오기
-      const endDate = new Date()
-      const startDate = new Date('2017-01-01') // 2017년부터
-      
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/${selectedCoin}/market_chart/range?vs_currency=usd&from=${Math.floor(startDate.getTime()/1000)}&to=${Math.floor(endDate.getTime()/1000)}`
-      )
-      
-      if (!response.ok) {
-        await fetchBinanceData()
-        return
-      }
-      
-      const data = await response.json()
-      const processedData = processMonthlyReturns(data.prices)
-      setSeasonalData(processedData.monthlyData)
-      setYearlyPerformance(processedData.yearlyData)
-      
-      // 예측 데이터 생성 및 통합
-      const predictions = generatePrediction(processedData.monthlyData)
-      if (predictions.length > 0) {
-        const combinedData = [...processedData.monthlyData]
-        predictions.forEach(pred => {
-          const monthIndex = combinedData.findIndex(d => d.month === pred.month)
-          if (monthIndex !== -1) {
-            combinedData[monthIndex]['prediction'] = pred.value
-          }
-        })
-        setSeasonalData(combinedData)
-      }
+      // 항상 Binance API 사용
+      await fetchBinanceData()
       
     } catch (error) {
-      console.error('Failed to fetch seasonal data:', error)
-      await fetchBinanceData()
+      console.warn('데이터 로드 실패, 기본 데이터 사용:', error)
+      setDefaultRealData()
     } finally {
       setIsLoading(false)
     }
@@ -176,8 +148,17 @@ export default function TradingViewSeasonalWidget({
       const limit = 100 // 더 많은 데이터
       
       const response = await fetch(
-        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          }
+        }
       )
+      
+      if (!response.ok) {
+        throw new Error(`Binance API error: ${response.status}`)
+      }
       
       const data = await response.json()
       const processedData = processBinanceData(data)
@@ -198,7 +179,7 @@ export default function TradingViewSeasonalWidget({
       }
       
     } catch (error) {
-      console.error('Binance API failed:', error)
+      console.warn('Binance API 접근 실패, 기본 데이터 사용:', error)
       setDefaultRealData()
     }
   }

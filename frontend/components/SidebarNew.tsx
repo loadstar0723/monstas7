@@ -14,7 +14,7 @@ import {
   FaCoins, FaExchangeAlt, FaMicrochip, FaLock, FaCrown,
   FaDna, FaAtom, FaFlask, FaLightbulb, FaNetworkWired,
   FaDatabase, FaServer, FaCloud, FaFingerprint, FaMagic,
-  FaGem, FaDollarSign, FaBitcoin, FaEthereum, FaChartArea,
+  FaGem, FaDollarSign, FaBitcoin, FaEthereum, FaChartArea, FaChevronRight,
   FaBalanceScale, FaTrophy, FaMedal, FaAward, FaStar, FaKey,
   FaSignal, FaWaveSquare, FaSearch, FaVolumeUp, FaChessQueen,
   FaWater, FaEye, FaFire, FaSkull, FaBolt, FaRadiation,
@@ -31,7 +31,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronRight, FaChevronUp, FaBan, FaClock, FaQuestionCircle
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronUp, FaBan, FaClock, FaQuestionCircle
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -541,6 +541,7 @@ export default function SidebarNew() {
   
   // 현재 사용자 등급 (실제로는 API나 Context에서 가져와야 함)
   const [userTier, setUserTier] = useState<SubscriptionTier>('Infinity') // 임시로 Infinity 설정
+  const [activeView, setActiveView] = useState<'menu' | 'category'>('category')
   
   // 사용자가 메뉴에 접근 가능한지 확인
   const canAccessMenu = (item: MenuItem): boolean => {
@@ -561,6 +562,19 @@ export default function SidebarNew() {
     
     return tierLevels[userTier] >= tierLevels[finalRequiredTier]
   }
+
+  // 접근 가능한 메뉴 개수 계산
+  const accessibleMenuCount = useMemo(() => {
+    let count = 0
+    Object.values(menuStructure).forEach(category => {
+      category.items.forEach(item => {
+        if (canAccessMenu(item)) {
+          count++
+        }
+      })
+    })
+    return count
+  }, [userTier])
 
   // localStorage에서 설정 불러오기
   useEffect(() => {
@@ -826,27 +840,7 @@ export default function SidebarNew() {
                 </motion.button>
                 </div>
                 
-                {/* 현재 사용자 등급 표시 */}
-                <div className={`mb-3 p-2.5 rounded-lg bg-gradient-to-r ${tierConfig[userTier].bgColor} border ${tierConfig[userTier].borderColor || 'border-gray-700/50'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">내 등급:</span>
-                      <span className={`text-sm font-bold ${tierConfig[userTier].color}`}>
-                        {tierConfig[userTier].icon} {userTier}
-                      </span>
-                    </div>
-                    <Link 
-                      href="/subscription/benefits"
-                      onClick={() => setIsOpen(false)}
-                      className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                    >
-                      업그레이드 →
-                    </Link>
-                  </div>
-                  <div className="mt-1 text-[10px] text-gray-500">
-                    {tierConfig[userTier].description}
-                  </div>
-                </div>
+                {/* 로고 영역만 유지 */}
               </div>
             ) : (
               /* 접힌 상태 - M 로고와 등급 아이콘 표시 */
@@ -889,36 +883,67 @@ export default function SidebarNew() {
               </button>
             )}
 
-            {/* 사용자 정보 섹션 - 헤더가 펼쳐진 경우에만 표시 */}
+            {/* 통합된 사용자 & 등급 정보 카드 - 헤더가 펼쳐진 경우에만 표시 */}
             {!isCollapsed && !isHeaderCollapsed && (
-              <div className="mb-3 p-3 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <FaUserTie className="text-purple-400" />
-                  <span className="text-sm font-bold">관리자</span>
-                </div>
-                <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
-                  본사
-                </span>
+              <div className="mb-3">
+                <Link 
+                  href="/subscription/benefits"
+                  onClick={() => setIsOpen(false)}
+                  className="block relative overflow-hidden rounded-xl border border-gray-700 hover:border-purple-500/50 transition-all cursor-pointer group"
+                  title="클릭하여 등급별 혜택 보기"
+                >
+                  {/* 배경 그라데이션 효과 */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-pink-900/10 group-hover:from-purple-900/20 group-hover:to-pink-900/20 transition-colors" />
+                  
+                  <div className="relative p-4">
+                    {/* 상단 헤더 - 사용자 정보와 역할 */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <FaUserTie className="text-purple-400 text-sm" />
+                        <span className="text-sm font-bold text-white">관리자</span>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
+                        본사
+                      </span>
+                    </div>
+
+                    {/* 등급 표시 - 크고 명확하게 */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-3xl ${tierConfig[userTier].color} drop-shadow-lg`}>
+                          {tierConfig[userTier].icon}
+                        </span>
+                        <div>
+                          <div className="text-xs text-gray-400 mb-0.5">구독 등급</div>
+                          <div className="font-bold text-lg bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
+                            {userTier}
+                          </div>
+                        </div>
+                      </div>
+                      <FaChevronRight className="text-gray-500 group-hover:text-purple-400 transition-colors" />
+                    </div>
+
+                    {/* 통계 정보 - 간결하게 */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-gray-800/50 rounded-lg p-2">
+                        <div className="text-gray-400 mb-0.5">활성 메뉴</div>
+                        <div className="font-bold text-green-400">{accessibleMenuCount} / 301</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-2">
+                        <div className="text-gray-400 mb-0.5">접근 권한</div>
+                        <div className="font-bold text-purple-400">무제한</div>
+                      </div>
+                    </div>
+
+                    {/* 하단 설명 */}
+                    <div className="mt-3 pt-3 border-t border-gray-700/50">
+                      <div className="text-[10px] text-gray-400 group-hover:text-gray-300 transition-colors">
+                        {tierConfig[userTier].description}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">구독 등급:</span>
-                  <span className="flex items-center gap-1">
-                    <FaCrown className="text-yellow-500 text-[10px]" />
-                    <span className="font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">Infinity ∞</span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">활성 메뉴:</span>
-                  <span className="text-green-400 font-semibold">300+ 기능</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">접근 권한:</span>
-                  <span className="text-purple-400">무제한</span>
-                </div>
-              </div>
-            </div>
             )}
 
             {/* 즐겨찾기 섹션 - 헤더가 펼쳐진 경우에만 표시 */}
@@ -1181,7 +1206,13 @@ export default function SidebarNew() {
                                             if (!canAccess) {
                                               e.preventDefault()
                                               const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category] || 'Starter'
-                                              alert(`이 메뉴는 ${requiredTier} 등급 이상 사용 가능합니다.`)
+                                              // 간단한 모달 대신 confirm으로 선택 옵션 제공
+                                              const goToUpgrade = confirm(
+                                                `이 메뉴는 ${requiredTier} 등급 이상 사용 가능합니다.\n\n현재 등급: ${userTier}\n필요 등급: ${requiredTier}\n\n등급 비교 페이지로 이동하시겠습니까?`
+                                              )
+                                              if (goToUpgrade) {
+                                                window.location.href = '/subscription/benefits'
+                                              }
                                             } else {
                                               setIsOpen(false)
                                             }
@@ -1251,8 +1282,60 @@ export default function SidebarNew() {
             ))}
           </div>
 
+          {/* 등급 안내 버튼 - 하단 고정 */}
+          <div className="p-3 space-y-2">
+            {/* 프리미엄 업그레이드 CTA */}
+            {userTier === 'Starter' && (
+              <Link
+                href="/subscription/compare"
+                onClick={() => setIsOpen(false)}
+                className="block w-full p-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 
+                          text-white text-center font-bold text-sm transition-all shadow-lg hover:shadow-purple-500/30 
+                          animate-pulse hover:animate-none"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <FaCrown className="text-yellow-300" />
+                  <span>226개 더 많은 메뉴 잠금 해제!</span>
+                </div>
+                <div className="text-xs mt-1 opacity-90">
+                  프리미엄 업그레이드 →
+                </div>
+              </Link>
+            )}
+            
+            {/* 모든 사용자에게 표시되는 등급 비교 버튼 */}
+            <Link
+              href="/subscription/benefits"
+              onClick={() => setIsOpen(false)}
+              className={`block w-full p-2.5 rounded-lg border border-gray-700 hover:border-purple-500/50 
+                        bg-gray-800/50 hover:bg-gray-800 text-center transition-all group
+                        ${userTier === 'Starter' ? '' : 'mt-0'}`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <FaGem className="text-purple-400 group-hover:text-purple-300 text-sm" />
+                <span className="text-xs text-gray-300 group-hover:text-white font-medium">
+                  등급별 혜택 비교
+                </span>
+                <FaChevronRight className="text-[10px] text-gray-500 group-hover:text-gray-400" />
+              </div>
+            </Link>
+
+            {/* 메뉴 정보 버튼 개선 */}
+            <button
+              onClick={() => setActiveView(activeView === 'menu' ? 'category' : 'menu')}
+              className="w-full p-2 rounded-lg border border-gray-700 hover:border-purple-500/50 bg-gray-800/50 hover:bg-gray-800 text-center transition-all group"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <FaFilter className="text-gray-400 group-hover:text-gray-300 text-sm" />
+                <span className="text-xs text-gray-300 group-hover:text-white">
+                  {activeView === 'menu' ? '카테고리 보기' : '메뉴 보기'}
+                </span>
+              </div>
+            </button>
+          </div>
+
           {/* 하단 정보 */}
-          <div className="p-3 border-t border-gray-800 text-xs text-gray-400">
+          <div className="p-3 pt-2 border-t border-gray-800 text-xs text-gray-400">
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span className="text-[11px]">총 {Object.values(menuStructure).reduce((acc, cat) => acc + cat.items.length, 0)}개 메뉴</span>

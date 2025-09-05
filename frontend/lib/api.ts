@@ -73,31 +73,57 @@ export class APIClient {
 
   // WebSocket 연결
   connectWebSocket(onMessage: (data: any) => void) {
+    // 브라우저 환경에서만 실행
+    if (typeof window === 'undefined') {
+      return null
+    }
+
     const wsURL = this.baseURL.replace('http', 'ws') + '/ws'
-    const ws = new WebSocket(wsURL)
+    
+    try {
+      const ws = new WebSocket(wsURL)
+      let reconnectAttempts = 0
+      const maxReconnectAttempts = 5
 
-    ws.onopen = () => {
-      console.log('WebSocket connected')
+      ws.onopen = () => {
+        console.log('WebSocket connected to:', wsURL)
+        reconnectAttempts = 0
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          onMessage(data)
+        } catch (parseError) {
+          console.error('Failed to parse WebSocket message:', parseError)
+        }
+      }
+
+      ws.onerror = (error) => {
+        console.warn('WebSocket connection error to:', wsURL)
+        // WebSocket 에러 객체는 보안상 상세 정보를 제공하지 않음
+      }
+
+      ws.onclose = (event) => {
+        console.log('WebSocket disconnected. Code:', event.code, 'Reason:', event.reason)
+        
+        // 정상 종료가 아니고 재연결 시도 횟수가 남아있을 때만 재연결
+        if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000) // 지수 백오프
+          console.log(`Reconnecting WebSocket in ${delay}ms... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`)
+          
+          setTimeout(() => {
+            this.connectWebSocket(onMessage)
+          }, delay)
+        }
+      }
+
+      return ws
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error)
+      return null
     }
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      onMessage(data)
-    }
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected')
-      // 자동 재연결
-      setTimeout(() => {
-        this.connectWebSocket(onMessage)
-      }, 5000)
-    }
-
-    return ws
   }
 }
 
