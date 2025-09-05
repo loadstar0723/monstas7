@@ -659,17 +659,17 @@ export default function SidebarNew() {
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 
-                   border border-gray-700 hover:border-purple-500/50 shadow-xl hover:shadow-purple-500/20 
-                   transition-all group"
+        className="fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-r from-purple-900/80 to-purple-800/80 
+                   backdrop-blur-sm border border-purple-600/50 hover:border-purple-500 
+                   shadow-xl hover:shadow-purple-500/30 transition-all group"
       >
         <div className="relative">
-          <FaBars className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-          {/* 알림 점 */}
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+          <FaBars className="w-5 h-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
+          {/* 알림 점 - 더 밝게 */}
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/50" />
         </div>
       </motion.button>
 
@@ -738,30 +738,12 @@ export default function SidebarNew() {
               )}
             </div>
 
-            {/* 홈 버튼 */}
-            <Link
-              href="/"
-              className={`mx-4 mb-3 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 
-                        bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30
-                        border border-purple-500/30 rounded-lg transition-all group`}
-              onClick={() => setIsOpen(false)}
-              title="홈으로"
-            >
-              <FaHome className={`${isCollapsed ? 'text-lg' : 'text-base'} text-purple-400 group-hover:text-purple-300 transition-colors`} />
-              {!isCollapsed && (
-                <>
-                  <span className="font-semibold text-sm">홈</span>
-                  <span className="ml-auto text-xs text-gray-500">Ctrl+H</span>
-                </>
-              )}
-            </Link>
 
-            {/* 헤더 접기/펼치기 버튼 - 모바일에서만 표시 */}
+            {/* 헤더 접기/펼치기 버튼 */}
             {!isCollapsed && (
               <button
                 onClick={toggleHeaderCollapsed}
-                className="mx-4 mb-3 flex items-center justify-between px-3 py-2 
-                         bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all group"
+                className="w-full mb-3 flex items-center justify-between px-3 py-2 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all group"
                 title={isHeaderCollapsed ? "메뉴 정보 펼치기" : "메뉴 정보 접기"}
               >
                 <div className="flex items-center gap-2">
