@@ -14,7 +14,7 @@ export default function MainContent({ children }: { children: React.ReactNode })
       style={{ marginLeft: isOpen ? '320px' : '0' }}
     >
       {/* 헤더 */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900">
         <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {!isOpen && (
@@ -26,9 +26,6 @@ export default function MainContent({ children }: { children: React.ReactNode })
                 <FaBars className="w-5 h-5" />
               </button>
             )}
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              MONSTA Trading Platform
-            </h1>
           </div>
           
           <div className="flex items-center gap-4">
