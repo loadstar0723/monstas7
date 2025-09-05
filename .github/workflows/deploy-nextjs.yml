@@ -1,0 +1,66 @@
+name: Deploy Next.js Frontend
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-nextjs.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy Frontend to AWS
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            # 프로젝트 디렉토리로 이동
+            cd ~/monsta-v7/monstas7
+            
+            # 최신 코드 가져오기
+            git pull origin master
+            
+            # Frontend 디렉토리로 이동
+            cd frontend
+            
+            # Node.js 환경 설정 (nvm이 있다면)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # 의존성 설치
+            npm install
+            
+            # 기존 PM2 프로세스 중지
+            pm2 stop monsta-frontend || true
+            pm2 delete monsta-frontend || true
+            
+            # 프로덕션 빌드
+            npm run build
+            
+            # PM2로 실행 (포트 3001)
+            pm2 start npm --name "monsta-frontend" -- start -- -p 3001
+            
+            # PM2 설정 저장
+            pm2 save
+            pm2 startup || true
+            
+            # 헬스 체크 (20초 대기)
+            sleep 20
+            
+            # 프로세스 확인
+            if pm2 list | grep -q "monsta-frontend.*online"; then
+              echo "✅ Frontend is running"
+              echo "🌐 Access: http://13.209.84.93:3001"
+            else
+              echo "❌ Frontend failed to start"
+              pm2 logs monsta-frontend --lines 50
+              exit 1
+            fi
