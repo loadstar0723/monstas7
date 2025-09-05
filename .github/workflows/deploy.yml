@@ -1,4 +1,4 @@
-name: Deploy MONSTA Platform
+name: Deploy MONSTA Hybrid Platform
 
 on:
   push:
@@ -42,59 +42,58 @@ jobs:
             # 최신 코드 가져오기
             git pull origin master
             
-            # 가상환경 활성화 및 패키지 업데이트
-            source venv/bin/activate
+            # 1. FastAPI Backend 시작 (포트 8000)
+            echo "Starting FastAPI Backend..."
+            cd backend
+            source ../venv/bin/activate
             pip install -r requirements.txt --quiet
+            pkill -f "uvicorn.*8000" || true
+            nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
             
-            # 포트 사용 중인 프로세스 확인 및 종료
-            echo "Checking port 8508..."
-            sudo lsof -ti:8508 | xargs -r sudo kill -9 || true
+            # 2. Next.js Frontend 빌드 및 시작 (포트 3000)
+            echo "Building Next.js Frontend..."
+            cd ../frontend
+            npm install
+            npm run build
             
-            # 기존 streamlit 프로세스 모두 종료
-            pkill -f 'streamlit' || true
-            sleep 3
+            # PM2로 실행
+            pm2 stop monsta-hybrid || true
+            pm2 delete monsta-hybrid || true
+            pm2 start npm --name "monsta-hybrid" -- start
+            pm2 save
             
-            # 포트 8508이 비어있는지 확인
-            if lsof -Pi :8508 -sTCP:LISTEN -t >/dev/null ; then
-                echo "Port 8508 is still in use, forcing cleanup..."
-                sudo fuser -k 8508/tcp || true
-                sleep 2
+            # 헬스 체크 (20초 대기 후)
+            sleep 20
+            
+            # Backend 헬스 체크
+            if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+              echo "✅ Backend is running on port 8000"
+            else
+              echo "❌ Backend health check failed"
+              tail -n 30 backend/backend.log
             fi
             
-            # 앱 재시작
-            nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
-            echo "Started Streamlit on port 8508"
-            
-            # 헬스 체크 (15초 대기 후)
-            sleep 15
-            
-            # 프로세스 실행 확인
-            if pgrep -f "streamlit.*8508" > /dev/null; then
-              echo "Streamlit process is running"
+            # Frontend 헬스 체크
+            if pm2 list | grep -q "monsta-hybrid.*online"; then
+              echo "✅ Frontend is running on port 3000"
             else
-              echo "Streamlit process not found, trying to start again..."
-              nohup streamlit run app.py --server.port=8508 --server.address=0.0.0.0 > app.log 2>&1 &
-              sleep 10
-            fi
-            
-            # 포트 리스닝 확인
-            if lsof -Pi :8508 -sTCP:LISTEN -t >/dev/null ; then
-              echo "Port 8508 is listening"
-            else
-              echo "Port 8508 is not listening"
-            fi
-            
-            # 최종 헬스 체크
-            if curl -f http://localhost:8508 > /dev/null 2>&1; then
-              echo "DEPLOYMENT_SUCCESS"
-            else
-              echo "DEPLOYMENT_FAILED - Checking logs..."
-              tail -n 50 app.log
+              echo "❌ Frontend is not running"
+              pm2 logs monsta-hybrid --lines 30
               exit 1
             fi
             
-            echo "✅ Deployment completed at $(date)"
-            echo "🌐 Access: http://13.209.84.93:8508"
+            # 최종 통합 체크
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "DEPLOYMENT_SUCCESS"
+            else
+              echo "DEPLOYMENT_FAILED"
+              exit 1
+            fi
+            
+            echo "✅ Hybrid Platform Deployment completed at $(date)"
+            echo "🌐 Frontend: http://13.209.84.93:3000"
+            echo "🔧 Backend API: http://13.209.84.93:8000"
+            echo "📊 Health Check: http://13.209.84.93:8000/health"
       
       - name: Send success notification
         if: success()
@@ -109,7 +108,8 @@ jobs:
             👤 작성자: ${{ github.actor }}
             🕐 완료 시간: ${{ github.event.head_commit.timestamp }}
             
-            🌐 접속 주소: http://13.209.84.93:8508
+            🌐 Frontend: http://13.209.84.93:3000
+            🔧 Backend API: http://13.209.84.93:8000
             📊 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             🎉 배포가 성공적으로 완료되었습니다!
