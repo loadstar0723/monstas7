@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import { FaWhale, FaChartLine, FaDollarSign, FaExclamationTriangle, FaArrowUp, FaArrowDown } from 'react-icons/fa'
+import { FaFish, FaChartLine, FaDollarSign, FaExclamationTriangle, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 
 const MarketAnalysis = dynamic(() => import('@/components/signals/MarketAnalysis'), { ssr: false })
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { ssr: false })
@@ -93,7 +93,7 @@ export default function SmartMoneySignalsPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
-                <FaWhale className="text-blue-400 text-2xl mb-3" />
+                <FaFish className="text-blue-400 text-2xl mb-3" />
                 <p className="text-gray-400 text-sm mb-1">고래 활동</p>
                 <p className="text-2xl font-bold text-white">매우 활발</p>
                 <p className="text-green-400 text-sm mt-2">+45% 증가</p>

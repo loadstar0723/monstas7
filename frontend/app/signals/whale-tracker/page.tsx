@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import { FaWhale, FaArrowUp, FaArrowDown, FaExchangeAlt, FaBitcoin, FaEthereum, FaHistory, FaChartBar } from 'react-icons/fa'
+import { FaFish, FaArrowUp, FaArrowDown, FaExchangeAlt, FaBitcoin, FaEthereum, FaHistory, FaChartBar } from 'react-icons/fa'
 import { SiBinance } from 'react-icons/si'
 
 const MarketAnalysis = dynamic(() => import('@/components/signals/MarketAnalysis'), { ssr: false })
@@ -184,7 +184,7 @@ export default function WhaleTrackerPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
-                <FaWhale className="text-blue-400 text-2xl mb-3" />
+                <FaFish className="text-blue-400 text-2xl mb-3" />
                 <p className="text-gray-400 text-sm mb-1">활성 고래</p>
                 <p className="text-2xl font-bold text-white">342</p>
                 <p className="text-green-400 text-sm mt-2">+12% 증가</p>
