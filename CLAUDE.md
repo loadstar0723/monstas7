@@ -6,6 +6,10 @@
     NO 목업 메서드나 함수
     NO 하드코딩된 예시 데이터
      NO "임시로" 또는 "테스트용" 데이터
+     NO Math.random() 사용 금지
+     NO 시뮬레이션 데이터 생성 금지
+     NO useState로 가짜 데이터 생성 금지
+     NO setInterval로 가짜 업데이트 금지
     고정값 사용 절대 금지.
 
       \## 반드시 사용해야 할 것들 (Must Use)
@@ -13,6 +17,8 @@
      실제 데이터베이스 연결 사용
      실제 인증 시스템 사용
      실제 환경 변수와 설정값 사용
+     개발 단계에서도 실제 데이터 API 사용
+     Binance API만 사용 (.env 파일 설정 필수)
 
     \## 데이터 소스 우선순위
     1\. 실제 프로덕션 API
@@ -184,12 +190,12 @@ GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으�
   4. **ProfitCalculator** - 수익 계산기
   5. **텔레그램 연동 안내** - 구독 등급별 혜택
 
-  ## 🔑 실시간 데이터 소스
-  - **Binance WebSocket**: 실시간 가격, 거래량, 오더북
-  - **CoinGecko API**: 시가총액, 도미넌스, 전체 시장 데이터
-  - **Alternative.me API**: Fear & Greed Index
-  - **Glassnode/CryptoQuant**: 온체인 데이터 (고래 움직임, 거래소 플로우)
-  - **TradingView Webhooks**: 기술적 지표 알림
+  ## 🔑 실시간 데이터 소스 (Binance API 전용)
+  - **Binance WebSocket만 사용**: 실시간 가격, 거래량, 오더북
+  - **Binance REST API만 사용**: 히스토리 데이터, 시장 정보, 기술적 지표
+  - **다른 API 사용 절대 금지**: CoinGecko, Alternative.me, TradingView 등 사용 금지
+  - **환경 변수 필수**: .env 파일의 BINANCE_API_KEY, BINANCE_SECRET_KEY 사용
+  - **테스트넷 설정**: BINANCE_TESTNET=False (실제 데이터 사용)
 
   ## 📱 모바일 트레이딩 UI 원칙
   - **원터치 주문**: 매수/매도 즉시 실행

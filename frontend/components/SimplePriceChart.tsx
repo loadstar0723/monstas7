@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 interface SimplePriceChartProps {
@@ -18,57 +18,120 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
   const [currentPrice, setCurrentPrice] = useState<number>(0)
   const [priceChange, setPriceChange] = useState<number>(0)
   const [loading, setLoading] = useState(true)
+  const wsRef = useRef<WebSocket | null>(null)
+  const pricesRef = useRef<PriceData[]>([])
 
   useEffect(() => {
-    // 초기 데이터 생성
-    const generateInitialData = () => {
-      const initialPrices: PriceData[] = []
-      const basePrice = symbol === 'BTCUSDT' ? 110739.99 : 3900.50
+    // Binance WebSocket 실제 연결
+    const connectWebSocket = () => {
+      const wsSymbol = symbol.toLowerCase()
+      const wsUrl = `wss://stream.binance.com:9443/ws/${wsSymbol}@trade`
       
-      // 20개의 초기 데이터 포인트 생성
-      for (let i = 0; i < 20; i++) {
-        const variation = (Math.random() - 0.5) * (basePrice * 0.02) // 2% 변동
-        const time = new Date(Date.now() - (20 - i) * 60000)
-        initialPrices.push({
-          time: time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-          price: basePrice + variation
-        })
+      wsRef.current = new WebSocket(wsUrl)
+      
+      wsRef.current.onopen = () => {
+        console.log('Binance WebSocket 연결됨')
+        setLoading(false)
       }
       
-      setPrices(initialPrices)
-      setCurrentPrice(initialPrices[initialPrices.length - 1].price)
-      setPriceChange(((initialPrices[19].price - initialPrices[0].price) / initialPrices[0].price) * 100)
-      setLoading(false)
-    }
-
-    generateInitialData()
-
-    // 실시간 업데이트 시뮬레이션
-    const interval = setInterval(() => {
-      setPrices(prev => {
-        const newPrices = [...prev]
-        if (newPrices.length > 20) {
-          newPrices.shift()
-        }
-        const lastPrice = newPrices[newPrices.length - 1]?.price || 110739.99
-        const variation = (Math.random() - 0.5) * (lastPrice * 0.001) // 0.1% 변동
-        const newPrice = lastPrice + variation
-        const newTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      wsRef.current.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        const newPrice = parseFloat(data.p)
+        const newTime = new Date().toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
         
-        newPrices.push({ time: newTime, price: newPrice })
+        const newPriceData: PriceData = {
+          time: newTime,
+          price: newPrice
+        }
+        
+        // 가격 데이터 업데이트 (최대 20개 유지)
+        pricesRef.current = [...pricesRef.current, newPriceData].slice(-20)
+        setPrices([...pricesRef.current])
         setCurrentPrice(newPrice)
-        setPriceChange(((newPrice - newPrices[0].price) / newPrices[0].price) * 100)
-        return newPrices
-      })
-    }, 2000)
-
-    return () => clearInterval(interval)
+        
+        // 가격 변화율 계산
+        if (pricesRef.current.length > 1) {
+          const firstPrice = pricesRef.current[0].price
+          const change = ((newPrice - firstPrice) / firstPrice) * 100
+          setPriceChange(change)
+        }
+      }
+      
+      wsRef.current.onerror = (error) => {
+        console.error('WebSocket 에러:', error)
+        setLoading(false)
+      }
+      
+      wsRef.current.onclose = () => {
+        console.log('WebSocket 연결 종료')
+        // 5초 후 재연결
+        setTimeout(connectWebSocket, 5000)
+      }
+    }
+    
+    // 초기 가격 데이터 가져오기 (Binance REST API)
+    const fetchInitialData = async () => {
+      try {
+        const response = await fetch(
+          `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=20`
+        )
+        const data = await response.json()
+        
+        const initialPrices: PriceData[] = data.map((candle: any[]) => ({
+          time: new Date(candle[0]).toLocaleTimeString('ko-KR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          price: parseFloat(candle[4]) // Close price
+        }))
+        
+        pricesRef.current = initialPrices
+        setPrices(initialPrices)
+        
+        if (initialPrices.length > 0) {
+          const lastPrice = initialPrices[initialPrices.length - 1].price
+          setCurrentPrice(lastPrice)
+          
+          const firstPrice = initialPrices[0].price
+          const change = ((lastPrice - firstPrice) / firstPrice) * 100
+          setPriceChange(change)
+        }
+        
+        // WebSocket 연결
+        connectWebSocket()
+      } catch (error) {
+        console.error('초기 데이터 로드 실패:', error)
+        setLoading(false)
+      }
+    }
+    
+    fetchInitialData()
+    
+    // 클린업
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+    }
   }, [symbol])
 
   if (loading) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 animate-pulse" style={{ height }}>
         <div className="h-full bg-gray-700 rounded"></div>
+      </div>
+    )
+  }
+
+  if (prices.length === 0) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-6" style={{ height }}>
+        <div className="h-full flex items-center justify-center text-gray-400">
+          데이터 로딩 중...
+        </div>
       </div>
     )
   }
@@ -97,7 +160,10 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
           <h3 className="text-lg font-semibold text-gray-300 mb-1">{symbol}</h3>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-white">
-              ${currentPrice.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${currentPrice.toLocaleString('ko-KR', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: symbol.includes('BTC') ? 2 : 4 
+              })}
             </span>
             <span className={`text-sm font-medium flex items-center gap-1 px-2 py-1 rounded-lg ${
               priceChange >= 0 
@@ -185,9 +251,9 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       <div className="mt-6 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-gray-400">실시간 업데이트 중</span>
+          <span className="text-gray-400">Binance 실시간 데이터</span>
         </div>
-        <span className="text-gray-500">2초마다 갱신</span>
+        <span className="text-gray-500">실시간 업데이트</span>
       </div>
     </motion.div>
   )
