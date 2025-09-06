@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, Area, AreaChart } from 'recharts'
 
 interface MonthlyData {
@@ -73,7 +73,7 @@ const SeasonalChart = () => {
         {/* Monthly Comparison Chart */}
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={monthlyData} isAnimationActive={false}>
+            <AreaChart data={monthlyData} isAnimationActive={false} animationDuration={0}>
               <defs>
                 <linearGradient id="color2025" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
@@ -112,6 +112,7 @@ const SeasonalChart = () => {
                 name="2025"
                 connectNulls={false}
                 isAnimationActive={false}
+                animationDuration={0}
               />
               <Area
                 type="monotone"
@@ -121,6 +122,7 @@ const SeasonalChart = () => {
                 strokeWidth={2}
                 name="2024"
                 isAnimationActive={false}
+                animationDuration={0}
               />
               <Area
                 type="monotone"
@@ -130,6 +132,7 @@ const SeasonalChart = () => {
                 strokeWidth={2}
                 name="2023"
                 isAnimationActive={false}
+                animationDuration={0}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -171,7 +174,7 @@ const SeasonalChart = () => {
           {performanceData.map((item) => (
             <div
               key={item.period}
-              className="bg-gray-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-all transform hover:scale-105 active:scale-95"
+              className="bg-gray-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50"
             >
               <p className="text-gray-400 text-xs mb-2">{item.period}</p>
               <p className={`text-2xl font-bold ${item.color}`}>
@@ -214,4 +217,4 @@ const SeasonalChart = () => {
   )
 }
 
-export default SeasonalChart
+export default React.memo(SeasonalChart)
