@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic'
 import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
 
 // 동적 import로 초기 로딩 속도 개선
-const TradingViewChart = dynamic(() => import('@/components/TradingViewChart'), { 
+const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { 
   ssr: false,
   loading: () => <div className="h-96 bg-gray-800/50 rounded-xl animate-pulse"></div>
 })
@@ -659,7 +659,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <div className="gradient-border-content p-0" style={{ minHeight: '500px' }}>
-              <TradingViewChart symbol={selectedSymbol} height={500} />
+              <SimplePriceChart symbol="BTCUSDT" height={500} />
             </div>
           </motion.div>
 
