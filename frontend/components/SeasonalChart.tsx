@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useMemo } from 'react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, Area, AreaChart } from 'recharts'
 
 interface MonthlyData {
@@ -21,7 +20,7 @@ const SeasonalChart = () => {
   const [activeTab, setActiveTab] = useState<'seasonal' | 'performance'>('seasonal')
 
   // Monthly comparison data (like TradingView seasonal)
-  const monthlyData: MonthlyData[] = [
+  const monthlyData: MonthlyData[] = useMemo(() => [
     { month: '1월', year2025: 12, year2024: 15, year2023: 8 },
     { month: '2월', year2025: -8, year2024: 22, year2023: 18 },
     { month: '3월', year2025: 25, year2024: -5, year2023: 30 },
@@ -34,7 +33,7 @@ const SeasonalChart = () => {
     { month: '10월', year2025: 0, year2024: 15, year2023: 20 },
     { month: '11월', year2025: 0, year2024: 32, year2023: 38 },
     { month: '12월', year2025: 0, year2024: 45, year2023: 50 },
-  ]
+  ], [])
 
   // Performance data
   const performanceData: PerformanceData[] = [
@@ -74,7 +73,7 @@ const SeasonalChart = () => {
         {/* Monthly Comparison Chart */}
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={monthlyData}>
+            <AreaChart data={monthlyData} isAnimationActive={false}>
               <defs>
                 <linearGradient id="color2025" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
@@ -112,6 +111,7 @@ const SeasonalChart = () => {
                 strokeWidth={2}
                 name="2025"
                 connectNulls={false}
+                isAnimationActive={false}
               />
               <Area
                 type="monotone"
@@ -120,6 +120,7 @@ const SeasonalChart = () => {
                 fill="url(#color2024)"
                 strokeWidth={2}
                 name="2024"
+                isAnimationActive={false}
               />
               <Area
                 type="monotone"
@@ -128,6 +129,7 @@ const SeasonalChart = () => {
                 fill="url(#color2023)"
                 strokeWidth={2}
                 name="2023"
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -167,17 +169,15 @@ const SeasonalChart = () => {
         {/* Performance Grid */}
         <div className="grid grid-cols-3 gap-3">
           {performanceData.map((item) => (
-            <motion.div
+            <div
               key={item.period}
-              className="bg-gray-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="bg-gray-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-all transform hover:scale-105 active:scale-95"
             >
               <p className="text-gray-400 text-xs mb-2">{item.period}</p>
               <p className={`text-2xl font-bold ${item.color}`}>
                 {item.value > 0 ? '+' : ''}{item.value}%
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
