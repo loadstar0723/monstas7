@@ -127,27 +127,130 @@ export default function TradingStrategy({
         break
 
       case 'analysis':
-        // 패턴 분석 기반 전략
-        if (stats.whaleActivity === 'increasing' && priceChange > 0) {
+        // 종합분석 기반 전략
+        const buyStrength = stats.buyCount || 0
+        const sellStrength = stats.sellCount || 0
+        const whaleCount = stats.totalWhales || 0
+        
+        if (whaleCount > 5 && buyStrength > sellStrength && priceChange > 0) {
           newStrategy.position = 'long'
-          newStrategy.confidence = 75
+          newStrategy.confidence = Math.min(85, 60 + whaleCount * 2)
           newStrategy.action = '단계적 매수'
-          newStrategy.reason = '고래 활동 증가 + 가격 상승 동조'
-        } else if (stats.whaleActivity === 'decreasing' && priceChange < 0) {
+          newStrategy.reason = `고래 ${whaleCount}건 + 매수우세 + 가격상승 동조`
+        } else if (whaleCount > 5 && sellStrength > buyStrength && priceChange < 0) {
           newStrategy.position = 'short'
-          newStrategy.confidence = 70
+          newStrategy.confidence = Math.min(80, 55 + whaleCount * 2)
           newStrategy.action = '손절 고려'
-          newStrategy.reason = '고래 이탈 신호 감지'
+          newStrategy.reason = `고래 ${whaleCount}건 + 매도우세 + 가격하락 압력`
+        } else {
+          newStrategy.position = 'neutral'
+          newStrategy.confidence = Math.min(50, 30 + whaleCount * 2)
+          newStrategy.action = '종합분석 중'
+          newStrategy.reason = `고래 활동 ${whaleCount}건, 추세 관찰 필요`
         }
         break
 
       case 'history':
         // 과거 데이터 기반 전략
-        if (stats.totalWhales > 50) {
+        const historicalWhales = stats.totalWhales || 0
+        const historicalBuyRatio = stats.buyCount / Math.max(1, stats.buyCount + stats.sellCount)
+        
+        if (historicalWhales > 20) {
           newStrategy.position = 'long'
-          newStrategy.confidence = 65
+          newStrategy.confidence = Math.min(80, 50 + historicalWhales)
           newStrategy.action = '중장기 보유'
-          newStrategy.reason = '누적 고래 거래량 증가 추세'
+          newStrategy.reason = `누적 고래 ${historicalWhales}건, 장기 상승 신호`
+        } else if (historicalWhales > 10) {
+          if (historicalBuyRatio > 0.6) {
+            newStrategy.position = 'long'
+            newStrategy.confidence = Math.min(70, 40 + historicalWhales * 2)
+            newStrategy.action = '단계적 매수'
+            newStrategy.reason = `고래 ${historicalWhales}건, 매수 ${(historicalBuyRatio * 100).toFixed(0)}% 우세`
+          } else if (historicalBuyRatio < 0.4) {
+            newStrategy.position = 'short'
+            newStrategy.confidence = Math.min(65, 40 + historicalWhales * 2)
+            newStrategy.action = '리스크 관리'
+            newStrategy.reason = `고래 ${historicalWhales}건, 매도 ${((1 - historicalBuyRatio) * 100).toFixed(0)}% 우세`
+          } else {
+            newStrategy.position = 'neutral'
+            newStrategy.confidence = 50
+            newStrategy.action = '균형 상태'
+            newStrategy.reason = `고래 ${historicalWhales}건, 매수/매도 균형`
+          }
+        } else {
+          newStrategy.position = 'neutral'
+          newStrategy.confidence = Math.max(30, historicalWhales * 3)
+          newStrategy.action = '데이터 축적 중'
+          newStrategy.reason = `고래 활동 ${historicalWhales}건, 추가 데이터 필요`
+        }
+        break
+
+      case 'wallets':
+        // 지갑 분석 기반 전략
+        const buyWalletStrength = stats.buyCount * (stats.buyVolume || 0)
+        const sellWalletStrength = stats.sellCount * (stats.sellVolume || 0)
+        
+        if (buyWalletStrength > sellWalletStrength * 1.5 && stats.totalWhales > 10) {
+          newStrategy.position = 'long'
+          newStrategy.confidence = Math.min(80, 50 + stats.totalWhales)
+          newStrategy.action = '고래 매집 진행'
+          newStrategy.reason = '대형 지갑들의 매수 집중, 상승 준비 신호'
+        } else if (sellWalletStrength > buyWalletStrength * 1.5) {
+          newStrategy.position = 'short'
+          newStrategy.confidence = Math.min(75, 50 + (stats.sellCount - stats.buyCount) * 2)
+          newStrategy.action = '고래 이탈 경고'
+          newStrategy.reason = '대형 지갑 매도 증가, 하락 가능성'
+        } else {
+          newStrategy.position = 'neutral'
+          newStrategy.confidence = 40
+          newStrategy.action = '지갑 동향 관찰'
+          newStrategy.reason = '고래 지갑 활동 미미, 방향성 불분명'
+        }
+        break
+
+      case 'flows':
+        // 자금 흐름 기반 전략
+        const flowStrength = Math.abs(stats.netFlow || 0)
+        const flowDirection = stats.netFlow > 0 ? 'in' : 'out'
+        
+        if (flowDirection === 'in' && flowStrength > 1000000) {
+          newStrategy.position = 'long'
+          newStrategy.confidence = Math.min(85, 60 + (flowStrength / 100000))
+          newStrategy.action = '대규모 유입 감지'
+          newStrategy.reason = `$${(flowStrength / 1000000).toFixed(1)}M 순유입, 강한 매수 압력`
+        } else if (flowDirection === 'out' && flowStrength > 1000000) {
+          newStrategy.position = 'short'
+          newStrategy.confidence = Math.min(80, 55 + (flowStrength / 100000))
+          newStrategy.action = '대규모 유출 경고'
+          newStrategy.reason = `$${(flowStrength / 1000000).toFixed(1)}M 순유출, 매도 압력 증가`
+        } else {
+          newStrategy.position = 'neutral'
+          newStrategy.confidence = 35
+          newStrategy.action = '자금 흐름 약세'
+          newStrategy.reason = '뚜렷한 자금 이동 없음, 관망 필요'
+        }
+        break
+
+      case 'patterns':
+        // 패턴 분석 기반 전략 (기술적 지표 + 고래 활동)
+        const technicalScore = (stats.buyCount - stats.sellCount) / Math.max(1, stats.totalWhales) * 100
+        const volumeStrength = stats.totalVolume / 1000000 // $M 단위
+        
+        if (technicalScore > 30 && volumeStrength > 5 && priceChange > 1) {
+          newStrategy.position = 'long'
+          newStrategy.confidence = Math.min(82, 60 + technicalScore / 2)
+          newStrategy.action = '돌파 패턴 형성'
+          newStrategy.reason = '고래 매수 패턴 + 기술적 돌파 신호'
+        } else if (technicalScore < -30 && volumeStrength > 5 && priceChange < -1) {
+          newStrategy.position = 'short'
+          newStrategy.confidence = Math.min(78, 60 + Math.abs(technicalScore) / 2)
+          newStrategy.action = '하락 패턴 경고'
+          newStrategy.reason = '고래 매도 패턴 + 기술적 약세'
+        } else {
+          newStrategy.position = 'neutral'
+          newStrategy.confidence = 45
+          newStrategy.action = '패턴 형성 중'
+          newStrategy.reason = '명확한 패턴 미형성, 추가 확인 필요'
         }
         break
 
@@ -160,6 +263,11 @@ export default function TradingStrategy({
         break
 
       default:
+        // 기본 전략 (알려지지 않은 탭)
+        newStrategy.position = 'neutral'
+        newStrategy.confidence = 40
+        newStrategy.action = '분석 중'
+        newStrategy.reason = '데이터 수집 및 분석 진행 중'
         break
     }
 

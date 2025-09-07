@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaFish, FaArrowUp, FaArrowDown, FaChartBar, FaBell, FaRocket, 
@@ -650,7 +650,9 @@ export default function WhaleTrackerUltimate() {
     }
     
     fetchWhaleData()
-    fetchCandleData() // 15분봉 데이터 로드
+    const candleTimer = setTimeout(() => {
+      fetchCandleData() // 15분봉 데이터 로드
+    }, 1000)
     
     // 모든 코인에 대해 WebSocket 연결 (백그라운드)
     let delay = 0
@@ -663,7 +665,8 @@ export default function WhaleTrackerUltimate() {
         }
         
         ws.onerror = (error) => {
-          console.error(`❌ ${symbol} WebSocket 에러:`, error)
+          console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
+          // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
         }
         
         ws.onclose = (event) => {
@@ -868,6 +871,7 @@ export default function WhaleTrackerUltimate() {
     
     // 클린업
     return () => {
+      clearTimeout(candleTimer)
       Object.values(backgroundWsRefs.current).forEach(ws => {
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.close()
@@ -877,6 +881,36 @@ export default function WhaleTrackerUltimate() {
     }
   }, [])
   
+  // 15분봉 데이터 가져오기 - useEffect보다 먼저 정의
+  const fetchCandleData = useCallback(async () => {
+    try {
+      console.log('15분봉 데이터 로드 중...', selectedSymbol)
+      const res = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=15m&limit=20`)
+      const data = await res.json()
+      
+      if (data && data.data) {
+        const formattedData = data.data.map((candle: any[]) => {
+          const date = new Date(candle[0])
+          return {
+            time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`,
+            open: parseFloat(candle[1]),
+            high: parseFloat(candle[2]),
+            low: parseFloat(candle[3]),
+            close: parseFloat(candle[4]),
+            volume: parseFloat(candle[5]),
+            price: parseFloat(candle[4]) // LineChart를 위한 price 필드 추가
+          }
+        })
+        console.log('15분봉 데이터 로드 완료:', formattedData.length, '개')
+        setCandleData(formattedData)
+      } else {
+        console.log('캔들 데이터 없음')
+      }
+    } catch (error) {
+      console.error('Failed to fetch candle data:', error)
+    }
+  }, [selectedSymbol])
+
   // 심볼 변경 시 거래 리스트 업데이트 (통계는 별도로 관리)
   useEffect(() => {
     // 심볼 변경 시 해당 심볼의 거래 내역으로 업데이트
@@ -892,7 +926,7 @@ export default function WhaleTrackerUltimate() {
     }, 2500)
     
     return () => clearTimeout(timer)
-  }, [selectedSymbol, transactionsBySymbol])
+  }, [selectedSymbol, transactionsBySymbol, fetchCandleData])
   
   // 15분마다 15분봉 데이터 업데이트
   useEffect(() => {
@@ -901,7 +935,7 @@ export default function WhaleTrackerUltimate() {
     }, 15 * 60 * 1000) // 15분마다
     
     return () => clearInterval(interval)
-  }, [selectedSymbol])
+  }, [selectedSymbol, fetchCandleData])
   
   // 초기 데이터 로드 및 심볼 변경 시 데이터 갱신
   useEffect(() => {
@@ -991,36 +1025,6 @@ export default function WhaleTrackerUltimate() {
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== notification.id))
     }, 5000)
-  }
-
-  // 15분봉 데이터 가져오기
-  const fetchCandleData = async () => {
-    try {
-      console.log('15분봉 데이터 로드 중...', selectedSymbol)
-      const res = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=15m&limit=20`)
-      const data = await res.json()
-      
-      if (data && data.data) {
-        const formattedData = data.data.map((candle: any[]) => {
-          const date = new Date(candle[0])
-          return {
-            time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`,
-            open: parseFloat(candle[1]),
-            high: parseFloat(candle[2]),
-            low: parseFloat(candle[3]),
-            close: parseFloat(candle[4]),
-            volume: parseFloat(candle[5]),
-            price: parseFloat(candle[4]) // LineChart를 위한 price 필드 추가
-          }
-        })
-        console.log('15분봉 데이터 로드 완료:', formattedData.length, '개')
-        setCandleData(formattedData)
-      } else {
-        console.log('캔들 데이터 없음')
-      }
-    } catch (error) {
-      console.error('Failed to fetch candle data:', error)
-    }
   }
 
   // 백테스팅 실행
@@ -2148,9 +2152,9 @@ export default function WhaleTrackerUltimate() {
                   <div>
                     <div className="text-gray-400">순유입</div>
                     <div className={`font-bold ${
-                      whaleStats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'
+                      stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      ${(whaleStats.netFlow / 1000).toFixed(1)}K
+                      ${(stats.netFlow / 1000).toFixed(1)}K
                     </div>
                   </div>
                 </div>
