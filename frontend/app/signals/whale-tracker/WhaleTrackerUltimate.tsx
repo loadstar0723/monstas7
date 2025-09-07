@@ -1159,14 +1159,17 @@ export default function WhaleTrackerUltimate() {
                       <LineChart 
                         data={candleData.length > 0 ? candleData : priceHistory}
                         margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                        isAnimationActive={false}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                         <XAxis 
                           dataKey="time" 
                           stroke="#9CA3AF"
                           tick={{ fontSize: 10 }}
-                          interval={Math.floor((candleData.length > 0 ? candleData.length : priceHistory.length) / 6)}
+                          interval="preserveStartEnd"
+                          tickCount={5}
                           tickMargin={5}
+                          minTickGap={50}
                         />
                         <YAxis 
                           stroke="#9CA3AF"
@@ -1225,7 +1228,7 @@ export default function WhaleTrackerUltimate() {
                             stroke="#8B5CF6" 
                             strokeWidth={2}
                             dot={false}
-                            animationDuration={0}
+                            isAnimationActive={false}
                           />
                         )}
                       </LineChart>
