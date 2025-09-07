@@ -1,69 +1,60 @@
-# MONSTA Trading Platform
+# MONSTA - 퀀텀 AI 크립토 트레이딩 플랫폼 🚀
 
-## 📊 개요
-MONSTA는 바이낸스 기반 암호화폐 AI 트레이딩 플랫폼입니다.
-🚀 자동 배포 설정 완료! (2025.09.04)
-📱 Telegram 알림 테스트 (2025.09.04 20:15)
-✉️ GitHub Secrets 설정 후 재테스트 (2025.09.04 20:20)
-🎉 Telegram 알림 최종 테스트 - 설정 완료! (2025.09.04 20:25)
+세계 최고의 가상화폐 AI 트레이딩 플랫폼
 
-### 주요 특징
-- ✅ 11개 AI 모델 통합 예측
-- ✅ 실시간 바이낸스 데이터
-- ✅ 6단계 구독 티어 시스템
-- ✅ 역할 기반 접근 제어 (본사/총판/대리점/구독자)
-- ✅ 30+ 기술적 지표
-- ✅ 100% 모바일 반응형
+## 🌟 주요 기능
 
-## 🚀 시작하기
+- 🤖 11개 AI 모델 기반 자동 트레이딩
+- 🐋 실시간 고래 추적 시스템
+- 💰 스마트 머니 분석
+- 📊 고급 차트 및 기술적 분석
+- 🔔 실시간 알림 시스템
+- 📱 모바일 반응형 디자인
 
-### 필수 요구사항
-- Python 3.10+
-- PostgreSQL 14+
-- Redis
-- 바이낸스 API 키
+## 🚀 자동 배포 시스템
 
-### 설치
+이 프로젝트는 GitHub Actions를 통한 자동 배포가 구성되어 있습니다.
+master 브랜치에 푸시하면 자동으로 AWS 서버에 배포됩니다.
+
+### 배포 프로세스
+1. 코드 변경 → 커밋 → 푸시
+2. GitHub Actions 자동 실행
+3. AWS 서버 자동 배포
+4. PM2 자동 재시작
+
+## 🛠️ 기술 스택
+
+- **Frontend**: Next.js 15.5.2, React 19, TypeScript
+- **Styling**: Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: Prisma + SQLite
+- **Deployment**: AWS EC2 + PM2
+- **CI/CD**: GitHub Actions
+
+## 📍 라이브 사이트
+
+http://13.209.84.93:3000
+
+## 📅 최근 업데이트
+
+- 2025-09-08: 자동 배포 시스템 구축 완료
+- 2025-09-08: 고래 추적기 실시간 데이터 개선
+- 2025-09-08: 스마트 머니 트래커 업그레이드
+
+## 🔧 로컬 개발
+
 ```bash
-# 가상환경 생성
-python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-
 # 의존성 설치
-pip install -r requirements.txt
+cd frontend
+npm install
 
-# 환경변수 설정
-cp .env.example .env
-# .env 파일 수정
+# 개발 서버 실행
+npm run dev
 
-# 데이터베이스 초기화
-python scripts/init_db.py
+# 프로덕션 빌드
+npm run build
 ```
-
-### 실행
-```bash
-streamlit run app.py
-```
-
-## 📁 프로젝트 구조
-```
-monsta-trading/
-├── app.py              # 메인 애플리케이션
-├── pages/              # 모듈화된 페이지
-├── components/         # 재사용 컴포넌트
-├── services/           # API 연동 서비스
-├── config/            # 설정 파일
-└── requirements.txt   # 의존성
-```
-
-## 🔒 보안
-- 모든 API 키는 환경변수로 관리
-- 역할 기반 접근 제어 적용
-- JWT 토큰 인증
 
 ## 📝 라이선스
-Proprietary - All rights reserved
 
-## 🤝 문의
-MONSTA Team - contact@monsta.trading
+All rights reserved © 2025 MONSTA Team
