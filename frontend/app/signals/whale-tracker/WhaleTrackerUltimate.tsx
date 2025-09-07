@@ -208,7 +208,7 @@ export default function WhaleTrackerUltimate() {
   })
 
   // 현재 선택된 심볼의 통계
-  const stats = statsBySymbol[selectedSymbol] || getDefaultStats(selectedSymbol)
+  const stats = statsBySymbol[selectedSymbol] || getDefaultStats()
 
   // 패턴 분석
   const [patterns, setPatterns] = useState({
@@ -357,6 +357,30 @@ export default function WhaleTrackerUltimate() {
           }
           return updated
         })
+        
+        // 거래 리스트에서 통계 계산 및 업데이트
+        if (formattedTrades.length > 0) {
+          const buyTrades = formattedTrades.filter(t => t.type === 'buy')
+          const sellTrades = formattedTrades.filter(t => t.type === 'sell')
+          const buyVolume = buyTrades.reduce((sum, t) => sum + t.value, 0)
+          const sellVolume = sellTrades.reduce((sum, t) => sum + t.value, 0)
+          
+          setStatsBySymbol(prev => ({
+            ...prev,
+            [selectedSymbol]: {
+              ...prev[selectedSymbol],
+              totalWhales: formattedTrades.length,
+              buyCount: buyTrades.length,
+              sellCount: sellTrades.length,
+              totalVolume: buyVolume + sellVolume,
+              buyVolume: buyVolume,
+              sellVolume: sellVolume,
+              netFlow: buyVolume - sellVolume,
+              largestTrade: Math.max(...formattedTrades.map(t => t.value)),
+              avgTradeSize: (buyVolume + sellVolume) / formattedTrades.length
+            }
+          }))
+        }
       }
       
       // 통계 데이터 가져오기
@@ -364,11 +388,12 @@ export default function WhaleTrackerUltimate() {
       const statsData = await statsRes.json()
       
       if (statsData) {
+        console.log(`📊 API 통계 데이터 (${symbol}):`, statsData)
         setStatsBySymbol(prev => {
           const currentStats = prev[selectedSymbol] || getDefaultStats()
-          const buyVolume = statsData.buyVolume || 0
-          const sellVolume = statsData.sellVolume || 0
-          const totalWhales = statsData.totalWhales || 0
+          const buyVolume = statsData.buyVolume || currentStats.buyVolume || 0
+          const sellVolume = statsData.sellVolume || currentStats.sellVolume || 0
+          const totalWhales = statsData.totalWhales || currentStats.totalWhales || 0
           const totalVolume = buyVolume + sellVolume
           
           // Fear & Greed Index 계산
