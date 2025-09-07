@@ -1,16 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
-
-// 이메일 전송 설정
-const transporter = nodemailer.createTransporter({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-})
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +11,20 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // nodemailer 동적 import
+    const nodemailer = (await import('nodemailer')).default
+    
+    // 이메일 전송 설정
+    const transporter = nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || '587'),
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    })
 
     // HTML 이메일 템플릿 생성
     const htmlContent = createEmailTemplate(message, type)
