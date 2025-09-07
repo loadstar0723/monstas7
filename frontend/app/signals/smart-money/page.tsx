@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic'
 
-// SmartMoneyUltimate 컴포넌트를 동적으로 가져오기
-const SmartMoneyUltimate = dynamic(
-  () => import('./SmartMoneyUltimate'),
+// SmartMoneySimple 컴포넌트를 동적으로 가져오기 (에러 방지를 위해 간단한 버전 사용)
+const SmartMoneySimple = dynamic(
+  () => import('./SmartMoneySimple'),
   { 
     ssr: false,
     loading: () => (
@@ -19,5 +19,5 @@ const SmartMoneyUltimate = dynamic(
 )
 
 export default function SmartMoneySignalsPage() {
-  return <SmartMoneyUltimate />
+  return <SmartMoneySimple />
 }
