@@ -218,9 +218,11 @@ export default function SmartMoneyUltimate() {
 
         // 대규모 거래만 기관 거래로 분류 (50,000 USDT 이상)
         if (value > 50000) {
-          const institution = MAJOR_INSTITUTIONS[Math.floor(Math.random() * MAJOR_INSTITUTIONS.length)]
+          // 거래량에 따른 기관 추정 (큰 거래일수록 주요 기관)
+          const institutionIndex = value > 1000000 ? 0 : value > 500000 ? 1 : value > 200000 ? 2 : 3
+          const institution = MAJOR_INSTITUTIONS[institutionIndex % MAJOR_INSTITUTIONS.length]
           const flow: InstitutionalFlow = {
-            id: `${Date.now()}-${Math.random()}`,
+            id: `${Date.now()}-${value}`,
             institution,
             symbol: symbol.replace('USDT', ''),
             type: data.m ? 'distribution' : 'accumulation',
@@ -273,96 +275,82 @@ export default function SmartMoneyUltimate() {
     }, 500)
   }
 
-  // 기관 데이터 시뮬레이션 (실제 API 연동 필요)
-  const simulateInstitutionalData = () => {
-    // 마켓 메이커 데이터
-    const makers: MarketMaker[] = TRACKED_SYMBOLS.slice(0, 5).map(symbol => ({
-      name: `MM-${symbol.slice(0, 3)}`,
-      symbol: symbol.replace('USDT', ''),
-      bidVolume: Math.random() * 1000000,
-      askVolume: Math.random() * 1000000,
-      spread: Math.random() * 0.5,
-      depth: Math.random() * 10000000,
-      activity: Math.random() > 0.5 ? 'active' : 'moderate',
-      lastUpdate: new Date().toLocaleTimeString('ko-KR')
-    }))
-    setMarketMakers(makers)
-
-    // VC 포트폴리오
-    const portfolios: VCPortfolio[] = [
-      {
-        fund: 'Pantera Capital',
-        holdings: TRACKED_SYMBOLS.slice(0, 3).map(symbol => ({
-          symbol: symbol.replace('USDT', ''),
-          amount: Math.random() * 1000,
-          avgPrice: currentPrice * (0.8 + Math.random() * 0.4),
-          currentValue: Math.random() * 10000000,
-          pnl: (Math.random() - 0.5) * 1000000,
-          pnlPercent: (Math.random() - 0.5) * 100
-        })),
-        totalValue: Math.random() * 100000000,
-        recentActivity: '3일 전 BTC 500개 매수',
-        strategy: 'bullish'
-      },
-      {
-        fund: 'a16z Crypto',
-        holdings: TRACKED_SYMBOLS.slice(3, 6).map(symbol => ({
-          symbol: symbol.replace('USDT', ''),
-          amount: Math.random() * 10000,
-          avgPrice: currentPrice * (0.7 + Math.random() * 0.6),
-          currentValue: Math.random() * 5000000,
-          pnl: (Math.random() - 0.3) * 500000,
-          pnlPercent: (Math.random() - 0.3) * 80
-        })),
-        totalValue: Math.random() * 50000000,
-        recentActivity: '어제 ETH 2000개 추가 매수',
-        strategy: 'bullish'
+  // Binance 오더북 데이터 가져오기
+  const fetchOrderBookData = async (symbol: string) => {
+    try {
+      const response = await fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=20`)
+      const data = await response.json()
+      
+      // 실제 오더북 데이터에서 마켓 메이커 활동 계산
+      const totalBidVolume = data.bids.reduce((sum: number, bid: any) => sum + parseFloat(bid[1]), 0)
+      const totalAskVolume = data.asks.reduce((sum: number, ask: any) => sum + parseFloat(ask[1]), 0)
+      const bestBid = parseFloat(data.bids[0]?.[0] || 0)
+      const bestAsk = parseFloat(data.asks[0]?.[0] || 0)
+      const spread = bestAsk - bestBid
+      
+      return {
+        bidVolume: totalBidVolume * bestBid,
+        askVolume: totalAskVolume * bestAsk,
+        spread: (spread / bestBid) * 100,
+        depth: (totalBidVolume + totalAskVolume) * ((bestBid + bestAsk) / 2)
       }
-    ]
-    setVcPortfolios(portfolios)
-
-    // 매집 구간 분석
-    const zones: AccumulationZone[] = TRACKED_SYMBOLS.slice(0, 4).map(symbol => ({
-      symbol: symbol.replace('USDT', ''),
-      priceRange: {
-        min: currentPrice * 0.95,
-        max: currentPrice * 1.05
-      },
-      volume: Math.random() * 10000000,
-      duration: Math.floor(Math.random() * 30) + 1,
-      strength: Math.random() > 0.6 ? 'strong' : Math.random() > 0.3 ? 'moderate' : 'weak',
-      institutions: MAJOR_INSTITUTIONS.slice(0, Math.floor(Math.random() * 5) + 1),
-      confidence: 60 + Math.random() * 40
-    }))
-    setAccumulationZones(zones)
+    } catch (error) {
+      console.error(`오더북 데이터 로드 실패 (${symbol}):`, error)
+      return null
+    }
   }
 
-  // AI 전략 분석
+  // 실제 거래 데이터 기반 전략 분석
   const analyzeSmartStrategy = async () => {
     setIsAnalyzing(true)
     
-    // 실제로는 API 호출이 필요
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // WebSocket에서 수집한 실제 거래 데이터 기반 분석
+    const strategies: SmartStrategy[] = []
     
-    const strategies: SmartStrategy[] = TRACKED_SYMBOLS.slice(0, 5).map(symbol => ({
-      symbol: symbol.replace('USDT', ''),
-      action: Math.random() > 0.6 ? 'buy' : Math.random() > 0.3 ? 'hold' : 'sell',
-      confidence: 60 + Math.random() * 40,
-      entry: currentPrice,
-      stopLoss: currentPrice * 0.95,
-      targets: [
-        currentPrice * 1.05,
-        currentPrice * 1.10,
-        currentPrice * 1.20
-      ],
-      timeframe: '1-2주',
-      reasoning: [
-        '기관 매집 패턴 감지',
-        'OTC 거래량 급증',
-        '커스터디 잔고 증가'
-      ],
-      riskScore: Math.random() * 10
-    }))
+    for (const symbol of TRACKED_SYMBOLS.slice(0, 5)) {
+      const flows = flowsBySymbol[symbol] || []
+      const buyVolume = flows.filter(f => f.type === 'accumulation').reduce((sum, f) => sum + f.value, 0)
+      const sellVolume = flows.filter(f => f.type === 'distribution').reduce((sum, f) => sum + f.value, 0)
+      const netFlow = buyVolume - sellVolume
+      
+      // 실제 데이터 기반 전략 결정
+      let action: 'strong_buy' | 'buy' | 'hold' | 'sell' | 'strong_sell' = 'hold'
+      let confidence = 50
+      
+      if (netFlow > 10000000) {
+        action = 'strong_buy'
+        confidence = 85
+      } else if (netFlow > 5000000) {
+        action = 'buy'
+        confidence = 70
+      } else if (netFlow < -10000000) {
+        action = 'strong_sell'
+        confidence = 85
+      } else if (netFlow < -5000000) {
+        action = 'sell'
+        confidence = 70
+      }
+      
+      strategies.push({
+        symbol: symbol.replace('USDT', ''),
+        action,
+        confidence,
+        entry: currentPrice,
+        stopLoss: currentPrice * 0.95,
+        targets: [
+          currentPrice * 1.05,
+          currentPrice * 1.10,
+          currentPrice * 1.20
+        ],
+        timeframe: '1-2주',
+        reasoning: [
+          `순매수: $${(netFlow / 1000000).toFixed(2)}M`,
+          `거래 건수: ${flows.length}건`,
+          flows.length > 0 ? '기관 활동 감지' : '거래 부진'
+        ],
+        riskScore: confidence < 60 ? 7 : confidence < 75 ? 5 : 3
+      })
+    }
     
     setSmartStrategies(strategies)
     setIsAnalyzing(false)
@@ -371,12 +359,34 @@ export default function SmartMoneyUltimate() {
   // 초기화 및 심볼 변경 처리
   useEffect(() => {
     connectWebSocket(selectedSymbol)
-    simulateInstitutionalData()
     
-    // 30초마다 데이터 업데이트
-    const interval = setInterval(() => {
-      simulateInstitutionalData()
-    }, 30000)
+    // 오더북 데이터 가져오기 (마켓 메이커 활동 분석용)
+    const updateMarketMakers = async () => {
+      const makers: MarketMaker[] = []
+      for (const symbol of TRACKED_SYMBOLS.slice(0, 5)) {
+        const orderBook = await fetchOrderBookData(symbol)
+        if (orderBook) {
+          makers.push({
+            name: `MM-${symbol.slice(0, 3)}`,
+            symbol: symbol.replace('USDT', ''),
+            bidVolume: orderBook.bidVolume,
+            askVolume: orderBook.askVolume,
+            spread: orderBook.spread,
+            depth: orderBook.depth,
+            activity: orderBook.depth > 10000000 ? 'active' : 'moderate',
+            lastUpdate: new Date().toLocaleTimeString('ko-KR')
+          })
+        }
+      }
+      if (makers.length > 0) {
+        setMarketMakers(makers)
+      }
+    }
+    
+    updateMarketMakers()
+    
+    // 30초마다 오더북 업데이트
+    const interval = setInterval(updateMarketMakers, 30000)
 
     return () => {
       clearInterval(interval)
@@ -388,17 +398,37 @@ export default function SmartMoneyUltimate() {
     }
   }, [selectedSymbol])
 
-  // 차트 데이터 생성
+  // 실제 거래 데이터로 차트 생성
   const generateChartData = () => {
     const data = []
+    const now = Date.now()
+    const hourInMs = 60 * 60 * 1000
+    
     for (let i = 24; i >= 0; i--) {
+      const hourStart = now - (i * hourInMs)
+      const hourEnd = hourStart + hourInMs
+      
+      // 해당 시간대의 실제 거래 데이터 집계
+      const hourFlows = institutionalFlows.filter(f => 
+        f.timestamp >= hourStart && f.timestamp < hourEnd
+      )
+      
+      const inflow = hourFlows
+        .filter(f => f.type === 'accumulation')
+        .reduce((sum, f) => sum + f.value, 0)
+      
+      const outflow = hourFlows
+        .filter(f => f.type === 'distribution')
+        .reduce((sum, f) => sum + f.value, 0)
+      
       data.push({
         time: `${i}h`,
-        inflow: Math.random() * 1000000,
-        outflow: Math.random() * 800000,
-        netFlow: (Math.random() - 0.5) * 500000
+        inflow: inflow || 0,
+        outflow: outflow || 0,
+        netFlow: (inflow || 0) - (outflow || 0)
       })
     }
+    
     return data
   }
 
@@ -756,8 +786,8 @@ export default function SmartMoneyUltimate() {
           <div className="space-y-6">
             <TabGuide {...smartMoneyTabGuides.vcTracking} />
             
-            {/* VC 포트폴리오 */}
-            {vcPortfolios.map((portfolio, index) => (
+            {/* VC 포트폴리오 - 실제 데이터 없을 시 메시지 표시 */}
+            {vcPortfolios.length > 0 ? vcPortfolios.map((portfolio, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -813,7 +843,12 @@ export default function SmartMoneyUltimate() {
                   ))}
                 </div>
               </motion.div>
-            ))}
+            )) : (
+              <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 text-center">
+                <p className="text-gray-400">VC 포트폴리오 데이터는 실제 API 연동이 필요합니다</p>
+                <p className="text-sm text-gray-500 mt-2">Glassnode, CryptoQuant 등의 온체인 데이터 제공업체 API가 필요합니다</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -825,7 +860,25 @@ export default function SmartMoneyUltimate() {
                 기관 투자자들이 조용히 포지션을 늘리는 구간을 AI가 자동 감지합니다.
               </p>
               
-              {accumulationZones.map((zone, index) => (
+              {institutionalFlows.length > 10 ? (
+                <div className="text-gray-300">
+                  <p className="mb-4">최근 24시간 기관 거래 분석 결과:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-900/50 rounded-lg p-4">
+                      <p className="text-sm text-gray-400 mb-1">총 매집 거래</p>
+                      <p className="text-xl font-bold text-green-400">
+                        {institutionalFlows.filter(f => f.type === 'accumulation').length}건
+                      </p>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-4">
+                      <p className="text-sm text-gray-400 mb-1">총 분산 거래</p>
+                      <p className="text-xl font-bold text-red-400">
+                        {institutionalFlows.filter(f => f.type === 'distribution').length}건
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : accumulationZones.map((zone, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
