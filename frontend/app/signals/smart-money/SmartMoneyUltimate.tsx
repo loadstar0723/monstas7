@@ -170,8 +170,6 @@ export default function SmartMoneyUltimate() {
   
   // 추가 데이터 상태
   const [marketMakers, setMarketMakers] = useState<MarketMaker[]>([])
-  const [vcPortfolios, setVcPortfolios] = useState<VCPortfolio[]>([])
-  const [accumulationZones, setAccumulationZones] = useState<AccumulationZone[]>([])
   const [smartStrategies, setSmartStrategies] = useState<SmartStrategy[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
@@ -275,10 +273,11 @@ export default function SmartMoneyUltimate() {
     }, 500)
   }
 
-  // Binance 오더북 데이터 가져오기
+  // Binance 오더북 데이터 가져오기 (프록시 사용)
   const fetchOrderBookData = async (symbol: string) => {
     try {
-      const response = await fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=20`)
+      // CORS 문제 해결을 위해 프록시 API 사용
+      const response = await fetch(`/api/binance/depth?symbol=${symbol}&limit=20`)
       const data = await response.json()
       
       // 실제 오더북 데이터에서 마켓 메이커 활동 계산
@@ -786,8 +785,7 @@ export default function SmartMoneyUltimate() {
           <div className="space-y-6">
             <TabGuide {...smartMoneyTabGuides.vcTracking} />
             
-            {/* VC 포트폴리오 - 실제 데이터 없을 시 메시지 표시 */}
-            {vcPortfolios.length > 0 ? vcPortfolios.map((portfolio, index) => (
+            {/* VC 포트폴리오 - 실제 API 연동 필요 */}
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
