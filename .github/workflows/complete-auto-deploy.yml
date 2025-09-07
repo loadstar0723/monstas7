@@ -1,0 +1,151 @@
+name: 🚀 완전 자동 배포 시스템
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  SERVER_IP: 13.209.84.93
+  SERVER_USER: ubuntu
+  APP_PATH: /home/ubuntu/monstas7
+  PM2_APP_NAME: monstas7
+
+jobs:
+  deploy:
+    name: 🚀 AWS 서버 자동 배포
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 코드 체크아웃
+      uses: actions/checkout@v3
+    
+    - name: 🔧 Node.js ${{ env.NODE_VERSION }} 설정
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: 📦 로컬 빌드 테스트
+      working-directory: ./frontend
+      run: |
+        echo "🔍 의존성 설치 중..."
+        npm ci --legacy-peer-deps
+        
+        echo "🏗️ 프로덕션 빌드 테스트..."
+        npm run build
+        
+        echo "✅ 로컬 빌드 성공!"
+    
+    - name: 🚀 AWS 서버에 배포
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ env.SERVER_IP }}
+        username: ${{ env.SERVER_USER }}
+        key: ${{ secrets.AWS_SERVER_KEY }}
+        script: |
+          set -e
+          echo "🚀 자동 배포 시작 - $(date)"
+          
+          # 1. 프로젝트 디렉토리로 이동
+          cd ${{ env.APP_PATH }}
+          
+          # 2. 최신 코드 가져오기
+          echo "📥 최신 코드 가져오는 중..."
+          git fetch origin
+          git reset --hard origin/master
+          git pull origin master
+          
+          # 3. Frontend 디렉토리로 이동
+          cd frontend
+          
+          # 4. 기존 빌드 제거
+          echo "🧹 기존 빌드 정리 중..."
+          rm -rf .next node_modules package-lock.json
+          
+          # 5. 환경 변수 설정
+          echo "🔐 환경 변수 설정 중..."
+          cat > .env.local << 'ENVEOF'
+          NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
+          NEXTAUTH_URL=http://${{ env.SERVER_IP }}:3000
+          DATABASE_URL=file:./dev.db
+          NODE_ENV=production
+          PORT=3000
+          HOST=0.0.0.0
+          ENVEOF
+          
+          # 6. 의존성 설치
+          echo "📦 의존성 설치 중..."
+          npm install --legacy-peer-deps
+          
+          # 7. Prisma 설정
+          echo "🗄️ 데이터베이스 설정 중..."
+          npx prisma generate
+          npx prisma db push
+          
+          # 8. 프로덕션 빌드
+          echo "🏗️ 프로덕션 빌드 중..."
+          npm run build
+          
+          # 9. PM2 재시작
+          echo "🔄 애플리케이션 재시작 중..."
+          pm2 stop ${{ env.PM2_APP_NAME }} 2>/dev/null || true
+          pm2 delete ${{ env.PM2_APP_NAME }} 2>/dev/null || true
+          
+          # ecosystem.config.js 생성
+          cat > ecosystem.config.js << 'PMEOF'
+          module.exports = {
+            apps: [{
+              name: '${{ env.PM2_APP_NAME }}',
+              script: 'npm',
+              args: 'start',
+              cwd: '${{ env.APP_PATH }}/frontend',
+              instances: 1,
+              exec_mode: 'fork',
+              autorestart: true,
+              watch: false,
+              max_memory_restart: '1G',
+              env: {
+                NODE_ENV: 'production',
+                PORT: 3000,
+                HOST: '0.0.0.0'
+              }
+            }]
+          }
+          PMEOF
+          
+          pm2 start ecosystem.config.js
+          pm2 save
+          
+          # 10. 상태 확인
+          echo "✅ 배포 상태 확인..."
+          pm2 status
+          
+          # 11. 연결 테스트
+          sleep 5
+          if curl -f http://localhost:3000 > /dev/null 2>&1; then
+            echo "🎉 배포 성공! 사이트가 정상 작동 중입니다."
+            echo "🌐 접속 주소: http://${{ env.SERVER_IP }}:3000"
+          else
+            echo "❌ 배포 후 연결 실패. PM2 로그를 확인하세요."
+            pm2 logs --lines 50
+            exit 1
+          fi
+    
+    - name: 🔔 배포 완료 알림
+      if: success()
+      run: |
+        echo "✅ 배포가 성공적으로 완료되었습니다!"
+        echo "🌐 사이트: http://${{ env.SERVER_IP }}:3000"
+        echo "📅 배포 시간: $(date)"
+        echo "🏷️ 커밋: ${{ github.sha }}"
+    
+    - name: 🚨 배포 실패 알림
+      if: failure()
+      run: |
+        echo "❌ 배포가 실패했습니다!"
+        echo "📋 자세한 내용은 Actions 로그를 확인하세요."
