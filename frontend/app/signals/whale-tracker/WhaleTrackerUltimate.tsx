@@ -343,11 +343,20 @@ export default function WhaleTrackerUltimate() {
         
         setTransactions(formattedTrades)
         
-        // 심볼별 거래 저장
-        setTransactionsBySymbol(prev => ({
-          ...prev,
-          [selectedSymbol]: formattedTrades
-        }))
+        // 심볼별 거래 저장 및 localStorage에 저장
+        setTransactionsBySymbol(prev => {
+          const updated = {
+            ...prev,
+            [selectedSymbol]: [...formattedTrades, ...(prev[selectedSymbol] || [])].slice(0, 100)
+          }
+          // localStorage에 저장
+          try {
+            localStorage.setItem('whaleTransactions', JSON.stringify(updated))
+          } catch (e) {
+            console.error('Failed to save transactions:', e)
+          }
+          return updated
+        })
       }
       
       // 통계 데이터 가져오기
@@ -639,7 +648,14 @@ export default function WhaleTrackerUltimate() {
               if (exists) return prev
               const updatedTrades = {
                 ...prev,
-                [symbol]: [trade, ...existingTrades].slice(0, 20)
+                [symbol]: [trade, ...existingTrades].slice(0, 100)  // 100개까지 유지 (기존 20개에서 증가)
+              }
+              
+              // localStorage에 즉시 저장
+              try {
+                localStorage.setItem('whaleTransactions', JSON.stringify(updatedTrades))
+              } catch (e) {
+                console.error('Failed to save transactions:', e)
               }
               
               // 현재 선택된 코인이면 화면에 표시
