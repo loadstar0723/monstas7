@@ -274,11 +274,14 @@ export default function WhaleTrackerUltimate() {
     time: string
   }>>([])
 
-  // 가격 히스토리 (차트용)
-  const [priceHistory, setPriceHistory] = useState<Array<{
+  // 가격 히스토리 (차트용) - 심볼별로 관리
+  const [priceHistoryBySymbol, setPriceHistoryBySymbol] = useState<Record<string, Array<{
     time: string
     price: number
-  }>>([])
+  }>>>({})
+  
+  // 현재 선택된 심볼의 가격 히스토리
+  const priceHistory = priceHistoryBySymbol[selectedSymbol] || []
   
   // 1분봉 데이터
   const [candleData, setCandleData] = useState<Array<{
@@ -326,22 +329,23 @@ export default function WhaleTrackerUltimate() {
       
       if (tradesData.success && tradesData.trades) {
         // 거래 데이터를 WhaleTransaction 형식으로 변환
+        console.log(`API 거래 데이터: ${tradesData.trades.length}건`)
         const formattedTrades = tradesData.trades
-          .filter((trade: any) => trade.symbol === selectedSymbol || trade.symbol === selectedSymbol.replace('USDT', ''))  // 선택된 코인만 필터
           .map((trade: any) => ({
-          id: trade.id,
+          id: `${selectedSymbol}-${trade.id || Date.now()}`,
           symbol: selectedSymbol,  // 선택된 심볼로 통일
-          type: trade.type.toLowerCase() as 'buy' | 'sell',
-          amount: trade.quantity,
-          price: trade.price,
-          value: trade.value,
-          time: new Date(trade.time).toLocaleTimeString(),
-          timestamp: trade.time,
+          type: trade.type?.toLowerCase() === 'sell' ? 'sell' : 'buy' as 'buy' | 'sell',
+          amount: parseFloat(trade.quantity || trade.amount || 0),
+          price: parseFloat(trade.price || 0),
+          value: parseFloat(trade.value || (trade.quantity * trade.price) || 0),
+          time: new Date(trade.time || trade.timestamp || Date.now()).toLocaleTimeString(),
+          timestamp: trade.time || trade.timestamp || Date.now(),
           exchange: 'Binance',
           impact: trade.value > 1000000 ? 'high' : trade.value > 500000 ? 'medium' : 'low',
           wallet: `Whale_${trade.id}`,
           hash: `0x${trade.id}`
         }))
+        .filter((trade: WhaleTransaction) => trade.amount > 0 && trade.price > 0 && trade.value > 0)
         
         setTransactions(formattedTrades)
         
@@ -489,7 +493,6 @@ export default function WhaleTrackerUltimate() {
     const savedPrice = allCoinData[selectedSymbol]?.price || 0
     setCurrentPrice(savedPrice)
     setPriceChange(0)
-    setPriceHistory([])
     
     // 저장된 거래 내역 복원
     const savedTransactions = transactionsBySymbol[selectedSymbol] || []
@@ -588,9 +591,13 @@ export default function WhaleTrackerUltimate() {
               // 가격 히스토리 업데이트 (차트용)
               const now = new Date()
               const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
-              setPriceHistory(prev => {
-                const newHistory = [...prev, { time: timeStr, price }]
-                return newHistory.slice(-50) // 최근 50개만 유지
+              setPriceHistoryBySymbol(prev => {
+                const currentHistory = prev[symbol] || []
+                const newHistory = [...currentHistory, { time: timeStr, price }]
+                return {
+                  ...prev,
+                  [symbol]: newHistory.slice(-50) // 최근 50개만 유지
+                }
               })
               
               // 거래량 누적 및 변동성 계산 (현재 심볼의 통계 업데이트)
@@ -837,7 +844,19 @@ export default function WhaleTrackerUltimate() {
   
   // 초기 데이터 로드 및 심볼 변경 시 데이터 갱신
   useEffect(() => {
+    // 심볼 변경 시 즉시 저장된 데이터로 업데이트
+    const savedTransactions = transactionsBySymbol[selectedSymbol] || []
+    const savedStats = statsBySymbol[selectedSymbol] || getDefaultStats()
+    
+    // 저장된 데이터가 있으면 즉시 표시
+    if (savedTransactions.length > 0 || savedStats.totalWhales > 0) {
+      setTransactions(savedTransactions)
+      console.log(`📊 저장된 데이터 로드: ${selectedSymbol} - 거래 ${savedTransactions.length}건, 통계 고래 ${savedStats.totalWhales}건`)
+    }
+    
+    // API에서 새 데이터 가져오기
     fetchWhaleData()
+    
     // 10초마다 데이터 갱신
     const interval = setInterval(fetchWhaleData, 10000)
     return () => clearInterval(interval)
@@ -1251,8 +1270,9 @@ export default function WhaleTrackerUltimate() {
                       <span className="text-xs text-gray-400">15분봉 차트</span>
                       <span className="text-xs text-purple-400">실시간 업데이트</span>
                     </div>
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={250} key={selectedSymbol}>
                       <LineChart 
+                        key={`${selectedSymbol}-chart`}
                         data={candleData.length > 0 ? candleData : priceHistory}
                         margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                         isAnimationActive={false}
