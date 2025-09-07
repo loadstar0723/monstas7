@@ -1,0 +1,164 @@
+name: Direct Server Fix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Fix Server Directly
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          command_timeout: 30m
+          script: |
+            set -x  # 모든 명령 출력
+            
+            echo "🔨 서버 직접 수정 시작..."
+            
+            # 1. 모든 Node 프로세스 강제 종료
+            echo "Step 1: 프로세스 정리"
+            sudo killall -9 node npm npx 2>/dev/null || true
+            sudo pkill -9 -f "node|npm|next" || true
+            sleep 2
+            
+            # 2. 포트 완전 해제
+            echo "Step 2: 포트 해제"
+            for port in 3000 3001 3002 8080 80; do
+              sudo fuser -k $port/tcp 2>/dev/null || true
+              sudo kill -9 $(sudo lsof -t -i:$port) 2>/dev/null || true
+            done
+            
+            # 3. 프로젝트 새로 설치
+            echo "Step 3: 프로젝트 재설치"
+            cd ~
+            rm -rf monstas7
+            git clone https://github.com/loadstar0723/monstas7.git
+            cd monstas7/frontend
+            
+            # 4. Node.js 버전 확인 및 업데이트
+            echo "Step 4: Node.js 확인"
+            node -v
+            npm -v
+            
+            # nvm 있으면 최신 버전 사용
+            if command -v nvm &> /dev/null; then
+              nvm install 18
+              nvm use 18
+            fi
+            
+            # 5. 캐시 정리 및 의존성 설치
+            echo "Step 5: 의존성 설치"
+            npm cache clean --force
+            rm -rf node_modules package-lock.json
+            npm install
+            
+            # 6. 환경 변수 설정
+            echo "Step 6: 환경 설정"
+            cat > .env.local << 'ENVEOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            DATABASE_URL="file:./dev.db"
+            NODE_ENV=production
+            PORT=3000
+            HOST=0.0.0.0
+            ENVEOF
+            
+            # 7. package.json 스크립트 수정
+            echo "Step 7: package.json 수정"
+            npm pkg set scripts.start="next start -H 0.0.0.0 -p 3000"
+            
+            # 8. 빌드
+            echo "Step 8: 빌드"
+            npm run build || {
+              echo "빌드 실패, 개발 모드로 시도"
+              NODE_ENV=development npm run build || true
+            }
+            
+            # 9. 방화벽 설정
+            echo "Step 9: 방화벽"
+            sudo ufw --force disable
+            sudo iptables -F
+            sudo iptables -X
+            sudo iptables -P INPUT ACCEPT
+            sudo iptables -P OUTPUT ACCEPT
+            sudo iptables -P FORWARD ACCEPT
+            
+            # AWS 인스턴스면 iptables 규칙 추가
+            sudo iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
+            sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+            
+            # 10. 여러 방법으로 시작 시도
+            echo "Step 10: 앱 시작"
+            
+            # 방법 1: npm start
+            echo "방법 1: npm start"
+            PORT=3000 HOST=0.0.0.0 nohup npm start > ~/app1.log 2>&1 &
+            PID1=$!
+            sleep 10
+            
+            # 확인
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ 성공! npm start로 실행 중 (PID: $PID1)"
+            else
+              echo "❌ npm start 실패, 다른 방법 시도"
+              kill $PID1 2>/dev/null || true
+              
+              # 방법 2: npx next start
+              echo "방법 2: npx next start"
+              nohup npx next start -H 0.0.0.0 -p 3000 > ~/app2.log 2>&1 &
+              PID2=$!
+              sleep 10
+              
+              if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                echo "✅ 성공! npx next start로 실행 중 (PID: $PID2)"
+              else
+                echo "❌ npx next start도 실패"
+                kill $PID2 2>/dev/null || true
+                
+                # 방법 3: node로 직접 실행
+                echo "방법 3: node 직접 실행"
+                nohup node node_modules/.bin/next start -H 0.0.0.0 -p 3000 > ~/app3.log 2>&1 &
+                PID3=$!
+                sleep 10
+              fi
+            fi
+            
+            # 11. 최종 확인
+            echo "Step 11: 최종 확인"
+            echo "=== 프로세스 상태 ==="
+            ps aux | grep -E "node|npm|next" | grep -v grep
+            
+            echo "=== 포트 상태 ==="
+            sudo netstat -tlnp | grep -E "3000|80"
+            
+            echo "=== 로컬 연결 테스트 ==="
+            curl -I http://localhost:3000 || {
+              echo "로컬 연결 실패"
+              echo "=== 최근 로그 ==="
+              tail -30 ~/app1.log 2>/dev/null
+              tail -30 ~/app2.log 2>/dev/null
+              tail -30 ~/app3.log 2>/dev/null
+            }
+            
+            echo "=== 외부 IP 확인 ==="
+            curl ifconfig.me
+            
+            echo "
+            ✅ 서버 수정 완료!
+            
+            접속 주소:
+            - http://13.209.84.93:3000
+            - http://13.209.84.93
+            
+            만약 여전히 접속이 안 되면:
+            1. AWS 콘솔에서 보안 그룹 확인
+            2. 인바운드 규칙에 포트 3000 추가 (소스: 0.0.0.0/0)
+            "
