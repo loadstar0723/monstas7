@@ -82,14 +82,28 @@ jobs:
               sudo npm install -g pm2
             }
             
-            # PM2로 재시작
-            echo "🔄 Restarting with PM2..."
+            # 기존 프로세스 종료
+            echo "🔄 Stopping existing processes..."
             pm2 stop all || true
             pm2 delete all || true
+            pkill -f "next start" || true
+            pkill -f "node" || true
+            
+            # 앱 시작
+            echo "🚀 Starting application..."
             cd ~/monstas7/frontend
-            PORT=3000 pm2 start npm --name "monsta-app" -- start
-            pm2 save
-            pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
+            export NODE_ENV=production
+            export PORT=3000
+            nohup npm start > ~/monstas7/app.log 2>&1 &
+            
+            # 프로세스 확인
+            sleep 5
+            ps aux | grep "next start" | grep -v grep || echo "Warning: Process may not have started"
+            
+            # 방화벽 설정 확인
+            echo "🔥 Checking firewall..."
+            sudo ufw allow 3000/tcp || true
+            sudo ufw status || true
             
             # 상태 확인
             echo "📊 Checking status..."
