@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'monsta-prod',
-    script: 'node_modules/.bin/next',
+    script: 'npm',
     args: 'start',
     cwd: './frontend',
     instances: 1,
@@ -10,8 +10,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000,
-      HOSTNAME: '0.0.0.0'
+      PORT: 3000
     },
     error_file: './logs/pm2-error.log',
     out_file: './logs/pm2-out.log',
