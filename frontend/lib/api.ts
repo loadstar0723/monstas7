@@ -3,7 +3,7 @@
  * FastAPI 백엔드와 통신
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://13.209.84.93:8000'
 
 export class APIClient {
   private baseURL: string
@@ -69,6 +69,87 @@ export class APIClient {
   // 뉴스 감정 분석
   async getNewsSentiment() {
     return this.request('/api/v1/news/sentiment')
+  }
+
+  // 실시간 데이터 연동 메서드들 추가
+  
+  // 다중 시간대 플랜 생성
+  async generateTimeframePlans(symbol: string, currentPrice: number) {
+    return this.request('/api/v1/trading/timeframe-plans', {
+      method: 'POST',
+      body: JSON.stringify({ symbol, currentPrice }),
+    })
+  }
+
+  // 백테스트 데이터 조회
+  async getBacktestResults(symbol: string, pattern: string) {
+    return this.request(`/api/v1/backtest/results/${symbol}/${pattern}`)
+  }
+
+  // 포트폴리오 데이터 조회
+  async getPortfolio(userId: string) {
+    return this.request(`/api/v1/portfolio/${userId}`)
+  }
+
+  // 포트폴리오 업데이트
+  async updatePortfolio(userId: string, portfolio: any) {
+    return this.request(`/api/v1/portfolio/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(portfolio),
+    })
+  }
+
+  // 알림 설정 조회
+  async getAlerts(userId: string) {
+    return this.request(`/api/v1/alerts/${userId}`)
+  }
+
+  // 알림 설정 저장
+  async saveAlerts(userId: string, alerts: any[]) {
+    return this.request(`/api/v1/alerts/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify(alerts),
+    })
+  }
+
+  // AI 상세 분석 조회
+  async getDetailedAIAnalysis(symbol: string) {
+    return this.request(`/api/v1/ai/detailed-analysis/${symbol}`)
+  }
+
+  // AI 분석 새로고침
+  async refreshAIAnalysis(symbol: string) {
+    return this.request(`/api/v1/ai/analysis/${symbol}/refresh`, {
+      method: 'POST',
+    })
+  }
+
+  // 수익 계산
+  async calculateProfit(params: {
+    symbol: string
+    capital: number
+    leverage: number
+    entryPrice: number
+    stopLoss: number
+    targets: number[]
+  }) {
+    return this.request('/api/v1/trading/calculate-profit', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  }
+
+  // 실시간 시장 데이터 조회
+  async getMarketData(symbol: string) {
+    return this.request(`/api/v1/market/data/${symbol}`)
+  }
+
+  // 데이터베이스 쿼리 실행
+  async executeQuery(query: string, params: any[] = []) {
+    return this.request('/api/v1/db/query', {
+      method: 'POST',
+      body: JSON.stringify({ query, params }),
+    })
   }
 
   // WebSocket 연결

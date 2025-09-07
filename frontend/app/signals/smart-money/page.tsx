@@ -9,6 +9,14 @@ import { BINANCE_CONFIG, binanceAPI, createBinanceWebSocket } from '@/lib/binanc
 const MarketAnalysis = dynamic(() => import('@/components/signals/MarketAnalysis'), { ssr: false })
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { ssr: false })
 
+// 새로운 컴포넌트들 동적 임포트
+const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
+const ProfitCalculator = dynamic(() => import('@/components/signals/ProfitCalculator'), { ssr: false })
+const BacktestResults = dynamic(() => import('@/components/signals/BacktestResults'), { ssr: false })
+const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
+const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
+const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+
 interface SmartMoneyFlow {
   asset: string
   amount: number
@@ -29,7 +37,7 @@ interface MarketStats {
 
 export default function SmartMoneySignalsPage() {
   const [flows, setFlows] = useState<SmartMoneyFlow[]>([])
-  const [activeTab, setActiveTab] = useState<'overview' | 'flows' | 'analysis' | 'alerts'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'flows' | 'analysis' | 'alerts' | 'strategy' | 'tools'>('overview')
   const [marketStats, setMarketStats] = useState<MarketStats>({
     totalVolume24h: 0,
     netFlow24h: 0,
@@ -165,7 +173,9 @@ export default function SmartMoneySignalsPage() {
             { id: 'overview', label: '개요' },
             { id: 'flows', label: '자금 흐름' },
             { id: 'analysis', label: '분석' },
-            { id: 'alerts', label: '알림' }
+            { id: 'alerts', label: '알림' },
+            { id: 'strategy', label: '전략' },
+            { id: 'tools', label: '도구' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -316,6 +326,12 @@ export default function SmartMoneySignalsPage() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold mb-4">심층 분석</h2>
             
+            {/* DetailedAIAnalysis 컴포넌트 */}
+            <DetailedAIAnalysis 
+              symbol="BTC"
+              analysisType="smart-money"
+            />
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-bold mb-4 text-purple-400">고래 움직임 패턴</h3>
@@ -408,6 +424,44 @@ export default function SmartMoneySignalsPage() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        )}
+        
+        {activeTab === 'strategy' && (
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold">스마트 머니 추종 전략</h2>
+            
+            {/* 다중 시간대 계획 */}
+            <MultiTimeframePlan 
+              symbol="BTC"
+            />
+            
+            {/* 백테스트 결과 */}
+            <BacktestResults 
+              symbol="BTC"
+              pattern="스마트 머니 플로우 패턴"
+            />
+          </div>
+        )}
+        
+        {activeTab === 'tools' && (
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold">스마트 머니 도구</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 수익 계산기 */}
+              <ProfitCalculator 
+                symbol="BTC"
+              />
+              
+              {/* 알림 설정 */}
+              <AlertSettings 
+                symbol="BTC"
+              />
+            </div>
+            
+            {/* 포트폴리오 관리 */}
+            <PortfolioManager />
           </div>
         )}
 

@@ -23,6 +23,8 @@ model User {
   
   sessions        Session[]
   accounts        Account[]
+  portfolios      Portfolio[]
+  alerts          Alert[]
   
   @@map("users")
 }
@@ -80,4 +82,140 @@ enum SubscriptionTier {
   PLATINUM
   DIAMOND
   BLACK
+}
+
+// 실제 데이터 연동을 위한 테이블들
+model Portfolio {
+  id          String    @id @default(cuid())
+  userId      String
+  symbol      String
+  amount      Float
+  avgBuyPrice Float
+  allocation  Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, symbol])
+  @@map("portfolios")
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  userId      String
+  symbol      String
+  type        AlertType
+  name        String
+  description String
+  condition   String
+  value       Float?
+  enabled     Boolean     @default(true)
+  channels    String      // JSON array of channels
+  priority    AlertPriority @default(MEDIUM)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("alerts")
+}
+
+model BacktestResult {
+  id            String    @id @default(cuid())
+  symbol        String
+  pattern       String
+  totalTrades   Int
+  winRate       Float
+  avgProfit     Float
+  maxProfit     Float
+  maxLoss       Float
+  profitFactor  Float
+  sharpeRatio   Float
+  maxDrawdown   Float
+  confidence    Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  trades        BacktestTrade[]
+  
+  @@unique([symbol, pattern])
+  @@map("backtest_results")
+}
+
+model BacktestTrade {
+  id              String    @id @default(cuid())
+  backtestId      String
+  date            String
+  entryPrice      Float
+  exitPrice       Float
+  profit          Float
+  duration        String
+  result          TradeResult
+  
+  backtest        BacktestResult @relation(fields: [backtestId], references: [id], onDelete: Cascade)
+  
+  @@map("backtest_trades")
+}
+
+model MarketData {
+  id              String    @id @default(cuid())
+  symbol          String
+  price           Float
+  volume24h       Float
+  marketCap       Float?
+  dominance       Float?
+  fearGreedIndex  Int?
+  rsi             Float?
+  macd            Float?
+  timestamp       DateTime  @default(now())
+  
+  @@unique([symbol, timestamp])
+  @@map("market_data")
+}
+
+model TradingSignal {
+  id          String        @id @default(cuid())
+  symbol      String
+  type        SignalType
+  entryPrice  Float
+  stopLoss    Float
+  targets     String        // JSON array of targets
+  confidence  Int
+  strategy    String
+  status      SignalStatus  @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@map("trading_signals")
+}
+
+enum AlertType {
+  PRICE
+  PATTERN
+  VOLUME
+  INDICATOR
+  NEWS
+}
+
+enum AlertPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TradeResult {
+  WIN
+  LOSS
+}
+
+enum SignalType {
+  LONG
+  SHORT
+}
+
+enum SignalStatus {
+  ACTIVE
+  FILLED
+  CANCELLED
 }
