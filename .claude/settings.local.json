@@ -122,7 +122,10 @@
       "Bash(git config:*)",
       "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\whale-tracker\\WhaleTrackerModule.tsx\")",
       "Bash(powershell:*)",
-      "Bash(start http://localhost:3007/signals/whale-tracker)"
+      "Bash(start http://localhost:3007/signals/whale-tracker)",
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/emergency-fix.yml)",
+      "Bash(start http://13.209.84.93:3000/signals/whale-tracker)",
+      "Bash(start http://13.209.84.93:3000)"
     ],
     "deny": [],
     "ask": []
