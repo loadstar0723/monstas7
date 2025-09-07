@@ -94,7 +94,9 @@ jobs:
             cd ~/monstas7/frontend
             export NODE_ENV=production
             export PORT=3000
-            nohup npm start > ~/monstas7/app.log 2>&1 &
+            # PM2로 시작
+            pm2 start npm --name monstas7 -- start
+            pm2 save
             
             # 프로세스 확인
             sleep 5

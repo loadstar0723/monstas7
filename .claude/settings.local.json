@@ -120,7 +120,9 @@
       "Bash(start http://localhost:3002)",
       "Bash(start http://localhost:3000/signals/whale-tracker)",
       "Bash(git config:*)",
-      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\whale-tracker\\WhaleTrackerModule.tsx\")"
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\whale-tracker\\WhaleTrackerModule.tsx\")",
+      "Bash(powershell:*)",
+      "Bash(start http://localhost:3007/signals/whale-tracker)"
     ],
     "deny": [],
     "ask": []
