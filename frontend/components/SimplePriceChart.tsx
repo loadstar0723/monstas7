@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo, memo } from 'react'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
 
@@ -13,6 +13,27 @@ interface PriceData {
   time: string
   price: number
 }
+
+// 시간 라벨 컴포넌트 - React.memo로 최적화하여 불필요한 리렌더링 방지
+const TimeLabels = memo(({ labels }: { labels: Array<{ key: number, time: string, position: number }> }) => {
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-6 text-xs text-gray-500">
+      {labels.map((label) => (
+        <span 
+          key={label.key}
+          className="absolute"
+          style={{
+            left: `${label.position}%`,
+            transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {label.time}
+        </span>
+      ))}
+    </div>
+  )
+})
 
 export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceChartProps) {
   const [prices, setPrices] = useState<PriceData[]>([])
@@ -143,7 +164,16 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
         
         if (updatedPrices.length > 0) {
           pricesRef.current = updatedPrices
-          setPrices(updatedPrices)
+          // 깊은 비교를 통해 실제로 데이터가 변경되었을 때만 업데이트
+          setPrices(prevPrices => {
+            // 길이가 다르거나 시간이 다른 경우에만 업데이트
+            if (prevPrices.length !== updatedPrices.length || 
+                prevPrices[0]?.time !== updatedPrices[0]?.time ||
+                prevPrices[prevPrices.length - 1]?.time !== updatedPrices[updatedPrices.length - 1]?.time) {
+              return updatedPrices
+            }
+            return prevPrices
+          })
         }
       } catch (error) {
         console.error('15분봉 데이터 업데이트 실패:', error)
@@ -163,11 +193,26 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
 
   // 시간 라벨을 메모이제이션하여 깜빡거림 방지 (모든 Hook은 조건문 전에 호출되어야 함)
   const timeLabels = useMemo(() => {
-    return prices.filter((_, i) => i % 5 === 0).map((data, index) => ({
-      key: `${data.time}-${index}`,
-      time: data.time
-    }))
-  }, [prices]) // prices 배열이 변경될 때만 재계산
+    if (prices.length === 0) {
+      return []
+    }
+    
+    // 고정된 5개의 라벨 위치 계산
+    const labels = []
+    const indices = [0, Math.floor(prices.length * 0.25), Math.floor(prices.length * 0.5), Math.floor(prices.length * 0.75), prices.length - 1]
+    
+    indices.forEach((index, i) => {
+      if (index < prices.length && prices[index]) {
+        labels.push({
+          key: i, // 고정된 순서 기반 key
+          time: prices[index].time,
+          position: (index / Math.max(1, prices.length - 1)) * 100
+        })
+      }
+    })
+    
+    return labels
+  }, [prices]) // prices 배열의 내용이 변경될 때만 재계산
 
   if (loading) {
     return (
@@ -299,12 +344,8 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
           <span>${minPrice.toFixed(0)}</span>
         </div>
         
-        {/* X축 시간 라벨 */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 mt-2">
-          {timeLabels.map((label) => (
-            <span key={label.key}>{label.time}</span>
-          ))}
-        </div>
+        {/* X축 시간 라벨 - React.memo로 최적화 */}
+        <TimeLabels labels={timeLabels} />
       </div>
 
       {/* 하단 정보 */}
