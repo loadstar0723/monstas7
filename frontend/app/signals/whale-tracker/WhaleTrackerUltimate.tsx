@@ -157,7 +157,7 @@ export default function WhaleTrackerUltimate() {
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
   const [isBacktesting, setIsBacktesting] = useState(false)
   
-  // 각 코인별 통계 저장
+  // 각 코인별 통계 저장 - 실제 데이터로 초기화
   const getDefaultStats = () => ({
     totalWhales: 0,
     buyCount: 0,
@@ -170,19 +170,19 @@ export default function WhaleTrackerUltimate() {
     netFlow: 0,
     whaleActivity: 'normal',
     marketSentiment: 50,
-    fearGreedIndex: 50,  // 기본값 50 (중립)
+    fearGreedIndex: 50,
     dominance: 0,
-    volatility: 0,  // 실제 계산될 때까지 0
+    volatility: 0,
     activeWhales: 0,
     volume24h: 0,
-    priceHistory: [] as number[]  // 변동성 계산용 가격 히스토리
+    priceHistory: [] as number[]
   })
 
   // 각 심볼별 통계를 독립적으로 관리
   const [statsBySymbol, setStatsBySymbol] = useState<Record<string, ReturnType<typeof getDefaultStats>>>(() => {
     const initialStats: Record<string, any> = {}
     TRACKED_SYMBOLS.forEach(symbol => {
-      initialStats[symbol] = getDefaultStats()
+      initialStats[symbol] = getDefaultStats() // 모든 통계를 0으로 초기화 (실제 거래 데이터로 채워질 예정)
     })
     
     // localStorage에서 저장된 통계 불러오기
@@ -205,7 +205,7 @@ export default function WhaleTrackerUltimate() {
   })
 
   // 현재 선택된 심볼의 통계
-  const stats = statsBySymbol[selectedSymbol] || getDefaultStats()
+  const stats = statsBySymbol[selectedSymbol] || getDefaultStats(selectedSymbol)
 
   // 패턴 분석
   const [patterns, setPatterns] = useState({
@@ -316,6 +316,61 @@ export default function WhaleTrackerUltimate() {
     try {
       setLoading(true)
       
+      // 현재 선택된 심볼의 거래 데이터 가져오기
+      const symbol = selectedSymbol.replace('USDT', '')
+      const tradesRes = await fetch(`/api/whale/trades?symbol=${symbol}`)
+      const tradesData = await tradesRes.json()
+      
+      if (tradesData.success && tradesData.trades) {
+        // 거래 데이터를 WhaleTransaction 형식으로 변환
+        const formattedTrades = tradesData.trades.map((trade: any) => ({
+          id: trade.id,
+          symbol: trade.symbol,
+          type: trade.type.toLowerCase() as 'buy' | 'sell',
+          amount: trade.quantity,
+          price: trade.price,
+          value: trade.value,
+          time: new Date(trade.time).toLocaleTimeString(),
+          timestamp: trade.time,
+          exchange: 'Binance',
+          impact: trade.value > 1000000 ? 'high' : trade.value > 500000 ? 'medium' : 'low',
+          wallet: `Whale_${trade.id}`,
+          hash: `0x${trade.id}`
+        }))
+        
+        setTransactions(formattedTrades)
+        
+        // 심볼별 거래 저장
+        setTransactionsBySymbol(prev => ({
+          ...prev,
+          [selectedSymbol]: formattedTrades
+        }))
+      }
+      
+      // 통계 데이터 가져오기
+      const statsRes = await fetch(`/api/whale/trades?symbol=${symbol}&type=stats`)
+      const statsData = await statsRes.json()
+      
+      if (statsData) {
+        setStatsBySymbol(prev => ({
+          ...prev,
+          [selectedSymbol]: {
+            ...getDefaultStats(),
+            ...statsData,
+            whaleActivity: statsData.totalWhales > 20 ? 'very_high' : 
+                          statsData.totalWhales > 10 ? 'high' : 
+                          statsData.totalWhales > 5 ? 'moderate' : 'normal',
+            marketSentiment: statsData.buyVolume > 0 ? 
+                           Math.round((statsData.buyVolume / (statsData.buyVolume + statsData.sellVolume)) * 100) : 50
+          }
+        }))
+        
+        // 현재 가격 업데이트
+        if (statsData.currentPrice) {
+          setCurrentPrice(statsData.currentPrice)
+        }
+      }
+      
       // 고래 지갑 데이터
       const walletsRes = await fetch('/api/whale?type=wallets')
       const walletsData = await walletsRes.json()
@@ -335,45 +390,6 @@ export default function WhaleTrackerUltimate() {
       const patternsData = await patternsRes.json()
       if (patternsData.success) {
         setPatterns(patternsData.data)
-      }
-      
-      // Fear & Greed Index 가져오기 (실제 API)
-      try {
-        const fgRes = await fetch('https://api.alternative.me/fng/')
-        const fgData = await fgRes.json()
-        if (fgData && fgData.data && fgData.data[0]) {
-          const fearGreedValue = parseInt(fgData.data[0].value)
-          setStatsBySymbol(prev => {
-            const updated = { ...prev }
-            TRACKED_SYMBOLS.forEach(symbol => {
-              updated[symbol] = {
-                ...updated[symbol],
-                fearGreedIndex: fearGreedValue
-              }
-            })
-            return updated
-          })
-        }
-      } catch (fgError) {
-        console.log('Fear & Greed Index API 오류, 기본값 사용')
-      }
-      
-      // 일반 통계
-      const statsRes = await fetch('/api/whale')
-      const statsData = await statsRes.json()
-      if (statsData.success) {
-        // 모든 심볼의 공통 통계 업데이트
-        setStatsBySymbol(prev => {
-          const updated = { ...prev }
-          TRACKED_SYMBOLS.forEach(symbol => {
-            updated[symbol] = {
-              ...updated[symbol],
-              dominance: statsData.data.dominance || 0,
-              activeWhales: statsData.data.activeWhales || 0
-            }
-          })
-          return updated
-        })
       }
       
       setLoading(false)
@@ -657,6 +673,14 @@ export default function WhaleTrackerUltimate() {
       fetchCandleData()
     }, 15 * 60 * 1000) // 15분마다
     
+    return () => clearInterval(interval)
+  }, [selectedSymbol])
+  
+  // 초기 데이터 로드 및 심볼 변경 시 데이터 갱신
+  useEffect(() => {
+    fetchWhaleData()
+    // 10초마다 데이터 갱신
+    const interval = setInterval(fetchWhaleData, 10000)
     return () => clearInterval(interval)
   }, [selectedSymbol])
 
