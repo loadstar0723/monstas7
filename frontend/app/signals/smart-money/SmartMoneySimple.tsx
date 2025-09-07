@@ -199,7 +199,7 @@ export default function SmartMoneySimple() {
         {activeTab === 'trades' && (
           <div className="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700">
             <div className="p-4 border-b border-gray-700">
-              <h3 className="text-lg font-bold">실시간 대규모 거래 (>$50K)</h3>
+              <h3 className="text-lg font-bold">실시간 대규모 거래 (&gt;$50K)</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
