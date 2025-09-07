@@ -19,6 +19,8 @@ jobs:
           host: 13.209.84.93
           username: ubuntu
           key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          command_timeout: 30m
           script: |
             # 간단한 배포 스크립트
             echo "🚀 Starting deployment..."
@@ -74,7 +76,12 @@ jobs:
             
             # 빌드
             echo "🏗️ Building application..."
-            npm run build
+            npm run build || {
+              echo "❌ Build failed!"
+              echo "Showing error logs..."
+              tail -n 50 ~/.npm/_logs/*.log 2>/dev/null || true
+              exit 1
+            }
             
             # PM2 설치 확인
             which pm2 || {
@@ -91,12 +98,15 @@ jobs:
             
             # 앱 시작
             echo "🚀 Starting application..."
-            cd ~/monstas7/frontend
+            cd ~/monstas7/frontend || cd frontend
             export NODE_ENV=production
             export PORT=3000
             # PM2로 시작
-            pm2 start npm --name monstas7 -- start
-            pm2 save
+            pm2 start npm --name monstas7 -- start || {
+              echo "PM2 start failed, trying direct start..."
+              nohup npm start > ~/app.log 2>&1 &
+            }
+            pm2 save || true
             
             # 프로세스 확인
             sleep 5
