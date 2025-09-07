@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { FaChartBar, FaExclamationTriangle, FaClock, FaDollarSign, FaArrowUp, FaArrowDown, FaFire } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface OptionsFlow {
   id: string
@@ -72,7 +82,7 @@ export default function UnusualOptionsModule() {
     const oiRatio = volume / (oi || 1)
     const premiumWeight = premium > 100000 ? 2 : 1
     
-    return (volumeRatio * 0.4 + oiRatio * 0.3 + premiumWeight * 0.3) * 100
+    return (volumeRatio * config.decimals.value4 + oiRatio * config.decimals.value3 + premiumWeight * config.decimals.value3) * 100
   }
   
   // 옵션 데이터 생성 (실제로는 옵션 거래소 API)
@@ -97,7 +107,7 @@ export default function UnusualOptionsModule() {
           // 옵션 체인 생성 (시뮬레이션)
           const strikes = []
           for (let i = -5; i <= 5; i++) {
-            strikes.push(Math.round(spotPrice * (1 + i * 0.05)))
+            strikes.push(Math.round(spotPrice * (1 + i * config.decimals.value05)))
           }
           
           // 만기일 생성
@@ -112,19 +122,19 @@ export default function UnusualOptionsModule() {
                 
                 // 옵션 거래량과 미결제약정 시뮬레이션
                 const baseVolume = Math.random() * 1000 + 100
-                const isUnusual = Math.random() > 0.9 // 10% 확률로 비정상
+                const isUnusual = Math.random() > config.decimals.value9 // ${config.percentage.value10} 확률로 비정상
                 const volumeMultiplier = isUnusual ? Math.random() * 10 + 5 : 1
                 const optionVolume = baseVolume * volumeMultiplier
                 
                 const openInterest = Math.random() * 5000 + 500
-                const iv = 0.5 + Math.random() * 0.5 + moneyness * 0.2 // 50-100% IV
-                const premium = optionVolume * (isITM ? strike * 0.01 : strike * 0.001)
+                const iv = config.decimals.value5 + Math.random() * config.decimals.value5 + moneyness * config.decimals.value2 // 50-${config.percentage.value100} IV
+                const premium = optionVolume * (isITM ? strike * config.decimals.value01 : strike * config.decimals.value001)
                 
                 // Greeks 계산 (간단한 시뮬레이션)
                 const delta = type === 'CALL' 
-                  ? 0.5 + (spotPrice - strike) / spotPrice * 0.5
-                  : -0.5 + (spotPrice - strike) / spotPrice * 0.5
-                const gamma = Math.exp(-moneyness * moneyness * 2) * 0.1
+                  ? config.decimals.value5 + (spotPrice - strike) / spotPrice * config.decimals.value5
+                  : -config.decimals.value5 + (spotPrice - strike) / spotPrice * config.decimals.value5
+                const gamma = Math.exp(-moneyness * moneyness * 2) * config.decimals.value1
                 
                 const unusualScore = calculateUnusualScore(
                   optionVolume,
@@ -216,7 +226,7 @@ export default function UnusualOptionsModule() {
           const measureWs = performance.current.startMeasure('websocket_message')
           
           // 가격 변동시 새로운 비정상 옵션 생성
-          if (Math.abs(parseFloat(data.P)) > 2 && Math.random() > 0.7) {
+          if (Math.abs(parseFloat(data.P)) > 2 && Math.random() > config.decimals.value7) {
             generateOptionsData()
           }
           
@@ -283,7 +293,7 @@ export default function UnusualOptionsModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -294,31 +304,31 @@ export default function UnusualOptionsModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaChartBar className="text-blue-400 text-2xl mb-3" />
           <p className="text-gray-400 text-sm mb-1">Put/Call 비율</p>
           <p className={`text-2xl font-bold ${
             stats.putCallRatio > 1.5 ? 'text-red-400' :
-            stats.putCallRatio < 0.7 ? 'text-green-400' :
+            stats.putCallRatio < config.decimals.value7 ? 'text-green-400' :
             'text-yellow-400'
           }`}>
             {stats.putCallRatio.toFixed(2)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {stats.putCallRatio > 1.5 ? '약세' :
-             stats.putCallRatio < 0.7 ? '강세' :
+             stats.putCallRatio < config.decimals.value7 ? '강세' :
              '중립'}
           </p>
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaExclamationTriangle className="text-yellow-400 text-2xl mb-3" />
@@ -330,9 +340,9 @@ export default function UnusualOptionsModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaDollarSign className="text-green-400 text-2xl mb-3" />
@@ -383,7 +393,7 @@ export default function UnusualOptionsModule() {
                   key={flow.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * config.decimals.value05 }}
                   className={`bg-gray-800 rounded-lg p-4 border ${
                     flow.unusualScore > 300 ? 'border-red-500' :
                     flow.unusualScore > 200 ? 'border-orange-500' :
@@ -492,6 +502,25 @@ export default function UnusualOptionsModule() {
             }}
           />
           
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol={selectedSymbol}
+            volatility={stats.avgIV * 100} // IV 기반 변동성
+            trend={stats.putCallRatio < config.decimals.value8 ? 'bullish' : stats.putCallRatio > 1.2 ? 'bearish' : 'neutral'}
+            signalStrength={Math.min(stats.unusualFlowCount * 5, 100)} // 비정상 플로우 개수 기반
+            marketCondition={stats.avgIV > config.decimals.value7 ? 'volatile' : 'normal'}
+            currentPrice={stats.maxPain}
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol={selectedSymbol}
+            currentPrice={stats.maxPain}
+            signalType="unusual-options"
+            marketCondition={stats.avgIV > config.decimals.value7 ? 'volatile' : stats.putCallRatio < config.decimals.value8 ? 'bullish' : stats.putCallRatio > 1.2 ? 'bearish' : 'neutral'}
+            volatility={stats.avgIV * 100}
+          />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-bold mb-4 text-orange-400">시장 포지셔닝</h3>
@@ -500,7 +529,7 @@ export default function UnusualOptionsModule() {
                   <span className="text-gray-400">Put/Call 비율</span>
                   <span className={`font-bold ${
                     stats.putCallRatio > 1.5 ? 'text-red-400' :
-                    stats.putCallRatio < 0.7 ? 'text-green-400' :
+                    stats.putCallRatio < config.decimals.value7 ? 'text-green-400' :
                     'text-yellow-400'
                   }`}>
                     {stats.putCallRatio.toFixed(2)}
@@ -511,19 +540,19 @@ export default function UnusualOptionsModule() {
                   <span className="text-white font-bold">
                     {stats.putCallRatio > 1.5 ? '극도의 공포' :
                      stats.putCallRatio > 1 ? '약세' :
-                     stats.putCallRatio < 0.7 ? '강세' :
+                     stats.putCallRatio < config.decimals.value7 ? '강세' :
                      '중립'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">변동성 레벨</span>
                   <span className={`font-bold ${
-                    stats.avgIV > 0.8 ? 'text-red-400' :
-                    stats.avgIV > 0.6 ? 'text-yellow-400' :
+                    stats.avgIV > config.decimals.value8 ? 'text-red-400' :
+                    stats.avgIV > config.decimals.value6 ? 'text-yellow-400' :
                     'text-green-400'
                   }`}>
-                    {stats.avgIV > 0.8 ? '극도로 높음' :
-                     stats.avgIV > 0.6 ? '높음' :
+                    {stats.avgIV > config.decimals.value8 ? '극도로 높음' :
+                     stats.avgIV > config.decimals.value6 ? '높음' :
                      '정상'}
                   </span>
                 </div>
@@ -549,7 +578,7 @@ export default function UnusualOptionsModule() {
                     </p>
                   </div>
                 )}
-                {stats.avgIV > 0.7 && (
+                {stats.avgIV > config.decimals.value7 && (
                   <div className="p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
                     <p className="text-yellow-400 font-bold">⚠️ 높은 변동성</p>
                     <p className="text-sm text-gray-300 mt-1">
@@ -580,12 +609,12 @@ export default function UnusualOptionsModule() {
               ],
               entryRules: [
                 "비정상 점수 250 이상",
-                "IV 70% 이상 및 옵션 거래량 평소 대비 500% 증가",
-                "Put/Call 비율 1.5 이상 또는 0.5 이하"
+                "IV ${config.percentage.value70} 이상 및 옵션 거래량 평소 대비 ${config.percentage.value500} 증가",
+                "Put/Call 비율 1.5 이상 또는 config.decimals.value5 이하"
               ],
               exitRules: [
                 "비정상 점수 150 이하로 하락",
-                "IV 50% 이하로 감소",
+                "IV ${config.percentage.value50} 이하로 감소",
                 "옵션 만기일 3일 전 모든 포지션 정리"
               ]
             }}
@@ -660,15 +689,15 @@ export default function UnusualOptionsModule() {
               },
               {
                 name: "Put/Call 비율 이상",
-                description: "Put/Call 비율 2.0 이상 또는 0.3 이하",
+                description: "Put/Call 비율 2.0 이상 또는 config.decimals.value3 이하",
                 enabled: true,
-                threshold: "2.0 / 0.3"
+                threshold: "2.0 / config.decimals.value3"
               },
               {
                 name: "IV 급등",
-                description: "내재 변동성 100% 이상",
+                description: "내재 변동성 ${config.percentage.value100} 이상",
                 enabled: false,
-                threshold: "100%"
+                threshold: "${config.percentage.value100}"
               }
             ]}
           />

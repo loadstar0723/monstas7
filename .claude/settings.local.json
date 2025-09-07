@@ -111,7 +111,16 @@
       "Bash(start http://localhost:3005)",
       "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/simple-deploy.yml)",
       "Bash(mv:*)",
-      "Bash(start http://localhost:3006)"
+      "Bash(start http://localhost:3006)",
+      "Bash(npm run:*)",
+      "Bash(npx next dev:*)",
+      "Bash(del .githookspre-commit)",
+      "Bash(sed:*)",
+      "Bash(start http://localhost:3000/signals/smart-money)",
+      "Bash(start http://localhost:3002)",
+      "Bash(start http://localhost:3000/signals/whale-tracker)",
+      "Bash(git config:*)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\whale-tracker\\WhaleTrackerModule.tsx\")"
     ],
     "deny": [],
     "ask": []

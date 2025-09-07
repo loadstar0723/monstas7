@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa'
 import { BiBot, BiNetworkChart, BiRadar, BiPulse } from 'react-icons/bi'
 import { MdAnalytics, MdAutoGraph, MdCandlestickChart } from 'react-icons/md'
+import { config } from '@/lib/config'
 
 interface MenuItem {
   label: string
@@ -155,7 +156,7 @@ export default function SidebarGitHub() {
             initial={{ rotate: -90, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
             exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: config.decimals.value2 }}
           >
             {isOpen ? (
               <FaTimes className="w-5 h-5 text-gray-300" />
@@ -322,7 +323,7 @@ export default function SidebarGitHub() {
                                   <Icon className="text-xs" />
                                   <span className="flex-1">{item.label}</span>
                                   {item.tier && (
-                                    <span className={`text-xs px-1.5 py-0.5 rounded ${tierInfo[item.tier].bgColor} ${tierInfo[item.tier].color}`}>
+                                    <span className={`text-xs px-1.5 py-config.decimals.value5 rounded ${tierInfo[item.tier].bgColor} ${tierInfo[item.tier].color}`}>
                                       {item.tier}
                                     </span>
                                   )}

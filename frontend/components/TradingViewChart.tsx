@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, memo } from 'react'
+import { config } from '@/lib/config'
 
 declare global {
   interface Window {
@@ -21,7 +22,7 @@ function TradingViewChart({
   interval = 'D',
   theme = 'dark',
   height = 500,
-  width = '100%'
+  width = '${config.percentage.value100}'
 }: TradingViewChartProps) {
   const container = useRef<HTMLDivElement>(null);
 

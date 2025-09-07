@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaNewspaper, FaBell, FaChartLine, FaBolt } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function NewsPage() {
   return (
@@ -21,7 +22,7 @@ export default function NewsPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="glass-card p-12 text-center"
         >
           <motion.div

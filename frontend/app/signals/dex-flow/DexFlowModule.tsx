@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { FaEthereum, FaExchangeAlt, FaDollarSign, FaChartArea, FaArrowUp, FaArrowDown, FaWater } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface DexTransaction {
   id: string
@@ -93,11 +103,11 @@ export default function DexFlowModule() {
         if (ticker) {
           const price = parseFloat(ticker.lastPrice)
           const amountIn = Math.random() * 10 + 1
-          const amountOut = amountIn * price * (1 - Math.random() * 0.005) // 0.5% 슬리피지
+          const amountOut = amountIn * price * (1 - Math.random() * config.decimals.value005) // 0.${config.percentage.value5} 슬리피지
           
           newTransactions.push({
             id: `tx-${Date.now()}-${i}`,
-            type: Math.random() > 0.7 ? 'SWAP' : Math.random() > 0.5 ? 'ADD_LIQUIDITY' : 'REMOVE_LIQUIDITY',
+            type: Math.random() > config.decimals.value7 ? 'SWAP' : Math.random() > config.decimals.value5 ? 'ADD_LIQUIDITY' : 'REMOVE_LIQUIDITY',
             tokenIn,
             tokenOut,
             amountIn,
@@ -141,8 +151,8 @@ export default function DexFlowModule() {
             pools.push({
               pair,
               dex,
-              tvl: volume * (Math.random() * 0.5 + 0.5),
-              volume24h: volume * 0.1,
+              tvl: volume * (Math.random() * config.decimals.value5 + config.decimals.value5),
+              volume24h: volume * config.decimals.value1,
               apy: Math.random() * 100 + 5,
               token0Reserve: Math.random() * 10000 + 1000,
               token1Reserve: Math.random() * 10000000 + 100000,
@@ -190,7 +200,7 @@ export default function DexFlowModule() {
           const measureWs = performance.current.startMeasure('websocket_message')
           
           // 가격 변동시 새로운 트랜잭션 생성
-          if (Array.isArray(data) && Math.random() > 0.9) {
+          if (Array.isArray(data) && Math.random() > config.decimals.value9) {
             generateDexTransactions()
           }
           
@@ -200,7 +210,7 @@ export default function DexFlowModule() {
         // 5초마다 데이터 업데이트
         const refreshInterval = setInterval(() => {
           generateDexTransactions()
-          if (Math.random() > 0.7) {
+          if (Math.random() > config.decimals.value7) {
             generateLiquidityPools()
           }
         }, 5000)
@@ -264,7 +274,7 @@ export default function DexFlowModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -277,9 +287,9 @@ export default function DexFlowModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaWater className="text-blue-400 text-2xl mb-3" />
@@ -291,9 +301,9 @@ export default function DexFlowModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaEthereum className="text-purple-400 text-2xl mb-3" />
@@ -305,9 +315,9 @@ export default function DexFlowModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaChartArea className="text-yellow-400 text-2xl mb-3" />
@@ -358,7 +368,7 @@ export default function DexFlowModule() {
                   key={tx.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * config.decimals.value05 }}
                   className="bg-gray-800 rounded-lg p-4 border border-gray-700"
                 >
                   <div className="flex items-center justify-between">
@@ -461,6 +471,25 @@ export default function DexFlowModule() {
             }}
           />
           
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol="DEX_FLOW"
+            volatility={stats.avgGasPrice} // 가스비 기반 변동성
+            trend={stats.totalTVL > 50000000 ? 'bullish' : 'neutral'}
+            signalStrength={Math.min((stats.totalVolume24h / 1000000) / 10, 100)} // 거래량 기반 신호 강도
+            marketCondition={stats.avgGasPrice > 50 ? 'volatile' : 'normal'}
+            currentPrice={45000} // DEX 플로우는 특정 가격이 없으므로 기본값
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol="DEX_FLOW"
+            currentPrice={45000}
+            signalType="dex-flow"
+            marketCondition={stats.avgGasPrice > 50 ? 'volatile' : stats.totalTVL > 50000000 ? 'bullish' : 'neutral'}
+            volatility={stats.avgGasPrice}
+          />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-bold mb-4 text-purple-400">거래 패턴</h3>
@@ -475,7 +504,7 @@ export default function DexFlowModule() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">평균 슬리피지</span>
-                  <span className="text-yellow-400 font-bold">0.3%</span>
+                  <span className="text-yellow-400 font-bold">0.${config.percentage.value3}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">MEV 활동</span>
@@ -490,7 +519,7 @@ export default function DexFlowModule() {
                 <div className="p-3 bg-green-900/20 border border-green-500/30 rounded">
                   <p className="text-green-400 font-bold">📈 유동성 증가</p>
                   <p className="text-sm text-gray-300 mt-1">
-                    지난 24시간 동안 TVL이 5% 증가했습니다
+                    지난 24시간 동안 TVL이 ${config.percentage.value5} 증가했습니다
                   </p>
                 </div>
                 <div className="p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
@@ -521,14 +550,14 @@ export default function DexFlowModule() {
                 { period: "1시간", signal: "DEX 간 유동성 마이그레이션", confidence: 78 }
               ],
               entryRules: [
-                "100% APY 이상 유동성 풀 발견",
+                "${config.percentage.value100} APY 이상 유동성 풀 발견",
                 "가스비 50 Gwei 이하로 하락",
-                "MEV 기회 5% 이상 예상 수익"
+                "MEV 기회 ${config.percentage.value5} 이상 예상 수익"
               ],
               exitRules: [
-                "APY 50% 이하로 하락",
+                "APY ${config.percentage.value50} 이하로 하락",
                 "가스비 100 Gwei 초과",
-                "유동성 5% 이하로 감소"
+                "유동성 ${config.percentage.value5} 이하로 감소"
               ]
             }}
           />
@@ -596,9 +625,9 @@ export default function DexFlowModule() {
             alertTypes={[
               {
                 name: "고수익 유동성 풀",
-                description: "100% APY 이상 유동성 풀 발견",
+                description: "${config.percentage.value100} APY 이상 유동성 풀 발견",
                 enabled: true,
-                threshold: "100% APY"
+                threshold: "${config.percentage.value100} APY"
               },
               {
                 name: "가스비 급등",

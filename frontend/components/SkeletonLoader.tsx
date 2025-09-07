@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface SkeletonLoaderProps {
   type?: 'text' | 'card' | 'chart' | 'table' | 'avatar' | 'button'
@@ -16,7 +17,7 @@ export default function SkeletonLoader({
   const baseClasses = "bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded"
   
   const shimmerAnimation = {
-    backgroundPosition: ['200% 0', '-200% 0'],
+    backgroundPosition: ['${config.percentage.value200} 0', '-${config.percentage.value200} 0'],
   }
 
   const shimmerTransition = {
@@ -36,7 +37,7 @@ export default function SkeletonLoader({
                 className={`h-4 ${baseClasses} ${className}`}
                 style={{ 
                   width: `${Math.random() * 40 + 60}%`,
-                  backgroundSize: '200% 100%'
+                  backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                 }}
                 animate={shimmerAnimation}
                 transition={shimmerTransition}
@@ -50,7 +51,7 @@ export default function SkeletonLoader({
           <div className={`p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4 ${className}`}>
             <motion.div
               className={`h-6 w-3/4 ${baseClasses}`}
-              style={{ backgroundSize: '200% 100%' }}
+              style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
               animate={shimmerAnimation}
               transition={shimmerTransition}
             />
@@ -61,16 +62,16 @@ export default function SkeletonLoader({
                   className={`h-4 ${baseClasses}`}
                   style={{ 
                     width: `${Math.random() * 30 + 70}%`,
-                    backgroundSize: '200% 100%'
+                    backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                   }}
                   animate={shimmerAnimation}
-                  transition={{ ...shimmerTransition, delay: i * 0.1 }}
+                  transition={{ ...shimmerTransition, delay: i * config.decimals.value1 }}
                 />
               ))}
             </div>
             <motion.div
               className={`h-10 w-28 ${baseClasses}`}
-              style={{ backgroundSize: '200% 100%' }}
+              style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
               animate={shimmerAnimation}
               transition={shimmerTransition}
             />
@@ -82,7 +83,7 @@ export default function SkeletonLoader({
           <div className={`p-4 border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}>
             <motion.div
               className={`h-6 w-1/3 mb-4 ${baseClasses}`}
-              style={{ backgroundSize: '200% 100%' }}
+              style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
               animate={shimmerAnimation}
               transition={shimmerTransition}
             />
@@ -93,10 +94,10 @@ export default function SkeletonLoader({
                   className={`flex-1 ${baseClasses}`}
                   style={{ 
                     height: `${Math.random() * 60 + 40}%`,
-                    backgroundSize: '200% 100%'
+                    backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                   }}
                   animate={shimmerAnimation}
-                  transition={{ ...shimmerTransition, delay: i * 0.05 }}
+                  transition={{ ...shimmerTransition, delay: i * config.decimals.value05 }}
                 />
               ))}
             </div>
@@ -113,9 +114,9 @@ export default function SkeletonLoader({
                   <motion.div
                     key={i}
                     className={`h-4 ${baseClasses}`}
-                    style={{ backgroundSize: '200% 100%' }}
+                    style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
                     animate={shimmerAnimation}
-                    transition={{ ...shimmerTransition, delay: i * 0.05 }}
+                    transition={{ ...shimmerTransition, delay: i * config.decimals.value05 }}
                   />
                 ))}
               </div>
@@ -130,10 +131,10 @@ export default function SkeletonLoader({
                       className={`h-4 ${baseClasses}`}
                       style={{ 
                         width: `${Math.random() * 30 + 70}%`,
-                        backgroundSize: '200% 100%'
+                        backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                       }}
                       animate={shimmerAnimation}
-                      transition={{ ...shimmerTransition, delay: (rowIndex * 4 + colIndex) * 0.03 }}
+                      transition={{ ...shimmerTransition, delay: (rowIndex * 4 + colIndex) * config.decimals.value03 }}
                     />
                   ))}
                 </div>
@@ -147,22 +148,22 @@ export default function SkeletonLoader({
           <div className="flex items-center gap-3">
             <motion.div
               className={`w-12 h-12 rounded-full ${baseClasses}`}
-              style={{ backgroundSize: '200% 100%' }}
+              style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
               animate={shimmerAnimation}
               transition={shimmerTransition}
             />
             <div className="space-y-2">
               <motion.div
                 className={`h-4 w-24 ${baseClasses}`}
-                style={{ backgroundSize: '200% 100%' }}
+                style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
                 animate={shimmerAnimation}
-                transition={{ ...shimmerTransition, delay: 0.1 }}
+                transition={{ ...shimmerTransition, delay: config.decimals.value1 }}
               />
               <motion.div
                 className={`h-3 w-32 ${baseClasses}`}
-                style={{ backgroundSize: '200% 100%' }}
+                style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
                 animate={shimmerAnimation}
-                transition={{ ...shimmerTransition, delay: 0.2 }}
+                transition={{ ...shimmerTransition, delay: config.decimals.value2 }}
               />
             </div>
           </div>
@@ -172,7 +173,7 @@ export default function SkeletonLoader({
         return (
           <motion.div
             className={`h-10 w-24 ${baseClasses} ${className}`}
-            style={{ backgroundSize: '200% 100%' }}
+            style={{ backgroundSize: '${config.percentage.value200} ${config.percentage.value100}' }}
             animate={shimmerAnimation}
             transition={shimmerTransition}
           />

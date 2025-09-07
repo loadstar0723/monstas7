@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface SimplePriceChartProps {
   symbol: string
@@ -20,8 +21,14 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
   const [loading, setLoading] = useState(true)
   const wsRef = useRef<WebSocket | null>(null)
   const pricesRef = useRef<PriceData[]>([])
+  const updateIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    // 브라우저 환경이 아니면 실행하지 않음 (SSR 방지)
+    if (typeof window === 'undefined') {
+      return
+    }
+    
     // Binance WebSocket 실제 연결
     const connectWebSocket = () => {
       const wsSymbol = symbol.toLowerCase()
@@ -37,23 +44,12 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       wsRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data)
         const newPrice = parseFloat(data.p)
-        const newTime = new Date().toLocaleTimeString('ko-KR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        })
         
-        const newPriceData: PriceData = {
-          time: newTime,
-          price: newPrice
-        }
-        
-        // 가격 데이터 업데이트 (최대 20개 유지)
-        pricesRef.current = [...pricesRef.current, newPriceData].slice(-20)
-        setPrices([...pricesRef.current])
+        // 현재가만 업데이트 (차트는 15분봉 데이터 유지)
         setCurrentPrice(newPrice)
         
         // 가격 변화율 계산
-        if (pricesRef.current.length > 1) {
+        if (pricesRef.current.length > 0) {
           const firstPrice = pricesRef.current[0].price
           const change = ((newPrice - firstPrice) / firstPrice) * 100
           setPriceChange(change)
@@ -61,32 +57,44 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       }
       
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket 에러:', error)
+        // WebSocket 에러는 Event 객체로 오므로 세부 정보가 없음
+        console.log('WebSocket 연결 시도 중...')
         setLoading(false)
       }
       
-      wsRef.current.onclose = () => {
-        console.log('WebSocket 연결 종료')
-        // 5초 후 재연결
-        setTimeout(connectWebSocket, 5000)
+      wsRef.current.onclose = (event) => {
+        console.log('WebSocket 연결 종료, 코드:', event.code)
+        // 정상 종료가 아닌 경우에만 재연결
+        if (event.code !== 1000) {
+          // 5초 후 재연결
+          setTimeout(connectWebSocket, 5000)
+        }
       }
     }
     
-    // 초기 가격 데이터 가져오기 (Binance REST API)
+    // 초기 가격 데이터 가져오기 (프록시 경유)
     const fetchInitialData = async () => {
       try {
         const response = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=20`
+          `/api/binance/klines?symbol=${symbol}&interval=15m&limit=20`
         )
-        const data = await response.json()
+        const result = await response.json()
         
-        const initialPrices: PriceData[] = data.map((candle: any[]) => ({
-          time: new Date(candle[0]).toLocaleTimeString('ko-KR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          price: parseFloat(candle[4]) // Close price
-        }))
+        // API 응답에서 data 배열 추출
+        const klineData = result.data || []
+        
+        const initialPrices: PriceData[] = klineData.map((candle: any[]) => {
+          const timestamp = candle[0]
+          const date = new Date(timestamp)
+          
+          return {
+            time: date.toLocaleTimeString('ko-KR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            price: parseFloat(candle[4]) // Close price
+          }
+        })
         
         pricesRef.current = initialPrices
         setPrices(initialPrices)
@@ -110,10 +118,45 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
     
     fetchInitialData()
     
+    // 15분마다 새로운 15분봉 데이터 가져오기
+    updateIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await fetch(
+          `/api/binance/klines?symbol=${symbol}&interval=15m&limit=20`
+        )
+        const result = await response.json()
+        const klineData = result.data || []
+        
+        const updatedPrices: PriceData[] = klineData.map((candle: any[]) => {
+          // Binance는 이미 정확한 15분봉 시작 시간을 제공
+          const timestamp = candle[0]
+          const date = new Date(timestamp)
+          
+          return {
+            time: date.toLocaleTimeString('ko-KR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            price: parseFloat(candle[4])
+          }
+        })
+        
+        if (updatedPrices.length > 0) {
+          pricesRef.current = updatedPrices
+          setPrices(updatedPrices)
+        }
+      } catch (error) {
+        console.error('15분봉 데이터 업데이트 실패:', error)
+      }
+    }, 15 * 60 * 1000) // 15분마다 실행
+    
     // 클린업
     return () => {
       if (wsRef.current) {
         wsRef.current.close()
+      }
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current)
       }
     }
   }, [symbol])
@@ -142,10 +185,24 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
 
   // SVG 차트 포인트 계산
   const chartPoints = prices.map((data, index) => {
-    const x = (index / (prices.length - 1)) * 100
-    const y = ((maxPrice - data.price) / priceRange) * 100
+    const x = prices.length > 1 ? (index / (prices.length - 1)) * 100 : 50
+    const y = priceRange > 0 ? ((maxPrice - data.price) / priceRange) * 100 : 50
     return `${x},${y}`
   }).join(' ')
+  
+  // 현재 가격 점의 위치 계산
+  const currentPriceY = priceRange > 0 
+    ? Math.min(95, Math.max(5, ((maxPrice - currentPrice) / priceRange) * 100))
+    : 50
+  const currentPriceX = prices.length > 0 ? Math.min(95, (prices.length - 1) / Math.max(1, prices.length - 1) * 100) : 50
+
+  // 시간 라벨을 메모이제이션하여 깜빡거림 방지
+  const timeLabels = useMemo(() => {
+    return prices.filter((_, i) => i % 5 === 0).map((data, index) => ({
+      key: `${data.time}-${index}`,
+      time: data.time
+    }))
+  }, [prices.length]) // prices 배열 길이가 변경될 때만 재계산
 
   return (
     <motion.div
@@ -157,7 +214,10 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       {/* 헤더 */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-300 mb-1">{symbol}</h3>
+          <h3 className="text-lg font-semibold text-gray-300 mb-1">
+            {symbol}
+            <span className="ml-2 text-xs text-gray-500 font-normal">(15분봉)</span>
+          </h3>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-white">
               ${currentPrice.toLocaleString('ko-KR', { 
@@ -224,8 +284,8 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
           
           {/* 현재 가격 점 */}
           <circle
-            cx="100"
-            cy={((maxPrice - currentPrice) / priceRange) * 100}
+            cx={currentPriceX}
+            cy={currentPriceY}
             r="1.5"
             fill={priceChange >= 0 ? '#10b981' : '#ef4444'}
             className="animate-pulse"
@@ -241,8 +301,8 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
         
         {/* X축 시간 라벨 */}
         <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 mt-2">
-          {prices.filter((_, i) => i % 5 === 0).map((data, i) => (
-            <span key={i}>{data.time}</span>
+          {timeLabels.map((label) => (
+            <span key={label.key}>{label.time}</span>
           ))}
         </div>
       </div>

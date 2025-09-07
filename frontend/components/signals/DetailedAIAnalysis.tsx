@@ -6,6 +6,7 @@ import { FaBrain, FaChartLine, FaExclamationTriangle, FaLightbulb, FaRobot } fro
 import { MdAutoAwesome, MdInsights, MdTrendingUp } from 'react-icons/md'
 import { apiClient } from '../../lib/api'
 import WebSocketManager from '../../lib/websocketManager'
+import { config } from '@/lib/config'
 
 interface AnalysisSection {
   id: string
@@ -27,6 +28,8 @@ interface TradingScenario {
 interface DetailedAIAnalysisProps {
   symbol?: string
   userId?: string
+  analysisType?: string
+  data?: any
 }
 
 /**
@@ -137,11 +140,11 @@ export default function DetailedAIAnalysis({
     id: 'onchain',
     title: '온체인 분석',
     icon: <FaBrain className="text-purple-400" />,
-    content: `거래소 ${symbol} 보유량이 지난 24시간 동안 2.3% 감소했습니다. 장기 보유자(HODLer)의 비율이 67%로 역대 최고 수준이며, 고래 지갑(1000+ ${symbol})에서 지속적인 축적이 관찰됩니다. 네트워크 해시레이트는 안정적이며, 마이너들의 매도 압력은 낮은 상태입니다.`,
+    content: `거래소 ${symbol} 보유량이 지난 24시간 동안 2.${config.percentage.value3} 감소했습니다. 장기 보유자(HODLer)의 비율이 ${config.percentage.value67}로 역대 최고 수준이며, 고래 지갑(1000+ ${symbol})에서 지속적인 축적이 관찰됩니다. 네트워크 해시레이트는 안정적이며, 마이너들의 매도 압력은 낮은 상태입니다.`,
     confidence: 82,
     factors: [
-      '거래소 보유량 감소 (-2.3%)',
-      '장기 보유자 비율 67%',
+      '거래소 보유량 감소 (-2.${config.percentage.value3})',
+      '장기 보유자 비율 ${config.percentage.value67}',
       '고래 축적 증가',
       '해시레이트 안정',
       '마이너 매도 압력 낮음'
@@ -152,12 +155,12 @@ export default function DetailedAIAnalysis({
     id: 'sentiment',
     title: '심리 분석',
     icon: <MdInsights className="text-green-400" />,
-    content: `시장 심리는 '탐욕' 단계(Fear & Greed Index: 72)에 있습니다. 소셜 미디어 언급량이 30% 증가했으며, 긍정적 감정이 65%를 차지합니다. 기관 투자자들의 관심이 증가하고 있으며, 선물 시장에서는 롱 포지션이 우세합니다. 단기적 과열 가능성에 주의가 필요합니다.`,
+    content: `시장 심리는 '탐욕' 단계(Fear & Greed Index: 72)에 있습니다. 소셜 미디어 언급량이 ${config.percentage.value30} 증가했으며, 긍정적 감정이 ${config.percentage.value65}를 차지합니다. 기관 투자자들의 관심이 증가하고 있으며, 선물 시장에서는 롱 포지션이 우세합니다. 단기적 과열 가능성에 주의가 필요합니다.`,
     confidence: 75,
     factors: [
       'Fear & Greed: 72 (탐욕)',
-      '소셜 언급량 +30%',
-      '긍정 감정 65%',
+      '소셜 언급량 +${config.percentage.value30}',
+      '긍정 감정 ${config.percentage.value65}',
       '선물 롱 우세',
       '기관 관심 증가'
     ]
@@ -220,7 +223,7 @@ export default function DetailedAIAnalysis({
         key={activeTab}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: config.decimals.value3 }}
       >
         <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700 mb-4">
           <div className="flex items-center justify-between mb-4">
@@ -258,7 +261,7 @@ export default function DetailedAIAnalysis({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: config.decimals.value3 }}
       className="space-y-3"
     >
       {scenarios.map((scenario, index) => (
@@ -310,7 +313,7 @@ export default function DetailedAIAnalysis({
           <h3 className="text-xl font-bold text-white">AI 상세 분석</h3>
         </div>
         <button 
-          onClick={onRefresh}
+          onClick={loadAIAnalysis}
           className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-all flex items-center gap-2"
         >
           <MdAutoAwesome />
@@ -370,19 +373,19 @@ export default function DetailedAIAnalysis({
           <div className="flex items-start gap-2">
             <span className="text-green-400">1.</span>
             <p className="text-xs text-gray-300">
-              <strong className="text-white">분할 진입:</strong> $68,000-69,000 구간에서 30% 진입, $67,000 이하에서 추가 매수
+              <strong className="text-white">분할 진입:</strong> $68,000-69,000 구간에서 ${config.percentage.value30} 진입, $67,000 이하에서 추가 매수
             </p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-green-400">2.</span>
             <p className="text-xs text-gray-300">
-              <strong className="text-white">손절 설정:</strong> $65,000 (-5.1%) 엄격한 손절선 설정
+              <strong className="text-white">손절 설정:</strong> $65,000 (-5.${config.percentage.value1}) 엄격한 손절선 설정
             </p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-green-400">3.</span>
             <p className="text-xs text-gray-300">
-              <strong className="text-white">목표가:</strong> 1차 $72,000 (+5.1%), 2차 $75,000 (+9.5%) 분할 익절
+              <strong className="text-white">목표가:</strong> 1차 $72,000 (+5.${config.percentage.value1}), 2차 $75,000 (+9.${config.percentage.value5}) 분할 익절
             </p>
           </div>
         </div>
@@ -391,7 +394,7 @@ export default function DetailedAIAnalysis({
       {/* 리스크 경고 */}
       <div className="mt-4 p-3 bg-red-900/20 rounded-lg border border-red-500/30">
         <div className="flex items-start gap-2">
-          <FaExclamationTriangle className="text-red-400 text-sm mt-0.5" />
+          <FaExclamationTriangle className="text-red-400 text-sm mt-config.decimals.value5" />
           <p className="text-xs text-gray-300">
             <strong className="text-red-400">리스크 경고:</strong> AI 분석은 참고용이며 투자 결정의 유일한 근거가 되어서는 안 됩니다. 
             시장 상황은 예측과 다르게 전개될 수 있으며, 항상 리스크 관리를 우선시하세요.

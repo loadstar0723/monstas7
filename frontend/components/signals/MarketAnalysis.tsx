@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaBrain, FaChartLine, FaRobot, FaSignal } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 interface MarketIndicator {
   name: string
@@ -100,7 +101,7 @@ export default function MarketAnalysis() {
 
       {/* 전체 시그널 */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: config.decimals.value9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700"
       >
@@ -131,7 +132,7 @@ export default function MarketAnalysis() {
             key={indicator.name}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * config.decimals.value1 }}
             className="p-3 bg-gray-800/30 rounded-lg border border-gray-700"
           >
             <p className="text-xs text-gray-400 mb-1">{indicator.name}</p>

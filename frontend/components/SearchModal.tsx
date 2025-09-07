@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { FaSearch, FaTimes, FaChartLine, FaWallet, FaRobot, FaCog, FaHistory } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 interface SearchModalProps {
   isOpen: boolean
@@ -101,9 +102,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
           {/* 모달 */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, scale: config.decimals.value95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            exit={{ opacity: 0, scale: config.decimals.value95, y: -20 }}
             className="fixed top-20 left-1/2 transform -translate-x-1/2 w-full max-w-2xl z-50 px-4"
           >
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">

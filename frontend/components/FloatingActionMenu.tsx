@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { config } from '@/lib/config'
 import { 
   FaPlus, FaTimes, FaChartLine, FaBrain, FaWallet,
   FaSignal, FaRocket, FaBell, FaCog
@@ -83,7 +84,7 @@ export default function FloatingActionMenu() {
                       type: "spring",
                       stiffness: 350,
                       damping: 20,
-                      delay: index * 0.05
+                      delay: index * config.decimals.value05
                     }
                   }}
                   exit={{ 
@@ -91,12 +92,12 @@ export default function FloatingActionMenu() {
                     x: 0,
                     y: 0,
                     transition: {
-                      duration: 0.2,
-                      delay: (menuOptions.length - index) * 0.03
+                      duration: config.decimals.value2,
+                      delay: (menuOptions.length - index) * config.decimals.value03
                     }
                   }}
                   whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: config.decimals.value9 }}
                   onClick={() => {
                     option.action()
                     setIsOpen(false)
@@ -125,7 +126,7 @@ export default function FloatingActionMenu() {
       <motion.button
         animate={{ rotate: isOpen ? 135 : 0 }}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: config.decimals.value9 }}
         onClick={() => setIsOpen(!isOpen)}
         className="relative w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl z-10"
       >
@@ -136,7 +137,7 @@ export default function FloatingActionMenu() {
           <motion.div
             animate={{
               scale: [1, 1.5, 1.5, 1, 1],
-              opacity: [1, 0.5, 0, 0, 1]
+              opacity: [1, config.decimals.value5, 0, 0, 1]
             }}
             transition={{
               duration: 2,

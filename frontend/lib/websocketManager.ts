@@ -31,7 +31,10 @@ class WebSocketManager {
   private maxReconnectAttempts: number = 5;
 
   private constructor() {
-    this.initializeConnection();
+    // 브라우저 환경에서만 연결 초기화
+    if (typeof window !== 'undefined') {
+      this.initializeConnection();
+    }
   }
 
   static getInstance(): WebSocketManager {
@@ -70,12 +73,18 @@ class WebSocketManager {
   }
 
   private initializeConnection() {
+    // 브라우저 환경 체크
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     // 초기 가격 로드
     this.fetchInitialPrices();
 
     // WebSocket 연결
     const streams = SYMBOLS.map(s => `${s.toLowerCase()}@ticker`).join('/');
-    this.ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
+    try {
+      this.ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
 
     this.ws.onopen = () => {
       console.log('Binance WebSocket connected');
@@ -117,6 +126,11 @@ class WebSocketManager {
       this.notifyListeners();
       this.attemptReconnect();
     };
+    } catch (err) {
+      console.error('Failed to create WebSocket:', err);
+      this.error = 'Failed to establish connection';
+      this.notifyListeners();
+    }
   }
 
   private attemptReconnect() {

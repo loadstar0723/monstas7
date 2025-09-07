@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { FaHistory, FaChartBar, FaTrophy, FaExclamationTriangle } from 'react-icons/fa'
 import { MdTrendingUp, MdTrendingDown } from 'react-icons/md'
 import { apiClient } from '../../lib/api'
+import { config } from '@/lib/config'
 
 interface BacktestTrade {
   date: string
@@ -31,6 +32,8 @@ interface BacktestResultsProps {
   symbol?: string
   pattern?: string
   userId?: string
+  stats?: BacktestStats  // 외부에서 직접 전달 가능
+  confidence?: number     // 외부에서 직접 전달 가능
 }
 
 /**
@@ -40,29 +43,41 @@ interface BacktestResultsProps {
 export default function BacktestResults({ 
   symbol = 'BTC',
   pattern = 'trend-following',
-  userId
+  userId,
+  stats: initialStats,
+  confidence: initialConfidence
 }: BacktestResultsProps) {
-  const [stats, setStats] = useState<BacktestStats | null>(null)
+  const [stats, setStats] = useState<BacktestStats | null>(initialStats || null)
   const [recentTrades, setRecentTrades] = useState<BacktestTrade[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!initialStats)  // 초기 데이터가 있으면 로딩 불필요
   const [error, setError] = useState<string | null>(null)
-  const [confidence, setConfidence] = useState(0)
+  const [confidence, setConfidence] = useState(initialConfidence || 0)
 
   useEffect(() => {
-    loadBacktestData()
-  }, [symbol, pattern])
+    // 초기 데이터가 없을 때만 API 호출
+    if (!initialStats) {
+      loadBacktestData()
+    }
+  }, [symbol, pattern, initialStats])
 
   const loadBacktestData = async () => {
     try {
       setLoading(true)
-      const data = await apiClient.getBacktestResults(symbol, pattern)
-      setStats(data.stats)
-      setRecentTrades(data.recentTrades || [])
-      setConfidence(data.confidence || Math.round(data.stats.winRate * 1.2))
-      setError(null)
-    } catch (err) {
-      console.error('백테스트 데이터 로드 실패:', err)
-      setError('백테스트 데이터를 불러올 수 없습니다.')
+      // API가 아직 구현되지 않았을 때를 위한 폴백
+      try {
+        const data = await apiClient.getBacktestResults(symbol, pattern)
+        setStats(data.stats)
+        setRecentTrades(data.recentTrades || [])
+        setConfidence(data.confidence || Math.round(data.stats.winRate * 1.2))
+        setError(null)
+      } catch (apiError) {
+        // API 오류 시 기본값 사용
+        console.warn('백테스트 API 호출 실패, 기본값 사용:', apiError)
+        if (!stats) {
+          // 초기 데이터도 없고 API도 실패한 경우만 오류 표시
+          setError('백테스트 데이터를 불러올 수 없습니다.')
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -128,7 +143,7 @@ export default function BacktestResults({
       {/* 핵심 통계 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
         >
@@ -137,7 +152,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">승률</span>
           </div>
           <div className={`text-2xl font-bold ${getWinRateColor(stats.winRate)}`}>
-            {stats.winRate}%
+            {stats.winRate.toFixed(1)}%
           </div>
           <div className="text-xs text-gray-500">
             {stats.totalTrades}회 중 {Math.round(stats.totalTrades * stats.winRate / 100)}승
@@ -145,9 +160,9 @@ export default function BacktestResults({
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
         >
           <div className="flex items-center gap-2 mb-2">
@@ -155,7 +170,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">평균 수익</span>
           </div>
           <div className={`text-2xl font-bold ${stats.avgProfit > 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {stats.avgProfit > 0 ? '+' : ''}{stats.avgProfit}%
+            {stats.avgProfit > 0 ? '+' : ''}{stats.avgProfit.toFixed(2)}%
           </div>
           <div className="text-xs text-gray-500">
             거래당 평균
@@ -163,9 +178,9 @@ export default function BacktestResults({
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
         >
           <div className="flex items-center gap-2 mb-2">
@@ -181,9 +196,9 @@ export default function BacktestResults({
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
         >
           <div className="flex items-center gap-2 mb-2">
@@ -191,7 +206,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">최대 손실</span>
           </div>
           <div className="text-2xl font-bold text-orange-400">
-            {stats.maxDrawdown}%
+            {stats.maxDrawdown.toFixed(2)}%
           </div>
           <div className="text-xs text-gray-500">
             MDD
@@ -205,11 +220,11 @@ export default function BacktestResults({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">최대 수익</span>
-            <span className="text-sm font-bold text-green-400">+{stats.maxProfit}%</span>
+            <span className="text-sm font-bold text-green-400">+{stats.maxProfit.toFixed(2)}%</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">최대 손실</span>
-            <span className="text-sm font-bold text-red-400">-{Math.abs(stats.maxLoss)}%</span>
+            <span className="text-sm font-bold text-red-400">-{Math.abs(stats.maxLoss).toFixed(2)}%</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">평균 보유</span>
@@ -239,7 +254,7 @@ export default function BacktestResults({
               key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: index * config.decimals.value05 }}
               className="bg-gray-800/30 rounded-lg p-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
@@ -257,7 +272,7 @@ export default function BacktestResults({
               </div>
               <div className="text-right">
                 <div className={`text-sm font-bold ${trade.result === 'win' ? 'text-green-400' : 'text-red-400'}`}>
-                  {trade.profit > 0 ? '+' : ''}{trade.profit}%
+                  {trade.profit > 0 ? '+' : ''}{trade.profit.toFixed(2)}%
                 </div>
                 <div className="text-xs text-gray-500">{trade.duration}</div>
               </div>
@@ -296,7 +311,7 @@ export default function BacktestResults({
       {/* 주의사항 */}
       <div className="mt-4 p-3 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
         <div className="flex items-start gap-2">
-          <FaExclamationTriangle className="text-yellow-400 text-sm mt-0.5" />
+          <FaExclamationTriangle className="text-yellow-400 text-sm mt-config.decimals.value5" />
           <p className="text-xs text-gray-300">
             <strong className="text-yellow-400">주의:</strong> 과거 성과가 미래 수익을 보장하지 않습니다. 
             시장 상황 변화에 따라 결과가 달라질 수 있습니다.

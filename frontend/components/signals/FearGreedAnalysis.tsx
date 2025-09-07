@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBrain, FaChartLine, FaHistory, FaLightbulb } from 'react-icons/fa'
-import { GiScream, GiGreed } from 'react-icons/gi'
+import { FaBrain, FaChartLine, FaHistory, FaLightbulb, FaExclamationTriangle, FaDollarSign } from 'react-icons/fa'
 import SignalIndicator from './SignalIndicator'
 import RiskRewardGauge from './RiskRewardGauge'
 import TradingPlanBox from './TradingPlanBox'
 import ConfidenceMeter from './ConfidenceMeter'
 import { binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 interface FearGreedData {
   index: number
@@ -120,23 +120,23 @@ export default function FearGreedAnalysis() {
 
   // 트레이딩 플랜 계산
   const entryPrice = signal.includes('buy') 
-    ? currentPrice * 0.995 // 0.5% 아래에서 진입
-    : currentPrice * 1.005 // 0.5% 위에서 진입
+    ? currentPrice * config.decimals.value995 // 0.${config.percentage.value5} 아래에서 진입
+    : currentPrice * 1.005 // 0.${config.percentage.value5} 위에서 진입
     
   const stopLoss = signal.includes('buy')
-    ? entryPrice * 0.95 // 5% 손절
+    ? entryPrice * config.decimals.value95 // ${config.percentage.value5} 손절
     : entryPrice * 1.05
     
   const targets = signal.includes('buy')
     ? [
-        entryPrice * 1.05,  // 5% 수익
-        entryPrice * 1.10,  // 10% 수익
-        entryPrice * 1.18   // 18% 수익 (역발상 투자는 더 큰 수익 가능)
+        entryPrice * 1.05,  // ${config.percentage.value5} 수익
+        entryPrice * 1.10,  // ${config.percentage.value10} 수익
+        entryPrice * 1.18   // ${config.percentage.value18} 수익 (역발상 투자는 더 큰 수익 가능)
       ]
     : [
-        entryPrice * 0.95,  // 5% 수익
-        entryPrice * 0.90,  // 10% 수익
-        entryPrice * 0.82   // 18% 수익
+        entryPrice * config.decimals.value95,  // ${config.percentage.value5} 수익
+        entryPrice * config.decimals.value90,  // ${config.percentage.value10} 수익
+        entryPrice * config.decimals.value82   // ${config.percentage.value18} 수익
       ]
 
   const risk = Math.abs((stopLoss - entryPrice) / entryPrice * 100)
@@ -157,9 +157,9 @@ export default function FearGreedAnalysis() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             {fearGreedData.index < 40 ? (
-              <GiScream className="text-red-400 text-3xl" />
+              <FaExclamationTriangle className="text-red-400 text-3xl" />
             ) : fearGreedData.index > 60 ? (
-              <GiGreed className="text-green-400 text-3xl" />
+              <FaDollarSign className="text-green-400 text-3xl" />
             ) : (
               <FaBrain className="text-yellow-400 text-3xl" />
             )}
@@ -185,7 +185,7 @@ export default function FearGreedAnalysis() {
           {/* 시각적 게이지 */}
           <div className="relative h-8 bg-gradient-to-r from-red-600 via-yellow-500 to-green-500 rounded-full mb-4">
             <motion.div
-              initial={{ left: '50%' }}
+              initial={{ left: '${config.percentage.value50}' }}
               animate={{ left: `${fearGreedData.index}%` }}
               transition={{ duration: 1 }}
               className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2"
@@ -225,7 +225,7 @@ export default function FearGreedAnalysis() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: config.decimals.value1 }}
             className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
           >
             <div className="text-sm text-gray-400 mb-1">모멘텀</div>
@@ -240,7 +240,7 @@ export default function FearGreedAnalysis() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: config.decimals.value2 }}
             className="bg-gray-800/50 rounded-lg p-4 border border-gray-700"
           >
             <div className="text-sm text-gray-400 mb-1">반전 확률</div>
@@ -273,15 +273,15 @@ export default function FearGreedAnalysis() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500">공포 20 이하 매수</span>
-                    <span className="text-green-400">평균 +35% 수익</span>
+                    <span className="text-green-400">평균 +${config.percentage.value35} 수익</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">탐욕 80 이상 매도</span>
-                    <span className="text-green-400">평균 +28% 수익</span>
+                    <span className="text-green-400">평균 +${config.percentage.value28} 수익</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">성공률</span>
-                    <span className="text-yellow-400">73%</span>
+                    <span className="text-yellow-400">${config.percentage.value73}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">평균 보유기간</span>
@@ -302,9 +302,9 @@ export default function FearGreedAnalysis() {
                     <strong className="text-green-400">극단적 공포 = 최고의 매수 기회!</strong><br/>
                     Warren Buffett의 "남들이 두려워할 때 탐욕스러워라"는 격언대로,
                     현재 지수 {fearGreedData.index}는 역사적 저점 수준입니다.
-                    과거 데이터에 따르면 이 구간에서 매수 시 3개월 내 평균 35% 상승했습니다.
+                    과거 데이터에 따르면 이 구간에서 매수 시 3개월 내 평균 ${config.percentage.value35} 상승했습니다.
                     <br/><br/>
-                    <strong>추천 전략:</strong> 자산의 40-50%를 3회 분할 매수.
+                    <strong>추천 전략:</strong> 자산의 40-${config.percentage.value50}를 3회 분할 매수.
                     공포가 더 심해지면 추가 매수로 평단가 낮추기.
                   </>
                 ) : fearGreedData.index > 80 ? (
@@ -313,7 +313,7 @@ export default function FearGreedAnalysis() {
                     시장이 과열되어 있으며, "남들이 탐욕스러울 때 두려워하라"는 시점입니다.
                     지수 {fearGreedData.index}는 역사적 고점 수준이며, 조정 가능성이 높습니다.
                     <br/><br/>
-                    <strong>추천 전략:</strong> 보유 포지션의 50-70% 차익실현.
+                    <strong>추천 전략:</strong> 보유 포지션의 50-${config.percentage.value70} 차익실현.
                     나머지는 추가 상승 대비 홀딩.
                   </>
                 ) : fearGreedData.index < 40 ? (
@@ -377,7 +377,7 @@ export default function FearGreedAnalysis() {
           <div className="flex-1">
             <h3 className="text-lg font-bold mb-2">역사적 심리 패턴</h3>
             <p className="text-gray-300 mb-4">
-              2020년 3월 (공포 8): +300% 상승 | 2021년 4월 (탐욕 95): -50% 하락 | 2022년 6월 (공포 6): +100% 상승
+              2020년 3월 (공포 8): +${config.percentage.value300} 상승 | 2021년 4월 (탐욕 95): -${config.percentage.value50} 하락 | 2022년 6월 (공포 6): +${config.percentage.value100} 상승
             </p>
             <button className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg font-bold hover:from-yellow-700 hover:to-orange-700 transition-all">
               심리 지표 알림 받기

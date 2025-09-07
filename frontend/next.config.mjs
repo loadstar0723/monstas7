@@ -9,7 +9,6 @@ const nextConfig = {
   },
   
   // 성능 최적화
-  swcMinify: true,
   compress: true,
   
   // 번들 분석 (필요시 활성화)

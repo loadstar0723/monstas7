@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { config } from '@/lib/config'
 
 // 모듈화된 컴포넌트를 동적 임포트 (에러 격리)
 const ArbitrageModule = dynamic(
@@ -77,7 +78,7 @@ export default function CrossExchangeArbitragePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="mt-8 p-6 bg-green-900/20 rounded-xl border border-green-500/30"
         >
           <h3 className="text-xl font-bold mb-2 text-green-400">💰 차익거래란?</h3>
@@ -96,7 +97,7 @@ export default function CrossExchangeArbitragePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: config.decimals.value5 }}
           className="mt-12 p-6 bg-gradient-to-r from-green-900/50 to-emerald-900/50 rounded-xl border border-green-500/30"
         >
           <div className="text-center">

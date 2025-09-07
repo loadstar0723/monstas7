@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface RiskRewardGaugeProps {
   risk: number // 0-100
@@ -77,7 +78,7 @@ export default function RiskRewardGauge({ risk, reward, ratio }: RiskRewardGauge
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${reward}%` }}
-              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+              transition={{ duration: 1, ease: "easeOut", delay: config.decimals.value2 }}
               className="h-full bg-gradient-to-r from-green-600 to-green-400 relative"
             >
               <div className="absolute inset-0 bg-green-500 opacity-50 animate-pulse" />
@@ -95,9 +96,9 @@ export default function RiskRewardGauge({ risk, reward, ratio }: RiskRewardGauge
 
         {/* 비율 표시 */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: config.decimals.value4 }}
           className="bg-gray-900 rounded-lg p-3 border border-gray-700"
         >
           <div className="flex items-center justify-between">
@@ -132,13 +133,13 @@ export default function RiskRewardGauge({ risk, reward, ratio }: RiskRewardGauge
           <div className="bg-gray-900 rounded p-2">
             <div className="text-xs text-gray-500">예상 수익</div>
             <div className="text-sm font-bold text-green-400">
-              +{(reward * 0.01 * 100).toFixed(0)}%
+              +{(reward * config.decimals.value01 * 100).toFixed(0)}%
             </div>
           </div>
           <div className="bg-gray-900 rounded p-2">
             <div className="text-xs text-gray-500">최대 손실</div>
             <div className="text-sm font-bold text-red-400">
-              -{(risk * 0.01 * 100).toFixed(0)}%
+              -{(risk * config.decimals.value01 * 100).toFixed(0)}%
             </div>
           </div>
         </div>

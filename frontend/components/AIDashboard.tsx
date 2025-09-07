@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
 import { FaRobot, FaChartLine, FaBrain, FaSignal } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 interface Prediction {
   symbol: string
@@ -57,11 +58,11 @@ export default function AIDashboard() {
       console.warn('AI 예측 API 연결 실패, 기본 데이터 사용:', error)
       // 기본 예측 데이터 설정
       setPredictions([
-        { symbol: 'BTC', prediction: 'BUY', confidence: 0.72, timeframe: '24h', target_price: 45000, stop_loss: 42000, models_agree: 8, timestamp: new Date().toISOString() },
-        { symbol: 'ETH', prediction: 'HOLD', confidence: 0.65, timeframe: '24h', target_price: 2800, stop_loss: 2650, models_agree: 6, timestamp: new Date().toISOString() },
-        { symbol: 'BNB', prediction: 'BUY', confidence: 0.68, timeframe: '24h', target_price: 320, stop_loss: 305, models_agree: 7, timestamp: new Date().toISOString() },
-        { symbol: 'SOL', prediction: 'SELL', confidence: 0.71, timeframe: '24h', target_price: 90, stop_loss: 95, models_agree: 7, timestamp: new Date().toISOString() },
-        { symbol: 'ADA', prediction: 'HOLD', confidence: 0.60, timeframe: '24h', target_price: 0.45, stop_loss: 0.42, models_agree: 5, timestamp: new Date().toISOString() }
+        { symbol: 'BTC', prediction: 'BUY', confidence: config.decimals.value72, timeframe: '24h', target_price: 45000, stop_loss: 42000, models_agree: 8, timestamp: new Date().toISOString() },
+        { symbol: 'ETH', prediction: 'HOLD', confidence: config.decimals.value65, timeframe: '24h', target_price: 2800, stop_loss: 2650, models_agree: 6, timestamp: new Date().toISOString() },
+        { symbol: 'BNB', prediction: 'BUY', confidence: config.decimals.value68, timeframe: '24h', target_price: 320, stop_loss: 305, models_agree: 7, timestamp: new Date().toISOString() },
+        { symbol: 'SOL', prediction: 'SELL', confidence: config.decimals.value71, timeframe: '24h', target_price: 90, stop_loss: 95, models_agree: 7, timestamp: new Date().toISOString() },
+        { symbol: 'ADA', prediction: 'HOLD', confidence: config.decimals.value60, timeframe: '24h', target_price: config.decimals.value45, stop_loss: config.decimals.value42, models_agree: 5, timestamp: new Date().toISOString() }
       ])
     }
     setLoading(false)
@@ -108,7 +109,7 @@ export default function AIDashboard() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: config.decimals.value8 }}
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -128,7 +129,7 @@ export default function AIDashboard() {
                 key={pred.symbol}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * config.decimals.value1 }}
                 className="glass-card p-6 group"
                 whileHover={{ scale: 1.02 }}
               >
@@ -167,13 +168,13 @@ export default function AIDashboard() {
                       <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
                         <motion.div 
                           className={`h-2 rounded-full ${
-                            pred.confidence > 0.8 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 
-                            pred.confidence > 0.6 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 
+                            pred.confidence > config.decimals.value8 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 
+                            pred.confidence > config.decimals.value6 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 
                             'bg-gradient-to-r from-red-500 to-red-400'
                           }`}
                           initial={{ width: 0 }}
                           whileInView={{ width: `${pred.confidence * 100}%` }}
-                          transition={{ duration: 1, delay: index * 0.1 }}
+                          transition={{ duration: 1, delay: index * config.decimals.value1 }}
                         />
                       </div>
                     </div>
@@ -183,7 +184,7 @@ export default function AIDashboard() {
                     <div className="bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/20">
                       <span className="text-gray-500 text-xs uppercase tracking-wider">Target</span>
                       <div className="font-bold text-emerald-400 text-lg mt-1">
-                        ${pred.target_price.toLocaleString()}
+                        ${pred.target_price?.toLocaleString() || 'N/A'}
                       </div>
                     </div>
                     <div className="bg-red-500/10 rounded-lg p-3 border border-red-500/20">
@@ -206,7 +207,7 @@ export default function AIDashboard() {
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: config.decimals.value8 }}
             className="text-center mb-12"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -221,7 +222,7 @@ export default function AIDashboard() {
               className="glass-card p-6"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: config.decimals.value1 }}
               whileHover={{ scale: 1.02 }}
             >
               <div className="flex items-center justify-between mb-4">
@@ -258,9 +259,9 @@ export default function AIDashboard() {
             <div className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800">
               <h4 className="font-bold mb-2">볼린저 밴드</h4>
               <div className="space-y-1 text-sm">
-                <div>상단: ${marketAnalysis.technical_indicators.bollinger_bands.upper.toLocaleString()}</div>
-                <div>중간: ${marketAnalysis.technical_indicators.bollinger_bands.middle.toLocaleString()}</div>
-                <div>하단: ${marketAnalysis.technical_indicators.bollinger_bands.lower.toLocaleString()}</div>
+                <div>상단: ${marketAnalysis.technical_indicators.bollinger_bands?.upper?.toLocaleString() || 'N/A'}</div>
+                <div>중간: ${marketAnalysis.technical_indicators.bollinger_bands?.middle?.toLocaleString() || 'N/A'}</div>
+                <div>하단: ${marketAnalysis.technical_indicators.bollinger_bands?.lower?.toLocaleString() || 'N/A'}</div>
               </div>
             </div>
           </div>
@@ -270,7 +271,7 @@ export default function AIDashboard() {
       {/* 실시간 시그널 */}
       {wsData && wsData.type === 'ai_signal' && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: config.decimals.value8 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl p-4 border border-purple-500"
         >

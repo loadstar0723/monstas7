@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { config } from '@/lib/config'
 
 declare global {
   interface Window {
@@ -30,13 +31,13 @@ export default function TradingViewSeasonality({
       if (window.TradingView && containerRef.current) {
         new window.TradingView.widget({
           symbol: symbol,
-          width: '100%',
+          width: '${config.percentage.value100}',
           height: 600,
           locale: 'kr',
           dateRange: '12M',
           colorTheme: 'dark',
           trendLineColor: 'rgba(41, 119, 188, 1)',
-          underLineColor: 'rgba(41, 119, 188, 0.3)',
+          underLineColor: 'rgba(41, 119, 188, config.decimals.value3)',
           underLineBottomColor: 'rgba(41, 119, 188, 0)',
           isTransparent: true,
           autosize: false,
@@ -90,7 +91,7 @@ export default function TradingViewSeasonality({
             onClick={() => setShowFullChart(!showFullChart)}
             className="px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-cyan-700 transition-all"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: config.decimals.value95 }}
           >
             {showFullChart ? '차트 닫기' : '더 많은 시즌 →'}
           </motion.button>
@@ -106,7 +107,7 @@ export default function TradingViewSeasonality({
                   index < 8 ? (index % 3 === 0 ? 'text-red-400' : 'text-emerald-400') : 'text-gray-600'
                 }`}>
                   {index < 8 ? (index % 3 === 0 ? '-' : '+') : ''}
-                  {index < 8 ? Math.abs(Math.random() * 20).toFixed(1) : '0.0'}%
+                  {index < 8 ? Math.abs(Math.random() * 20).toFixed(1) : 'config.decimals.value0'}%
                 </div>
               </div>
             ))}
@@ -141,9 +142,9 @@ export default function TradingViewSeasonality({
             onClick={() => setShowFullChart(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: config.decimals.value9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: config.decimals.value9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-6xl bg-gray-900 rounded-xl overflow-hidden border border-purple-500/30"
             >

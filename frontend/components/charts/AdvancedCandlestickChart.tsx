@@ -5,6 +5,7 @@ import { createChart, IChartApi, ISeriesApi, CandlestickData, ColorType } from '
 import { useTheme } from '@/contexts/ThemeContext'
 import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaChartLine, FaVolumeUp } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 interface AdvancedCandlestickChartProps {
   symbol: string
@@ -118,7 +119,7 @@ export default function AdvancedCandlestickChart({
 
       chart.current.priceScale('').applyOptions({
         scaleMargins: {
-          top: 0.7,
+          top: config.decimals.value7,
           bottom: 0,
         },
       })

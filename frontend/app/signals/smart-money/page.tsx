@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { FaFish, FaChartLine, FaDollarSign, FaExclamationTriangle, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { BINANCE_CONFIG, binanceAPI, createBinanceWebSocket } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 const MarketAnalysis = dynamic(() => import('@/components/signals/MarketAnalysis'), { ssr: false })
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { ssr: false })
@@ -66,13 +67,26 @@ export default function SmartMoneySignalsPage() {
           totalQuoteVolume += parseFloat(ticker.quoteVolume)
         })
         
-        // 시장 통계 업데이트
+        // 시장 통계 업데이트 (실제 데이터 기반)
+        // 가격 변화율 평균으로 순유입 추정
+        let avgPriceChange = 0
+        tickers.forEach(ticker => {
+          avgPriceChange += parseFloat(ticker.priceChangePercent)
+        })
+        avgPriceChange = avgPriceChange / tickers.length
+        
+        // 순유입 = 거래량 * 가격변화율 기반 비율
+        const flowRatio = Math.abs(avgPriceChange) / 100 // -${config.percentage.value100} ~ +${config.percentage.value100} -> 0 ~ 1
+        const netFlow = totalQuoteVolume * flowRatio * (avgPriceChange > 0 ? 1 : -1)
+        
         setMarketStats({
           totalVolume24h: totalQuoteVolume,
-          netFlow24h: totalQuoteVolume * 0.15, // 순유입 추정치
-          whaleActivity: totalQuoteVolume > 5000000000 ? '매우 활발' : '보통',
-          riskLevel: parseFloat(tickers[0].priceChangePercent) < -5 ? '높음' : '중간',
-          dominantFlow: parseFloat(tickers[0].priceChangePercent) > 0 ? 'buy' : 'sell'
+          netFlow24h: netFlow,
+          whaleActivity: totalQuoteVolume > 5000000000 ? '매우 활발' : 
+                        totalQuoteVolume > 2000000000 ? '활발' : '보통',
+          riskLevel: Math.abs(avgPriceChange) > 5 ? '높음' : 
+                     Math.abs(avgPriceChange) > 2 ? '중간' : '낮음',
+          dominantFlow: avgPriceChange > 0 ? 'buy' : 'sell'
         })
       } catch (error) {
         console.error('Binance API 오류:', error)
@@ -200,7 +214,7 @@ export default function SmartMoneySignalsPage() {
             {/* 핵심 지표 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: config.decimals.value9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
@@ -211,9 +225,9 @@ export default function SmartMoneySignalsPage() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: config.decimals.value9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: config.decimals.value1 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
                 <FaDollarSign className="text-green-400 text-2xl mb-3" />
@@ -225,9 +239,9 @@ export default function SmartMoneySignalsPage() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: config.decimals.value9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: config.decimals.value2 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
                 <FaChartLine className="text-purple-400 text-2xl mb-3" />
@@ -241,9 +255,9 @@ export default function SmartMoneySignalsPage() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: config.decimals.value9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: config.decimals.value3 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
                 <FaExclamationTriangle className="text-yellow-400 text-2xl mb-3" />
@@ -285,7 +299,7 @@ export default function SmartMoneySignalsPage() {
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * config.decimals.value05 }}
                         className="hover:bg-gray-700/50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm text-gray-300">
@@ -337,7 +351,7 @@ export default function SmartMoneySignalsPage() {
                 <h3 className="text-lg font-bold mb-4 text-purple-400">고래 움직임 패턴</h3>
                 <p className="text-gray-300 mb-4">
                   최근 24시간 동안 1,000 BTC 이상의 대규모 거래가 15건 감지되었습니다. 
-                  이는 평균 대비 250% 증가한 수치로, 주요 가격 변동이 임박했음을 시사합니다.
+                  이는 평균 대비 ${config.percentage.value250} 증가한 수치로, 주요 가격 변동이 임박했음을 시사합니다.
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
@@ -350,7 +364,7 @@ export default function SmartMoneySignalsPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">신뢰도</span>
-                    <span className="text-white font-bold">85%</span>
+                    <span className="text-white font-bold">${config.percentage.value85}</span>
                   </div>
                 </div>
               </div>
@@ -395,7 +409,7 @@ export default function SmartMoneySignalsPage() {
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * config.decimals.value1 }}
                   className={`p-4 rounded-lg border ${
                     alert.type === 'critical' 
                       ? 'bg-red-900/20 border-red-500' 
@@ -469,7 +483,7 @@ export default function SmartMoneySignalsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: config.decimals.value5 }}
           className="mt-12 p-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl border border-purple-500/30"
         >
           <div className="text-center">

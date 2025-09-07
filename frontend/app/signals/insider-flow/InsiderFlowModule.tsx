@@ -7,6 +7,7 @@ import { FaUserSecret, FaUniversity, FaExclamationTriangle, FaChartPie, FaMoneyB
 import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { BINANCE_CONFIG, binanceAPI, createBinanceWebSocket } from '@/lib/binanceConfig'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -15,6 +16,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { 
   ssr: false,
@@ -83,11 +93,11 @@ export default function InsiderFlowModule() {
           const change = parseFloat(ticker.priceChangePercent)
           
           if (change > 0) {
-            totalBuyVolume += volume * 0.6 // 상승시 매수 비중 추정
-            totalSellVolume += volume * 0.4
+            totalBuyVolume += volume * config.decimals.value6 // 상승시 매수 비중 추정
+            totalSellVolume += volume * config.decimals.value4
           } else {
-            totalBuyVolume += volume * 0.4
-            totalSellVolume += volume * 0.6
+            totalBuyVolume += volume * config.decimals.value4
+            totalSellVolume += volume * config.decimals.value6
           }
           
           return {
@@ -250,7 +260,7 @@ export default function InsiderFlowModule() {
           {/* 핵심 지표 */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: config.decimals.value9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="bg-gray-800 rounded-lg p-6 border border-gray-700"
             >
@@ -263,9 +273,9 @@ export default function InsiderFlowModule() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: config.decimals.value9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: config.decimals.value1 }}
               className="bg-gray-800 rounded-lg p-6 border border-gray-700"
             >
               <HiTrendingUp className="text-green-400 text-2xl mb-3" />
@@ -273,13 +283,13 @@ export default function InsiderFlowModule() {
               <p className="text-2xl font-bold text-white">
                 ${(metrics.totalBuyVolume / 1000000).toFixed(1)}M
               </p>
-              <p className="text-green-400 text-sm mt-2">+23% 증가</p>
+              <p className="text-green-400 text-sm mt-2">+${config.percentage.value23} 증가</p>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: config.decimals.value9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: config.decimals.value2 }}
               className="bg-gray-800 rounded-lg p-6 border border-gray-700"
             >
               <HiTrendingDown className="text-red-400 text-2xl mb-3" />
@@ -287,13 +297,13 @@ export default function InsiderFlowModule() {
               <p className="text-2xl font-bold text-white">
                 ${(metrics.totalSellVolume / 1000000).toFixed(1)}M
               </p>
-              <p className="text-red-400 text-sm mt-2">-15% 감소</p>
+              <p className="text-red-400 text-sm mt-2">-${config.percentage.value15} 감소</p>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: config.decimals.value9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: config.decimals.value3 }}
               className="bg-gray-800 rounded-lg p-6 border border-gray-700"
             >
               <FaMoneyBillWave className="text-purple-400 text-2xl mb-3" />
@@ -345,7 +355,7 @@ export default function InsiderFlowModule() {
                         key={tx.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * config.decimals.value05 }}
                         className="hover:bg-gray-700/50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm text-gray-300">
@@ -406,6 +416,25 @@ export default function InsiderFlowModule() {
             }}
           />
           
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol="INSIDER_FLOW"
+            volatility={Math.abs(metrics.netFlow) / 1000000} // 순 자금 흐름 기반 변동성
+            trend={metrics.buyRatio > 55 ? 'bullish' : metrics.buyRatio < 45 ? 'bearish' : 'neutral'}
+            signalStrength={Math.min(Math.abs(metrics.buyRatio - 50) * 2, 100)} // 매수 비율 기반 신호 강도
+            marketCondition={metrics.whaleActivity === '매우 활발' ? 'volatile' : 'normal'}
+            currentPrice={marketData[0]?.lastPrice ? parseFloat(marketData[0].lastPrice) : 0}
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol="INSIDER_FLOW"
+            currentPrice={marketData[0]?.lastPrice ? parseFloat(marketData[0].lastPrice) : 45000}
+            signalType="insider-flow"
+            marketCondition={metrics.whaleActivity === '매우 활발' ? 'volatile' : metrics.buyRatio > 55 ? 'bullish' : metrics.buyRatio < 45 ? 'bearish' : 'neutral'}
+            volatility={Math.abs(metrics.netFlow) / 1000000}
+          />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 col-span-2">
               <h3 className="text-lg font-bold mb-4 text-orange-400">상위 거래 자산</h3>
@@ -433,12 +462,12 @@ export default function InsiderFlowModule() {
               <h3 className="text-lg font-bold mb-4 text-orange-400">고래 거래 패턴</h3>
               <p className="text-gray-300 mb-4">
                 실시간 Binance 데이터 분석 결과, 50,000 USDT 이상의 대규모 거래가 
-                {metrics.whaleActivity === '매우 활발' ? ' 평소보다 200% 증가' : ' 평균 수준을 유지'}하고 있습니다.
+                {metrics.whaleActivity === '매우 활발' ? ' 평소보다 ${config.percentage.value200} 증가' : ' 평균 수준을 유지'}하고 있습니다.
               </p>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-400">패턴 신뢰도</span>
-                  <span className="text-green-400 font-bold">89%</span>
+                  <span className="text-green-400 font-bold">${config.percentage.value89}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">예상 영향</span>
@@ -453,19 +482,19 @@ export default function InsiderFlowModule() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-400">매수 신호</span>
-                    <span className="text-green-400">87%</span>
+                    <span className="text-green-400">${config.percentage.value87}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-400 h-2 rounded-full" style={{width: '87%'}}></div>
+                    <div className="bg-green-400 h-2 rounded-full" style={{width: '${config.percentage.value87}'}}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-400">신뢰도</span>
-                    <span className="text-blue-400">92%</span>
+                    <span className="text-blue-400">${config.percentage.value92}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '92%'}}></div>
+                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '${config.percentage.value92}'}}></div>
                   </div>
                 </div>
               </div>
@@ -490,7 +519,7 @@ export default function InsiderFlowModule() {
                 key={asset}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * config.decimals.value1 }}
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -563,7 +592,7 @@ export default function InsiderFlowModule() {
               <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
                 <div>
                   <p className="font-medium text-white">섹터 이상 신호</p>
-                  <p className="text-sm text-gray-400">특정 섹터 매수율 80% 초과 시</p>
+                  <p className="text-sm text-gray-400">특정 섹터 매수율 ${config.percentage.value80} 초과 시</p>
                 </div>
                 <button className="px-4 py-2 bg-gray-600 rounded-lg text-white font-medium">
                   비활성
@@ -606,11 +635,11 @@ export default function InsiderFlowModule() {
               ],
               entryRules: [
                 "$1M 이상 대규모 매수 거래 3건 이상 연속",
-                "고래 매수 비율 70% 이상 유지",
+                "고래 매수 비율 ${config.percentage.value70} 이상 유지",
                 "거래소 간 동시 대량 거래 감지"
               ],
               exitRules: [
-                "매수 비율 50% 이하로 하락",
+                "매수 비율 ${config.percentage.value50} 이하로 하락",
                 "대규모 매도 거래 연속 감지",
                 "순 자금 흐름 음수 전환"
               ]
@@ -692,9 +721,9 @@ export default function InsiderFlowModule() {
               },
               {
                 name: "섹터별 이상 신호",
-                description: "특정 섹터 매수율 80% 초과",
+                description: "특정 섹터 매수율 ${config.percentage.value80} 초과",
                 enabled: false,
-                threshold: "80%"
+                threshold: "${config.percentage.value80}"
               }
             ]}
           />

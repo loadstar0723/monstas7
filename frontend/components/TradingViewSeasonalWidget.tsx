@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from 'recharts'
+import { config } from '@/lib/config'
 
 interface TradingViewSeasonalWidgetProps {
   symbol?: string;
@@ -98,7 +99,7 @@ export default function TradingViewSeasonalWidget({
     // 평균 변화율 계산
     const avgChange = historicalChanges.length > 0 
       ? historicalChanges.reduce((a, b) => a + b, 0) / historicalChanges.length 
-      : 10 // 기본값 10% 상승
+      : 10 // 기본값 ${config.percentage.value10} 상승
     
     // 예측 데이터 생성
     const predictions = []
@@ -115,7 +116,7 @@ export default function TradingViewSeasonalWidget({
     
     // 미래 월들의 예측값
     for (let i = lastRealMonth + 1; i < 12; i++) {
-      predictedValue += monthlyChange + (Math.random() - 0.5) * 2
+      predictedValue += monthlyChange + (Math.random() - config.decimals.value5) * 2
       predictions.push({
         month: monthNames[i],
         value: predictedValue,
@@ -297,10 +298,10 @@ export default function TradingViewSeasonalWidget({
   }
 
   const setDefaultRealData = () => {
-    // 실제 Bitcoin 연초 대비 누적 수익률 데이터 (-100% ~ 100% 범위)
+    // 실제 Bitcoin 연초 대비 누적 수익률 데이터 (-${config.percentage.value100} ~ ${config.percentage.value100} 범위)
     const realData = [
       { month: '1월', 2025: 0, 2024: 0, 2023: 0, 2022: 0, 2021: 0, 2020: 0, 2019: 0, 2018: 0, 2017: 0 },
-      { month: '2월', 2025: null, 2024: 15.0, 2023: 0.1, 2022: 11.4, 2021: 25.4, 2020: -8.3, 2019: 11.1, 2018: 2.2, 2017: 13.2 },
+      { month: '2월', 2025: null, 2024: 15.0, 2023: config.decimals.value1, 2022: 11.4, 2021: 25.4, 2020: -8.3, 2019: 11.1, 2018: 2.2, 2017: 13.2 },
       { month: '3월', 2025: null, 2024: 28.5, 2023: 23.0, 2022: 17.4, 2021: 45.2, 2020: -33.4, 2019: 20.0, 2018: -30.3, 2017: 17.2 },
       { month: '4월', 2025: null, 2024: 22.6, 2023: 26.4, 2022: -1.2, 2021: 38.1, 2020: -10.8, 2019: 35.1, 2018: -8.6, 2017: 32.8 },
       { month: '5월', 2025: null, 2024: 30.2, 2023: 35.2, 2022: -21.8, 2021: 3.4, 2020: -1.1, 2019: 65.7, 2018: -25.7, 2017: 58.9 },
@@ -399,9 +400,9 @@ export default function TradingViewSeasonalWidget({
             {/* 그라데이션 원 */}
             <defs>
               <radialGradient id={`gradient-${index}`}>
-                <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-                <stop offset="50%" stopColor={isPositive ? '#10B981' : '#EF4444'} stopOpacity="0.9" />
-                <stop offset="100%" stopColor={isPositive ? '#059669' : '#DC2626'} stopOpacity="0.7" />
+                <stop offset="${config.percentage.value0}" stopColor="#fff" stopOpacity="1" />
+                <stop offset="${config.percentage.value50}" stopColor={isPositive ? '#10B981' : '#EF4444'} stopOpacity="config.decimals.value9" />
+                <stop offset="${config.percentage.value100}" stopColor={isPositive ? '#059669' : '#DC2626'} stopOpacity="config.decimals.value7" />
               </radialGradient>
               <filter id={`glow-${index}`}>
                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -418,7 +419,7 @@ export default function TradingViewSeasonalWidget({
               cy={cy} 
               r="8" 
               fill={isPositive ? '#10B981' : '#EF4444'}
-              opacity="0.3"
+              opacity="config.decimals.value3"
               filter={`url(#glow-${index})`}
             />
             
@@ -450,7 +451,7 @@ export default function TradingViewSeasonalWidget({
                 height="24" 
                 rx="4"
                 fill={isPositive ? '#10B981' : '#EF4444'}
-                opacity="0.95"
+                opacity="config.decimals.value95"
                 className="drop-shadow-lg"
               />
               <text 
@@ -470,7 +471,7 @@ export default function TradingViewSeasonalWidget({
                 fill="#fff" 
                 fontSize="8" 
                 textAnchor="middle"
-                opacity="0.9"
+                opacity="config.decimals.value9"
               >
                 현재
               </text>
@@ -504,7 +505,7 @@ export default function TradingViewSeasonalWidget({
               y={cy + 3} 
               fill={fill} 
               fontSize={10}
-              opacity="0.8"
+              opacity="config.decimals.value8"
             >
               {dataKey}
             </text>
@@ -547,7 +548,7 @@ export default function TradingViewSeasonalWidget({
                   : 'bg-gray-800/30 border-gray-700 hover:bg-gray-700/50 hover:border-gray-600'
               }`}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: config.decimals.value95 }}
             >
               {/* 선택 표시 */}
               {selectedCoin === coin.id && (
@@ -602,7 +603,7 @@ export default function TradingViewSeasonalWidget({
               borderColor: selectedYears.includes(year) ? yearStyles[year].color : undefined
             }}
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: config.decimals.value95 }}
           >
             <div 
               className="w-2 h-2 rounded-full" 
@@ -615,8 +616,8 @@ export default function TradingViewSeasonalWidget({
       </div>
 
       {/* 메인 차트 */}
-      <div className="h-80 w-full" style={{ filter: currentYear === '2025' ? 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.3))' : 'none' }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-80 w-full" style={{ filter: currentYear === '2025' ? 'drop-shadow(0 0 20px rgba(16, 185, 129, config.decimals.value3))' : 'none' }}>
+        <ResponsiveContainer width="${config.percentage.value100}" height="${config.percentage.value100}">
           <LineChart 
             data={seasonalData} 
             margin={{ top: 10, right: 50, left: 0, bottom: 10 }}
@@ -655,7 +656,7 @@ export default function TradingViewSeasonalWidget({
                 name={year.year}
                 connectNulls={false}
                 strokeDasharray={year.isDashed ? "5 5" : "0"}
-                className={year.isGlow ? "drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" : ""}
+                className={year.isGlow ? "drop-shadow-[0_0_10px_rgba(16,185,129,config.decimals.value5)]" : ""}
               />
             ))}
             
@@ -669,7 +670,7 @@ export default function TradingViewSeasonalWidget({
               dot={false}
               name="AI 예측"
               connectNulls={true}
-              opacity={0.8}
+              opacity={config.decimals.value8}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -678,7 +679,7 @@ export default function TradingViewSeasonalWidget({
       {/* 예측 안내 */}
       <div className="mt-4 p-3 bg-yellow-900/20 rounded-lg border border-yellow-600/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-0.5 bg-yellow-400" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #FBBF24 0px, #FBBF24 8px, transparent 8px, transparent 12px)' }}></div>
+          <div className="w-10 h-config.decimals.value5 bg-yellow-400" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #FBBF24 0px, #FBBF24 8px, transparent 8px, transparent 12px)' }}></div>
           <span className="text-sm text-yellow-400 font-medium">AI 예측 추세</span>
         </div>
         <span className="text-xs text-gray-400">과거 패턴 기반 머신러닝 예측</span>
@@ -721,27 +722,27 @@ export default function TradingViewSeasonalWidget({
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-4 pt-4 border-t border-gray-800">
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">1주</span>
-          <p className="text-red-400 font-bold text-sm">-1.67%</p>
+          <p className="text-red-400 font-bold text-sm">-1.${config.percentage.value67}</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">1개월</span>
-          <p className="text-red-400 font-bold text-sm">-3.02%</p>
+          <p className="text-red-400 font-bold text-sm">-3.${config.percentage.value02}</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">3개월</span>
-          <p className="text-emerald-400 font-bold text-sm">+6.13%</p>
+          <p className="text-emerald-400 font-bold text-sm">+6.${config.percentage.value13}</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">6개월</span>
-          <p className="text-emerald-400 font-bold text-sm">+28.37%</p>
+          <p className="text-emerald-400 font-bold text-sm">+28.${config.percentage.value37}</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">올해</span>
-          <p className="text-emerald-400 font-bold text-sm">+18.28%</p>
+          <p className="text-emerald-400 font-bold text-sm">+18.${config.percentage.value28}</p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-2 text-center">
           <span className="text-gray-500 text-xs">1년</span>
-          <p className="text-emerald-400 font-bold text-sm">+90.93%</p>
+          <p className="text-emerald-400 font-bold text-sm">+90.${config.percentage.value93}</p>
         </div>
       </div>
 

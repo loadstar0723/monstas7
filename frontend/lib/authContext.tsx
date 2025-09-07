@@ -45,46 +45,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tier, setTier] = useState<SubscriptionTier>('Infinity')
 
   useEffect(() => {
-    // localStorage에서 사용자 정보 복원
-    const savedUser = localStorage.getItem('monsta_user')
-    if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      setUser(userData)
-      setTier(userData.tier)
-    } else {
-      // 개발 모드에서는 Infinity 등급 유지
-      const devUser = {
-        id: 'dev-user',
-        email: 'admin@monsta.ai',
-        name: 'MONSTA Admin',
-        tier: 'Infinity' as SubscriptionTier,
-        role: 'headquarters' as const
+    // 브라우저 환경에서만 실행
+    if (typeof window === 'undefined') return
+    
+    try {
+      // localStorage에서 사용자 정보 복원
+      const savedUser = localStorage.getItem('monsta_user')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        setUser(userData)
+        setTier(userData.tier)
+      } else {
+        // 개발 모드에서는 Infinity 등급 유지
+        const devUser = {
+          id: 'dev-user',
+          email: 'admin@monsta.ai',
+          name: 'MONSTA Admin',
+          tier: 'Infinity' as SubscriptionTier,
+          role: 'headquarters' as const
+        }
+        setUser(devUser)
+        setTier('Infinity')
+        localStorage.setItem('monsta_user', JSON.stringify(devUser))
       }
-      setUser(devUser)
-      setTier('Infinity')
-      localStorage.setItem('monsta_user', JSON.stringify(devUser))
+    } catch (error) {
+      console.error('Failed to load user data:', error)
     }
   }, [])
 
   const login = async (email: string, password: string) => {
-    // 실제로는 API 호출
-    // 임시로 최고 등급 사용자 설정
-    const newUser: User = {
-      id: 'user-1',
-      email,
-      name: email.split('@')[0],
-      tier: 'Infinity',
-      role: 'headquarters'
+    try {
+      // 실제로는 API 호출
+      // 개발 환경에서는 최고 등급 사용자 설정
+      const newUser: User = {
+        id: 'user-1',
+        email,
+        name: email.split('@')[0],
+        tier: 'Infinity',
+        role: 'headquarters'
+      }
+      setUser(newUser)
+      setTier(newUser.tier)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('monsta_user', JSON.stringify(newUser))
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
     }
-    setUser(newUser)
-    setTier(newUser.tier)
-    localStorage.setItem('monsta_user', JSON.stringify(newUser))
   }
 
   const logout = () => {
     setUser(null)
     setTier('Starter')
-    localStorage.removeItem('monsta_user')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('monsta_user')
+    }
   }
 
   const canAccess = (requiredTier: SubscriptionTier): boolean => {
@@ -98,7 +114,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       const updatedUser = { ...user, tier: newTier }
       setUser(updatedUser)
-      localStorage.setItem('monsta_user', JSON.stringify(updatedUser))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('monsta_user', JSON.stringify(updatedUser))
+      }
     }
   }
 

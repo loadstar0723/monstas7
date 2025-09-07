@@ -5,6 +5,7 @@ import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { useTheme } from '@/contexts/ThemeContext'
 import { motion } from 'framer-motion'
 import LoadingSpinner from '../LoadingSpinner'
+import { config } from '@/lib/config'
 
 interface MarketDepthChartProps {
   symbol: string
@@ -147,16 +148,16 @@ export default function MarketDepthChart({ symbol }: MarketDepthChartProps) {
       </div>
 
       {/* 차트 */}
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="${config.percentage.value100}" height={300}>
         <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="bidGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
+              <stop offset="${config.percentage.value5}" stopColor="#22c55e" stopOpacity={config.decimals.value8}/>
+              <stop offset="${config.percentage.value95}" stopColor="#22c55e" stopOpacity={config.decimals.value1}/>
             </linearGradient>
             <linearGradient id="askGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+              <stop offset="${config.percentage.value5}" stopColor="#ef4444" stopOpacity={config.decimals.value8}/>
+              <stop offset="${config.percentage.value95}" stopColor="#ef4444" stopOpacity={config.decimals.value1}/>
             </linearGradient>
           </defs>
           

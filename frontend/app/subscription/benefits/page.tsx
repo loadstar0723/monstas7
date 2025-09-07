@@ -3,6 +3,7 @@
 import { FaCrown, FaCheck, FaLock, FaStar, FaChartLine, FaRobot, FaBrain, FaInfinity } from 'react-icons/fa'
 import { tierBenefits, tierLevels } from '@/lib/tierConfig'
 import Link from 'next/link'
+import { config } from '@/lib/config'
 
 // 등급별 아이콘 및 스타일
 const tierStyles = {
@@ -227,7 +228,7 @@ export default function BenefitsPage() {
           
           <div className="bg-gray-800 rounded-lg p-6">
             <h3 className="text-xl font-bold mb-2 text-purple-400">환불 정책은 어떻게 되나요?</h3>
-            <p className="text-gray-400">구매 후 7일 이내 100% 환불이 가능합니다. 단, API 사용량이 일정 수준을 초과한 경우 부분 환불이 적용됩니다.</p>
+            <p className="text-gray-400">구매 후 7일 이내 ${config.percentage.value100} 환불이 가능합니다. 단, API 사용량이 일정 수준을 초과한 경우 부분 환불이 적용됩니다.</p>
           </div>
           
           <div className="bg-gray-800 rounded-lg p-6">

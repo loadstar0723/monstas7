@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface LazyImageProps {
   src: string
@@ -77,7 +78,7 @@ export default function LazyImage({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoaded ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: config.decimals.value3 }}
         >
           <Image
             src={src}

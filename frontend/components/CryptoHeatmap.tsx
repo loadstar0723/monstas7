@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface HeatmapItem {
   symbol: string
@@ -73,8 +74,8 @@ export default function CryptoHeatmap() {
   }
 
   const formatPrice = (price: number) => {
-    if (price < 0.00001) return price.toExponential(2)
-    if (price < 0.01) return price.toFixed(6)
+    if (price < config.decimals.value00001) return price.toExponential(2)
+    if (price < config.decimals.value01) return price.toFixed(6)
     if (price < 1) return price.toFixed(4)
     if (price < 100) return price.toFixed(2)
     return price.toLocaleString('en-US', { maximumFractionDigits: 0 })
@@ -100,7 +101,7 @@ export default function CryptoHeatmap() {
       className="relative"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: config.decimals.value8 }}
     >
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -128,9 +129,9 @@ export default function CryptoHeatmap() {
             {heatmapData.map((coin, index) => (
               <motion.div
                 key={coin.symbol}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: config.decimals.value8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.005, type: "spring", stiffness: 300 }}
+                transition={{ delay: index * config.decimals.value005, type: "spring", stiffness: 300 }}
                 whileHover={{ scale: 1.05, zIndex: 10 }}
                 className={`
                   ${getColorByChange(coin.change)}
@@ -172,19 +173,19 @@ export default function CryptoHeatmap() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded shadow-lg"></span>
-                  <span className="text-gray-400">+10% 이상</span>
+                  <span className="text-gray-400">+${config.percentage.value10} 이상</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded shadow-lg"></span>
-                  <span className="text-gray-400">+2~10%</span>
+                  <span className="text-gray-400">+2~${config.percentage.value10}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 bg-gradient-to-br from-gray-500 to-gray-600 rounded shadow-lg"></span>
-                  <span className="text-gray-400">-2~+2%</span>
+                  <span className="text-gray-400">-2~+${config.percentage.value2}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 bg-gradient-to-br from-red-400 to-red-500 rounded shadow-lg"></span>
-                  <span className="text-gray-400">-10~-2%</span>
+                  <span className="text-gray-400">-10~-${config.percentage.value2}</span>
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
 import LoadingSpinner from './LoadingSpinner'
+import { config } from '@/lib/config'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -143,7 +144,7 @@ export default function LoginForm() {
             type="submit"
             disabled={isLoading}
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: config.decimals.value98 }}
             className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isLoading ? (

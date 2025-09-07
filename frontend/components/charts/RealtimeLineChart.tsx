@@ -16,6 +16,7 @@ import {
 } from 'chart.js'
 import { motion } from 'framer-motion'
 import { useTheme } from '@/contexts/ThemeContext'
+import { config } from '@/lib/config'
 
 ChartJS.register(
   CategoryScale,
@@ -64,7 +65,7 @@ export default function RealtimeLineChart({
           backgroundColor: `${color}20`,
           borderWidth: 2,
           fill: true,
-          tension: 0.4,
+          tension: config.decimals.value4,
           pointRadius: 0,
           pointHoverRadius: 4,
           pointBackgroundColor: color,
@@ -169,7 +170,7 @@ export default function RealtimeLineChart({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: config.decimals.value95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4"
     >

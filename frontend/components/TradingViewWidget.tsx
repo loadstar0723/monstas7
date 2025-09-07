@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, memo } from 'react'
+import { config } from '@/lib/config'
 
 interface TradingViewWidgetProps {
   symbol?: string
@@ -14,7 +15,7 @@ function TradingViewWidget({
   symbol = 'BINANCE:BTCUSDT',
   theme = 'dark',
   height = 500,
-  width = '100%',
+  width = '${config.percentage.value100}',
   locale = 'kr'
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null)
@@ -47,8 +48,8 @@ function TradingViewWidget({
     
     const widgetDiv = document.createElement("div")
     widgetDiv.className = "tradingview-widget-container__widget"
-    widgetDiv.style.height = "100%"
-    widgetDiv.style.width = "100%"
+    widgetDiv.style.height = "${config.percentage.value100}"
+    widgetDiv.style.width = "${config.percentage.value100}"
 
     widgetContainer.appendChild(widgetDiv)
     widgetContainer.appendChild(script)

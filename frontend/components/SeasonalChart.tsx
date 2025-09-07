@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, Area, AreaChart } from 'recharts'
+import { config } from '@/lib/config'
 
 interface MonthlyData {
   month: string
@@ -72,20 +73,20 @@ const SeasonalChart = () => {
 
         {/* Monthly Comparison Chart */}
         <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="${config.percentage.value100}" height="${config.percentage.value100}">
             <AreaChart data={monthlyData} isAnimationActive={false} animationDuration={0}>
               <defs>
                 <linearGradient id="color2025" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                  <stop offset="${config.percentage.value5}" stopColor="#3B82F6" stopOpacity={config.decimals.value8}/>
+                  <stop offset="${config.percentage.value95}" stopColor="#3B82F6" stopOpacity={config.decimals.value1}/>
                 </linearGradient>
                 <linearGradient id="color2024" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EC4899" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#EC4899" stopOpacity={0.1}/>
+                  <stop offset="${config.percentage.value5}" stopColor="#EC4899" stopOpacity={config.decimals.value8}/>
+                  <stop offset="${config.percentage.value95}" stopColor="#EC4899" stopOpacity={config.decimals.value1}/>
                 </linearGradient>
                 <linearGradient id="color2023" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.1}/>
+                  <stop offset="${config.percentage.value5}" stopColor="#8B5CF6" stopOpacity={config.decimals.value8}/>
+                  <stop offset="${config.percentage.value95}" stopColor="#8B5CF6" stopOpacity={config.decimals.value1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
@@ -189,12 +190,12 @@ const SeasonalChart = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-gray-400 text-xs uppercase mb-1">최고 수익률</p>
-              <p className="text-emerald-400 text-lg font-bold">+90.93%</p>
+              <p className="text-emerald-400 text-lg font-bold">+90.${config.percentage.value93}</p>
               <p className="text-gray-500 text-xs">1Y</p>
             </div>
             <div>
               <p className="text-gray-400 text-xs uppercase mb-1">평균 수익률</p>
-              <p className="text-cyan-400 text-lg font-bold">+23.15%</p>
+              <p className="text-cyan-400 text-lg font-bold">+23.${config.percentage.value15}</p>
               <p className="text-gray-500 text-xs">All Periods</p>
             </div>
           </div>

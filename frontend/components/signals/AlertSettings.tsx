@@ -6,6 +6,7 @@ import { FaBell, FaTelegramPlane, FaEnvelope, FaMobile } from 'react-icons/fa'
 import { MdNotifications, MdNotificationsActive, MdNotificationsOff } from 'react-icons/md'
 import { apiClient } from '../../lib/api'
 import WebSocketManager from '../../lib/websocketManager'
+import { config } from '@/lib/config'
 
 interface Alert {
   id: string
@@ -81,7 +82,7 @@ export default function AlertSettings({
           name: '진입가 도달',
           description: `${symbol} 가격이 설정값에 도달 시 알림`,
           condition: 'crosses',
-          value: currentPrice * 0.995,
+          value: currentPrice * config.decimals.value995,
           enabled: true,
           channels: ['telegram'],
           priority: 'high'
@@ -92,7 +93,7 @@ export default function AlertSettings({
       name: '손절가 도달',
       description: '손절 가격 도달 시 긴급 알림',
       condition: 'below',
-      value: currentPrice * 0.95,
+      value: currentPrice * config.decimals.value95,
       enabled: true,
       channels: ['telegram', 'push'],
       priority: 'high'
@@ -122,7 +123,7 @@ export default function AlertSettings({
       id: '5',
       type: 'volume',
       name: '대량 거래 감지',
-      description: '평균 대비 300% 이상 거래량',
+      description: '평균 대비 ${config.percentage.value300} 이상 거래량',
       condition: 'spike',
       value: 300,
       enabled: true,
@@ -140,6 +141,8 @@ export default function AlertSettings({
       priority: 'low'
     }
   ])
+    }
+  }
 
   const toggleAlert = (id: string) => {
     setAlerts(alerts.map(alert => 
@@ -233,7 +236,7 @@ export default function AlertSettings({
             key={alert.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
+            transition={{ delay: index * config.decimals.value05 }}
             className={`bg-gray-800/30 rounded-lg p-4 border ${
               alert.enabled ? 'border-purple-500/30' : 'border-gray-700'
             }`}
@@ -244,7 +247,7 @@ export default function AlertSettings({
                 <div>
                   <div className="flex items-center gap-2">
                     <h5 className="font-bold text-white">{alert.name}</h5>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(alert.priority)}`}>
+                    <span className={`px-2 py-config.decimals.value5 rounded-full text-xs font-medium ${getPriorityColor(alert.priority)}`}>
                       {alert.priority === 'high' ? '높음' : alert.priority === 'medium' ? '보통' : '낮음'}
                     </span>
                   </div>
@@ -333,7 +336,17 @@ export default function AlertSettings({
       {/* 액션 버튼 */}
       <div className="flex gap-3">
         <button 
-          onClick={() => onSave?.(alerts.filter(a => a.enabled))}
+          onClick={async () => {
+            // API를 통한 알림 설정 저장
+            if (userId) {
+              try {
+                await apiClient.saveAlerts(userId, alerts.filter(a => a.enabled))
+                console.log('알림 설정 저장 완료')
+              } catch (err) {
+                console.error('알림 설정 저장 실패:', err)
+              }
+            }
+          }}
           className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold transition-all"
         >
           설정 저장

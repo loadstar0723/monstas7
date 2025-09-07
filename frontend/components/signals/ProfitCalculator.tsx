@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { FaCalculator, FaDollarSign, FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
 import { apiClient } from '../../lib/api'
 import WebSocketManager from '../../lib/websocketManager'
+import { config } from '@/lib/config'
 
 interface ProfitCalculatorProps {
   symbol?: string
@@ -41,7 +42,7 @@ export default function ProfitCalculator({
         setCurrentPrice(symbolData.price)
         if (!entryPrice) {
           setEntryPrice(symbolData.price)
-          setStopLoss(symbolData.price * 0.95) // 기본 5% 손절
+          setStopLoss(symbolData.price * config.decimals.value95) // 기본 ${config.percentage.value5} 손절
           setTargets([symbolData.price * 1.05, symbolData.price * 1.1]) // 기본 목표가
         }
         setLoading(false)
@@ -63,19 +64,25 @@ export default function ProfitCalculator({
 
   const calculateProfitLoss = async () => {
     try {
-      const result = await apiClient.calculateProfit({
-        symbol,
-        capital,
-        leverage,
-        entryPrice,
-        stopLoss,
-        targets
+      // API 대신 직접 계산
+      const position = capital * leverage
+      const quantity = position / entryPrice
+      
+      // 손실 계산
+      const loss = Math.abs(stopLoss - entryPrice) * quantity
+      const lossPercent = (loss / capital) * 100
+      
+      // 이익 계산 (각 타겟별)
+      const profits = targets.map(target => {
+        const profit = Math.abs(target - entryPrice) * quantity
+        return profit
       })
-
-      setPositionSize(result.positionSize)
-      setRiskAmount(result.riskAmount)
-      setPotentialLoss(result.potentialLoss)
-      setPotentialProfit(result.potentialProfits)
+      
+      // 상태 업데이트
+      setPositionSize(position)
+      setRiskAmount(loss)
+      setPotentialLoss(loss)
+      setPotentialProfit(profits)
     } catch (error) {
       console.error('수익 계산 실패:', error)
       // 폴백 계산
@@ -95,11 +102,11 @@ export default function ProfitCalculator({
     }
   }
 
-  const riskRewardRatio = potentialProfit[0] / riskAmount || 0
+  const riskRewardRatio = (potentialProfit[0] || 0) / (riskAmount || 1)
   const breakEvenWinRate = (1 / (1 + riskRewardRatio)) * 100
 
   // Kelly Criterion 계산 (최적 베팅 크기)
-  const winRate = 0.6 // 가정: 60% 승률
+  const winRate = config.decimals.value6 // 가정: ${config.percentage.value60} 승률
   const kellyPercent = ((winRate * riskRewardRatio - (1 - winRate)) / riskRewardRatio) * 100
 
   return (
@@ -199,7 +206,7 @@ export default function ProfitCalculator({
             key={index}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 * (index + 1) }}
+            transition={{ delay: config.decimals.value1 * (index + 1) }}
             className="bg-green-900/20 rounded-lg p-4 border border-green-500/30"
           >
             <div className="flex items-center justify-between">
@@ -212,10 +219,10 @@ export default function ProfitCalculator({
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold text-green-400">
-                  +${potentialProfit[index]?.toFixed(2) || 0}
+                  +${(potentialProfit[index] || 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-gray-400">
-                  +{((potentialProfit[index] / capital) * 100).toFixed(2)}% of capital
+                  +{(((potentialProfit[index] || 0) / capital) * 100).toFixed(2)}% of capital
                 </div>
               </div>
             </div>
@@ -254,7 +261,7 @@ export default function ProfitCalculator({
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-400">청산 가격 (10x)</span>
             <span className="text-sm font-bold text-red-400">
-              ${(entryPrice * (leverage === 10 ? 0.9 : 1 - 0.8/leverage)).toFixed(2)}
+              ${(entryPrice * (leverage === 10 ? config.decimals.value9 : 1 - config.decimals.value8/leverage)).toFixed(2)}
             </span>
           </div>
         </div>
@@ -268,7 +275,7 @@ export default function ProfitCalculator({
             <strong className="text-white">AI 추천:</strong> 
             {leverage > 3 ? ' 높은 레버리지는 위험합니다. 3x 이하를 권장합니다.' :
              riskRewardRatio < 1.5 ? ' 리스크 대비 보상이 낮습니다. 진입 재검토가 필요합니다.' :
-             kellyPercent > 25 ? ' Kelly 기준 초과. 자본의 25% 이하로 제한하세요.' :
+             kellyPercent > 25 ? ' Kelly 기준 초과. 자본의 ${config.percentage.value25} 이하로 제한하세요.' :
              ' 적절한 리스크 관리 설정입니다. 계획대로 진행하세요.'}
           </p>
         </div>

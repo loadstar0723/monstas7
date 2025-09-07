@@ -6,6 +6,7 @@ import { FaFire, FaExclamationTriangle, FaChartBar, FaDollarSign, FaArrowUp, FaA
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
 import dynamic from 'next/dynamic'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface LiquidationData {
   id: string
@@ -80,7 +90,7 @@ export default function LiquidationModule() {
         
         // 가격 레벨별 청산 예상치 계산
         for (let i = -10; i <= 10; i++) {
-          const priceLevel = currentPrice * (1 + i * 0.01) // 1% 간격
+          const priceLevel = currentPrice * (1 + i * config.decimals.value01) // ${config.percentage.value1} 간격
           const longLiq = Math.abs(i) * 500000 * Math.random() // 롱 청산
           const shortLiq = Math.abs(i) * 500000 * Math.random() // 숏 청산
           
@@ -157,7 +167,7 @@ export default function LiquidationModule() {
         
         tickerWs.connect(tickerUrl, (data) => {
           // 가격 변동시 히트맵 업데이트
-          if (Math.random() > 0.9) { // 10% 확률로 업데이트
+          if (Math.random() > config.decimals.value9) { // ${config.percentage.value10} 확률로 업데이트
             generateHeatmapData()
           }
         })
@@ -217,7 +227,7 @@ export default function LiquidationModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -239,9 +249,9 @@ export default function LiquidationModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaDollarSign className="text-yellow-400 text-2xl mb-3" />
@@ -252,9 +262,9 @@ export default function LiquidationModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaArrowDown className="text-red-400 text-2xl mb-3" />
@@ -265,9 +275,9 @@ export default function LiquidationModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaArrowUp className="text-green-400 text-2xl mb-3" />
@@ -334,7 +344,7 @@ export default function LiquidationModule() {
                         key={liq.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * config.decimals.value05 }}
                         className={`hover:bg-gray-700/50 transition-colors ${
                           liq.totalValue > 100000 ? 'bg-red-900/20' : ''
                         }`}
@@ -495,6 +505,25 @@ export default function LiquidationModule() {
           <DetailedAIAnalysis 
             symbol={selectedSymbol.replace('USDT', '')}
             analysisType="liquidation"
+          />
+          
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol={selectedSymbol.replace('USDT', '')}
+            volatility={stats.currentRiskLevel === 'EXTREME' ? 80 : stats.currentRiskLevel === 'HIGH' ? 60 : stats.currentRiskLevel === 'MEDIUM' ? 40 : 20}
+            trend={stats.totalLongs > stats.totalShorts ? 'bearish' : stats.totalShorts > stats.totalLongs ? 'bullish' : 'neutral'} // 청산에 반대 방향
+            signalStrength={Math.min((stats.total24h / 1000000) * 2, 100)} // 24시간 청산 규모 기반
+            marketCondition={stats.currentRiskLevel === 'EXTREME' || stats.currentRiskLevel === 'HIGH' ? 'volatile' : 'normal'}
+            currentPrice={45000} // 샘플 가격, 실제로는 WebSocket에서 가져와야 함
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol={selectedSymbol.replace('USDT', '')}
+            currentPrice={45000}
+            signalType="liquidation"
+            marketCondition={stats.currentRiskLevel === 'EXTREME' || stats.currentRiskLevel === 'HIGH' ? 'volatile' : stats.totalLongs > stats.totalShorts ? 'bearish' : stats.totalShorts > stats.totalLongs ? 'bullish' : 'neutral'}
+            volatility={stats.currentRiskLevel === 'EXTREME' ? 80 : stats.currentRiskLevel === 'HIGH' ? 60 : stats.currentRiskLevel === 'MEDIUM' ? 40 : 20}
           />
         </div>
       )}

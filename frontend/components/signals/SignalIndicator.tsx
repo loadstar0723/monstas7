@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface SignalIndicatorProps {
   signal: 'strong_buy' | 'buy' | 'neutral' | 'sell' | 'strong_sell'
@@ -82,7 +83,7 @@ export default function SignalIndicator({ signal, size = 'md', showLabel = true 
               key={index}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: index * config.decimals.value05 }}
               className={`${sizeClass} ${bgColor} rounded-full relative`}
             >
               {isOn && (

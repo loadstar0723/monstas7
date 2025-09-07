@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaSignal, FaChartLine, FaBrain, FaRocket } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function SignalDashboardPage() {
   return (
@@ -11,7 +12,7 @@ export default function SignalDashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: config.decimals.value5 }}
           className="mb-8"
         >
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-3">
@@ -24,9 +25,9 @@ export default function SignalDashboardPage() {
         {/* 시그널 요약 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: config.decimals.value1 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="flex items-center justify-between mb-2">
@@ -34,13 +35,13 @@ export default function SignalDashboardPage() {
               <FaRocket className="text-green-400" />
             </div>
             <div className="text-3xl font-bold text-green-400">24</div>
-            <div className="text-sm text-gray-500">적중률 85.3%</div>
+            <div className="text-sm text-gray-500">적중률 85.${config.percentage.value3}</div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: config.decimals.value2 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="flex items-center justify-between mb-2">
@@ -48,27 +49,27 @@ export default function SignalDashboardPage() {
               <FaChartLine className="text-blue-400" />
             </div>
             <div className="text-3xl font-bold text-blue-400">7</div>
-            <div className="text-sm text-gray-500">평균 수익 +4.2%</div>
+            <div className="text-sm text-gray-500">평균 수익 +4.${config.percentage.value2}</div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: config.decimals.value3 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-400">AI 신뢰도</span>
               <FaBrain className="text-purple-400" />
             </div>
-            <div className="text-3xl font-bold text-purple-400">92%</div>
+            <div className="text-3xl font-bold text-purple-400">${config.percentage.value92}</div>
             <div className="text-sm text-gray-500">7개 모델 평균</div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: config.decimals.value4 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="flex items-center justify-between mb-2">
@@ -87,7 +88,7 @@ export default function SignalDashboardPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: config.decimals.value5 }}
               className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
             >
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -104,7 +105,7 @@ export default function SignalDashboardPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-gray-400">신뢰도</div>
-                      <div className="text-lg font-bold text-green-400">94%</div>
+                      <div className="text-lg font-bold text-green-400">${config.percentage.value94}</div>
                     </div>
                   </div>
                   <div className="mt-2 text-sm text-gray-400">
@@ -119,22 +120,22 @@ export default function SignalDashboardPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: config.decimals.value6 }}
             className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <h2 className="text-xl font-semibold mb-4">성과 통계</h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">승률</span>
-                <span className="text-green-400 font-bold">78.5%</span>
+                <span className="text-green-400 font-bold">78.${config.percentage.value5}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">평균 수익</span>
-                <span className="text-green-400 font-bold">+4.2%</span>
+                <span className="text-green-400 font-bold">+4.${config.percentage.value2}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">최대 수익</span>
-                <span className="text-green-400 font-bold">+18.3%</span>
+                <span className="text-green-400 font-bold">+18.${config.percentage.value3}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">리스크 점수</span>
@@ -148,7 +149,7 @@ export default function SignalDashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: config.decimals.value7 }}
           className="mt-8 p-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl border border-purple-500/30"
         >
           <div className="flex items-center justify-between">

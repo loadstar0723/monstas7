@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { config } from '@/lib/config'
 import { 
   FaHome, 
   FaChartLine, 
@@ -28,6 +29,7 @@ export default function MobileBottomNav() {
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isMobile, setIsMobile] = useState(true) // 기본값을 true로 설정
 
   const mainNavItems: NavItem[] = [
     { icon: <FaHome className="w-5 h-5" />, label: '홈', path: '/', color: 'purple' },
@@ -41,6 +43,17 @@ export default function MobileBottomNav() {
     { icon: <FaCog className="w-6 h-6" />, label: '설정', path: '/settings', color: 'gray' },
     { icon: <FaQuestionCircle className="w-6 h-6" />, label: '도움말', path: '/help', color: 'pink' },
   ]
+
+  // 화면 크기 체크
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // 스크롤 시 하단 네비 숨기기/보이기
   useEffect(() => {
@@ -102,8 +115,8 @@ export default function MobileBottomNav() {
     return isActive ? colors[color].active : colors[color].inactive
   }
 
-  // 모바일에서만 표시
-  if (typeof window !== 'undefined' && window.innerWidth > 768) {
+  // 데스크톱에서는 숨기기
+  if (!isMobile) {
     return null
   }
 
@@ -126,9 +139,9 @@ export default function MobileBottomNav() {
       <AnimatePresence>
         {showMoreMenu && (
           <motion.div
-            initial={{ y: '100%' }}
+            initial={{ y: '${config.percentage.value100}' }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
+            exit={{ y: '${config.percentage.value100}' }}
             transition={{ type: 'spring', damping: 25 }}
             className="fixed bottom-20 left-4 right-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl z-50 p-4 md:hidden"
           >
@@ -148,7 +161,7 @@ export default function MobileBottomNav() {
                 return (
                   <motion.button
                     key={item.path}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: config.decimals.value95 }}
                     onClick={() => handleNavClick(item.path)}
                     className={`flex flex-col items-center gap-2 p-3 rounded-lg transition-all ${
                       isActive 
@@ -181,14 +194,14 @@ export default function MobileBottomNav() {
               return (
                 <motion.button
                   key={item.path}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: config.decimals.value9 }}
                   onClick={() => handleNavClick(item.path)}
                   className="flex flex-col items-center justify-center gap-1 relative"
                 >
                   {isActive && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600"
+                      className="absolute top-0 left-0 right-0 h-config.decimals.value5 bg-gradient-to-r from-purple-600 to-pink-600"
                     />
                   )}
                   
@@ -209,7 +222,7 @@ export default function MobileBottomNav() {
             
             {/* 더보기 버튼 */}
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: config.decimals.value9 }}
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className="flex flex-col items-center justify-center gap-1"
             >

@@ -40,6 +40,12 @@ export class ModuleWebSocket {
   }
 
   connect(url: string, onMessage: (data: any) => void) {
+    // 브라우저 환경이 아니면 연결하지 않음 (SSR 방지)
+    if (typeof window === 'undefined') {
+      console.log(`[${this.moduleName}] Skipping WebSocket connection (SSR)`)
+      return
+    }
+    
     try {
       this.ws = new WebSocket(url)
       
@@ -106,6 +112,11 @@ export function createModuleState<T>(
   
   // localStorage에서 이전 상태 복원
   const loadState = (): T => {
+    // 브라우저 환경이 아니면 초기 상태 반환
+    if (typeof window === 'undefined') {
+      return initialState
+    }
+    
     try {
       const saved = localStorage.getItem(storageKey)
       return saved ? JSON.parse(saved) : initialState
@@ -116,6 +127,11 @@ export function createModuleState<T>(
   
   // 상태를 localStorage에 저장
   const saveState = (state: T) => {
+    // 브라우저 환경이 아니면 저장하지 않음
+    if (typeof window === 'undefined') {
+      return
+    }
+    
     try {
       localStorage.setItem(storageKey, JSON.stringify(state))
     } catch (error) {

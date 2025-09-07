@@ -1,7 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaChartLine, FaExclamationTriangle, FaBullseye, FaCoins } from 'react-icons/fa'
+import { FaChartLine, FaExclamationTriangle, FaBullseye, FaCoins, FaBell, FaRocket } from 'react-icons/fa'
+import dynamic from 'next/dynamic'
+import { config } from '@/lib/config'
+
+const PriceAlertModal = dynamic(() => import('./PriceAlertModal'), {
+  ssr: false
+})
 
 interface TradingPlanBoxProps {
   currentPrice: number
@@ -26,6 +33,7 @@ export default function TradingPlanBox({
   timeframe = '단기',
   symbol = 'BTC'
 }: TradingPlanBoxProps) {
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false)
   const entryDiff = ((entryPrice - currentPrice) / currentPrice * 100).toFixed(2)
   const stopLossDiff = ((stopLoss - currentPrice) / currentPrice * 100).toFixed(2)
   const riskAmount = Math.abs(entryPrice - stopLoss)
@@ -43,6 +51,48 @@ export default function TradingPlanBox({
     if (confidence >= 60) return '✅'
     if (confidence >= 40) return '⚠️'
     return '❌'
+  }
+
+  const handleEnterPosition = () => {
+    // 진입 확인
+    const confirmMessage = `
+${symbol} 진입을 확인하시겠습니까?
+
+진입가: $${entryPrice.toLocaleString()}
+손절가: $${stopLoss.toLocaleString()}
+1차 목표가: $${targets[0]?.toLocaleString()}
+리스크: ${riskPercentage}%
+
+⚠️ 실제 거래는 본인 책임입니다.
+    `
+    
+    if (confirm(confirmMessage)) {
+      // 실제 구현 시 여기에 주문 API 호출
+      console.log('진입 주문 실행:', {
+        symbol,
+        entryPrice,
+        stopLoss,
+        targets,
+        timeframe
+      })
+      
+      alert(`✅ ${symbol} 진입 주문이 접수되었습니다.\n\n진입가: $${entryPrice.toLocaleString()}\n손절가: $${stopLoss.toLocaleString()}`)
+      
+      // localStorage에 진입 정보 저장
+      const tradeInfo = {
+        symbol,
+        entryPrice,
+        stopLoss,
+        targets,
+        timeframe,
+        enteredAt: new Date().toISOString()
+      }
+      localStorage.setItem('currentTrade', JSON.stringify(tradeInfo))
+    }
+  }
+
+  const handleSetAlert = () => {
+    setIsAlertModalOpen(true)
   }
 
   return (
@@ -119,7 +169,7 @@ export default function TradingPlanBox({
               key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * config.decimals.value1 }}
               className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30"
             >
               <div className="flex items-center justify-between">
@@ -150,19 +200,38 @@ export default function TradingPlanBox({
         </div>
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <div className="text-xs text-gray-400 mb-1">포지션 크기</div>
-          <div className="text-sm font-bold text-yellow-400">자산의 30%</div>
+          <div className="text-sm font-bold text-yellow-400">자산의 ${config.percentage.value30}</div>
         </div>
       </div>
 
       {/* 액션 버튼 */}
       <div className="mt-4 flex gap-3">
-        <button className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold transition-all">
+        <button 
+          onClick={handleEnterPosition}
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+        >
+          <FaRocket />
           지금 진입하기
         </button>
-        <button className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-bold transition-all">
+        <button 
+          onClick={handleSetAlert}
+          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+        >
+          <FaBell />
           알림 설정
         </button>
       </div>
+
+      {/* 알림 설정 모달 */}
+      <PriceAlertModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        symbol={symbol}
+        currentPrice={currentPrice}
+        entryPrice={entryPrice}
+        stopLoss={stopLoss}
+        targets={targets}
+      />
     </motion.div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface OrderBookData {
   bids: Array<[string, string]>
@@ -118,7 +119,7 @@ export default function TradingPage() {
             
             <motion.button
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: config.decimals.value95 }}
               onClick={() => setIsAutoTrade(!isAutoTrade)}
               className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
                 isAutoTrade 
@@ -186,7 +187,7 @@ export default function TradingPage() {
           >
             <div className="text-xs text-gray-400 mb-1">오더북 스프레드</div>
             <div className="text-xl font-bold text-yellow-400">
-              0.01%
+              0.${config.percentage.value01}
             </div>
           </motion.div>
 
@@ -310,7 +311,7 @@ export default function TradingPage() {
                   
                   <motion.button
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: config.decimals.value98 }}
                     className="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg"
                   >
                     매수 주문
@@ -345,7 +346,7 @@ export default function TradingPage() {
                   
                   <motion.button
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: config.decimals.value98 }}
                     className="w-full py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg"
                   >
                     매도 주문

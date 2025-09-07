@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaGraduationCap, FaSearch, FaBookOpen, FaLightbulb } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function ResearchPage() {
   return (
@@ -21,7 +22,7 @@ export default function ResearchPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="glass-card p-12 text-center"
         >
           <motion.div

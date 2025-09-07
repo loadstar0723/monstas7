@@ -6,6 +6,7 @@ import { FaPercent, FaClock, FaChartLine, FaExclamationTriangle, FaArrowUp, FaAr
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 import dynamic from 'next/dynamic'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface FundingRateData {
   symbol: string
@@ -58,8 +68,8 @@ export default function FundingRateModule() {
     const recent = rates.slice(-3)
     const avg = recent.reduce((a, b) => a + b, 0) / recent.length
     
-    if (avg > 0.01) return 'BULLISH' // 롱이 많음 (숏 유리)
-    if (avg < -0.01) return 'BEARISH' // 숏이 많음 (롱 유리)
+    if (avg > config.decimals.value01) return 'BULLISH' // 롱이 많음 (숏 유리)
+    if (avg < -config.decimals.value01) return 'BEARISH' // 숏이 많음 (롱 유리)
     return 'NEUTRAL'
   }
   
@@ -244,7 +254,7 @@ export default function FundingRateModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -253,7 +263,7 @@ export default function FundingRateModule() {
           <p className={`text-2xl font-bold ${
             currentRate && currentRate.fundingRate > 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            {currentRate ? `${(currentRate.fundingRate * 100).toFixed(4)}%` : '0.0000%'}
+            {currentRate ? `${(currentRate.fundingRate * 100).toFixed(4)}%` : '0.${config.percentage.value0000}'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {currentRate && currentRate.fundingRate > 0 ? '롱이 숏에게 지불' : '숏이 롱에게 지불'}
@@ -261,9 +271,9 @@ export default function FundingRateModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaClock className="text-blue-400 text-2xl mb-3" />
@@ -275,9 +285,9 @@ export default function FundingRateModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaChartLine className="text-purple-400 text-2xl mb-3" />
@@ -299,15 +309,15 @@ export default function FundingRateModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaExclamationTriangle className="text-orange-400 text-2xl mb-3" />
           <p className="text-gray-400 text-sm mb-1">예상 펀딩비</p>
           <p className="text-2xl font-bold text-white">
-            {currentRate ? `${(currentRate.estimatedRate * 100).toFixed(4)}%` : '0.0000%'}
+            {currentRate ? `${(currentRate.estimatedRate * 100).toFixed(4)}%` : '0.${config.percentage.value0000}'}
           </p>
           <p className="text-xs text-gray-500 mt-1">다음 결제 예상치</p>
         </motion.div>
@@ -360,7 +370,7 @@ export default function FundingRateModule() {
                       key={rate.symbol}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * config.decimals.value05 }}
                       className="hover:bg-gray-700/50 transition-colors"
                     >
                       <td className="px-6 py-4 text-sm font-medium text-white">
@@ -383,12 +393,12 @@ export default function FundingRateModule() {
                         {rate.countdownTime}
                       </td>
                       <td className="px-6 py-4">
-                        {Math.abs(rate.fundingRate) > 0.01 ? (
+                        {Math.abs(rate.fundingRate) > config.decimals.value01 ? (
                           <span className={`flex items-center gap-1 text-sm font-bold ${
-                            rate.fundingRate > 0.01 ? 'text-red-400' : 'text-green-400'
+                            rate.fundingRate > config.decimals.value01 ? 'text-red-400' : 'text-green-400'
                           }`}>
-                            {rate.fundingRate > 0.01 ? <FaArrowDown /> : <FaArrowUp />}
-                            {rate.fundingRate > 0.01 ? '숏 유리' : '롱 유리'}
+                            {rate.fundingRate > config.decimals.value01 ? <FaArrowDown /> : <FaArrowUp />}
+                            {rate.fundingRate > config.decimals.value01 ? '숏 유리' : '롱 유리'}
                           </span>
                         ) : (
                           <span className="text-sm text-gray-400">중립</span>
@@ -491,12 +501,12 @@ export default function FundingRateModule() {
                 <div className="flex justify-between">
                   <span className="text-gray-400">리스크 레벨</span>
                   <span className={`font-bold ${
-                    Math.abs(stats.avgFundingRate) > 0.01 ? 'text-red-400' :
-                    Math.abs(stats.avgFundingRate) > 0.005 ? 'text-yellow-400' :
+                    Math.abs(stats.avgFundingRate) > config.decimals.value01 ? 'text-red-400' :
+                    Math.abs(stats.avgFundingRate) > config.decimals.value005 ? 'text-yellow-400' :
                     'text-green-400'
                   }`}>
-                    {Math.abs(stats.avgFundingRate) > 0.01 ? '높음' :
-                     Math.abs(stats.avgFundingRate) > 0.005 ? '중간' :
+                    {Math.abs(stats.avgFundingRate) > config.decimals.value01 ? '높음' :
+                     Math.abs(stats.avgFundingRate) > config.decimals.value005 ? '중간' :
                      '낮음'}
                   </span>
                 </div>
@@ -506,7 +516,7 @@ export default function FundingRateModule() {
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-bold mb-4 text-yellow-400">트레이딩 전략</h3>
               <div className="space-y-3">
-                {stats.avgFundingRate > 0.01 && (
+                {stats.avgFundingRate > config.decimals.value01 && (
                   <div className="p-3 bg-red-900/20 border border-red-500/30 rounded">
                     <p className="text-red-400 font-bold">📉 숏 포지션 추천</p>
                     <p className="text-sm text-gray-300 mt-1">
@@ -514,7 +524,7 @@ export default function FundingRateModule() {
                     </p>
                   </div>
                 )}
-                {stats.avgFundingRate < -0.01 && (
+                {stats.avgFundingRate < -config.decimals.value01 && (
                   <div className="p-3 bg-green-900/20 border border-green-500/30 rounded">
                     <p className="text-green-400 font-bold">📈 롱 포지션 추천</p>
                     <p className="text-sm text-gray-300 mt-1">
@@ -522,7 +532,7 @@ export default function FundingRateModule() {
                     </p>
                   </div>
                 )}
-                {Math.abs(stats.avgFundingRate) <= 0.01 && (
+                {Math.abs(stats.avgFundingRate) <= config.decimals.value01 && (
                   <div className="p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
                     <p className="text-yellow-400 font-bold">⚖️ 중립 시장</p>
                     <p className="text-sm text-gray-300 mt-1">
@@ -544,6 +554,25 @@ export default function FundingRateModule() {
           <DetailedAIAnalysis 
             symbol={selectedSymbol.replace('USDT', '')}
             analysisType="funding"
+          />
+          
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol={selectedSymbol.replace('USDT', '')}
+            volatility={Math.abs(stats.avgFundingRate) * 10000} // 펀딩비를 변동성으로 변환
+            trend={stats.trend === 'BULLISH' ? 'bullish' : stats.trend === 'BEARISH' ? 'bearish' : 'neutral'}
+            signalStrength={Math.min(Math.abs(stats.avgFundingRate) * 2000, 100)} // 펀딩비 기반 신호 강도
+            marketCondition={Math.abs(stats.avgFundingRate) > config.decimals.value01 ? 'volatile' : 'normal'}
+            currentPrice={currentRate?.markPrice || 0}
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol={selectedSymbol.replace('USDT', '')}
+            currentPrice={currentRate?.markPrice || 0}
+            signalType="funding-rate"
+            marketCondition={Math.abs(stats.avgFundingRate) > config.decimals.value01 ? 'volatile' : stats.trend === 'BULLISH' ? 'bullish' : stats.trend === 'BEARISH' ? 'bearish' : 'neutral'}
+            volatility={Math.abs(stats.avgFundingRate) * 10000}
           />
         </div>
       )}

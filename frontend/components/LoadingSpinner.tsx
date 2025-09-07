@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { config } from '@/lib/config'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -61,12 +62,12 @@ export default function LoadingSpinner({
               animate={{
                 x: [0, 30, 0, -30, 0],
                 y: [0, -30, 0, 30, 0],
-                opacity: [1, 0.5, 1, 0.5, 1]
+                opacity: [1, config.decimals.value5, 1, config.decimals.value5, 1]
               }}
               transition={{
                 duration: 2,
                 repeat: Infinity,
-                delay: i * 0.4
+                delay: i * config.decimals.value4
               }}
             />
           ))}
@@ -77,7 +78,7 @@ export default function LoadingSpinner({
       {text && (
         <motion.p
           className="text-sm font-medium text-gray-600 dark:text-gray-400"
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          animate={{ opacity: [config.decimals.value5, 1, config.decimals.value5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
           {text}

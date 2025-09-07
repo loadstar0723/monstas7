@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa'
 import { BiCommand } from 'react-icons/bi'
 import { MdAutoGraph, MdCandlestickChart } from 'react-icons/md'
+import { config } from '@/lib/config'
 
 interface Command {
   id: string
@@ -270,7 +271,7 @@ export default function CommandPalette() {
       >
         <BiCommand className="text-purple-400 text-lg" />
         <span className="text-gray-300">Command Palette</span>
-        <kbd className="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs text-gray-500">
+        <kbd className="px-2 py-config.decimals.value5 bg-gray-800 border border-gray-700 rounded text-xs text-gray-500">
           ⌘K
         </kbd>
       </button>
@@ -290,9 +291,9 @@ export default function CommandPalette() {
             
             {/* 팔레트 */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              initial={{ opacity: 0, scale: config.decimals.value95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              exit={{ opacity: 0, scale: config.decimals.value95, y: -20 }}
               className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden"
             >
               {/* 검색 입력 */}
@@ -358,7 +359,7 @@ export default function CommandPalette() {
                               )}
                             </div>
                             {cmd.description && (
-                              <p className="text-xs text-gray-500 mt-0.5">{cmd.description}</p>
+                              <p className="text-xs text-gray-500 mt-config.decimals.value5">{cmd.description}</p>
                             )}
                           </div>
                           

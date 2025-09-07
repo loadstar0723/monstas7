@@ -1,3 +1,11 @@
+---
+description: when start new chat use this rule for checkout project summary
+globs:
+alwaysApply: true
+---
+
+
+
    \# 프로젝트 가이드라인
 
 ## 🚨 절대 금지사항 (Critical Rules) - 위반 시 즉시 중단
@@ -299,6 +307,7 @@
 ## ⚡ Next.js Fast Refresh 실시간 반영 설정
 
 ### 🚀 Fast Refresh 작동 원리
+
 1. **Next.js Fast Refresh** - 코드 변경 시 즉시 브라우저에 반영 (HMR: Hot Module Replacement)
    - 파일 저장 시 **1초 이내** 자동 반영
    - 컴포넌트 상태 유지하면서 UI만 업데이트
@@ -306,6 +315,7 @@
    - 수정 후 새로고침 불필요
 
 ### 🔧 개발 서버 실행 방법
+
 ```bash
 # 검증 스크립트 우회하여 직접 실행 (규칙 위반이 많을 때)
 cd frontend && npx next dev -H 0.0.0.0 -p 3000
@@ -315,12 +325,14 @@ cd frontend && npm run dev
 ```
 
 ### ✅ Fast Refresh 확인 방법
-1. 개발 서버 실행 후 http://localhost:3000 접속
+
+1. 개발 서버 실행 후 <http://localhost:3000> 접속
 2. 컴포넌트 파일 수정 후 저장 (Ctrl+S)
 3. 브라우저가 **자동으로 업데이트** (새로고침 없이)
 4. Console에 `[Fast Refresh] done` 메시지 확인
 
 ### 📌 Fast Refresh 최적화 설정
+
 2. **프론트엔드/백엔드 분리** - 각각 독립적으로 최적화되어 실행
    - Frontend: UI 변경사항 즉시 반영
    - Backend: API는 별도로 실행되어 프론트 변경에 영향 없음
@@ -329,6 +341,7 @@ cd frontend && npm run dev
 5. **병렬 처리** - Frontend와 Backend가 동시에 독립적으로 작동
 
 ### 🛠️ 문제 해결
+
 - **Fast Refresh 안 될 때**:
   1. 여러 개발 서버가 실행 중인지 확인: `netstat -ano | findstr :3000`
   2. 모든 Node 프로세스 종료: `taskkill /F /IM node.exe /T`
@@ -456,30 +469,35 @@ npm run lint         # 코드 품질 체크
 ## 🚀 종합분석 탭 필수 구성요소 (모든 시그널 페이지)
 
 ### 1. 거래 전략 (Trading Strategy)
+
 - **방향성 판단**: Long/Short/Neutral 자동 분석
 - **신뢰도 표시**: 0-100% 신뢰도 계산
 - **진입/손절/목표가**: 실시간 가격 기반 자동 계산
 - **손익비**: Risk/Reward 비율 표시
 
 ### 2. 레버리지 전략 (Leverage Strategy)
+
 - **권장 레버리지**: 시장 상황별 1-5x 자동 계산
 - **최대 레버리지**: 리스크 수준별 한도 설정
 - **리스크 수준**: Low/Medium/High 자동 평가
 - **분석 근거**: Fear & Greed, 변동성 기반
 
 ### 3. 자본금 대비 전략 (Capital Strategy)
+
 - **포지션 크기**: 전체 자본의 3-10% 자동 계산
 - **분할 진입**: 3-5회 나누어 진입 전략
 - **예비 자금**: 40-80% 리스크 대비 보유
 - **복리 전략**: 수익 재투자 vs 수익 실현
 
 ### 4. 시간대별 전략 (Timeframe Strategy)
+
 - **단기 (1-24시간)**: 스캘핑/데이트레이딩 전략
 - **중기 (1-7일)**: 스윙 트레이딩 전략
 - **장기 (1개월+)**: 포지션 트레이딩 전략
 - **각 시간대별**: 액션, 확률, 목표가 제시
 
 ### 5. 시그널 종합 (Signal Integration)
+
 - **기술적 시그널**: RSI, MACD, 볼린저밴드 종합
 - **펀더멘털 시그널**: 온체인, 거래소 플로우
 - **센티먼트 시그널**: Fear & Greed, 소셜 미디어
@@ -487,12 +505,14 @@ npm run lint         # 코드 품질 체크
 - **종합 점수**: -100 ~ +100 스코어링
 
 ### 6. 리스크 평가 (Risk Assessment)
+
 - **리스크 레벨**: Low/Medium/High 자동 평가
 - **리스크 점수**: 0-100점 계산
 - **리스크 요인**: 시장 과열, 높은 펀딩, 고래 매도 등
 - **헤지 전략**: 리스크별 대응 방안 제시
 
 ### 7. 실행 권장사항 (Action Items)
+
 - **현재 시장 상태**: 극도의 공포/공포/중립/탐욕/극도의 탐욕
 - **추천 포지션**: 구체적 진입 전략
 - **최적 레버리지**: 실시간 계산값
@@ -639,12 +659,99 @@ GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으�
 - **간편 계산기**: 수익률 즉시 확인
 - **다크모드 기본**: 눈의 피로 최소화
 
-## 🤖 자동 규칙 검증 시스템 (2025.09 추가)
+## 🤖 자동 규칙 검증 시스템 (2025.09 강화)
 
-- **모든 코드 작성 전 자동 체크**: `npm run validate`
-- **Git 커밋 전 자동 검증**: pre-commit hook 설정됨
-- **실시간 감시**: `npm run validate:watch`
-- **654개 규칙 위반 발견 시 즉시 수정 필요**
+### 🛡️ 7단계 방어 시스템 (무조건 규칙 준수)
+
+1. **개발 시작 전 자동 검증** (`predev` hook)
+   - `npm run dev` 실행 시 자동으로 검증 실행
+   - 규칙 위반 시 개발 서버 시작 차단
+
+2. **빌드 전 자동 검증** (`prebuild` hook)
+   - `npm run build` 실행 시 자동 검증
+   - 규칙 위반 시 빌드 차단
+
+3. **Git 커밋 차단** (`.githooks/pre-commit`)
+   - 커밋 시도 시 자동 검증
+   - 규칙 위반 시 커밋 차단
+
+4. **GitHub Actions CI/CD** (`.github/workflows/enforce-rules.yml`)
+   - Push/PR 시 자동 검증
+   - 규칙 위반 시 배포 차단
+
+5. **ESLint 실시간 경고** (`.eslintrc.custom.js`)
+   - IDE에서 실시간 경고 표시
+   - Math.random(), mock 변수명 등 즉시 감지
+
+6. **실시간 감시 모드** (`npm run validate:watch`)
+   - 파일 변경 시 자동 검증
+   - 규칙 위반 즉시 알림
+
+7. **강력한 검증 스크립트** (`scripts/enforce-no-fake-data.js`)
+   - 모든 금지 패턴 자동 감지
+   - 라인별 상세 에러 리포트
+
+### 📋 검증 명령어
+
+```bash
+# 기본 검증
+npm run validate:strict    # 엄격한 검증 (Math.random 등)
+npm run validate:all       # 전체 검증 (ESLint + TypeScript + 규칙)
+
+# 개발/빌드 (자동 검증 포함)
+npm run dev               # 개발 시작 (검증 후 실행)
+npm run build             # 빌드 (검증 후 빌드)
+
+# 우회 명령어 (긴급 시에만)
+npm run dev:unsafe        # 검증 없이 개발 실행 (절대 권장 안함)
+npm run build:unsafe      # 검증 없이 빌드 (절대 권장 안함)
+
+# 검사 도구
+npm run check:random      # Math.random 사용 카운트
+npm run detect:mock       # Mock 데이터 감지
+```
+
+### ⚠️ 위반 시 차단되는 것들
+
+- ❌ `npm run dev` 실행 불가
+- ❌ `npm run build` 실행 불가  
+- ❌ `git commit` 불가
+- ❌ GitHub PR/Push 불가
+- ❌ 자동 배포 차단
+
+### 🔥 규칙 위반 해결 방법
+
+1. **Math.random() 발견 시**
+
+   ```typescript
+   // ❌ 잘못된 코드
+   const value = Math.random() * 100
+   
+   // ✅ 올바른 코드
+   const response = await fetch('/api/market-data')
+   const { value } = await response.json()
+   ```
+
+2. **Mock/Fake 데이터 발견 시**
+
+   ```typescript
+   // ❌ 잘못된 코드
+   const mockData = [{...}]
+   
+   // ✅ 올바른 코드
+   const data = await prisma.transaction.findMany()
+   ```
+
+3. **하드코딩 값 발견 시**
+
+   ```typescript
+   // ❌ 잘못된 코드
+   const fee = price * 0.1
+   
+   // ✅ 올바른 코드
+   const { feeRate } = await getConfig()
+   const fee = price * feeRate
+   ```
 
 ## 🛡️ 에러 처리 표준
 
@@ -680,28 +787,115 @@ catch (error) {
 - 모듈 간 의존성 최소화
 - lib/moduleUtils.ts 활용
 
-  CLAUDE.md에 추가 권장 사항:
+## 🔌 WebSocket 다중 심볼 처리 필수 규칙
 
-  1. 실시간 데이터 API 우선순위
-  - Binance WebSocket (가격/거래량)
-  - CoinGecko (시장 데이터)
-  - Glassnode/CryptoQuant (온체인)
-  - Alternative.me (Fear & Greed)
+### 심볼 전환 시 필수 구현
+
+```typescript
+// 1. 기존 연결 완전 종료
+if (wsRef.current) {
+  wsRef.current.close(1000)
+  wsRef.current = null
+}
+
+// 2. 연결 지연 적용 (빠른 전환 방지)
+clearTimeout(connectionDelayRef.current)
+connectionDelayRef.current = setTimeout(() => {
+  connectWebSocket(newSymbol)
+}, 500)
+
+// 3. 심볼별 초기값 설정
+const initialPrices = {
+  'BTCUSDT': 98000,
+  'ETHUSDT': 3500,
+  'BNBUSDT': 700
+}
+setCurrentPrice(initialPrices[newSymbol])
+```
+
+## ⚛️ React Hook 규칙 - 절대 위반 금지
+
+```typescript
+// ❌ 절대 금지 - IIFE 내부 useState
+{(() => {
+  const [filter, setFilter] = useState('all') // 에러!
+})()}
+
+// ✅ 필수 - 컴포넌트 최상위 레벨
+const Component = () => {
+  const [filter, setFilter] = useState('all')
+  const [historyFilter, setHistoryFilter] = useState('all')
+  // 모든 state는 여기에
+}
+```
+
+## 📊 차트 구현 체크리스트
+
+- **ResponsiveContainer**: width="100%" height={400} (숫자 또는 문자열만)
+- **Binance API 심볼**: BTCUSDT 형식 (USDT 포함 필수)
+- **초기 데이터 로드**: /api/binance/klines 프록시 사용
+- **SVG viewBox**: "0 0 100 100" preserveAspectRatio="none"
+
+## 💾 심볼별 데이터 영속성 패턴
+
+```typescript
+// 코인 전환 시에도 데이터 유지
+const [transactionsBySymbol, setTransactionsBySymbol] = useState<Record<string, Transaction[]>>({
+  'BTCUSDT': [],
+  'ETHUSDT': [],
+  // 각 심볼별 저장
+})
+
+// 심볼 전환 시 복원
+useEffect(() => {
+  setTransactions(transactionsBySymbol[selectedSymbol] || [])
+}, [selectedSymbol])
+```
+
+## 🎨 재사용 가능 트레이딩 컴포넌트
+
+### 공통 컴포넌트 위치: `/frontend/components/signals/`
+
+- `TabGuide`: 탭별 트레이딩 가이드
+- `SystemOverview`: 시스템 개요 설명
+- `SimplePriceChart`: 실시간 가격 차트
+- `ComprehensiveAnalysis`: AI 종합 분석
+
+### 사용 예시
+
+```typescript
+import TabGuide, { tabGuides } from '@/components/signals/TabGuide'
+import SystemOverview, { whaleTrackingOverview } from '@/components/signals/SystemOverview'
+
+<TabGuide {...tabGuides.wallets} />
+<SystemOverview {...whaleTrackingOverview} />
+```
+
+- Glassnode/CryptoQuant (온체인)
+- Alternative.me (Fear & Greed)
+
   2. 페이지 필수 구성요소
-  - MarketAnalysis (AI 종합분석)
-  - PriceChart (실시간 차트)
-  - 전략별 컴포넌트
-  - ProfitCalculator
-  - 텔레그램 연동 안내
+
+- MarketAnalysis (AI 종합분석)
+- PriceChart (실시간 차트)
+- 전략별 컴포넌트
+- ProfitCalculator
+- 텔레그램 연동 안내
+
   3. 차트 라이브러리 사용
-  - recharts (기본)
-  - chart.js (고급)
-  - lightweight-charts (트레이딩뷰)
+
+- recharts (기본)
+- chart.js (고급)
+- lightweight-charts (트레이딩뷰)
+
   4. 모바일 최적화
-  - 스와이프 제스처
-  - 터치 친화적 UI
-  - 반응형 차트
+
+- 스와이프 제스처
+- 터치 친화적 UI
+- 반응형 차트
+
   5. 구독 등급별 차등화
-  - Starter: 지연 데이터
-  - Platinum: 실시간
-  - Infinity: VIP 전용
+
+- Starter: 지연 데이터
+- Platinum: 실시간
+- Infinity: VIP 전용

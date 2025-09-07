@@ -1,0 +1,61 @@
+name: 🚨 규칙 강제 적용
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  validate-no-fake-data:
+    name: 가짜 데이터 검증
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: 🔍 가짜 데이터 검증
+      run: |
+        cd frontend
+        node scripts/enforce-no-fake-data.js
+        
+    - name: 📊 Math.random 사용 카운트
+      run: |
+        echo "Math.random 사용 횟수:"
+        grep -r "Math.random" frontend --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=.next | wc -l
+        
+    - name: 🚫 금지 키워드 검색
+      run: |
+        echo "금지 키워드 검색 결과:"
+        if grep -r "mock\|fake\|dummy\|simulate\|sample" frontend --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=.next; then
+          echo "❌ 금지 키워드 발견!"
+          exit 1
+        else
+          echo "✅ 금지 키워드 없음"
+        fi
+        
+    - name: 💯 하드코딩 검증
+      run: |
+        echo "하드코딩된 값 검색:"
+        if grep -r "price: [0-9]\|amount: [0-9]\|value: [0-9]" frontend --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=.next; then
+          echo "⚠️ 하드코딩된 값 발견 - 검토 필요"
+        fi
+
+    - name: ✅ 검증 완료
+      if: success()
+      run: echo "✅ 모든 규칙 검증 통과!"
+      
+    - name: ❌ 검증 실패
+      if: failure()
+      run: |
+        echo "❌ 규칙 위반 발견! PR/Push 차단됨."
+        echo "수정 방법:"
+        echo "1. Math.random() → 실제 API 데이터 사용"
+        echo "2. mock/fake/dummy → 실제 데이터 연동"
+        echo "3. 하드코딩 값 → 설정 파일이나 DB에서 가져오기"
+        exit 1

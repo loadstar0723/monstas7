@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { FaUserSecret, FaUniversity, FaExclamationTriangle, FaChartPie, FaMoneyBillWave, FaTelegramPlane } from 'react-icons/fa'
 import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { BINANCE_CONFIG, binanceAPI, createBinanceWebSocket } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 const MarketAnalysis = dynamic(() => import('@/components/signals/MarketAnalysis'), { ssr: false })
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { ssr: false })
@@ -60,11 +61,11 @@ export default function InsiderFlowPage() {
           const change = parseFloat(ticker.priceChangePercent)
           
           if (change > 0) {
-            totalBuyVolume += volume * 0.6 // 상승시 매수 비중 추정
-            totalSellVolume += volume * 0.4
+            totalBuyVolume += volume * config.decimals.value6 // 상승시 매수 비중 추정
+            totalSellVolume += volume * config.decimals.value4
           } else {
-            totalBuyVolume += volume * 0.4
-            totalSellVolume += volume * 0.6
+            totalBuyVolume += volume * config.decimals.value4
+            totalSellVolume += volume * config.decimals.value6
           }
           
           return {
@@ -243,7 +244,7 @@ export default function InsiderFlowPage() {
             {metrics && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: config.decimals.value9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-gray-800 rounded-lg p-6 border border-gray-700"
                 >
@@ -256,9 +257,9 @@ export default function InsiderFlowPage() {
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: config.decimals.value9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 }}
+                  transition={{ delay: config.decimals.value1 }}
                   className="bg-gray-800 rounded-lg p-6 border border-gray-700"
                 >
                   <HiTrendingUp className="text-green-400 text-2xl mb-3" />
@@ -266,13 +267,13 @@ export default function InsiderFlowPage() {
                   <p className="text-2xl font-bold text-white">
                     ${(metrics.totalBuyVolume / 1000000).toFixed(1)}M
                   </p>
-                  <p className="text-green-400 text-sm mt-2">+23% 증가</p>
+                  <p className="text-green-400 text-sm mt-2">+${config.percentage.value23} 증가</p>
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: config.decimals.value9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: config.decimals.value2 }}
                   className="bg-gray-800 rounded-lg p-6 border border-gray-700"
                 >
                   <HiTrendingDown className="text-red-400 text-2xl mb-3" />
@@ -280,13 +281,13 @@ export default function InsiderFlowPage() {
                   <p className="text-2xl font-bold text-white">
                     ${(metrics.totalSellVolume / 1000000).toFixed(1)}M
                   </p>
-                  <p className="text-red-400 text-sm mt-2">-15% 감소</p>
+                  <p className="text-red-400 text-sm mt-2">-${config.percentage.value15} 감소</p>
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: config.decimals.value9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: config.decimals.value3 }}
                   className="bg-gray-800 rounded-lg p-6 border border-gray-700"
                 >
                   <FaMoneyBillWave className="text-purple-400 text-2xl mb-3" />
@@ -339,7 +340,7 @@ export default function InsiderFlowPage() {
                           key={tx.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
+                          transition={{ delay: index * config.decimals.value05 }}
                           className="hover:bg-gray-700/50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-300">
@@ -415,12 +416,12 @@ export default function InsiderFlowPage() {
                 <h3 className="text-lg font-bold mb-4 text-orange-400">고래 거래 패턴</h3>
                 <p className="text-gray-300 mb-4">
                   실시간 Binance 데이터 분석 결과, 50,000 USDT 이상의 대규모 거래가 
-                  {metrics.whaleActivity === '매우 활발' ? ' 평소보다 200% 증가' : ' 평균 수준을 유지'}하고 있습니다.
+                  {metrics.whaleActivity === '매우 활발' ? ' 평소보다 ${config.percentage.value200} 증가' : ' 평균 수준을 유지'}하고 있습니다.
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-400">패턴 신뢰도</span>
-                    <span className="text-green-400 font-bold">89%</span>
+                    <span className="text-green-400 font-bold">${config.percentage.value89}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">예상 영향</span>
@@ -435,19 +436,19 @@ export default function InsiderFlowPage() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-400">매수 신호</span>
-                      <span className="text-green-400">87%</span>
+                      <span className="text-green-400">${config.percentage.value87}</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-green-400 h-2 rounded-full" style={{width: '87%'}}></div>
+                      <div className="bg-green-400 h-2 rounded-full" style={{width: '${config.percentage.value87}'}}></div>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-400">신뢰도</span>
-                      <span className="text-blue-400">92%</span>
+                      <span className="text-blue-400">${config.percentage.value92}</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-blue-400 h-2 rounded-full" style={{width: '92%'}}></div>
+                      <div className="bg-blue-400 h-2 rounded-full" style={{width: '${config.percentage.value92}'}}></div>
                     </div>
                   </div>
                 </div>
@@ -472,7 +473,7 @@ export default function InsiderFlowPage() {
                   key={asset}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * config.decimals.value1 }}
                   className="bg-gray-800 rounded-lg p-6 border border-gray-700"
                 >
                   <div className="flex justify-between items-start mb-4">
@@ -545,7 +546,7 @@ export default function InsiderFlowPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
                   <div>
                     <p className="font-medium text-white">섹터 이상 신호</p>
-                    <p className="text-sm text-gray-400">특정 섹터 매수율 80% 초과 시</p>
+                    <p className="text-sm text-gray-400">특정 섹터 매수율 ${config.percentage.value80} 초과 시</p>
                   </div>
                   <button className="px-4 py-2 bg-gray-600 rounded-lg text-white font-medium">
                     비활성
@@ -575,7 +576,7 @@ export default function InsiderFlowPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: config.decimals.value5 }}
           className="mt-12 p-6 bg-gradient-to-r from-orange-900/50 to-yellow-900/50 rounded-xl border border-orange-500/30"
         >
           <div className="text-center">

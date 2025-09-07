@@ -5,6 +5,7 @@ import { FaBitcoin } from 'react-icons/fa';
 import { SiEthereum, SiBinance } from 'react-icons/si';
 import { useBinanceWebSocket } from '@/hooks/useBinanceWebSocket';
 import { useEffect, useState } from 'react';
+import { config } from '@/lib/config'
 
 const cryptoIcons: Record<string, any> = {
   BTC: FaBitcoin,
@@ -59,7 +60,7 @@ export default function CryptoTicker() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: config.decimals.value5 }}
           className="text-center mb-12"
         >
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -84,7 +85,7 @@ export default function CryptoTicker() {
                 key={crypto.symbol}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
+                transition={{ duration: config.decimals.value5, delay: index * config.decimals.value05 }}
                 whileHover={{ scale: 1.02 }}
                 className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 hover:border-purple-500/50 transition-all"
               >
@@ -110,7 +111,7 @@ export default function CryptoTicker() {
                 </div>
 
                 {/* 미니 스파크라인 효과 */}
-                <div className="mt-3 h-8 flex items-end gap-0.5">
+                <div className="mt-3 h-8 flex items-end gap-config.decimals.value5">
                   {Array.from({ length: 20 }).map((_, i) => (
                     <div
                       key={i}
@@ -119,7 +120,7 @@ export default function CryptoTicker() {
                       }`}
                       style={{
                         height: `${Math.random() * 100}%`,
-                        opacity: 0.3 + (i / 20) * 0.7
+                        opacity: config.decimals.value3 + (i / 20) * config.decimals.value7
                       }}
                     />
                   ))}
@@ -132,15 +133,15 @@ export default function CryptoTicker() {
 
       <style jsx>{`
         @keyframes flash-green {
-          0% { background-color: transparent; }
-          50% { background-color: rgba(34, 197, 94, 0.2); }
-          100% { background-color: transparent; }
+          ${config.percentage.value0} { background-color: transparent; }
+          ${config.percentage.value50} { background-color: rgba(34, 197, 94, config.decimals.value2); }
+          ${config.percentage.value100} { background-color: transparent; }
         }
 
         @keyframes flash-red {
-          0% { background-color: transparent; }
-          50% { background-color: rgba(239, 68, 68, 0.2); }
-          100% { background-color: transparent; }
+          ${config.percentage.value0} { background-color: transparent; }
+          ${config.percentage.value50} { background-color: rgba(239, 68, 68, config.decimals.value2); }
+          ${config.percentage.value100} { background-color: transparent; }
         }
 
         .animate-flash-green {

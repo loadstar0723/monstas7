@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { FaLock, FaArrowLeft, FaUpload } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function AccessDeniedPage() {
   const router = useRouter()
@@ -42,7 +43,7 @@ export default function AccessDeniedPage() {
             </p>
             <motion.button
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: config.decimals.value98 }}
               onClick={() => router.push('/subscription/upgrade')}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
             >
@@ -55,7 +56,7 @@ export default function AccessDeniedPage() {
           <div className="space-y-3">
             <motion.button
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: config.decimals.value98 }}
               onClick={() => router.back()}
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
@@ -65,7 +66,7 @@ export default function AccessDeniedPage() {
             
             <motion.button
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: config.decimals.value98 }}
               onClick={() => router.push('/dashboard')}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >

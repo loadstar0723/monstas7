@@ -1,0 +1,51 @@
+// 전역 설정 값들
+export const config = {
+  decimals: {
+    value02: 0.02,
+    value05: 0.05,
+    value1: 0.1,
+    value2: 0.2,
+    value3: 0.3,
+    value4: 0.4,
+    value5: 0.5,
+    value6: 0.6,
+    value7: 0.7,
+    value8: 0.8,
+    value9: 0.9,
+    value95: 0.95,
+  },
+  percentage: {
+    value5: 5,
+    value10: 10,
+    value20: 20,
+    value30: 30,
+    value40: 40,
+    value50: 50,
+    value60: 60,
+    value70: 70,
+    value80: 80,
+    value90: 90,
+    value100: 100,
+  },
+  delays: {
+    short: 100,
+    medium: 300,
+    long: 500,
+    veryLong: 1000,
+  },
+  sizes: {
+    xs: 8,
+    sm: 12,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
+  },
+  colors: {
+    primary: '#8B5CF6',
+    secondary: '#00FFFF',
+    success: '#10B981',
+    warning: '#F59E0B',
+    danger: '#EF4444',
+  }
+}

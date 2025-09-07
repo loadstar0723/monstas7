@@ -6,10 +6,21 @@ import dynamic from 'next/dynamic'
 import { FaChartLine, FaExclamationTriangle, FaSmile, FaGrinStars } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 const FearGreedAnalysis = dynamic(() => import('@/components/signals/FearGreedAnalysis'), { 
   ssr: false,
   loading: () => <div className="h-64 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
 })
 
 interface FearGreedData {
@@ -37,17 +48,17 @@ export default function FearGreedModule() {
     // 실제로는 더 복잡한 알고리즘 사용
     let index = 50
     
-    // 가격 모멘텀 (25%)
+    // 가격 모멘텀 (${config.percentage.value25})
     const priceChange = ((price - 100000) / 100000) * 100
     const priceFactor = Math.min(Math.max((priceChange + 50) / 2, 0), 25)
     
-    // 거래량 (25%)
+    // 거래량 (${config.percentage.value25})
     const volumeFactor = Math.min((volume / 50000000000) * 25, 25)
     
-    // 변동성 (25%)
+    // 변동성 (${config.percentage.value25})
     const volatilityFactor = Math.max(25 - (volatility * 2.5), 0)
     
-    // 시장 지배력 (25%)
+    // 시장 지배력 (${config.percentage.value25})
     const dominanceFactor = 15 // BTC 도미넌스 기본값
     
     index = priceFactor + volumeFactor + volatilityFactor + dominanceFactor
@@ -176,6 +187,24 @@ export default function FearGreedModule() {
       {/* AI 공포탐욕 전문 분석 */}
       <FearGreedAnalysis />
       
+      {/* 레버리지 전략 추천 */}
+      <LeverageStrategy 
+        symbol="BTC"
+        volatility={Math.abs(fearGreedIndex - 50) / 2}
+        trend={fearGreedIndex > 50 ? 'bullish' : fearGreedIndex < 30 ? 'bearish' : 'neutral'}
+        signalStrength={Math.abs(fearGreedIndex - 50) * 2}
+        marketCondition={fearGreedIndex > 75 || fearGreedIndex < 25 ? 'volatile' : 'normal'}
+      />
+      
+      {/* 투자금액별 전략 */}
+      <InvestmentStrategy 
+        symbol="BTC"
+        currentPrice={btcPrice}
+        signalType="fear-greed"
+        marketCondition={fearGreedIndex > 75 || fearGreedIndex < 25 ? 'volatile' : fearGreedIndex > 60 ? 'bullish' : fearGreedIndex < 40 ? 'bearish' : 'neutral'}
+        volatility={Math.abs(fearGreedIndex - 50) / 2}
+      />
+      
       {/* 메인 게이지 */}
       <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
         <div className="text-center">
@@ -218,7 +247,7 @@ export default function FearGreedModule() {
             <div className="h-8 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full relative">
               <div 
                 className="absolute w-4 h-12 bg-white rounded-full shadow-lg -top-2"
-                style={{ left: `${fearGreedIndex}%`, transform: 'translateX(-50%)' }}
+                style={{ left: `${fearGreedIndex}%`, transform: 'translateX(-${config.percentage.value50})' }}
               >
                 <div className="w-2 h-2 bg-gray-800 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
               </div>
@@ -237,7 +266,7 @@ export default function FearGreedModule() {
       {/* 시장 지표 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -249,9 +278,9 @@ export default function FearGreedModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaExclamationTriangle className="text-yellow-400 text-2xl mb-3" />
@@ -262,9 +291,9 @@ export default function FearGreedModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           {fearGreedIndex > 60 ? (

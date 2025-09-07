@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
+import { config } from '@/lib/config'
 
 interface MarketAnalysis {
   sentiment: number
@@ -61,7 +62,7 @@ export default function AnalyticsPage() {
           date.setDate(date.getDate() + i)
           return {
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-            predicted: currentPrice * (1 + (Math.random() - 0.5) * 0.05),
+            predicted: currentPrice * (1 + (Math.random() - config.decimals.value5) * config.decimals.value05),
             actual: i === 0 ? currentPrice : undefined,
             confidence: 70 + Math.random() * 20
           }
@@ -200,7 +201,7 @@ export default function AnalyticsPage() {
                 <option value="30d">30일</option>
               </select>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="${config.percentage.value100}" height={300}>
               <LineChart data={predictions}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis 
@@ -246,7 +247,7 @@ export default function AnalyticsPage() {
           {/* 시장 지표 레이더 */}
           <div className="glass-card p-6">
             <h3 className="text-xl font-bold mb-4 gradient-text">시장 종합 분석</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="${config.percentage.value100}" height={300}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#374151" />
                 <PolarAngleAxis 
@@ -264,7 +265,7 @@ export default function AnalyticsPage() {
                   dataKey="value" 
                   stroke="#8B5CF6" 
                   fill="#8B5CF6" 
-                  fillOpacity={0.3}
+                  fillOpacity={config.decimals.value3}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -320,7 +321,7 @@ export default function AnalyticsPage() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: config.decimals.value1 }}
               className="flex items-start gap-3"
             >
               <span className="text-2xl">📊</span>
@@ -335,7 +336,7 @@ export default function AnalyticsPage() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: config.decimals.value2 }}
               className="flex items-start gap-3"
             >
               <span className="text-2xl">💡</span>

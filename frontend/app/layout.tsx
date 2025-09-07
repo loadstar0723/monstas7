@@ -22,13 +22,19 @@ export const metadata: Metadata = {
     apple: "/icon-192x192.png",
   },
   manifest: "/manifest.json",
-  themeColor: "#8B5CF6",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "MONSTA",
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#8B5CF6',
 };
 
 export default function RootLayout({

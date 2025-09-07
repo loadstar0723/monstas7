@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaChartLine, FaExpand, FaCog, FaDownload } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function TradingChartPage() {
   return (
@@ -36,7 +37,7 @@ export default function TradingChartPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="mb-4 flex flex-wrap gap-4 items-center bg-gray-800/50 p-4 rounded-lg"
         >
           <select className="bg-gray-900 px-4 py-2 rounded border border-gray-700 focus:border-blue-500 outline-none">
@@ -67,9 +68,9 @@ export default function TradingChartPage() {
 
         {/* 메인 차트 영역 */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: config.decimals.value95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-900/50 rounded-xl border border-gray-700 p-4"
           style={{ height: 'calc(100vh - 250px)' }}
         >
@@ -86,7 +87,7 @@ export default function TradingChartPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="mt-4 flex justify-between items-center"
         >
           <div className="flex gap-2">

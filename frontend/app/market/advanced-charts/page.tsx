@@ -4,6 +4,7 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import { config } from '@/lib/config'
 
 // 동적 임포트로 차트 컴포넌트 로드
 const AdvancedCandlestickChart = dynamic(
@@ -72,7 +73,7 @@ export default function AdvancedChartsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: config.decimals.value1 }}
         className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6"
       >
         <div className="flex flex-col lg:flex-row gap-4">
@@ -124,9 +125,9 @@ export default function AdvancedChartsPage() {
 
       {/* 메인 캔들스틱 차트 */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: config.decimals.value95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: config.decimals.value2 }}
         className="mb-6"
       >
         <AdvancedCandlestickChart 
@@ -141,7 +142,7 @@ export default function AdvancedChartsPage() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
         >
           <RealtimeLineChart
             symbol={selectedSymbol}
@@ -153,7 +154,7 @@ export default function AdvancedChartsPage() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: config.decimals.value4 }}
         >
           <MarketDepthChart symbol={selectedSymbol} />
         </motion.div>
@@ -163,7 +164,7 @@ export default function AdvancedChartsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: config.decimals.value5 }}
         className="mt-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-6 text-white"
       >
         <h3 className="text-lg font-bold mb-2">💡 차트 활용 팁</h3>

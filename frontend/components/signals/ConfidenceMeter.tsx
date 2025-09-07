@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaBrain, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 interface ConfidenceFactors {
   name: string
@@ -88,7 +89,7 @@ export default function ConfidenceMeter({ confidence, factors, analysis }: Confi
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.5, type: "spring" }}
+            transition={{ delay: config.decimals.value5, type: "spring" }}
             className={`text-5xl font-bold ${level.color}`}
           >
             {confidence}%
@@ -104,7 +105,7 @@ export default function ConfidenceMeter({ confidence, factors, analysis }: Confi
             key={index}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * config.decimals.value1 }}
             className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg"
           >
             <div className="flex items-center gap-3">
@@ -143,27 +144,27 @@ export default function ConfidenceMeter({ confidence, factors, analysis }: Confi
       <div className="mt-6 grid grid-cols-5 gap-2">
         <div className="text-center">
           <div className="h-2 bg-red-400 rounded-full mb-1" />
-          <div className="text-xs text-gray-500">0-40%</div>
+          <div className="text-xs text-gray-500">0-${config.percentage.value40}</div>
           <div className="text-xs text-red-400">매우낮음</div>
         </div>
         <div className="text-center">
           <div className="h-2 bg-orange-400 rounded-full mb-1" />
-          <div className="text-xs text-gray-500">40-60%</div>
+          <div className="text-xs text-gray-500">40-${config.percentage.value60}</div>
           <div className="text-xs text-orange-400">낮음</div>
         </div>
         <div className="text-center">
           <div className="h-2 bg-yellow-400 rounded-full mb-1" />
-          <div className="text-xs text-gray-500">60-75%</div>
+          <div className="text-xs text-gray-500">60-${config.percentage.value75}</div>
           <div className="text-xs text-yellow-400">보통</div>
         </div>
         <div className="text-center">
           <div className="h-2 bg-blue-400 rounded-full mb-1" />
-          <div className="text-xs text-gray-500">75-90%</div>
+          <div className="text-xs text-gray-500">75-${config.percentage.value90}</div>
           <div className="text-xs text-blue-400">높음</div>
         </div>
         <div className="text-center">
           <div className="h-2 bg-green-400 rounded-full mb-1" />
-          <div className="text-xs text-gray-500">90-100%</div>
+          <div className="text-xs text-gray-500">90-${config.percentage.value100}</div>
           <div className="text-xs text-green-400">매우높음</div>
         </div>
       </div>

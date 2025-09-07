@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { FaTwitter, FaReddit, FaTelegram, FaChartBar, FaFire, FaHeart, FaAngry, FaSmile } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface SentimentData {
   coin: string
@@ -62,17 +72,17 @@ export default function SocialSentimentModule() {
   // 감성 점수 계산 (시뮬레이션)
   const calculateSentimentScore = (mentions: number, price: number, volume: number): number => {
     // 가격 변동률과 거래량 기반 감성 점수 계산
-    const priceImpact = (Math.random() - 0.5) * 2 // -1 to 1
-    const volumeImpact = volume > 1000000000 ? 0.2 : 0
-    const mentionImpact = mentions > 1000 ? 0.3 : mentions / 1000 * 0.3
+    const priceImpact = (Math.random() - config.decimals.value5) * 2 // -1 to 1
+    const volumeImpact = volume > 1000000000 ? config.decimals.value2 : 0
+    const mentionImpact = mentions > 1000 ? config.decimals.value3 : mentions / 1000 * config.decimals.value3
     
     return Math.max(Math.min(priceImpact + volumeImpact + mentionImpact, 1), -1)
   }
   
   // 감성 분류
   const classifySentiment = (score: number): 'BULLISH' | 'BEARISH' | 'NEUTRAL' => {
-    if (score > 0.3) return 'BULLISH'
-    if (score < -0.3) return 'BEARISH'
+    if (score > config.decimals.value3) return 'BULLISH'
+    if (score < -config.decimals.value3) return 'BEARISH'
     return 'NEUTRAL'
   }
   
@@ -111,9 +121,9 @@ export default function SocialSentimentModule() {
             engagement: Math.floor(engagement),
             trending: mentions > 5000 || Math.abs(priceChange) > 5,
             sources: {
-              twitter: Math.floor(mentions * 0.5),
-              reddit: Math.floor(mentions * 0.3),
-              telegram: Math.floor(mentions * 0.2)
+              twitter: Math.floor(mentions * config.decimals.value5),
+              reddit: Math.floor(mentions * config.decimals.value3),
+              telegram: Math.floor(mentions * config.decimals.value2)
             }
           })
         }
@@ -178,7 +188,7 @@ export default function SocialSentimentModule() {
               if (Math.abs(priceChange) > 3) {
                 setSentiments(prev => prev.map(sentiment => {
                   if (sentiment.coin === symbol.replace('USDT', '')) {
-                    const newScore = sentiment.score + (priceChange > 0 ? 0.1 : -0.1)
+                    const newScore = sentiment.score + (priceChange > 0 ? config.decimals.value1 : -config.decimals.value1)
                     return {
                       ...sentiment,
                       score: Math.max(Math.min(newScore, 1), -1),
@@ -258,7 +268,7 @@ export default function SocialSentimentModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -271,26 +281,26 @@ export default function SocialSentimentModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
-          {stats.avgSentiment > 0.3 ? (
+          {stats.avgSentiment > config.decimals.value3 ? (
             <FaSmile className="text-green-400 text-2xl mb-3" />
-          ) : stats.avgSentiment < -0.3 ? (
+          ) : stats.avgSentiment < -config.decimals.value3 ? (
             <FaAngry className="text-red-400 text-2xl mb-3" />
           ) : (
             <FaChartBar className="text-yellow-400 text-2xl mb-3" />
           )}
           <p className="text-gray-400 text-sm mb-1">평균 감성</p>
           <p className={`text-2xl font-bold ${
-            stats.avgSentiment > 0.3 ? 'text-green-400' :
-            stats.avgSentiment < -0.3 ? 'text-red-400' :
+            stats.avgSentiment > config.decimals.value3 ? 'text-green-400' :
+            stats.avgSentiment < -config.decimals.value3 ? 'text-red-400' :
             'text-yellow-400'
           }`}>
-            {stats.avgSentiment > 0.3 ? '긍정적' :
-             stats.avgSentiment < -0.3 ? '부정적' :
+            {stats.avgSentiment > config.decimals.value3 ? '긍정적' :
+             stats.avgSentiment < -config.decimals.value3 ? '부정적' :
              '중립'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
@@ -299,9 +309,9 @@ export default function SocialSentimentModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaFire className="text-orange-400 text-2xl mb-3" />
@@ -315,9 +325,9 @@ export default function SocialSentimentModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaHeart className="text-pink-400 text-2xl mb-3" />
@@ -376,7 +386,7 @@ export default function SocialSentimentModule() {
                       key={sentiment.coin}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * config.decimals.value05 }}
                       className="hover:bg-gray-700/50 transition-colors"
                     >
                       <td className="px-6 py-4">
@@ -440,7 +450,7 @@ export default function SocialSentimentModule() {
                 key={topic.keyword}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * config.decimals.value05 }}
                 className="bg-gray-800 rounded-lg p-4 border border-gray-700"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -493,6 +503,25 @@ export default function SocialSentimentModule() {
               mentions: selectedSentiment.mentions,
               trending: selectedSentiment.trending
             }}
+          />
+          
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol={selectedCoin}
+            volatility={Math.abs(selectedSentiment.score) * 50} // 감성 점수 기반 변동성
+            trend={selectedSentiment.sentiment === 'BULLISH' ? 'bullish' : selectedSentiment.sentiment === 'BEARISH' ? 'bearish' : 'neutral'}
+            signalStrength={Math.min(Math.abs(selectedSentiment.score) * 100, 100)} // 감성 점수 기반 신호 강도
+            marketCondition={selectedSentiment.trending ? 'volatile' : 'normal'}
+            currentPrice={priceData[selectedCoin] || 0}
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol={selectedCoin}
+            currentPrice={priceData[selectedCoin] || 0}
+            signalType="social-sentiment"
+            marketCondition={selectedSentiment.trending ? 'volatile' : selectedSentiment.sentiment === 'BULLISH' ? 'bullish' : selectedSentiment.sentiment === 'BEARISH' ? 'bearish' : 'neutral'}
+            volatility={Math.abs(selectedSentiment.score) * 50}
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -607,12 +636,12 @@ export default function SocialSentimentModule() {
                 { period: "1시간", signal: "감성 지속성 검증", confidence: 88 }
               ],
               entryRules: [
-                "긍정 감성 75% 이상 + 트렌딩 상태",
-                "언급량 평균 대비 300% 이상 증가",
+                "긍정 감성 ${config.percentage.value75} 이상 + 트렌딩 상태",
+                "언급량 평균 대비 ${config.percentage.value300} 이상 증가",
                 "3개 이상 소셜 플랫폼에서 동시 신호"
               ],
               exitRules: [
-                "감성 점수 50% 이하로 하락",
+                "감성 점수 ${config.percentage.value50} 이하로 하락",
                 "언급량 평균 수준으로 복귀",
                 "반대 감성 급증 시 즉시 청산"
               ]
@@ -681,15 +710,15 @@ export default function SocialSentimentModule() {
             alertTypes={[
               {
                 name: "소셜 트렌딩 급증",
-                description: "언급량이 평균 대비 500% 이상 증가",
+                description: "언급량이 평균 대비 ${config.percentage.value500} 이상 증가",
                 enabled: true,
-                threshold: "500%"
+                threshold: "${config.percentage.value500}"
               },
               {
                 name: "감성 임계점 돌파",
-                description: "긍정/부정 감성이 80% 이상",
+                description: "긍정/부정 감성이 ${config.percentage.value80} 이상",
                 enabled: true,
-                threshold: "80%"
+                threshold: "${config.percentage.value80}"
               },
               {
                 name: "바이럴 키워드 감지",

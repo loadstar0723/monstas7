@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaUser, FaWallet, FaChartLine, FaMedal } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function ProfilePage() {
   return (
@@ -23,7 +24,7 @@ export default function ProfilePage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: config.decimals.value1 }}
             className="glass-card p-6"
           >
             <div className="text-center">
@@ -50,7 +51,7 @@ export default function ProfilePage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: config.decimals.value2 }}
             className="glass-card p-6"
           >
             <div className="flex items-center gap-3 mb-4">
@@ -61,17 +62,17 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-400">총 자산</p>
-                <p className="text-2xl font-bold">$0.00</p>
+                <p className="text-2xl font-bold">$config.decimals.value00</p>
               </div>
               
               <div>
                 <p className="text-sm text-gray-400">오늘 수익</p>
-                <p className="text-lg font-medium text-gray-300">$0.00</p>
+                <p className="text-lg font-medium text-gray-300">$config.decimals.value00</p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-400">전체 수익률</p>
-                <p className="text-lg font-medium text-gray-300">0.00%</p>
+                <p className="text-lg font-medium text-gray-300">0.${config.percentage.value00}</p>
               </div>
             </div>
 
@@ -86,7 +87,7 @@ export default function ProfilePage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: config.decimals.value3 }}
             className="glass-card p-6"
           >
             <div className="flex items-center gap-3 mb-4">
@@ -107,7 +108,7 @@ export default function ProfilePage() {
 
               <div className="flex justify-between">
                 <span className="text-sm text-gray-400">최대 수익</span>
-                <span className="text-sm font-medium">$0.00</span>
+                <span className="text-sm font-medium">$config.decimals.value00</span>
               </div>
 
               <div className="flex justify-between">
@@ -128,7 +129,7 @@ export default function ProfilePage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: config.decimals.value4 }}
           className="mt-6 glass-card p-6"
         >
           <div className="flex items-center gap-3 mb-6">

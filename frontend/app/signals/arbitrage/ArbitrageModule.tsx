@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { FaExchangeAlt, FaDollarSign, FaChartLine, FaClock, FaArrowRight, FaPercent } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
+import { config } from '@/lib/config'
 
 // 새로운 컴포넌트들 동적 임포트
 const MultiTimeframePlan = dynamic(() => import('@/components/signals/MultiTimeframePlan'), { ssr: false })
@@ -14,6 +15,15 @@ const BacktestResults = dynamic(() => import('@/components/signals/BacktestResul
 const AlertSettings = dynamic(() => import('@/components/signals/AlertSettings'), { ssr: false })
 const PortfolioManager = dynamic(() => import('@/components/signals/PortfolioManager'), { ssr: false })
 const DetailedAIAnalysis = dynamic(() => import('@/components/signals/DetailedAIAnalysis'), { ssr: false })
+const LeverageStrategy = dynamic(() => import('@/components/signals/LeverageStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
+
+const InvestmentStrategy = dynamic(() => import('@/components/signals/InvestmentStrategy'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-800 animate-pulse rounded-lg" />
+})
 
 interface ArbitrageOpportunity {
   id: string
@@ -84,10 +94,10 @@ export default function ArbitrageModule() {
           const spread = sellExchange.bid - buyExchange.ask
           const spreadPercent = (spread / buyExchange.ask) * 100
           
-          // 0.5% 이상 차익이 있을 때만 기회로 간주
-          if (spreadPercent > 0.5) {
-            const volume = Math.min(buyExchange.volume, sellExchange.volume) * 0.01 // 1% 물량
-            const fees = (buyExchange.ask + sellExchange.bid) * 0.002 // 0.2% 수수료
+          // 0.${config.percentage.value5} 이상 차익이 있을 때만 기회로 간주
+          if (spreadPercent > config.decimals.value5) {
+            const volume = Math.min(buyExchange.volume, sellExchange.volume) * config.decimals.value01 // ${config.percentage.value1} 물량
+            const fees = (buyExchange.ask + sellExchange.bid) * config.decimals.value002 // 0.${config.percentage.value2} 수수료
             const profit = spread * volume
             const netProfit = profit - fees
             
@@ -135,15 +145,15 @@ export default function ArbitrageModule() {
           
           // 각 거래소별로 약간 다른 가격 생성
           exchanges.forEach(exchange => {
-            const priceVariation = (Math.random() - 0.5) * 0.02 // ±1% 변동
-            const bidVariation = Math.random() * 0.001 // 0.1% 스프레드
+            const priceVariation = (Math.random() - config.decimals.value5) * config.decimals.value02 // ±${config.percentage.value1} 변동
+            const bidVariation = Math.random() * config.decimals.value001 // 0.${config.percentage.value1} 스프레드
             
             prices.push({
               exchange: exchange,
               symbol: `${coin}USDT`,
               bid: basePrice * (1 + priceVariation - bidVariation),
               ask: basePrice * (1 + priceVariation + bidVariation),
-              volume: volume * (Math.random() * 0.5 + 0.5),
+              volume: volume * (Math.random() * config.decimals.value5 + config.decimals.value5),
               timestamp: new Date()
             })
           })
@@ -190,7 +200,7 @@ export default function ArbitrageModule() {
           const measureWs = performance.current.startMeasure('websocket_message')
           
           // 가격 업데이트시 차익거래 기회 재계산
-          if (Array.isArray(data) && Math.random() > 0.8) {
+          if (Array.isArray(data) && Math.random() > config.decimals.value8) {
             generateExchangePrices()
           }
           
@@ -267,7 +277,7 @@ export default function ArbitrageModule() {
       {/* 실시간 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
@@ -278,9 +288,9 @@ export default function ArbitrageModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: config.decimals.value1 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaPercent className="text-yellow-400 text-2xl mb-3" />
@@ -292,9 +302,9 @@ export default function ArbitrageModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: config.decimals.value2 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaDollarSign className="text-green-400 text-2xl mb-3" />
@@ -306,9 +316,9 @@ export default function ArbitrageModule() {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: config.decimals.value9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: config.decimals.value3 }}
           className="bg-gray-800 rounded-lg p-6 border border-gray-700"
         >
           <FaChartLine className="text-purple-400 text-2xl mb-3" />
@@ -360,7 +370,7 @@ export default function ArbitrageModule() {
                   key={opp.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * config.decimals.value05 }}
                   className={`bg-gray-800 rounded-lg p-6 border ${
                     opp.spreadPercent > 2 ? 'border-green-500' :
                     opp.spreadPercent > 1 ? 'border-yellow-500' :
@@ -501,13 +511,13 @@ export default function ArbitrageModule() {
                       {opp.buyExchange} → {opp.sellExchange}
                     </span>
                     <span className="text-lg font-bold text-green-400">
-                      +${((calculatorAmount * opp.spreadPercent / 100) - (calculatorAmount * 0.002)).toFixed(2)}
+                      +${((calculatorAmount * opp.spreadPercent / 100) - (calculatorAmount * config.decimals.value002)).toFixed(2)}
                     </span>
                   </div>
                   <div className="mt-2 text-sm text-gray-400">
                     스프레드: {opp.spreadPercent.toFixed(2)}% | 
-                    수수료: ${(calculatorAmount * 0.002).toFixed(2)} | 
-                    순수익: {((opp.spreadPercent - 0.2) / calculatorAmount * 100).toFixed(3)}%
+                    수수료: ${(calculatorAmount * config.decimals.value002).toFixed(2)} | 
+                    순수익: {((opp.spreadPercent - config.decimals.value2) / calculatorAmount * 100).toFixed(3)}%
                   </div>
                 </div>
               ))}
@@ -532,24 +542,43 @@ export default function ArbitrageModule() {
             }}
           />
           
+          {/* 레버리지 전략 추천 */}
+          <LeverageStrategy 
+            symbol="ARBITRAGE"
+            volatility={stats.bestSpread} // 최고 스프레드 기반 변동성
+            trend={stats.avgSpread > 1 ? 'bullish' : 'neutral'} // 차익거래는 중립적
+            signalStrength={Math.min(stats.activeCount * 10, 100)} // 활성 기회 수 기반
+            marketCondition={stats.bestSpread > 2 ? 'volatile' : 'normal'}
+            currentPrice={45000} // 차익거래는 특정 가격이 없으므로 기본값
+          />
+          
+          {/* 투자금액별 전략 */}
+          <InvestmentStrategy 
+            symbol="ARBITRAGE"
+            currentPrice={45000}
+            signalType="arbitrage"
+            marketCondition={stats.bestSpread > 2 ? 'volatile' : 'neutral'}
+            volatility={stats.bestSpread}
+          />
+          
           {/* 다중 시간대 계획 */}
           <MultiTimeframePlan 
             strategy={{
               name: "거래소 간 차익거래 전략",
               description: "서로 다른 거래소 간 가격 차이를 활용한 무위험 수익 생성",
               timeframes: [
-                { period: "실시간", signal: "0.5%+ 스프레드 기회 감지", confidence: 98 },
+                { period: "실시간", signal: "0.${config.percentage.value5}+ 스프레드 기회 감지", confidence: 98 },
                 { period: "1분", signal: "거래 수수료 대비 수익성 검증", confidence: 95 },
                 { period: "5분", signal: "다중 거래소 가격 동기화 감시", confidence: 88 },
                 { period: "15분", signal: "전송 비용 및 시간 고려 최적화", confidence: 85 }
               ],
               entryRules: [
-                "순 수익 0.3% 이상 보장",
+                "순 수익 0.${config.percentage.value3} 이상 보장",
                 "둘 거래소 모두 충분한 유동성 보유",
                 "전송 시간 30분 이내 완료 가능"
               ],
               exitRules: [
-                "스프레드 0.2% 이하로 축소 시 즉시 종료",
+                "스프레드 0.${config.percentage.value2} 이하로 축소 시 즉시 종료",
                 "거래소 중 하나라도 유동성 부족 시 취소",
                 "전송 지연 또는 실패 시 매도 결정"
               ]
@@ -567,7 +596,7 @@ export default function ArbitrageModule() {
               sharpeRatio: 4.82,
               profitFactor: 8.4,
               avgWin: 1.8,
-              avgLoss: -0.3,
+              avgLoss: -config.decimals.value3,
               bestTrade: 12.4,
               worstTrade: -1.8,
               monthlyReturns: [
@@ -592,7 +621,7 @@ export default function ArbitrageModule() {
             signals={opportunities.slice(0, 3).map(opp => ({
               name: `${opp.buyExchange} → ${opp.sellExchange}`,
               winRate: 85,
-              avgReturn: opp.spreadPercent - 0.2, // 수수료 제외
+              avgReturn: opp.spreadPercent - config.decimals.value2, // 수수료 제외
               risk: "낮음",
               timeframe: "5-30분"
             }))}
@@ -603,9 +632,9 @@ export default function ArbitrageModule() {
             alertTypes={[
               {
                 name: "고수익 차익거래 기회",
-                description: "2% 이상 스프레드 기회 발견",
+                description: "${config.percentage.value2} 이상 스프레드 기회 발견",
                 enabled: true,
-                threshold: "2%"
+                threshold: "${config.percentage.value2}"
               },
               {
                 name: "대량 거래 기회",

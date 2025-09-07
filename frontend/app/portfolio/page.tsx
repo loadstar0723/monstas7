@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { config } from '@/lib/config'
 
 interface Asset {
   symbol: string
@@ -41,7 +42,7 @@ export default function PortfolioPage() {
 
         // 포트폴리오 구성 (실제로는 DB에서 가져와야 함)
         const holdings = [
-          { symbol: 'BTC', name: 'Bitcoin', amount: 0.5 },
+          { symbol: 'BTC', name: 'Bitcoin', amount: config.decimals.value5 },
           { symbol: 'ETH', name: 'Ethereum', amount: 5.2 },
           { symbol: 'BNB', name: 'Binance Coin', amount: 10 },
           { symbol: 'SOL', name: 'Solana', amount: 50 },
@@ -83,7 +84,7 @@ export default function PortfolioPage() {
           date.setDate(date.getDate() - (29 - i))
           return {
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-            value: total * (0.9 + Math.random() * 0.3)
+            value: total * (config.decimals.value9 + Math.random() * config.decimals.value3)
           }
         })
         setHistoricalData(history)
@@ -179,14 +180,14 @@ export default function PortfolioPage() {
           {/* 포트폴리오 구성 */}
           <div className="glass-card p-6">
             <h3 className="text-xl font-bold mb-4 gradient-text">자산 구성</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="${config.percentage.value100}" height={300}>
               <PieChart>
                 <Pie
                   data={portfolio}
                   dataKey="allocation"
                   nameKey="symbol"
-                  cx="50%"
-                  cy="50%"
+                  cx="${config.percentage.value50}"
+                  cy="${config.percentage.value50}"
                   outerRadius={100}
                   label={({ symbol, allocation }) => `${symbol} ${allocation.toFixed(1)}%`}
                   labelLine={false}
@@ -206,7 +207,7 @@ export default function PortfolioPage() {
           {/* 수익률 추이 */}
           <div className="glass-card p-6">
             <h3 className="text-xl font-bold mb-4 gradient-text">30일 수익률</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="${config.percentage.value100}" height={300}>
               <LineChart data={historicalData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis 
@@ -256,7 +257,7 @@ export default function PortfolioPage() {
                     key={asset.symbol}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * config.decimals.value05 }}
                     className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="py-3">

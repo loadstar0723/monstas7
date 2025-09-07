@@ -50,6 +50,7 @@ import {
   MdLeaderboard, MdAnalytics, MdQueryStats, MdDataUsage
 } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
+import { config } from '@/lib/config'
 
 // 사용자 역할 정의
 type UserRole = '본사' | '총판' | '대리점' | '구독자' | '게스트'
@@ -394,7 +395,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaBalanceScale, label: '헷징 전략', path: '/risk/hedging', category: 'risk' },
       { icon: FaDice, label: '켈리 공식', path: '/risk/kelly', category: 'risk' },
       { icon: BiPieChart, label: '포지션 사이징', path: '/risk/position-sizing', category: 'risk' },
-      { icon: FaExclamationTriangle, label: '스트레스 테스트', path: '/risk/stress-test', category: 'risk' },
+      { icon: FaExclamationTriangle, label: '스트레스 테스트', path: '/risk/stress-test/', category: 'risk' },
       { icon: BiScatterChart, label: '상관관계', path: '/risk/correlation', category: 'risk' },
       { icon: FaChess, label: '시나리오 분석', path: '/risk/scenario', category: 'risk', isNew: true }
     ]
@@ -461,7 +462,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaRoute, label: '추천 프로그램', path: '/marketing/referral', category: 'marketing' },
       { icon: FaTicketAlt, label: '이벤트 관리', path: '/marketing/events', category: 'marketing' },
       { icon: FaPercentage, label: '할인 쿠폰', path: '/marketing/coupons', category: 'marketing' },
-      { icon: BiAnalyse, label: 'A/B 테스트', path: '/marketing/ab-test', category: 'marketing', isNew: true }
+      { icon: BiAnalyse, label: 'A/B 테스트', path: '/marketing/ab-test/', category: 'marketing', isNew: true }
     ]
   },
   analytics: {
@@ -476,7 +477,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: MdQueryStats, label: '예측 분석', path: '/analytics/predictive', category: 'analytics' },
       { icon: FaBook, label: '리포트', path: '/analytics/reports', category: 'analytics' },
       { icon: FaDatabase, label: '데이터 내보내기', path: '/analytics/export', category: 'analytics' },
-      { icon: BiAnalyse, label: 'A/B 테스트', path: '/analytics/ab-test', category: 'analytics', isNew: true }
+      { icon: BiAnalyse, label: 'A/B 테스트', path: '/analytics/ab-test/', category: 'analytics', isNew: true }
     ]
   },
   education: {
@@ -832,7 +833,7 @@ export default function SidebarNew() {
                   initial={{ rotate: -90, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                   whileHover={{ rotate: 90, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: config.decimals.value9 }}
                   onClick={() => setIsOpen(false)}
                   className="p-2 bg-gray-800/50 hover:bg-red-500/20 rounded-lg border border-gray-700 hover:border-red-500/50 transition-all group flex-shrink-0"
                 >
@@ -902,7 +903,7 @@ export default function SidebarNew() {
                         <FaUserTie className="text-purple-400 text-sm" />
                         <span className="text-sm font-bold text-white">관리자</span>
                       </div>
-                      <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
+                      <span className="text-xs px-2 py-config.decimals.value5 bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
                         본사
                       </span>
                     </div>
@@ -914,7 +915,7 @@ export default function SidebarNew() {
                           {tierConfig[userTier].icon}
                         </span>
                         <div>
-                          <div className="text-xs text-gray-400 mb-0.5">구독 등급</div>
+                          <div className="text-xs text-gray-400 mb-config.decimals.value5">구독 등급</div>
                           <div className="font-bold text-lg bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
                             {userTier}
                           </div>
@@ -926,11 +927,11 @@ export default function SidebarNew() {
                     {/* 통계 정보 - 간결하게 */}
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="bg-gray-800/50 rounded-lg p-2">
-                        <div className="text-gray-400 mb-0.5">활성 메뉴</div>
+                        <div className="text-gray-400 mb-config.decimals.value5">활성 메뉴</div>
                         <div className="font-bold text-green-400">{accessibleMenuCount} / 301</div>
                       </div>
                       <div className="bg-gray-800/50 rounded-lg p-2">
-                        <div className="text-gray-400 mb-0.5">접근 권한</div>
+                        <div className="text-gray-400 mb-config.decimals.value5">접근 권한</div>
                         <div className="font-bold text-purple-400">무제한</div>
                       </div>
                     </div>
@@ -1038,7 +1039,7 @@ export default function SidebarNew() {
                         return (
                           <>
                             {text.slice(0, index)}
-                            <span className="bg-purple-600/50 text-purple-200 font-semibold rounded px-0.5">
+                            <span className="bg-purple-600/50 text-purple-200 font-semibold rounded px-config.decimals.value5">
                               {text.slice(index, index + searchTerm.length)}
                             </span>
                             {text.slice(index + searchTerm.length)}
@@ -1059,7 +1060,7 @@ export default function SidebarNew() {
                           <item.icon className="text-sm" />
                           <span className="text-sm">{highlightText(item.label)}</span>
                           {item.badge && (
-                            <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                            <span className={`ml-auto text-xs px-2 py-config.decimals.value5 rounded-full ${
                               item.isHot ? 'bg-red-500' : 
                               item.isNew ? 'bg-green-500' : 
                               item.isPremium ? 'bg-yellow-500' : 'bg-blue-500'
@@ -1110,7 +1111,7 @@ export default function SidebarNew() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: config.decimals.value2 }}
                     >
                       {group.categories.map(categoryKey => {
                         const category = menuStructure[categoryKey as MenuCategory]
@@ -1149,7 +1150,7 @@ export default function SidebarNew() {
                                 </span>
                                 {/* 카테고리 등급 배지 */}
                                 {categoryMinTier && categoryMinTier !== 'Starter' && (
-                                  <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold ml-auto
+                                  <span className={`text-[9px] px-1.5 py-config.decimals.value5 rounded-md font-bold ml-auto
                                                 ${!canAccessCategory 
                                                   ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50' 
                                                   : `${categoryTierInfo?.bgColor} ${categoryTierInfo?.color}`}`}>
@@ -1170,7 +1171,7 @@ export default function SidebarNew() {
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
+                                  transition={{ duration: config.decimals.value2 }}
                                   className="mt-1 ml-4"
                                 >
                                   {category.items.map((item, idx) => {
@@ -1232,7 +1233,7 @@ export default function SidebarNew() {
                                               {!canAccess && (
                                                 <FaLock className="text-gray-500 text-[10px]" />
                                               )}
-                                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold
+                                              <span className={`text-[10px] px-1.5 py-config.decimals.value5 rounded-md font-bold
                                                             ${!canAccess 
                                                               ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50' 
                                                               : `${requiredTierInfo?.bgColor} ${requiredTierInfo?.color}`}`}>
@@ -1241,12 +1242,12 @@ export default function SidebarNew() {
                                             </div>
                                           )}
                                           {item.isHot && (
-                                            <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
+                                            <span className="text-[10px] px-1.5 py-config.decimals.value5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
                                               HOT
                                             </span>
                                           )}
                                           {item.isNew && (
-                                            <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                                            <span className="text-[10px] px-1.5 py-config.decimals.value5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
                                               NEW
                                             </span>
                                           )}
@@ -1356,15 +1357,15 @@ export default function SidebarNew() {
           width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.2);
+          background: rgba(0, 0, 0, config.decimals.value2);
           border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(139, 92, 246, 0.5);
+          background: rgba(139, 92, 246, config.decimals.value5);
           border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(139, 92, 246, 0.7);
+          background: rgba(139, 92, 246, config.decimals.value7);
         }
       `}</style>
     </>

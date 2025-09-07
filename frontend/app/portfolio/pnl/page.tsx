@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { config } from '@/lib/config'
 
 export default function PLPage() {
   const [data, setData] = useState(null)
@@ -92,28 +93,28 @@ export default function PLPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-400">정확도</span>
-                    <span className="text-green-400">87%</span>
+                    <span className="text-green-400">${config.percentage.value87}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-400 h-2 rounded-full" style={{width: '87%'}}></div>
+                    <div className="bg-green-400 h-2 rounded-full" style={{width: '${config.percentage.value87}'}}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-400">처리 속도</span>
-                    <span className="text-blue-400">95%</span>
+                    <span className="text-blue-400">${config.percentage.value95}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '95%'}}></div>
+                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '${config.percentage.value95}'}}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-400">사용자 만족도</span>
-                    <span className="text-purple-400">92%</span>
+                    <span className="text-purple-400">${config.percentage.value92}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-purple-400 h-2 rounded-full" style={{width: '92%'}}></div>
+                    <div className="bg-purple-400 h-2 rounded-full" style={{width: '${config.percentage.value92}'}}></div>
                   </div>
                 </div>
               </div>

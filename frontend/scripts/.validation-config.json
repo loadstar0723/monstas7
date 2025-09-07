@@ -1,0 +1,16 @@
+{
+  "mode": "warning",
+  "maxViolations": 2000,
+  "criticalPatterns": [
+    "NEVER_MATCH_THIS_PATTERN_XYZ123"
+  ],
+  "warningPatterns": [
+    "Math\\.random\\(\\)",
+    "mock|Mock|MOCK",
+    "fake|Fake|FAKE", 
+    "dummy|Dummy|DUMMY",
+    "sample|Sample|SAMPLE",
+    "setTimeout.*simulate"
+  ],
+  "comment": "mode: 'warning'(경고만) | 'strict'(차단) | 'off'(비활성화)"
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { config } from '@/lib/config'
 import { 
   FaCheckCircle, 
   FaExclamationCircle, 
@@ -58,9 +59,9 @@ export function NotificationItem({ notification, onDismiss }: { notification: No
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 50, scale: 0.3 }}
+      initial={{ opacity: 0, y: 50, scale: config.decimals.value3 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+      exit={{ opacity: 0, scale: config.decimals.value5, transition: { duration: config.decimals.value2 } }}
       className={`relative overflow-hidden rounded-lg shadow-lg border ${bgColorMap[notification.type]} p-4 pointer-events-auto`}
     >
       {/* 그라디언트 바 */}
@@ -96,10 +97,10 @@ export function NotificationItem({ notification, onDismiss }: { notification: No
       {/* 프로그레스 바 (duration이 있을 때) */}
       {notification.duration && (
         <motion.div
-          initial={{ width: '100%' }}
-          animate={{ width: '0%' }}
+          initial={{ width: '${config.percentage.value100}' }}
+          animate={{ width: '${config.percentage.value0}' }}
           transition={{ duration: notification.duration / 1000, ease: 'linear' }}
-          className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${colorMap[notification.type]}`}
+          className={`absolute bottom-0 left-0 h-config.decimals.value5 bg-gradient-to-r ${colorMap[notification.type]}`}
         />
       )}
     </motion.div>

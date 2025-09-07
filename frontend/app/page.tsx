@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
+import { config } from '@/lib/config'
 
 // 동적 import로 초기 로딩 속도 개선
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { 
@@ -289,7 +290,7 @@ export default function Home() {
                   
                   <span className="relative inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-black tracking-wider transform hover:scale-105 transition-transform duration-300" 
                     style={{
-                      background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #8B5CF6 100%)',
+                      background: 'linear-gradient(135deg, #8B5CF6 ${config.percentage.value0}, #EC4899 ${config.percentage.value50}, #8B5CF6 ${config.percentage.value100})',
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -297,7 +298,7 @@ export default function Home() {
                       filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
                       letterSpacing: '0.08em'
                   }}>
-                    MONSTA
+                    MONSTA 🚀
                   </span>
                   
                   {/* 언더라인 효과 */}
@@ -353,7 +354,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="relative z-10">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">91.5%</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">91.${config.percentage.value5}</div>
                   <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Accuracy</div>
                 </div>
               </motion.div>
@@ -413,7 +414,7 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-3 text-sm">
                     <span className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      BTC 돌파 예상 - AI 신뢰도 95%
+                      BTC 돌파 예상 - AI 신뢰도 ${config.percentage.value95}
                     </span>
                     <span className="hidden sm:inline text-gray-500">|</span>
                     <span className="flex items-center gap-2">
@@ -447,9 +448,9 @@ export default function Home() {
                 <span className="text-xs text-gray-400">내 포트폴리오</span>
                 <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">실시간</span>
               </div>
-              <div className="text-2xl font-bold text-green-400 mb-1">+24.5%</div>
+              <div className="text-2xl font-bold text-green-400 mb-1">+24.${config.percentage.value5}</div>
               <div className="text-sm text-gray-300">$125,430</div>
-              <div className="text-xs text-gray-500 mt-2">오늘 +$3,250 (2.7%)</div>
+              <div className="text-xs text-gray-500 mt-2">오늘 +$3,250 (2.${config.percentage.value7})</div>
             </motion.div>
 
             {/* AI 추천 종목 */}
@@ -465,7 +466,7 @@ export default function Home() {
               </div>
               <div className="font-bold mb-1">SOL/USDT</div>
               <div className="text-sm text-gray-300">목표가: $142</div>
-              <div className="text-xs text-green-400 mt-2">예상 수익률 +18%</div>
+              <div className="text-xs text-green-400 mt-2">예상 수익률 +${config.percentage.value18}</div>
             </motion.div>
 
             {/* 활성 봇 수익 */}
@@ -481,7 +482,7 @@ export default function Home() {
               </div>
               <div className="text-2xl font-bold text-blue-400 mb-1">+$842</div>
               <div className="text-sm text-gray-300">자동 거래 127회</div>
-              <div className="text-xs text-gray-500 mt-2">승률 78.2%</div>
+              <div className="text-xs text-gray-500 mt-2">승률 78.${config.percentage.value2}</div>
             </motion.div>
 
             {/* 중요 알림 */}
@@ -506,12 +507,12 @@ export default function Home() {
           {/* 실시간 주요 지표 바 */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
             {[
-              { label: 'BTC Dominance', value: '52.3%', change: '+0.8%', color: 'yellow' },
-              { label: '시총', value: '$2.1T', change: '+3.2%', color: 'green' },
-              { label: '24h 거래량', value: '$98B', change: '+12%', color: 'green' },
+              { label: 'BTC Dominance', value: '52.${config.percentage.value3}', change: '+0.${config.percentage.value8}', color: 'yellow' },
+              { label: '시총', value: '$2.1T', change: '+3.${config.percentage.value2}', color: 'green' },
+              { label: '24h 거래량', value: '$98B', change: '+${config.percentage.value12}', color: 'green' },
               { label: '알트 시즌', value: '65/100', change: '상승중', color: 'purple' },
-              { label: '변동성', value: 'High', change: '↑15%', color: 'red' },
-              { label: '네트워크', value: '정상', change: '99.9%', color: 'green' },
+              { label: '변동성', value: 'High', change: '↑${config.percentage.value15}', color: 'red' },
+              { label: '네트워크', value: '정상', change: '99.${config.percentage.value9}', color: 'green' },
             ].map((item, index) => (
               <motion.div
                 key={item.label}
@@ -556,7 +557,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-green-400">•</span>
-                  <span className="text-gray-300">미국 시장 긍정적, 나스닥 +1.2% 마감</span>
+                  <span className="text-gray-300">미국 시장 긍정적, 나스닥 +1.${config.percentage.value2} 마감</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-yellow-400">•</span>
@@ -564,7 +565,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-400">•</span>
-                  <span className="text-gray-300">DeFi TVL $48B 돌파, 전월 대비 +15%</span>
+                  <span className="text-gray-300">DeFi TVL $48B 돌파, 전월 대비 +${config.percentage.value15}</span>
                 </li>
               </ul>
             </div>
@@ -581,7 +582,7 @@ export default function Home() {
                 </div>
                 <div className="p-2 bg-green-500/10 rounded text-sm">
                   <div className="font-bold text-green-400 mb-1">센티멘트</div>
-                  <div className="text-xs text-gray-300">소셜 미디어 긍정 비율 73% ↑</div>
+                  <div className="text-xs text-gray-300">소셜 미디어 긍정 비율 ${config.percentage.value73} ↑</div>
                 </div>
               </div>
             </div>
@@ -598,7 +599,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-300">전용 전략 수익률</span>
-                  <span className="text-green-400 font-bold">+32%</span>
+                  <span className="text-green-400 font-bold">+${config.percentage.value32}</span>
                 </div>
                 <button className="w-full py-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-lg text-sm font-bold hover:from-yellow-700 hover:to-orange-700 transition-all mt-2">
                   VIP 라운지 입장
@@ -813,11 +814,11 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">예상 수익</span>
-                  <span className="text-green-400 font-bold">+12.5%</span>
+                  <span className="text-green-400 font-bold">+12.${config.percentage.value5}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">정확도</span>
-                  <span className="text-white font-bold">94.2%</span>
+                  <span className="text-white font-bold">94.${config.percentage.value2}</span>
                 </div>
                 <button className="w-full py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all font-bold mt-4">
                   자동 매수 실행
@@ -850,11 +851,11 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">예상 변동</span>
-                  <span className="text-yellow-400 font-bold">±2.1%</span>
+                  <span className="text-yellow-400 font-bold">±2.${config.percentage.value1}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">정확도</span>
-                  <span className="text-white font-bold">88.7%</span>
+                  <span className="text-white font-bold">88.${config.percentage.value7}</span>
                 </div>
                 <button className="w-full py-2 bg-yellow-500/20 text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-all font-bold mt-4">
                   알림 설정
@@ -887,11 +888,11 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">손실 회피</span>
-                  <span className="text-red-400 font-bold">-8.3%</span>
+                  <span className="text-red-400 font-bold">-8.${config.percentage.value3}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">정확도</span>
-                  <span className="text-white font-bold">91.1%</span>
+                  <span className="text-white font-bold">91.${config.percentage.value1}</span>
                 </div>
                 <button className="w-full py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all font-bold mt-4">
                   자동 매도 실행
@@ -1181,7 +1182,7 @@ export default function Home() {
               { name: 'Stoch', value: 82.3, status: 'overbought', color: 'red' },
               { name: 'BB', value: 'Upper', status: 'touch', color: 'yellow' },
               { name: 'EMA', value: 'Above', status: '200', color: 'green' },
-              { name: 'Volume', value: '+45%', status: '24h', color: 'green' },
+              { name: 'Volume', value: '+${config.percentage.value45}', status: '24h', color: 'green' },
             ].map((indicator, index) => (
               <motion.div
                 key={indicator.name}
@@ -1213,7 +1214,7 @@ export default function Home() {
             <div className="relative h-20 bg-gradient-to-r from-red-600 via-yellow-500 to-green-500 rounded-full">
               <div 
                 className="absolute top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg"
-                style={{ left: '72%' }}
+                style={{ left: '${config.percentage.value72}' }}
               />
               <div className="absolute -bottom-8 left-0 text-xs text-red-400">극도의 공포</div>
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-yellow-400">중립</div>
@@ -1348,14 +1349,14 @@ export default function Home() {
                   />
                   <defs>
                     <linearGradient id="riskGradient">
-                      <stop offset="0%" stopColor="rgb(34, 197, 94)" />
-                      <stop offset="50%" stopColor="rgb(250, 204, 21)" />
-                      <stop offset="100%" stopColor="rgb(239, 68, 68)" />
+                      <stop offset="${config.percentage.value0}" stopColor="rgb(34, 197, 94)" />
+                      <stop offset="${config.percentage.value50}" stopColor="rgb(250, 204, 21)" />
+                      <stop offset="${config.percentage.value100}" stopColor="rgb(239, 68, 68)" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-3xl font-bold text-yellow-400">65%</p>
+                  <p className="text-3xl font-bold text-yellow-400">${config.percentage.value65}</p>
                   <p className="text-sm text-gray-400">중간 위험</p>
                 </div>
               </div>
@@ -1366,7 +1367,7 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-4">🚨 실시간 알림</h3>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {[
-                  { type: 'warning', message: 'BTC 포지션 손실 -5% 도달' },
+                  { type: 'warning', message: 'BTC 포지션 손실 -${config.percentage.value5} 도달' },
                   { type: 'info', message: 'ETH 자동 손절 준비됨' },
                   { type: 'danger', message: '마진 레벨 위험 수준 접근' },
                   { type: 'success', message: 'SOL 목표가 도달, 익절 추천' },

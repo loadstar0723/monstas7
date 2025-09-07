@@ -9,6 +9,7 @@ import {
   FaSearch, FaBell, FaUser, FaChevronDown, FaCrown
 } from 'react-icons/fa'
 import { MdAutoGraph } from 'react-icons/md'
+import { config } from '@/lib/config'
 
 interface MegaMenuItem {
   title: string
@@ -138,7 +139,7 @@ export default function TopNavigationBar() {
                                             {item.title}
                                           </span>
                                           {item.tier && (
-                                            <span className="text-xs px-1.5 py-0.5 bg-purple-900/50 text-purple-400 rounded">
+                                            <span className="text-xs px-1.5 py-config.decimals.value5 bg-purple-900/50 text-purple-400 rounded">
                                               {item.tier}
                                             </span>
                                           )}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from 'recharts'
+import { config } from '@/lib/config'
 
 interface SeasonalityChartProps {
   symbol?: string
@@ -69,7 +70,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
             onClick={() => setShowFullChart(!showFullChart)}
             className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg text-sm font-medium border border-gray-700 transition-all flex items-center gap-2"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: config.decimals.value95 }}
           >
             {showFullChart ? '닫기' : '더 많은 시즌'}
             <span className="text-xs">→</span>
@@ -78,7 +79,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
 
         {/* 차트 영역 */}
         <div className="h-80 w-full mb-6">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="${config.percentage.value100}" height="${config.percentage.value100}">
             <LineChart 
               data={monthlyData} 
               margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
@@ -103,7 +104,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
               />
               <Tooltip content={<CustomTooltip />} />
               
-              {/* 0% 기준선 */}
+              {/* ${config.percentage.value0} 기준선 */}
               <ReferenceLine y={0} stroke="#6B7280" strokeDasharray="5 5" />
               
               {/* 각 연도별 라인 */}
@@ -207,7 +208,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
           onClick={() => setShowFullChart(false)}
         >
           <motion.div
-            initial={{ scale: 0.9 }}
+            initial={{ scale: config.decimals.value9 }}
             animate={{ scale: 1 }}
             className="w-full max-w-7xl bg-gray-900 rounded-xl p-6 border border-purple-500/30"
             onClick={(e) => e.stopPropagation()}
@@ -225,7 +226,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
             </div>
             
             <div className="h-96 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="${config.percentage.value100}" height="${config.percentage.value100}">
                 <LineChart 
                   data={monthlyData} 
                   margin={{ top: 10, right: 30, left: 50, bottom: 30 }}

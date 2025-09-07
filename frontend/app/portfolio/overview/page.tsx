@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaWallet, FaChartPie, FaArrowUp, FaArrowDown, FaPlus } from 'react-icons/fa'
+import { config } from '@/lib/config'
 
 export default function PortfolioOverviewPage() {
   return (
@@ -28,44 +29,44 @@ export default function PortfolioOverviewPage() {
         {/* 포트폴리오 요약 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: config.decimals.value1 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="text-gray-400 mb-2">총 자산 가치</div>
             <div className="text-3xl font-bold">$125,430</div>
             <div className="flex items-center gap-1 mt-2 text-green-400 text-sm">
-              <FaArrowUp /> +24.5% (30일)
+              <FaArrowUp /> +24.${config.percentage.value5} (30일)
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: config.decimals.value2 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="text-gray-400 mb-2">일일 손익</div>
             <div className="text-3xl font-bold text-green-400">+$3,250</div>
-            <div className="text-sm text-gray-500 mt-2">+2.7%</div>
+            <div className="text-sm text-gray-500 mt-2">+2.${config.percentage.value7}</div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: config.decimals.value3 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="text-gray-400 mb-2">총 수익률</div>
-            <div className="text-3xl font-bold text-green-400">+45.2%</div>
+            <div className="text-3xl font-bold text-green-400">+45.${config.percentage.value2}</div>
             <div className="text-sm text-gray-500 mt-2">전체 기간</div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: config.decimals.value9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: config.decimals.value4 }}
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <div className="text-gray-400 mb-2">보유 종목</div>
@@ -79,7 +80,7 @@ export default function PortfolioOverviewPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: config.decimals.value5 }}
             className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -98,7 +99,7 @@ export default function PortfolioOverviewPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: config.decimals.value6 }}
             className="lg:col-span-2 bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700"
           >
             <h2 className="text-xl font-semibold mb-4">보유 자산</h2>
