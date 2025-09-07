@@ -175,7 +175,10 @@ export default function WhaleTrackerUltimate() {
     volatility: 0,
     activeWhales: 0,
     volume24h: 0,
-    priceHistory: [] as number[]
+    priceHistory: [] as number[],
+    priceChange24h: 0,
+    volumeChange24h: 0,
+    whaleActivityScore: 0
   })
 
   // 각 심볼별 통계를 독립적으로 관리
@@ -352,18 +355,50 @@ export default function WhaleTrackerUltimate() {
       const statsData = await statsRes.json()
       
       if (statsData) {
-        setStatsBySymbol(prev => ({
-          ...prev,
-          [selectedSymbol]: {
-            ...getDefaultStats(),
-            ...statsData,
-            whaleActivity: statsData.totalWhales > 20 ? 'very_high' : 
-                          statsData.totalWhales > 10 ? 'high' : 
-                          statsData.totalWhales > 5 ? 'moderate' : 'normal',
-            marketSentiment: statsData.buyVolume > 0 ? 
-                           Math.round((statsData.buyVolume / (statsData.buyVolume + statsData.sellVolume)) * 100) : 50
+        setStatsBySymbol(prev => {
+          const currentStats = prev[selectedSymbol] || getDefaultStats()
+          const buyVolume = statsData.buyVolume || 0
+          const sellVolume = statsData.sellVolume || 0
+          const totalWhales = statsData.totalWhales || 0
+          const totalVolume = buyVolume + sellVolume
+          
+          // Fear & Greed Index 계산
+          let fearGreedScore = 50
+          
+          // 1. 거래량 기반 (25%)
+          const volumeScore = Math.min(100, (totalVolume / 1000000) * 10)
+          fearGreedScore += (volumeScore - 50) * 0.25
+          
+          // 2. 매수/매도 비율 (25%)
+          const buyRatio = totalVolume > 0 ? buyVolume / totalVolume : 0.5
+          const buyRatioScore = buyRatio * 100
+          fearGreedScore += (buyRatioScore - 50) * 0.25
+          
+          // 3. 고래 활동 (25%)
+          const whaleActivityScore = totalWhales > 20 ? 80 : totalWhales > 10 ? 60 : totalWhales > 5 ? 40 : 20
+          fearGreedScore += (whaleActivityScore - 50) * 0.25
+          
+          // 4. 변동성 (25%)
+          const volatility = currentStats.volatility || 0
+          const volatilityScore = volatility > 50 ? 20 : volatility > 30 ? 40 : volatility > 10 ? 60 : 80
+          fearGreedScore += (volatilityScore - 50) * 0.25
+          
+          fearGreedScore = Math.max(0, Math.min(100, Math.round(fearGreedScore)))
+          
+          return {
+            ...prev,
+            [selectedSymbol]: {
+              ...currentStats,
+              ...statsData,
+              whaleActivity: totalWhales > 20 ? 'very_high' : 
+                            totalWhales > 10 ? 'high' : 
+                            totalWhales > 5 ? 'moderate' : 'normal',
+              marketSentiment: totalVolume > 0 ? Math.round(buyRatio * 100) : 50,
+              fearGreedIndex: fearGreedScore,
+              whaleActivityScore: whaleActivityScore
+            }
           }
-        }))
+        })
         
         // 현재 가격 업데이트
         if (statsData.currentPrice) {
@@ -536,14 +571,42 @@ export default function WhaleTrackerUltimate() {
                   volatility = Math.min(100, (Math.sqrt(variance) / mean) * 100) // 변동성 퍼센트
                 }
                 
+                // Fear & Greed Index 계산 (실시간)
+                const totalVolume = currentStats.totalVolume + tradeValue
+                const buyRatio = currentStats.buyVolume / (currentStats.buyVolume + currentStats.sellVolume || 1)
+                
+                let fearGreedScore = 50
+                
+                // 1. 거래량 기반 (25%)
+                const volumeScore = Math.min(100, (totalVolume / 1000000) * 10)
+                fearGreedScore += (volumeScore - 50) * 0.25
+                
+                // 2. 매수/매도 비율 (25%)
+                const buyRatioScore = buyRatio * 100
+                fearGreedScore += (buyRatioScore - 50) * 0.25
+                
+                // 3. 고래 활동 (25%)
+                const whaleActivityScore = currentStats.totalWhales > 20 ? 80 : 
+                                         currentStats.totalWhales > 10 ? 60 : 
+                                         currentStats.totalWhales > 5 ? 40 : 20
+                fearGreedScore += (whaleActivityScore - 50) * 0.25
+                
+                // 4. 변동성 (25%)
+                const volatilityScore = volatility > 50 ? 20 : volatility > 30 ? 40 : volatility > 10 ? 60 : 80
+                fearGreedScore += (volatilityScore - 50) * 0.25
+                
+                fearGreedScore = Math.max(0, Math.min(100, Math.round(fearGreedScore)))
+                
                 return {
                   ...prev,
                   [symbol]: {
                     ...currentStats,
-                    totalVolume: currentStats.totalVolume + tradeValue,
+                    totalVolume: totalVolume,
                     volume24h: currentStats.volume24h + tradeValue,
                     volatility: Math.round(volatility * 10) / 10, // 소수점 1자리
-                    priceHistory
+                    priceHistory,
+                    fearGreedIndex: fearGreedScore,
+                    whaleActivityScore: whaleActivityScore
                   }
                 }
               })
@@ -704,6 +767,28 @@ export default function WhaleTrackerUltimate() {
       else if (newTotalWhales > 10) activity = 'high'
       else if (newTotalWhales > 5) activity = 'moderate'
       
+      // Fear & Greed Index 계산 (여러 요소 종합)
+      let fearGreedScore = 50
+      
+      // 1. 거래량 기반 (25%)
+      const volumeScore = Math.min(100, (newTotalVolume / 1000000) * 10) // $10M = 100점
+      fearGreedScore += (volumeScore - 50) * 0.25
+      
+      // 2. 매수/매도 비율 (25%)
+      const buyRatioScore = buyRatio * 100
+      fearGreedScore += (buyRatioScore - 50) * 0.25
+      
+      // 3. 고래 활동 (25%)
+      const whaleActivityScore = newTotalWhales > 20 ? 80 : newTotalWhales > 10 ? 60 : newTotalWhales > 5 ? 40 : 20
+      fearGreedScore += (whaleActivityScore - 50) * 0.25
+      
+      // 4. 가격 변동성 (25%)
+      const volatilityScore = currentStats.volatility > 50 ? 20 : currentStats.volatility > 30 ? 40 : currentStats.volatility > 10 ? 60 : 80
+      fearGreedScore += (volatilityScore - 50) * 0.25
+      
+      // 최종 점수 조정 (0-100 범위)
+      fearGreedScore = Math.max(0, Math.min(100, Math.round(fearGreedScore)))
+      
       return {
         ...prev,
         [tx.symbol]: {
@@ -718,7 +803,9 @@ export default function WhaleTrackerUltimate() {
           sellVolume: newSellVolume,
           netFlow: newBuyVolume - newSellVolume,
           whaleActivity: activity,
-          marketSentiment: sentiment
+          marketSentiment: sentiment,
+          fearGreedIndex: fearGreedScore,
+          whaleActivityScore: whaleActivityScore
         }
       }
     })

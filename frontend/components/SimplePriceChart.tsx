@@ -161,6 +161,14 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
     }
   }, [symbol])
 
+  // 시간 라벨을 메모이제이션하여 깜빡거림 방지 (모든 Hook은 조건문 전에 호출되어야 함)
+  const timeLabels = useMemo(() => {
+    return prices.filter((_, i) => i % 5 === 0).map((data, index) => ({
+      key: `${data.time}-${index}`,
+      time: data.time
+    }))
+  }, [prices]) // prices 배열이 변경될 때만 재계산
+
   if (loading) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 animate-pulse" style={{ height }}>
@@ -195,14 +203,6 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
     ? Math.min(95, Math.max(5, ((maxPrice - currentPrice) / priceRange) * 100))
     : 50
   const currentPriceX = prices.length > 0 ? Math.min(95, (prices.length - 1) / Math.max(1, prices.length - 1) * 100) : 50
-
-  // 시간 라벨을 메모이제이션하여 깜빡거림 방지
-  const timeLabels = useMemo(() => {
-    return prices.filter((_, i) => i % 5 === 0).map((data, index) => ({
-      key: `${data.time}-${index}`,
-      time: data.time
-    }))
-  }, [prices.length]) // prices 배열 길이가 변경될 때만 재계산
 
   return (
     <motion.div
