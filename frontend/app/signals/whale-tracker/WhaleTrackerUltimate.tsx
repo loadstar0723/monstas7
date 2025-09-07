@@ -658,60 +658,58 @@ export default function WhaleTrackerUltimate() {
                 console.error('Failed to save transactions:', e)
               }
               
-              // 현재 선택된 코인이면 화면에 표시
-              setSelectedSymbol(currentSymbol => {
-                if (currentSymbol === symbol) {
-                  setTransactions(prev => {
-                    // 중복 제거 후 추가
-                    const exists = prev.some(t => t.id === trade.id)
-                    if (exists) return prev
-                    return [trade, ...prev].slice(0, 100)  // 100개까지 유지
-                  })
-                  
-                  // 통계 업데이트 (심볼별로 독립적으로 관리)
-                  setStatsBySymbol(prev => {
-                    const prevStats = prev[symbol] || getDefaultStats()
-                    return {
-                      ...prev,
-                      [symbol]: {
-                        ...prevStats,
-                        totalWhales: prevStats.totalWhales + 1,
-                        buyCount: trade.type === 'buy' ? prevStats.buyCount + 1 : prevStats.buyCount,
-                        sellCount: trade.type === 'sell' ? prevStats.sellCount + 1 : prevStats.sellCount,
-                        buyVolume: trade.type === 'buy' ? prevStats.buyVolume + trade.value : prevStats.buyVolume,
-                        sellVolume: trade.type === 'sell' ? prevStats.sellVolume + trade.value : prevStats.sellVolume,
-                        largestTrade: Math.max(prevStats.largestTrade, trade.value),
-                        avgTradeSize: (prevStats.avgTradeSize * prevStats.totalWhales + trade.value) / (prevStats.totalWhales + 1),
-                        netFlow: trade.type === 'buy' ? prevStats.netFlow + trade.value : prevStats.netFlow - trade.value,
-                        activeWhales: prevStats.activeWhales + 1
-                      }
-                    }
-                  })
-                  
-                  // 고래 알림 (현재 선택된 코인만)
-                  if (trade.impact === 'high') {
-                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol}`)
-                    // 소리 알림 재생
-                    if (alerts.whaleAlert && alerts.sound) {
-                      audioService.playNotification('whale')
-                    }
-                    // 브라우저 알림
-                    if (alerts.whaleAlert) {
-                      audioService.showBrowserNotification(
-                        `🐋 고래 거래 감지!`,
-                        `${trade.symbol} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
-                      )
-                    }
-                  } else if (alerts.whaleAlert && alerts.sound) {
-                    // 일반 고래 거래도 알림
-                    audioService.playNotification('whale')
-                  }
-                }
-                return currentSymbol
-              })
-              
+              // transactionsBySymbol 업데이트 반환
               return updatedTrades
             })
+            
+            // 현재 선택된 코인이면 화면에 즉시 표시 (selectedSymbol을 직접 사용)
+            if (symbol === selectedSymbol) {
+              setTransactions(prev => {
+                // 중복 제거 후 추가
+                const exists = prev.some(t => t.id === trade.id)
+                if (exists) return prev
+                return [trade, ...prev].slice(0, 100)  // 100개까지 유지
+              })
+              
+              // 통계 업데이트 (심볼별로 독립적으로 관리)
+              setStatsBySymbol(prev => {
+                const prevStats = prev[symbol] || getDefaultStats()
+                return {
+                  ...prev,
+                  [symbol]: {
+                    ...prevStats,
+                    totalWhales: prevStats.totalWhales + 1,
+                    buyCount: trade.type === 'buy' ? prevStats.buyCount + 1 : prevStats.buyCount,
+                    sellCount: trade.type === 'sell' ? prevStats.sellCount + 1 : prevStats.sellCount,
+                    buyVolume: trade.type === 'buy' ? prevStats.buyVolume + trade.value : prevStats.buyVolume,
+                    sellVolume: trade.type === 'sell' ? prevStats.sellVolume + trade.value : prevStats.sellVolume,
+                    largestTrade: Math.max(prevStats.largestTrade, trade.value),
+                    avgTradeSize: (prevStats.avgTradeSize * prevStats.totalWhales + trade.value) / (prevStats.totalWhales + 1),
+                    netFlow: trade.type === 'buy' ? prevStats.netFlow + trade.value : prevStats.netFlow - trade.value,
+                    activeWhales: prevStats.activeWhales + 1
+                  }
+                }
+              })
+              
+              // 고래 알림 (현재 선택된 코인만)
+              if (trade.impact === 'high') {
+                addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol}`)
+                // 소리 알림 재생
+                if (alerts.whaleAlert && alerts.sound) {
+                  audioService.playNotification('whale')
+                }
+                // 브라우저 알림
+                if (alerts.whaleAlert) {
+                  audioService.showBrowserNotification(
+                    `🐋 고래 거래 감지!`,
+                    `${trade.symbol} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
+                  )
+                }
+              } else if (alerts.whaleAlert && alerts.sound) {
+                // 일반 고래 거래도 알림
+                audioService.playNotification('whale')
+              }
+            }
           }
         }
         
