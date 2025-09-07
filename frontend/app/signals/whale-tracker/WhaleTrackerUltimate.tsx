@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaFish, FaArrowUp, FaArrowDown, FaChartBar, FaBell, FaRocket, 
@@ -181,6 +181,77 @@ export default function WhaleTrackerUltimate() {
     whaleActivityScore: 0
   })
 
+  // 거래 내역에서 통계 계산하는 함수
+  const calculateStatsFromTransactions = (transactions: WhaleTransaction[]) => {
+    if (!transactions || transactions.length === 0) {
+      return getDefaultStats()
+    }
+
+    const buyTransactions = transactions.filter(tx => tx.type === 'buy')
+    const sellTransactions = transactions.filter(tx => tx.type === 'sell')
+    const totalVolume = transactions.reduce((sum, tx) => sum + (tx.value || 0), 0)
+    const buyVolume = buyTransactions.reduce((sum, tx) => sum + (tx.value || 0), 0)
+    const sellVolume = sellTransactions.reduce((sum, tx) => sum + (tx.value || 0), 0)
+    const largestTrade = Math.max(...transactions.map(tx => tx.value || 0), 0)
+    const avgTradeSize = transactions.length > 0 ? totalVolume / transactions.length : 0
+
+    // 시장 심리 계산
+    const buyRatio = totalVolume > 0 ? buyVolume / totalVolume : 0.5
+    const sentiment = Math.round(buyRatio * 100)
+
+    // 고래 활동 수준
+    let whaleActivity = 'normal'
+    if (transactions.length > 20) whaleActivity = 'very_high'
+    else if (transactions.length > 10) whaleActivity = 'high'
+    else if (transactions.length > 5) whaleActivity = 'moderate'
+
+    // Fear & Greed Index 계산
+    let fearGreedScore = 50
+    
+    // 1. 거래량 기반 (25%)
+    const volumeScore = Math.min(100, (totalVolume / 1000000) * 10)
+    fearGreedScore += (volumeScore - 50) * 0.25
+    
+    // 2. 매수/매도 비율 (25%)
+    const buyRatioScore = buyRatio * 100
+    fearGreedScore += (buyRatioScore - 50) * 0.25
+    
+    // 3. 고래 활동 (25%)
+    const whaleActivityScore = transactions.length > 20 ? 80 : 
+                              transactions.length > 10 ? 60 : 
+                              transactions.length > 5 ? 40 : 20
+    fearGreedScore += (whaleActivityScore - 50) * 0.25
+    
+    // 4. 가격 변동성 (25%) - 간단하게 계산
+    const volatilityScore = 60 // 기본값
+    fearGreedScore += (volatilityScore - 50) * 0.25
+    
+    fearGreedScore = Math.max(0, Math.min(100, Math.round(fearGreedScore)))
+
+    return {
+      totalWhales: transactions.length,
+      buyCount: buyTransactions.length,
+      sellCount: sellTransactions.length,
+      totalVolume,
+      largestTrade,
+      avgTradeSize,
+      buyVolume,
+      sellVolume,
+      netFlow: buyVolume - sellVolume,
+      whaleActivity,
+      marketSentiment: sentiment,
+      fearGreedIndex: fearGreedScore,
+      dominance: 0,
+      volatility: 20, // 기본값
+      activeWhales: transactions.length,
+      volume24h: totalVolume,
+      priceHistory: [],
+      priceChange24h: 0,
+      volumeChange24h: 0,
+      whaleActivityScore
+    }
+  }
+
   // 각 심볼별 통계를 독립적으로 관리
   const [statsBySymbol, setStatsBySymbol] = useState<Record<string, ReturnType<typeof getDefaultStats>>>(() => {
     const initialStats: Record<string, any> = {}
@@ -207,8 +278,18 @@ export default function WhaleTrackerUltimate() {
     return initialStats
   })
 
-  // 현재 선택된 심볼의 통계
-  const stats = statsBySymbol[selectedSymbol] || getDefaultStats()
+  // 현재 선택된 심볼의 통계 - 거래 내역에서 계산
+  const stats = calculateStatsFromTransactions(transactionsBySymbol[selectedSymbol] || [])
+  
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log(`📊 ${selectedSymbol} 통계:`, {
+      거래수: stats.totalWhales,
+      매수: stats.buyCount,
+      매도: stats.sellCount,
+      거래량: stats.totalVolume
+    })
+  }, [selectedSymbol, stats.totalWhales])
 
   // 패턴 분석
   const [patterns, setPatterns] = useState({
@@ -296,35 +377,33 @@ export default function WhaleTrackerUltimate() {
   // WebSocket 연결 (백그라운드)
   const backgroundWsRefs = useRef<Record<string, WebSocket>>({}) // 모든 코인의 백그라운드 WebSocket
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const firstPrices = useRef<Record<string, number>>({}) // 각 심볼별 첫 가격 저장
 
   // 심볼별 임계값 (현실적인 고래 거래 기준) - 10개 코인
   const getThreshold = (symbol: string) => {
     switch(symbol) {
-      case 'BTCUSDT': return 0.5     // 0.5 BTC 이상
-      case 'ETHUSDT': return 5       // 5 ETH 이상
-      case 'BNBUSDT': return 20      // 20 BNB 이상
-      case 'SOLUSDT': return 50      // 50 SOL 이상
-      case 'XRPUSDT': return 10000   // 10,000 XRP 이상
-      case 'ADAUSDT': return 10000   // 10,000 ADA 이상
-      case 'DOGEUSDT': return 50000  // 50,000 DOGE 이상
-      case 'AVAXUSDT': return 100    // 100 AVAX 이상
-      case 'MATICUSDT': return 5000  // 5,000 MATIC 이상
-      case 'DOTUSDT': return 100     // 100 DOT 이상
+      case 'BTCUSDT': return 0.1     // 0.1 BTC 이상 (약 $10,000)
+      case 'ETHUSDT': return 1       // 1 ETH 이상 (약 $2,500)
+      case 'BNBUSDT': return 5       // 5 BNB 이상 (약 $1,500)
+      case 'SOLUSDT': return 20      // 20 SOL 이상 (약 $2,000)
+      case 'XRPUSDT': return 5000    // 5,000 XRP 이상 (약 $2,500)
+      case 'ADAUSDT': return 5000    // 5,000 ADA 이상 (약 $2,000)
+      case 'DOGEUSDT': return 20000  // 20,000 DOGE 이상 (약 $1,500)
+      case 'AVAXUSDT': return 20     // 20 AVAX 이상 (약 $1,000)
+      case 'MATICUSDT': return 3000  // 3,000 MATIC 이상 (약 $2,000)
+      case 'DOTUSDT': return 50      // 50 DOT 이상 (약 $1,500)
       default: return 100
     }
   }
   
-  // 각 코인의 첫 가격 저장 (24시간 변화율 계산용)
-  const [firstPrices, setFirstPrices] = useState<Record<string, number>>({})
 
   // API 데이터 가져오기
   const fetchWhaleData = async () => {
     try {
-      setLoading(true)
+      console.log(`🐋 고래 데이터 가져오기: ${selectedSymbol}`)
       
       // 현재 선택된 심볼의 거래 데이터 가져오기
-      const symbol = selectedSymbol.replace('USDT', '')
-      const tradesRes = await fetch(`/api/whale/trades?symbol=${symbol}`)
+      const tradesRes = await fetch(`/api/whale/trades?symbol=${selectedSymbol}`)
       const tradesData = await tradesRes.json()
       
       if (tradesData.success && tradesData.trades) {
@@ -349,11 +428,19 @@ export default function WhaleTrackerUltimate() {
         
         setTransactions(formattedTrades)
         
-        // 심볼별 거래 저장 및 localStorage에 저장
+        // 심볼별 거래 저장 및 localStorage에 저장 (중복 제거)
         setTransactionsBySymbol(prev => {
+          const existingTrades = prev[selectedSymbol] || []
+          // 새로운 거래와 기존 거래를 합치되 중복 제거
+          const allTrades = [...formattedTrades]
+          existingTrades.forEach(existing => {
+            if (!formattedTrades.some(t => t.id === existing.id)) {
+              allTrades.push(existing)
+            }
+          })
           const updated = {
             ...prev,
-            [selectedSymbol]: [...formattedTrades, ...(prev[selectedSymbol] || [])].slice(0, 100)
+            [selectedSymbol]: allTrades.slice(0, 100)
           }
           // localStorage에 저장
           try {
@@ -390,11 +477,11 @@ export default function WhaleTrackerUltimate() {
       }
       
       // 통계 데이터 가져오기
-      const statsRes = await fetch(`/api/whale/trades?symbol=${symbol}&type=stats`)
+      const statsRes = await fetch(`/api/whale/trades?symbol=${selectedSymbol}&type=stats`)
       const statsData = await statsRes.json()
       
       if (statsData) {
-        console.log(`📊 API 통계 데이터 (${symbol}):`, statsData)
+        console.log(`📊 API 통계 데이터 (${selectedSymbol}):`, statsData)
         setStatsBySymbol(prev => {
           const currentStats = prev[selectedSymbol] || getDefaultStats()
           const buyVolume = statsData.buyVolume || currentStats.buyVolume || 0
@@ -551,6 +638,17 @@ export default function WhaleTrackerUltimate() {
 
   // 초기 데이터 로드 및 모든 코인 WebSocket 연결
   useEffect(() => {
+    // localStorage 데이터 확인
+    const savedTransactions = localStorage.getItem('whaleTransactions')
+    if (savedTransactions) {
+      try {
+        const parsed = JSON.parse(savedTransactions)
+        console.log('📦 localStorage 저장된 거래:', Object.keys(parsed).map(sym => `${sym}: ${parsed[sym]?.length || 0}건`))
+      } catch (e) {
+        console.error('localStorage 파싱 에러:', e)
+      }
+    }
+    
     fetchWhaleData()
     fetchCandleData() // 15분봉 데이터 로드
     
@@ -559,6 +657,18 @@ export default function WhaleTrackerUltimate() {
     TRACKED_SYMBOLS.forEach(symbol => {
       setTimeout(() => {
         const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
+        
+        ws.onopen = () => {
+          console.log(`✅ ${symbol} WebSocket 연결 성공`)
+        }
+        
+        ws.onerror = (error) => {
+          console.error(`❌ ${symbol} WebSocket 에러:`, error)
+        }
+        
+        ws.onclose = (event) => {
+          console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
+        }
         
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data)
@@ -582,10 +692,10 @@ export default function WhaleTrackerUltimate() {
             if (currentSymbol === symbol) {
               setCurrentPrice(price)
               // 첫 가격 저장 및 변화율 계산
-              if (!firstPrices[symbol]) {
-                setFirstPrices(prev => ({ ...prev, [symbol]: price }))
+              if (!firstPrices.current[symbol]) {
+                firstPrices.current[symbol] = price
               }
-              const basePrice = firstPrices[symbol] || price
+              const basePrice = firstPrices.current[symbol] || price
               setPriceChange(((price - basePrice) / basePrice) * 100)
               
               // 가격 히스토리 업데이트 (차트용)
@@ -659,6 +769,13 @@ export default function WhaleTrackerUltimate() {
           
           // 고래 거래만 저장
           if (quantity >= threshold) {
+            console.log(`🐋 ${symbol} 고래 거래 감지:`, {
+              가격: price,
+              수량: quantity,
+              임계값: threshold,
+              거래금액: price * quantity
+            })
+            
             const trade: WhaleTransaction = {
               id: `${symbol}-${data.a || Date.now()}`,
               symbol: symbol,  // 전체 심볼 유지 (BTCUSDT 형태)
@@ -686,6 +803,9 @@ export default function WhaleTrackerUltimate() {
               // 동일한 거래 ID가 있는지 확인
               const exists = existingTrades.some(t => t.id === trade.id)
               if (exists) return prev
+              
+              console.log(`💰 ${symbol} 고래 거래 추가:`, trade.type, trade.amount, trade.symbol)
+              
               const updatedTrades = {
                 ...prev,
                 [symbol]: [trade, ...existingTrades].slice(0, 100)  // 100개까지 유지 (기존 20개에서 증가)
@@ -702,54 +822,42 @@ export default function WhaleTrackerUltimate() {
               return updatedTrades
             })
             
-            // 현재 선택된 코인이면 화면에 즉시 표시 (selectedSymbol을 직접 사용)
-            if (symbol === selectedSymbol) {
-              setTransactions(prev => {
-                // 중복 제거 후 추가
-                const exists = prev.some(t => t.id === trade.id)
-                if (exists) return prev
-                return [trade, ...prev].slice(0, 100)  // 100개까지 유지
-              })
-              
-              // 통계 업데이트 (심볼별로 독립적으로 관리)
-              setStatsBySymbol(prev => {
-                const prevStats = prev[symbol] || getDefaultStats()
-                return {
-                  ...prev,
-                  [symbol]: {
-                    ...prevStats,
-                    totalWhales: prevStats.totalWhales + 1,
-                    buyCount: trade.type === 'buy' ? prevStats.buyCount + 1 : prevStats.buyCount,
-                    sellCount: trade.type === 'sell' ? prevStats.sellCount + 1 : prevStats.sellCount,
-                    buyVolume: trade.type === 'buy' ? prevStats.buyVolume + trade.value : prevStats.buyVolume,
-                    sellVolume: trade.type === 'sell' ? prevStats.sellVolume + trade.value : prevStats.sellVolume,
-                    largestTrade: Math.max(prevStats.largestTrade, trade.value),
-                    avgTradeSize: (prevStats.avgTradeSize * prevStats.totalWhales + trade.value) / (prevStats.totalWhales + 1),
-                    netFlow: trade.type === 'buy' ? prevStats.netFlow + trade.value : prevStats.netFlow - trade.value,
-                    activeWhales: prevStats.activeWhales + 1
-                  }
-                }
-              })
+            // 현재 선택된 코인이면 화면에 즉시 표시
+            setSelectedSymbol(currentSymbol => {
+              if (currentSymbol === symbol) {
+                setTransactions(prev => {
+                  // 중복 제거 후 추가
+                  const exists = prev.some(t => t.id === trade.id)
+                  if (exists) return prev
+                  return [trade, ...prev].slice(0, 100)  // 100개까지 유지
+                })
+              }
+              return currentSymbol
+            })
               
               // 고래 알림 (현재 선택된 코인만)
-              if (trade.impact === 'high') {
-                addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol.replace('USDT', '')}`)
-                // 소리 알림 재생
-                if (alerts.whaleAlert && alerts.sound) {
-                  audioService.playNotification('whale')
+              setSelectedSymbol(currentSymbol => {
+                if (currentSymbol === symbol) {
+                  if (trade.impact === 'high') {
+                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol.replace('USDT', '')}`)
+                    // 소리 알림 재생
+                    if (alerts.whaleAlert && alerts.sound) {
+                      audioService.playNotification('whale')
+                    }
+                    // 브라우저 알림
+                    if (alerts.whaleAlert) {
+                      audioService.showBrowserNotification(
+                        `🐋 고래 거래 감지!`,
+                        `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
+                      )
+                    }
+                  } else if (alerts.whaleAlert && alerts.sound) {
+                    // 일반 고래 거래도 알림
+                    audioService.playNotification('whale')
+                  }
                 }
-                // 브라우저 알림
-                if (alerts.whaleAlert) {
-                  audioService.showBrowserNotification(
-                    `🐋 고래 거래 감지!`,
-                    `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
-                  )
-                }
-              } else if (alerts.whaleAlert && alerts.sound) {
-                // 일반 고래 거래도 알림
-                audioService.playNotification('whale')
-              }
-            }
+                return currentSymbol
+              })
           }
         }
         
@@ -769,61 +877,14 @@ export default function WhaleTrackerUltimate() {
     }
   }, [])
   
-  // 심볼 변경 시 거래 리스트 및 캔들 데이터 업데이트
+  // 심볼 변경 시 거래 리스트 업데이트 (통계는 별도로 관리)
   useEffect(() => {
     // 심볼 변경 시 해당 심볼의 거래 내역으로 업데이트
     const symbolTransactions = transactionsBySymbol[selectedSymbol] || []
     console.log(`📊 심볼 변경: ${selectedSymbol}, 저장된 거래: ${symbolTransactions.length}개`)
+    console.log('거래 내역 샘플:', symbolTransactions.slice(0, 3))
+    console.log('모든 심볼 거래 수:', Object.keys(transactionsBySymbol).map(sym => `${sym}: ${transactionsBySymbol[sym]?.length || 0}개`))
     setTransactions(symbolTransactions)
-    
-    // 거래 리스트에서 통계 재계산
-    if (symbolTransactions.length > 0) {
-      const buyTrades = symbolTransactions.filter(t => t.type === 'buy')
-      const sellTrades = symbolTransactions.filter(t => t.type === 'sell')
-      const buyVolume = buyTrades.reduce((sum, t) => sum + (t.value || 0), 0)
-      const sellVolume = sellTrades.reduce((sum, t) => sum + (t.value || 0), 0)
-      const totalVolume = buyVolume + sellVolume
-      
-      // 시장 심리 계산
-      const buyRatio = totalVolume > 0 ? buyVolume / totalVolume : 0.5
-      const sentiment = Math.round(buyRatio * 100)
-      
-      // 고래 활동 수준
-      let activity = 'normal'
-      if (symbolTransactions.length > 20) activity = 'very_high'
-      else if (symbolTransactions.length > 10) activity = 'high'
-      else if (symbolTransactions.length > 5) activity = 'moderate'
-      
-      // Fear & Greed Index 계산
-      let fearGreedScore = 50
-      const volumeScore = Math.min(100, (totalVolume / 1000000) * 10)
-      fearGreedScore += (volumeScore - 50) * 0.25
-      const buyRatioScore = buyRatio * 100
-      fearGreedScore += (buyRatioScore - 50) * 0.25
-      const whaleActivityScore = symbolTransactions.length > 20 ? 80 : symbolTransactions.length > 10 ? 60 : symbolTransactions.length > 5 ? 40 : 20
-      fearGreedScore += (whaleActivityScore - 50) * 0.25
-      fearGreedScore = Math.max(0, Math.min(100, Math.round(fearGreedScore)))
-      
-      setStatsBySymbol(prev => ({
-        ...prev,
-        [selectedSymbol]: {
-          ...prev[selectedSymbol],
-          totalWhales: symbolTransactions.length,
-          buyCount: buyTrades.length,
-          sellCount: sellTrades.length,
-          totalVolume: totalVolume,
-          buyVolume: buyVolume,
-          sellVolume: sellVolume,
-          netFlow: buyVolume - sellVolume,
-          largestTrade: symbolTransactions.length > 0 ? Math.max(...symbolTransactions.map(t => t.value || 0)) : 0,
-          avgTradeSize: totalVolume / symbolTransactions.length,
-          whaleActivity: activity,
-          marketSentiment: sentiment,
-          fearGreedIndex: fearGreedScore,
-          whaleActivityScore: whaleActivityScore
-        }
-      }))
-    }
     
     // 2초 후에 캔들 데이터 로드 (WebSocket 연결과 동기화)
     const timer = setTimeout(() => {
@@ -844,21 +905,11 @@ export default function WhaleTrackerUltimate() {
   
   // 초기 데이터 로드 및 심볼 변경 시 데이터 갱신
   useEffect(() => {
-    // 심볼 변경 시 즉시 저장된 데이터로 업데이트
-    const savedTransactions = transactionsBySymbol[selectedSymbol] || []
-    const savedStats = statsBySymbol[selectedSymbol] || getDefaultStats()
-    
-    // 저장된 데이터가 있으면 즉시 표시
-    if (savedTransactions.length > 0 || savedStats.totalWhales > 0) {
-      setTransactions(savedTransactions)
-      console.log(`📊 저장된 데이터 로드: ${selectedSymbol} - 거래 ${savedTransactions.length}건, 통계 고래 ${savedStats.totalWhales}건`)
-    }
-    
     // API에서 새 데이터 가져오기
     fetchWhaleData()
     
-    // 10초마다 데이터 갱신
-    const interval = setInterval(fetchWhaleData, 10000)
+    // 30초마다 데이터 갱신 (너무 자주 호출하지 않도록)
+    const interval = setInterval(fetchWhaleData, 30000)
     return () => clearInterval(interval)
   }, [selectedSymbol])
 
@@ -929,7 +980,7 @@ export default function WhaleTrackerUltimate() {
   // 알림 추가
   const addNotification = (type: 'info' | 'warning' | 'success' | 'error', message: string) => {
     const notification = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
       message,
       time: new Date().toLocaleTimeString()
@@ -946,7 +997,7 @@ export default function WhaleTrackerUltimate() {
   const fetchCandleData = async () => {
     try {
       console.log('15분봉 데이터 로드 중...', selectedSymbol)
-      const res = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=15m&limit=50`)
+      const res = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=15m&limit=20`)
       const data = await res.json()
       
       if (data && data.data) {
@@ -1035,6 +1086,11 @@ export default function WhaleTrackerUltimate() {
   }
 
   const marketSignal = getMarketSignal()
+
+  // 차트 데이터 메모이제이션
+  const memoizedChartData = useMemo(() => {
+    return candleData.length > 0 ? candleData : priceHistory
+  }, [candleData, priceHistory])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white">
@@ -1256,10 +1312,10 @@ export default function WhaleTrackerUltimate() {
                     <div className="text-right">
                       <p className="text-xs text-gray-400">24h 고래 거래량</p>
                       <p className="text-xl font-bold text-purple-400">
-                        ${(stats.totalVolume / 1000000).toFixed(1)}M
+                        ${stats.totalVolume > 0 ? (stats.totalVolume / 1000000).toFixed(1) : '0.0'}M
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        고래 거래 {stats.totalWhales}건
+                        고래 거래 {stats.totalWhales || 0}건
                       </p>
                     </div>
                   </div>
@@ -1270,10 +1326,9 @@ export default function WhaleTrackerUltimate() {
                       <span className="text-xs text-gray-400">15분봉 차트</span>
                       <span className="text-xs text-purple-400">실시간 업데이트</span>
                     </div>
-                    <ResponsiveContainer width="100%" height={250} key={selectedSymbol}>
+                    <ResponsiveContainer width="100%" height={250}>
                       <LineChart 
-                        key={`${selectedSymbol}-chart`}
-                        data={candleData.length > 0 ? candleData : priceHistory}
+                        data={memoizedChartData}
                         margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                         isAnimationActive={false}
                       >
@@ -1282,10 +1337,8 @@ export default function WhaleTrackerUltimate() {
                           dataKey="time" 
                           stroke="#9CA3AF"
                           tick={{ fontSize: 10 }}
-                          interval="preserveStartEnd"
-                          tickCount={5}
+                          interval={Math.floor(memoizedChartData.length / 5) || 1}
                           tickMargin={5}
-                          minTickGap={50}
                         />
                         <YAxis 
                           stroke="#9CA3AF"
@@ -1455,14 +1508,14 @@ export default function WhaleTrackerUltimate() {
             {/* 통계 카드 */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
               {[
-                { icon: <FaFish />, label: '고래 거래', value: stats.totalWhales, color: 'purple' },
-                { icon: <FaArrowUp />, label: '매수', value: stats.buyCount, color: 'green' },
-                { icon: <FaArrowDown />, label: '매도', value: stats.sellCount, color: 'red' },
-                { icon: <FaExchangeAlt />, label: '순 유입', value: `$${(Math.abs(stats.netFlow) / 1000000).toFixed(1)}M`, color: stats.netFlow >= 0 ? 'green' : 'red' },
-                { icon: <FaChartLine />, label: '최대 거래', value: `$${(stats.largestTrade / 1000000).toFixed(2)}M`, color: 'yellow' },
-                { icon: <FaShieldAlt />, label: '평균 규모', value: `$${(stats.avgTradeSize / 1000000).toFixed(2)}M`, color: 'cyan' },
-                { icon: <FaFireAlt />, label: '매수량', value: `$${(stats.buyVolume / 1000000).toFixed(1)}M`, color: 'orange' },
-                { icon: <FaDatabase />, label: '매도량', value: `$${(stats.sellVolume / 1000000).toFixed(1)}M`, color: 'pink' }
+                { icon: <FaFish />, label: '고래 거래', value: stats.totalWhales || 0, color: 'purple' },
+                { icon: <FaArrowUp />, label: '매수', value: stats.buyCount || 0, color: 'green' },
+                { icon: <FaArrowDown />, label: '매도', value: stats.sellCount || 0, color: 'red' },
+                { icon: <FaExchangeAlt />, label: '순 유입', value: stats.netFlow !== 0 ? `$${(Math.abs(stats.netFlow) / 1000000).toFixed(1)}M` : '$0.0M', color: stats.netFlow >= 0 ? 'green' : 'red' },
+                { icon: <FaChartLine />, label: '최대 거래', value: stats.largestTrade > 0 ? `$${(stats.largestTrade / 1000000).toFixed(2)}M` : '$0.00M', color: 'yellow' },
+                { icon: <FaShieldAlt />, label: '평균 규모', value: stats.avgTradeSize > 0 ? `$${(stats.avgTradeSize / 1000000).toFixed(2)}M` : '$0.00M', color: 'cyan' },
+                { icon: <FaFireAlt />, label: '매수량', value: stats.buyVolume > 0 ? `$${(stats.buyVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'orange' },
+                { icon: <FaDatabase />, label: '매도량', value: stats.sellVolume > 0 ? `$${(stats.sellVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'pink' }
               ].map((stat, idx) => (
                 <motion.div
                   key={idx}
@@ -1513,11 +1566,12 @@ export default function WhaleTrackerUltimate() {
                   <FaFish className="text-6xl text-gray-600 mx-auto mb-4 animate-pulse" />
                   <p className="text-gray-400">실시간 고래 거래를 모니터링 중입니다...</p>
                   <p className="text-xs text-gray-500 mt-2">임계값: {getThreshold(selectedSymbol)} {selectedSymbol.replace('USDT', '')}</p>
+                  <p className="text-xs text-gray-600 mt-1">데이터 로딩 중...</p>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   <AnimatePresence>
-                    {transactions.map(tx => (
+                    {transactions.filter(tx => tx && tx.amount && tx.price && tx.value && tx.symbol === selectedSymbol).map(tx => (
                       <motion.div
                         key={tx.id}
                         layout
@@ -1649,8 +1703,111 @@ export default function WhaleTrackerUltimate() {
             <div className="bg-gray-800/50 backdrop-blur rounded-xl p-6 border border-gray-700">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <FaWallet className="text-purple-400" />
-                추적 중인 고래 지갑
+                추적 중인 고래 지갑 - {selectedSymbol.replace('USDT', '')}
               </h3>
+              
+              {/* 실제 거래 데이터 기반 지갑 분석 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-400 mb-3">상위 매수 지갑</h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const buyTxs = transactions.filter(tx => tx?.type === 'buy' && tx?.symbol === selectedSymbol);
+                      const walletMap = new Map();
+                      
+                      // 실제 거래에서 지갑별 집계
+                      buyTxs.forEach(tx => {
+                        const wallet = tx.id.substring(0, 8) + '...' + tx.id.substring(tx.id.length - 4);
+                        walletMap.set(wallet, (walletMap.get(wallet) || 0) + tx.value);
+                      });
+                      
+                      // 상위 3개 지갑
+                      const topWallets = Array.from(walletMap.entries())
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3);
+                      
+                      if (topWallets.length === 0) {
+                        return <div className="text-gray-500 text-sm">매수 지갑 수집 중...</div>;
+                      }
+                      
+                      return topWallets.map(([wallet, value]) => (
+                        <div key={wallet} className="flex justify-between items-center">
+                          <span className="text-gray-300 font-mono text-sm">{wallet}</span>
+                          <span className="text-green-400 font-bold">
+                            ${(value / 1000).toFixed(1)}K
+                          </span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-400 mb-3">상위 매도 지갑</h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const sellTxs = transactions.filter(tx => tx?.type === 'sell' && tx?.symbol === selectedSymbol);
+                      const walletMap = new Map();
+                      
+                      // 실제 거래에서 지갑별 집계
+                      sellTxs.forEach(tx => {
+                        const wallet = tx.id.substring(0, 8) + '...' + tx.id.substring(tx.id.length - 4);
+                        walletMap.set(wallet, (walletMap.get(wallet) || 0) + tx.value);
+                      });
+                      
+                      // 상위 3개 지갑
+                      const topWallets = Array.from(walletMap.entries())
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3);
+                      
+                      if (topWallets.length === 0) {
+                        return <div className="text-gray-500 text-sm">매도 지갑 수집 중...</div>;
+                      }
+                      
+                      return topWallets.map(([wallet, value]) => (
+                        <div key={wallet} className="flex justify-between items-center">
+                          <span className="text-gray-300 font-mono text-sm">{wallet}</span>
+                          <span className="text-red-400 font-bold">
+                            ${(value / 1000).toFixed(1)}K
+                          </span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              </div>
+              
+              {/* 지갑 활동 요약 */}
+              <div className="bg-gray-800/30 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="text-gray-400">활성 지갑</div>
+                    <div className="text-white font-bold">
+                      {new Set(transactions.filter(tx => tx?.symbol === selectedSymbol).map(tx => tx.id.substring(0, 8))).size}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400">평균 거래</div>
+                    <div className="text-yellow-400 font-bold">
+                      ${(() => {
+                        const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.value);
+                        if (symbolTxs.length === 0) return '0';
+                        return (symbolTxs.reduce((sum, tx) => sum + tx.value, 0) / symbolTxs.length / 1000).toFixed(1);
+                      })()}K
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400">최대 거래</div>
+                    <div className="text-blue-400 font-bold">
+                      ${(() => {
+                        const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.value);
+                        if (symbolTxs.length === 0) return '0';
+                        return (Math.max(...symbolTxs.map(tx => tx.value)) / 1000).toFixed(1);
+                      })()}K
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               {loading ? (
                 <div className="text-center py-8">
@@ -1687,7 +1844,7 @@ export default function WhaleTrackerUltimate() {
                             </span>
                           </td>
                           <td className="py-3">
-                            <span className="text-white font-bold">{wallet.balance.toFixed(2)} BTC</span>
+                            <span className="text-white font-bold">{wallet.balance.toFixed(2)} {selectedSymbol.replace('USDT', '')}</span>
                           </td>
                           <td className="py-3">{wallet.totalTrades.toLocaleString()}</td>
                           <td className="py-3">
@@ -1760,6 +1917,119 @@ export default function WhaleTrackerUltimate() {
         {/* 거래소 플로우 탭 */}
         {activeTab === 'flows' && (
           <div className="space-y-6">
+            <div className="bg-gray-800/50 backdrop-blur rounded-xl p-6 border border-gray-700">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <FaExchangeAlt className="text-purple-400" />
+                거래소 자금 흐름 - {selectedSymbol.replace('USDT', '')}
+              </h3>
+              
+              {/* 실시간 자금 흐름 데이터 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* 시간대별 자금 흐름 */}
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-400 mb-3">시간대별 순유입</h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const now = Date.now();
+                      const intervals = [5, 15, 30, 60]; // 분 단위
+                      
+                      return intervals.map(minutes => {
+                        const startTime = now - minutes * 60 * 1000;
+                        const periodTxs = transactions.filter(tx => {
+                          if (!tx || tx.symbol !== selectedSymbol) return false;
+                          const txTime = new Date(tx.time.replace(' ', 'T')).getTime();
+                          return txTime >= startTime;
+                        });
+                        
+                        const buySum = periodTxs.filter(tx => tx.type === 'buy').reduce((sum, tx) => sum + tx.value, 0);
+                        const sellSum = periodTxs.filter(tx => tx.type === 'sell').reduce((sum, tx) => sum + tx.value, 0);
+                        const netFlow = buySum - sellSum;
+                        
+                        return (
+                          <div key={minutes} className="flex justify-between items-center">
+                            <span className="text-gray-400">{minutes}분</span>
+                            <span className={`font-bold ${
+                              netFlow >= 0 ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {netFlow >= 0 ? '+' : ''}{(netFlow / 1000).toFixed(1)}K
+                            </span>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+                
+                {/* 거래 규모별 분포 */}
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-400 mb-3">거래 규모 분포</h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.value);
+                      const ranges = [
+                        { label: '< $50K', min: 0, max: 50000 },
+                        { label: '$50K-100K', min: 50000, max: 100000 },
+                        { label: '$100K-500K', min: 100000, max: 500000 },
+                        { label: '> $500K', min: 500000, max: Infinity }
+                      ];
+                      
+                      return ranges.map(range => {
+                        const count = symbolTxs.filter(tx => tx.value >= range.min && tx.value < range.max).length;
+                        const percentage = symbolTxs.length > 0 ? (count / symbolTxs.length * 100).toFixed(1) : 0;
+                        
+                        return (
+                          <div key={range.label} className="flex justify-between items-center">
+                            <span className="text-gray-400">{range.label}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white">{count}건</span>
+                              <span className="text-gray-500 text-sm">({percentage}%)</span>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+              
+              {/* 흐름 시각화 */}
+              <div className="bg-gray-800/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm text-gray-400">실시간 자금 흐름</span>
+                  <span className="text-xs text-gray-500">
+                    총 {transactions.filter(tx => tx?.symbol === selectedSymbol).length}건
+                  </span>
+                </div>
+                <div className="relative h-20">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                      {(() => {
+                        const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol);
+                        const buyCount = symbolTxs.filter(tx => tx?.type === 'buy').length;
+                        const total = symbolTxs.length || 1;
+                        const buyPercentage = (buyCount / total) * 100;
+                        
+                        return (
+                          <div 
+                            className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500"
+                            style={{ width: `${buyPercentage}%` }}
+                          />
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex justify-between items-center px-2">
+                    <span className="text-green-400 font-bold text-sm">
+                      매수 {transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.type === 'buy').length}
+                    </span>
+                    <span className="text-red-400 font-bold text-sm">
+                      매도 {transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.type === 'sell').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {exchangeFlows.map((flow, idx) => (
                 <motion.div 
@@ -1854,8 +2124,37 @@ export default function WhaleTrackerUltimate() {
             <div className="bg-gray-800/50 backdrop-blur rounded-xl p-6 border border-gray-700">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <FaBrain className="text-purple-400" />
-                패턴 인식 & 예측
+                패턴 인식 & 예측 - {selectedSymbol.replace('USDT', '')}
               </h3>
+              
+              {/* 실시간 패턴 분석 데이터 */}
+              <div className="mb-4 bg-gray-800/30 rounded-lg p-4">
+                <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-400">현재 가격</div>
+                    <div className="text-white font-bold">${currentPrice.toFixed(2)}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">거래량</div>
+                    <div className="text-white font-bold">{transactions.filter(tx => tx?.symbol === selectedSymbol).length}건</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">매수/매도</div>
+                    <div className="text-white font-bold">
+                      {transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.type === 'buy').length}/
+                      {transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.type === 'sell').length}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">순유입</div>
+                    <div className={`font-bold ${
+                      whaleStats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      ${(whaleStats.netFlow / 1000).toFixed(1)}K
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
@@ -1997,7 +2296,10 @@ export default function WhaleTrackerUltimate() {
             <div className="bg-gray-800/50 backdrop-blur rounded-xl p-6 border border-gray-700">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <FaHistory className="text-purple-400" />
-                과거 고래 거래 내역
+                과거 고래 거래 내역 - {selectedSymbol.replace('USDT', '')}
+                <span className="text-xs text-gray-400 ml-2">
+                  ({transactions.filter(tx => tx.symbol === selectedSymbol).length}건)
+                </span>
               </h3>
               
               {transactions.length === 0 ? (
@@ -2007,8 +2309,11 @@ export default function WhaleTrackerUltimate() {
                     <p className="text-xs text-gray-500 mt-2">실시간 거래가 발생하면 여기에 표시됩니다</p>
                   </div>
               ) : (() => {
-                // 필터링된 거래 목록
+                // 필터링된 거래 목록 - 현재 심볼의 거래만
                 const filteredTransactions = transactions.filter(tx => {
+                  // 먼저 심볼이 일치하는지 확인
+                  if (tx.symbol !== selectedSymbol) return false
+                  
                   if (historyFilter === 'buy') return tx.type === 'buy'
                   if (historyFilter === 'sell') return tx.type === 'sell'
                   if (historyFilter === 'large') return tx.impact === 'high'
@@ -2027,7 +2332,7 @@ export default function WhaleTrackerUltimate() {
                             : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                         }`}
                       >
-                        전체 ({transactions.length})
+                        전체 ({transactions.filter(tx => tx.symbol === selectedSymbol).length})
                       </button>
                       <button 
                         onClick={() => setHistoryFilter('buy')}
@@ -2037,7 +2342,7 @@ export default function WhaleTrackerUltimate() {
                             : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                         }`}
                       >
-                        매수만 ({transactions.filter(t => t.type === 'buy').length})
+                        매수만 ({transactions.filter(t => t.type === 'buy' && t.symbol === selectedSymbol).length})
                       </button>
                       <button 
                         onClick={() => setHistoryFilter('sell')}
@@ -2047,7 +2352,7 @@ export default function WhaleTrackerUltimate() {
                             : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                         }`}
                       >
-                        매도만 ({transactions.filter(t => t.type === 'sell').length})
+                        매도만 ({transactions.filter(t => t.type === 'sell' && t.symbol === selectedSymbol).length})
                       </button>
                       <button 
                         onClick={() => setHistoryFilter('large')}
@@ -2057,7 +2362,7 @@ export default function WhaleTrackerUltimate() {
                             : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                         }`}
                       >
-                        대형 거래 ({transactions.filter(t => t.impact === 'high').length})
+                        대형 거래 ({transactions.filter(t => t.impact === 'high' && t.symbol === selectedSymbol).length})
                       </button>
                     </div>
                   

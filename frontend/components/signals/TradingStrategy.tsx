@@ -38,6 +38,20 @@ export default function TradingStrategy({
   const analyzeStrategy = () => {
     let newStrategy = { ...strategy }
     
+    // 디버깅 로그
+    console.log(`🎯 ${symbol} 트레이딩 전략 분석:`, {
+      symbol,
+      currentPrice,
+      priceChange,
+      stats: {
+        buyCount: stats?.buyCount || 0,
+        sellCount: stats?.sellCount || 0,
+        netFlow: stats?.netFlow || 0,
+        totalWhales: stats?.totalWhales || 0
+      },
+      activeTab
+    })
+    
     // stats가 없거나 초기값인 경우 기본 전략 설정
     if (!stats || (!stats.buyCount && !stats.sellCount && !stats.netFlow)) {
       // 가격 변화 기반 간단한 전략
@@ -199,10 +213,15 @@ export default function TradingStrategy({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <FaRocket className="text-yellow-400" />
-          트레이딩 전략 동적분석
+          트레이딩 전략 동적분석 - {symbol.replace('USDT', '')}
         </h3>
-        <div className={`px-3 py-1 rounded-lg bg-gradient-to-r ${getPositionColor()} text-white font-bold`}>
-          {strategy.action}
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-gray-400">
+            고래: {stats?.totalWhales || 0}건
+          </div>
+          <div className={`px-3 py-1 rounded-lg bg-gradient-to-r ${getPositionColor()} text-white font-bold`}>
+            {strategy.action}
+          </div>
         </div>
       </div>
 
@@ -289,9 +308,33 @@ export default function TradingStrategy({
       <div className="mt-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
         <div className="flex items-start gap-2">
           <FaExclamationTriangle className="text-yellow-400 mt-1" />
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-semibold text-white mb-1">분석 근거</p>
             <p className="text-xs text-gray-400">{strategy.reason}</p>
+            <div className="mt-2 grid grid-cols-4 gap-2 text-xs">
+              <div>
+                <span className="text-gray-500">매수:</span>
+                <span className="text-green-400 ml-1">{stats?.buyCount || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">매도:</span>
+                <span className="text-red-400 ml-1">{stats?.sellCount || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">순유입:</span>
+                <span className={`ml-1 ${(stats?.netFlow || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  ${Math.abs(stats?.netFlow || 0) > 1000000 ? 
+                    `${(Math.abs(stats?.netFlow || 0) / 1000000).toFixed(1)}M` : 
+                    (Math.abs(stats?.netFlow || 0) / 1000).toFixed(0) + 'K'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">가격:</span>
+                <span className={`ml-1 ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
