@@ -1,0 +1,88 @@
+name: Debug Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Debug Server Issues
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          script: |
+            echo "🔍 서버 디버깅 시작..."
+            echo "=================="
+            
+            # 1. 현재 프로세스 확인
+            echo "1. 현재 실행 중인 프로세스:"
+            ps aux | grep -E "node|npm|pm2" | grep -v grep || echo "Node 관련 프로세스 없음"
+            echo ""
+            
+            # 2. PM2 상태
+            echo "2. PM2 상태:"
+            pm2 list || echo "PM2 실행 안됨"
+            echo ""
+            
+            # 3. 포트 확인
+            echo "3. 포트 3000 사용 현황:"
+            sudo lsof -i :3000 || echo "포트 3000 사용 안함"
+            echo ""
+            
+            # 4. 프로젝트 디렉토리 확인
+            echo "4. 프로젝트 디렉토리:"
+            ls -la ~/monstas7/ 2>/dev/null || echo "~/monstas7 디렉토리 없음"
+            echo ""
+            
+            # 5. Frontend 디렉토리 확인
+            echo "5. Frontend 디렉토리:"
+            ls -la ~/monstas7/frontend/ 2>/dev/null | head -20 || echo "Frontend 디렉토리 없음"
+            echo ""
+            
+            # 6. .next 빌드 확인
+            echo "6. .next 빌드 디렉토리:"
+            ls -la ~/monstas7/frontend/.next/ 2>/dev/null | head -10 || echo ".next 디렉토리 없음"
+            echo ""
+            
+            # 7. PM2 로그 확인
+            echo "7. PM2 최근 에러 로그:"
+            pm2 logs --lines 50 --err --nostream 2>/dev/null || echo "PM2 로그 없음"
+            echo ""
+            
+            # 8. 수동으로 서버 시작 시도
+            echo "8. 수동 서버 시작 시도:"
+            cd ~/monstas7/frontend 2>/dev/null || {
+              echo "Frontend 디렉토리가 없습니다. 프로젝트를 다시 클론합니다."
+              cd ~
+              git clone https://github.com/loadstar0723/monstas7.git
+              cd monstas7/frontend
+              npm install
+              npx prisma generate
+            }
+            
+            # 환경변수 설정
+            export NODE_ENV=production
+            export PORT=3000
+            export HOST=0.0.0.0
+            
+            # 테스트 실행
+            timeout 30s npm start 2>&1 | head -50 || echo "서버 시작 실패"
+            
+            echo ""
+            echo "9. 네트워크 상태:"
+            curl -I http://localhost:3000 2>/dev/null || echo "로컬 연결 실패"
+            
+            echo ""
+            echo "10. 시스템 리소스:"
+            free -m
+            df -h | grep -E "/$|/dev/"
+            
+            echo "=================="
+            echo "디버깅 완료"

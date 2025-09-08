@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 서버 설정
-  output: 'standalone',
   poweredByHeader: false,
   generateEtags: false,
   
