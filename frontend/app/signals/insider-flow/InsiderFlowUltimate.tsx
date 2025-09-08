@@ -273,11 +273,11 @@ export default function InsiderFlowUltimate() {
     }
     
     ws.onerror = (error) => {
-      console.error('WebSocket 에러:', error)
+      console.log('WebSocket 연결 재시도 중...', error.type || '')
     }
     
     ws.onclose = () => {
-      console.log('WebSocket 연결 종료')
+      console.log('WebSocket 연결 종료, 5초 후 재연결...')
       // 5초 후 재연결
       if (isMonitoring) {
         setTimeout(() => {

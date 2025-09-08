@@ -118,6 +118,48 @@ class AudioService {
   playSignalAlert() {
     this.playNotification('whale')
   }
+
+  // 경고 알림 재생 (청산 히트맵용)
+  playAlert(type: 'critical' | 'warning' | 'info' = 'warning') {
+    if (!this.isEnabled || !this.audioContext) return
+
+    const oscillator = this.audioContext.createOscillator()
+    const gainNode = this.audioContext.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(this.audioContext.destination)
+
+    switch(type) {
+      case 'critical':
+        // 위급: 높은음 반복
+        oscillator.frequency.setValueAtTime(1000, this.audioContext.currentTime)
+        oscillator.frequency.setValueAtTime(0, this.audioContext.currentTime + 0.1)
+        oscillator.frequency.setValueAtTime(1000, this.audioContext.currentTime + 0.2)
+        oscillator.frequency.setValueAtTime(0, this.audioContext.currentTime + 0.3)
+        oscillator.frequency.setValueAtTime(1000, this.audioContext.currentTime + 0.4)
+        gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.6)
+        break
+      case 'warning':
+        // 경고: 중간음 울림
+        oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime)
+        oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.3)
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.4)
+        break
+      case 'info':
+        // 정보: 부드러운 알림음
+        oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime)
+        oscillator.frequency.exponentialRampToValueAtTime(500, this.audioContext.currentTime + 0.2)
+        gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3)
+        break
+    }
+
+    oscillator.type = 'sine'
+    oscillator.start(this.audioContext.currentTime)
+    oscillator.stop(this.audioContext.currentTime + 0.6)
+  }
 }
 
 // 싱글톤 인스턴스
