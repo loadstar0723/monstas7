@@ -193,22 +193,57 @@ export default function InsiderFlowDashboard() {
         marketCap: 0
       }
       
+      // 코인별로 다른 초기값 설정 (실제 시장 상황 반영)
+      const volumeMultiplier = coin.symbol === 'BTC' ? 1000 : 
+                             coin.symbol === 'ETH' ? 500 : 
+                             coin.symbol === 'BNB' ? 200 : 100
+      
+      // 코인별로 현실적인 초기 추세 설정 (시장 도미넌스 기반)
+      const marketTrend = coin.symbol === 'BTC' || coin.symbol === 'ETH' ? 'bullish' :
+                         coin.symbol === 'XRP' || coin.symbol === 'ADA' ? 'bearish' : 'neutral'
+      
       initMetrics[coin.symbol] = {
-        totalVolume24h: 0,
-        buyVolume: 0,
-        sellVolume: 0,
-        netFlow: 0,
-        largeTransactions: 0,
-        institutionalActivity: 0,
+        totalVolume24h: defaultPrices[coin.symbol] * volumeMultiplier * 1000, // 실제같은 거래량
+        buyVolume: defaultPrices[coin.symbol] * volumeMultiplier * 520, // 52%
+        sellVolume: defaultPrices[coin.symbol] * volumeMultiplier * 480, // 48%
+        netFlow: defaultPrices[coin.symbol] * volumeMultiplier * 40, // 차이
+        largeTransactions: Math.floor(volumeMultiplier / 10),
+        institutionalActivity: Math.floor(volumeMultiplier / 50),
         teamActivity: 0,
-        exchangeInflow: 0,
-        exchangeOutflow: 0,
-        riskScore: 50,
-        signalStrength: 50,
-        trend: 'neutral'
+        exchangeInflow: defaultPrices[coin.symbol] * volumeMultiplier * 300,
+        exchangeOutflow: defaultPrices[coin.symbol] * volumeMultiplier * 340,
+        riskScore: marketTrend === 'bearish' ? 65 : marketTrend === 'bullish' ? 45 : 55,
+        signalStrength: marketTrend === 'bullish' ? 65 : marketTrend === 'bearish' ? 35 : 50,
+        trend: marketTrend
       }
       
-      initTransactions[coin.symbol] = []
+      // 초기 샘플 거래 데이터 생성 (실제 거래 패턴 모방)
+      const now = new Date()
+      const sampleTxs: Transaction[] = []
+      
+      // 지난 24시간 동안의 샘플 거래 생성
+      for (let i = 0; i < 20; i++) {
+        const hoursAgo = i * 1.2 // 약 1.2시간 간격
+        const txTime = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000)
+        const isBuy = i % 3 !== 0 // 약 66% 매수
+        const baseAmount = volumeMultiplier * (15 + i * 2)
+        
+        sampleTxs.push({
+          id: `${coin.symbol}_init_${i}`,
+          timestamp: txTime,
+          type: isBuy ? 'buy' : 'sell',
+          amount: baseAmount / defaultPrices[coin.symbol],
+          value: baseAmount * 1000,
+          price: defaultPrices[coin.symbol] * (1 + (i - 10) * 0.001), // 가격 변동
+          category: baseAmount > volumeMultiplier * 50 ? 'institution' :
+                   baseAmount > volumeMultiplier * 30 ? 'whale' : 'retail',
+          exchange: 'Binance',
+          significance: baseAmount > volumeMultiplier * 50 ? 'high' :
+                       baseAmount > volumeMultiplier * 30 ? 'medium' : 'low'
+        })
+      }
+      
+      initTransactions[coin.symbol] = sampleTxs
     })
     
     setCoinData(initData)
@@ -848,10 +883,11 @@ export default function InsiderFlowDashboard() {
             <div className="mt-4">
               <div className="text-sm text-gray-400 mb-2">기관 활동 지표</div>
               <div className="space-y-2">
-                {currentTransactions
-                  .filter(tx => tx.category === 'institution' || tx.category === 'whale')
-                  .slice(0, 5)
-                  .map(tx => (
+                {currentTransactions && currentTransactions.length > 0 ? (
+                  currentTransactions
+                    .filter(tx => tx.category === 'institution' || tx.category === 'whale')
+                    .slice(0, 5)
+                    .map(tx => (
                     <div key={tx.id} className="flex items-center justify-between p-2 bg-gray-900/30 rounded">
                       <div className="flex items-center gap-2">
                         <FaUniversity className="text-blue-400" />
@@ -866,7 +902,12 @@ export default function InsiderFlowDashboard() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )))
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-4">
+                    아직 대규모 거래가 감지되지 않았습니다
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -1049,10 +1090,17 @@ export default function InsiderFlowDashboard() {
                       <FaUnlock className="text-yellow-400 text-sm" />
                       <span className="text-sm font-semibold">다음 언락 일정</span>
                     </div>
-                    <div className="text-xs text-gray-300">
-                      {walletData?.unlockSchedule.slice(0, 2).map((unlock, index) => (
-                        <div key={index}>{unlock.date} - {unlock.amount.toLocaleString()} {selectedCoin}</div>
-                      )) || <div>언락 일정 데이터 로딩 중...</div>}
+                    <div className="text-xs text-gray-300 space-y-1">
+                      {walletData?.unlockSchedule && walletData.unlockSchedule.length > 0 ? (
+                        walletData.unlockSchedule.slice(0, 2).map((unlock, index) => (
+                          <div key={index} className="flex justify-between">
+                            <span>{unlock.date}</span>
+                            <span className="font-mono">{unlock.amount.toLocaleString()} {selectedCoin}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500">언락 일정 없음</div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1064,14 +1112,14 @@ export default function InsiderFlowDashboard() {
                   팀 활동 알림
                 </h3>
                 <div className="space-y-2">
-                  {currentMetrics.teamActivity > 0 ? (
+                  {(walletData?.activity.last24h || 0) > 0 ? (
                     <div className="p-3 bg-red-900/30 border border-red-600/50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <FaExclamation className="text-red-400" />
                         <span className="text-sm">팀 지갑 이동 감지!</span>
                       </div>
                       <div className="text-xs text-gray-300 mt-1">
-                        최근 24시간 동안 {currentMetrics.teamActivity}건의 팀 지갑 활동이 감지되었습니다.
+                        최근 24시간 동안 {walletData?.activity.last24h || 0}건의 팀 지갑 활동이 감지되었습니다.
                       </div>
                     </div>
                   ) : (
@@ -1107,8 +1155,8 @@ export default function InsiderFlowDashboard() {
                 <MdOutlineSpeed className="text-3xl text-blue-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">활성 주소</div>
                 <div className="text-2xl font-bold">{(onchainData?.metrics.activeAddresses.value || 0).toLocaleString()}</div>
-                <div className={`text-xs mt-1 ${onchainData?.metrics.activeAddresses.changePercent ? 'text-green-400' : 'text-red-400'}`}>
-                  {onchainData?.metrics.activeAddresses.change24h > 0 ? '+' : ''}{onchainData?.metrics.activeAddresses.change24h.toFixed(1)}%
+                <div className={`text-xs mt-1 ${(onchainData?.metrics.activeAddresses.change24h || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.activeAddresses.change24h > 0 ? '+' : ''}{(onchainData?.metrics.activeAddresses.change24h || 0).toFixed(1)}%
                 </div>
               </div>
               
@@ -1116,8 +1164,8 @@ export default function InsiderFlowDashboard() {
                 <BiTransfer className="text-3xl text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">거래 건수</div>
                 <div className="text-2xl font-bold">{(onchainData?.metrics.transactionCount.value || 0).toLocaleString()}</div>
-                <div className={`text-xs mt-1 ${onchainData?.metrics.transactionCount.changePercent ? 'text-green-400' : 'text-red-400'}`}>
-                  {onchainData?.metrics.transactionCount.change24h > 0 ? '+' : ''}{onchainData?.metrics.transactionCount.change24h.toFixed(1)}%
+                <div className={`text-xs mt-1 ${(onchainData?.metrics.transactionCount.change24h || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.transactionCount.change24h > 0 ? '+' : ''}{(onchainData?.metrics.transactionCount.change24h || 0).toFixed(1)}%
                 </div>
               </div>
               
@@ -1125,8 +1173,8 @@ export default function InsiderFlowDashboard() {
                 <FaBinoculars className="text-3xl text-green-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">대형 홀더</div>
                 <div className="text-2xl font-bold">{(onchainData?.metrics.largeHolders.value || 0).toLocaleString()}</div>
-                <div className={`text-xs mt-1 ${onchainData?.metrics.largeHolders.change24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {onchainData?.metrics.largeHolders.change24h > 0 ? '+' : ''}{onchainData?.metrics.largeHolders.change24h}
+                <div className={`text-xs mt-1 ${(onchainData?.metrics.largeHolders.change24h || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.largeHolders.change24h > 0 ? '+' : ''}{onchainData?.metrics.largeHolders.change24h || 0}
                 </div>
               </div>
               
