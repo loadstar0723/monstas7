@@ -16,7 +16,7 @@ import { config } from '@/lib/config'
 import SystemOverview, { insiderFlowOverview } from '@/components/signals/SystemOverview'
 import TabGuide from '@/components/signals/TabGuide'
 import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
-import { createBinanceWebSocket } from '@/lib/binanceWebSocket'
+import { createBinanceWebSocket } from '@/lib/binanceConfig'
 
 // 동적 임포트
 const ComprehensiveAnalysis = dynamic(
