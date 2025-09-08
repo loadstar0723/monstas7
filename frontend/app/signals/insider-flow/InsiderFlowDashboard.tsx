@@ -58,6 +58,80 @@ interface Transaction {
   significance: 'low' | 'medium' | 'high' | 'critical'
 }
 
+// API 응답 타입 추가
+interface ConfigData {
+  symbol: string
+  tradingLevels: {
+    strongResistance: number
+    weakResistance: number
+    currentPrice: number
+    weakSupport: number
+    strongSupport: number
+  }
+  entryStrategy: {
+    stopLossRatio: number
+    takeProfitRatio: number
+    positionSizes: {
+      highRisk: number
+      mediumRisk: number
+      lowRisk: number
+    }
+  }
+  thresholds: {
+    largeTransaction: number
+    alertThreshold: number
+    rsiOverbought: number
+    rsiOversold: number
+    signalStrengthBullish: number
+    signalStrengthBearish: number
+  }
+  estimations: {
+    exchangeFlowRatio: number
+  }
+  riskLevels: {
+    critical: number
+    high: number
+    medium: number
+    low: number
+  }
+}
+
+interface OnchainData {
+  symbol: string
+  metrics: {
+    activeAddresses: { value: number; change24h: number; changePercent: boolean }
+    transactionCount: { value: number; change24h: number; changePercent: boolean }
+    largeHolders: { value: number; change24h: number; changeAbsolute: boolean }
+    networkActivity: { value: number; level: string }
+  }
+  holderDistribution: {
+    top10: number
+    top11to50: number
+    top51to100: number
+    others: number
+  }
+}
+
+interface WalletData {
+  symbol: string
+  team: {
+    totalHoldings: number
+    lockedAmount: number
+    lockedPercent: number
+    unlockedAmount: number
+  }
+  unlockSchedule: Array<{
+    date: string
+    amount: number
+    type: string
+  }>
+  activity: {
+    last24h: number
+    last7d: number
+    suspicious: boolean
+  }
+}
+
 // 메인 코인 목록
 const MAIN_COINS = [
   { symbol: 'BTC', name: 'Bitcoin' },
@@ -78,6 +152,11 @@ export default function InsiderFlowDashboard() {
   const [insiderMetrics, setInsiderMetrics] = useState<Record<string, InsiderMetrics>>({})
   const [transactions, setTransactions] = useState<Record<string, Transaction[]>>({})
   const [isLoading, setIsLoading] = useState(true)
+  
+  // API에서 가져온 설정 데이터
+  const [configData, setConfigData] = useState<ConfigData | null>(null)
+  const [onchainData, setOnchainData] = useState<OnchainData | null>(null)
+  const [walletData, setWalletData] = useState<WalletData | null>(null)
   
   const wsRef = useRef<WebSocket | null>(null)
   const priceUpdateRef = useRef<Record<string, NodeJS.Timeout>>({})
@@ -120,6 +199,41 @@ export default function InsiderFlowDashboard() {
     setInsiderMetrics(initMetrics)
     setTransactions(initTransactions)
   }, [])
+  
+  // API에서 설정 데이터 가져오기
+  useEffect(() => {
+    const fetchApiData = async () => {
+      try {
+        // 설정 데이터
+        const configRes = await fetch(`/api/insider/config?symbol=${selectedCoin}`)
+        const configJson = await configRes.json()
+        if (configJson.success) {
+          setConfigData(configJson.data)
+        }
+        
+        // 온체인 데이터
+        const onchainRes = await fetch(`/api/insider/onchain?symbol=${selectedCoin}`)
+        const onchainJson = await onchainRes.json()
+        if (onchainJson.success) {
+          setOnchainData(onchainJson.data)
+        }
+        
+        // 지갑 데이터
+        const walletRes = await fetch(`/api/insider/wallets?symbol=${selectedCoin}`)
+        const walletJson = await walletRes.json()
+        if (walletJson.success) {
+          setWalletData(walletJson.data)
+        }
+      } catch (error) {
+        console.error('Error fetching API data:', error)
+      }
+    }
+    
+    fetchApiData()
+    const interval = setInterval(fetchApiData, 60000) // 1분마다 업데이트
+    
+    return () => clearInterval(interval)
+  }, [selectedCoin])
 
   // 24시간 티커 데이터 가져오기
   useEffect(() => {
@@ -201,9 +315,7 @@ export default function InsiderFlowDashboard() {
         }, 500)
 
         // 대규모 거래만 추적 (동적 임계값)
-        const threshold = symbol === 'BTC' ? 10000 : 
-                        symbol === 'ETH' ? 5000 : 
-                        symbol === 'BNB' ? 3000 : 1000
+        const threshold = configData?.thresholds.largeTransaction || 10000
 
         if (value >= threshold) {
           const newTransaction: Transaction = {
@@ -277,8 +389,8 @@ export default function InsiderFlowDashboard() {
       
       // 트렌드 판단
       let trend: InsiderMetrics['trend'] = 'neutral'
-      if (signalStrength > 65) trend = 'bullish'
-      else if (signalStrength < 35) trend = 'bearish'
+      if (signalStrength > (configData?.thresholds.signalStrengthBullish || 65)) trend = 'bullish'
+      else if (signalStrength < (configData?.thresholds.signalStrengthBearish || 35)) trend = 'bearish'
       
       return {
         ...prev,
@@ -289,9 +401,9 @@ export default function InsiderFlowDashboard() {
           netFlow: buyVolume - sellVolume,
           largeTransactions: recentTxs.length,
           institutionalActivity: institutionalTxs,
-          teamActivity: 0, // 실제 구현 시 팀 지갑 추적 필요
-          exchangeInflow: sellVolume * 0.7, // 추정치
-          exchangeOutflow: buyVolume * 0.7, // 추정치
+          teamActivity: walletData?.activity.last24h || 0, // API에서 가져온 실제 데이터
+          exchangeInflow: sellVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
+          exchangeOutflow: buyVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
           riskScore,
           signalStrength,
           trend
@@ -339,9 +451,10 @@ export default function InsiderFlowDashboard() {
 
   // 색상 함수들
   const getRiskColor = (score: number) => {
-    if (score >= 80) return 'text-red-500 bg-red-500/20'
-    if (score >= 60) return 'text-orange-500 bg-orange-500/20'
-    if (score >= 40) return 'text-yellow-500 bg-yellow-500/20'
+    const levels = configData?.riskLevels
+    if (score >= (levels?.critical || 80)) return 'text-red-500 bg-red-500/20'
+    if (score >= (levels?.high || 60)) return 'text-orange-500 bg-orange-500/20'
+    if (score >= (levels?.medium || 40)) return 'text-yellow-500 bg-yellow-500/20'
     return 'text-green-500 bg-green-500/20'
   }
 
@@ -481,8 +594,8 @@ export default function InsiderFlowDashboard() {
                   animate={{ width: `${currentMetrics.signalStrength}%` }}
                   transition={{ duration: 1 }}
                   className={`absolute h-full ${
-                    currentMetrics.signalStrength > 65 ? 'bg-green-500' :
-                    currentMetrics.signalStrength > 35 ? 'bg-yellow-500' : 'bg-red-500'
+                    currentMetrics.signalStrength > (configData?.thresholds.signalStrengthBullish || 65) ? 'bg-green-500' :
+                    currentMetrics.signalStrength > (configData?.thresholds.signalStrengthBearish || 35) ? 'bg-yellow-500' : 'bg-red-500'
                   }`}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-sm font-bold">
@@ -789,12 +902,13 @@ export default function InsiderFlowDashboard() {
                 <h3 className="font-bold mb-2">진입 전략</h3>
                 <div className="text-sm space-y-1">
                   <div>✅ 진입 가격: ${currentCoinData.price.toLocaleString()}</div>
-                  <div>✅ 손절 가격: ${(currentCoinData.price * 0.97).toLocaleString()} (-3%)</div>
-                  <div>✅ 목표 가격: ${(currentCoinData.price * 1.05).toLocaleString()} (+5%)</div>
+                  <div>✅ 손절 가격: ${(currentCoinData.price * (configData?.entryStrategy.stopLossRatio || 0.97)).toLocaleString()} (-{((1 - (configData?.entryStrategy.stopLossRatio || 0.97)) * 100).toFixed(0)}%)</div>
+                  <div>✅ 목표 가격: ${(currentCoinData.price * (configData?.entryStrategy.takeProfitRatio || 1.05)).toLocaleString()} (+{(((configData?.entryStrategy.takeProfitRatio || 1.05) - 1) * 100).toFixed(0)}%)</div>
                   <div>✅ 포지션 크기: 총 자본의 {
-                    currentMetrics.riskScore > 70 ? '3%' :
-                    currentMetrics.riskScore > 50 ? '5%' : '10%'
-                  } 이하</div>
+                    currentMetrics.riskScore > (configData?.riskLevels.high || 70) ? configData?.entryStrategy.positionSizes.highRisk || 3 :
+                    currentMetrics.riskScore > (configData?.riskLevels.medium || 50) ? configData?.entryStrategy.positionSizes.mediumRisk || 5 : 
+                    configData?.entryStrategy.positionSizes.lowRisk || 10
+                  }% 이하</div>
                 </div>
               </div>
 
@@ -835,12 +949,12 @@ export default function InsiderFlowDashboard() {
                   <div className="p-3 bg-gray-900/50 rounded-lg">
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-gray-400">팀 지갑 보유량</span>
-                      <span className="font-mono">{(1000000).toLocaleString()} {selectedCoin}</span>
+                      <span className="font-mono">{(walletData?.team.totalHoldings || 0).toLocaleString()} {selectedCoin}</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${walletData?.team.lockedPercent || 0}%` }}></div>
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">75% 락업 중</div>
+                    <div className="text-xs text-gray-400 mt-1">{walletData?.team.lockedPercent || 0}% 락업 중</div>
                   </div>
                   
                   <div className="p-3 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
@@ -849,8 +963,9 @@ export default function InsiderFlowDashboard() {
                       <span className="text-sm font-semibold">다음 언락 일정</span>
                     </div>
                     <div className="text-xs text-gray-300">
-                      <div>2025년 3월 15일 - 100,000 {selectedCoin}</div>
-                      <div>2025년 6월 15일 - 150,000 {selectedCoin}</div>
+                      {walletData?.unlockSchedule.slice(0, 2).map((unlock, index) => (
+                        <div key={index}>{unlock.date} - {unlock.amount.toLocaleString()} {selectedCoin}</div>
+                      )) || <div>언락 일정 데이터 로딩 중...</div>}
                     </div>
                   </div>
                 </div>
@@ -904,29 +1019,35 @@ export default function InsiderFlowDashboard() {
               <div className="bg-gray-900/50 rounded-lg p-4 text-center">
                 <MdOutlineSpeed className="text-3xl text-blue-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">활성 주소</div>
-                <div className="text-2xl font-bold">{(125000).toLocaleString()}</div>
-                <div className="text-xs text-green-400 mt-1">+12.5%</div>
+                <div className="text-2xl font-bold">{(onchainData?.metrics.activeAddresses.value || 0).toLocaleString()}</div>
+                <div className={`text-xs mt-1 ${onchainData?.metrics.activeAddresses.changePercent ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.activeAddresses.change24h > 0 ? '+' : ''}{onchainData?.metrics.activeAddresses.change24h.toFixed(1)}%
+                </div>
               </div>
               
               <div className="bg-gray-900/50 rounded-lg p-4 text-center">
                 <BiTransfer className="text-3xl text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">거래 건수</div>
-                <div className="text-2xl font-bold">{(8500000).toLocaleString()}</div>
-                <div className="text-xs text-red-400 mt-1">-5.2%</div>
+                <div className="text-2xl font-bold">{(onchainData?.metrics.transactionCount.value || 0).toLocaleString()}</div>
+                <div className={`text-xs mt-1 ${onchainData?.metrics.transactionCount.changePercent ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.transactionCount.change24h > 0 ? '+' : ''}{onchainData?.metrics.transactionCount.change24h.toFixed(1)}%
+                </div>
               </div>
               
               <div className="bg-gray-900/50 rounded-lg p-4 text-center">
                 <FaBinoculars className="text-3xl text-green-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">대형 홀더</div>
-                <div className="text-2xl font-bold">1,250</div>
-                <div className="text-xs text-green-400 mt-1">+25</div>
+                <div className="text-2xl font-bold">{(onchainData?.metrics.largeHolders.value || 0).toLocaleString()}</div>
+                <div className={`text-xs mt-1 ${onchainData?.metrics.largeHolders.change24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {onchainData?.metrics.largeHolders.change24h > 0 ? '+' : ''}{onchainData?.metrics.largeHolders.change24h}
+                </div>
               </div>
               
               <div className="bg-gray-900/50 rounded-lg p-4 text-center">
                 <AiOutlineRadarChart className="text-3xl text-orange-400 mx-auto mb-2" />
                 <div className="text-sm text-gray-400">네트워크 활성도</div>
-                <div className="text-2xl font-bold">87%</div>
-                <div className="text-xs text-yellow-400 mt-1">높음</div>
+                <div className="text-2xl font-bold">{(onchainData?.metrics.networkActivity.value || 0).toFixed(0)}%</div>
+                <div className="text-xs text-yellow-400 mt-1">{onchainData?.metrics.networkActivity.level || '보통'}</div>
               </div>
             </div>
             
@@ -937,36 +1058,36 @@ export default function InsiderFlowDashboard() {
                   <span className="text-sm">상위 1-10 홀더</span>
                   <div className="flex items-center gap-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: '35%' }}></div>
+                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${onchainData?.holderDistribution.top10 || 0}%` }}></div>
                     </div>
-                    <span className="text-sm font-mono">35%</span>
+                    <span className="text-sm font-mono">{onchainData?.holderDistribution.top10 || 0}%</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
                   <span className="text-sm">상위 11-50 홀더</span>
                   <div className="flex items-center gap-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${onchainData?.holderDistribution.top11to50 || 0}%` }}></div>
                     </div>
-                    <span className="text-sm font-mono">25%</span>
+                    <span className="text-sm font-mono">{onchainData?.holderDistribution.top11to50 || 0}%</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
                   <span className="text-sm">상위 51-100 홀더</span>
                   <div className="flex items-center gap-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '15%' }}></div>
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: `${onchainData?.holderDistribution.top51to100 || 0}%` }}></div>
                     </div>
-                    <span className="text-sm font-mono">15%</span>
+                    <span className="text-sm font-mono">{onchainData?.holderDistribution.top51to100 || 0}%</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
                   <span className="text-sm">기타</span>
                   <div className="flex items-center gap-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                      <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${onchainData?.holderDistribution.others || 0}%` }}></div>
                     </div>
-                    <span className="text-sm font-mono">25%</span>
+                    <span className="text-sm font-mono">{onchainData?.holderDistribution.others || 0}%</span>
                   </div>
                 </div>
               </div>
@@ -992,13 +1113,13 @@ export default function InsiderFlowDashboard() {
                   <div className="flex justify-between p-3 bg-gray-900/50 rounded-lg">
                     <span className="text-sm text-gray-400">강력 저항선</span>
                     <span className="font-mono text-red-400">
-                      ${(currentCoinData.price * 1.15).toLocaleString()}
+                      ${(configData?.tradingLevels.strongResistance || currentCoinData.price * 1.15).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between p-3 bg-gray-900/50 rounded-lg">
                     <span className="text-sm text-gray-400">약한 저항선</span>
                     <span className="font-mono text-orange-400">
-                      ${(currentCoinData.price * 1.05).toLocaleString()}
+                      ${(configData?.tradingLevels.weakResistance || currentCoinData.price * 1.05).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between p-3 bg-blue-900/30 rounded-lg border border-blue-600/50">
@@ -1010,13 +1131,13 @@ export default function InsiderFlowDashboard() {
                   <div className="flex justify-between p-3 bg-gray-900/50 rounded-lg">
                     <span className="text-sm text-gray-400">약한 지지선</span>
                     <span className="font-mono text-yellow-400">
-                      ${(currentCoinData.price * 0.95).toLocaleString()}
+                      ${(configData?.tradingLevels.weakSupport || currentCoinData.price * 0.95).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between p-3 bg-gray-900/50 rounded-lg">
                     <span className="text-sm text-gray-400">강력 지지선</span>
                     <span className="font-mono text-green-400">
-                      ${(currentCoinData.price * 0.85).toLocaleString()}
+                      ${(configData?.tradingLevels.strongSupport || currentCoinData.price * 0.85).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -1082,7 +1203,7 @@ export default function InsiderFlowDashboard() {
               <div>
                 <h3 className="font-semibold mb-3">활성 시그널</h3>
                 <div className="space-y-2">
-                  {currentMetrics.signalStrength > 70 && (
+                  {currentMetrics.signalStrength > (configData?.thresholds.rsiOverbought || 70) && (
                     <div className="p-3 bg-green-900/30 border border-green-600/50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <FaArrowUp className="text-green-400" />
@@ -1106,7 +1227,7 @@ export default function InsiderFlowDashboard() {
                     </div>
                   )}
                   
-                  {currentMetrics.riskScore > 70 && (
+                  {currentMetrics.riskScore > (configData?.riskLevels.high || 70) && (
                     <div className="p-3 bg-red-900/30 border border-red-600/50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <AiOutlineWarning className="text-red-400" />
@@ -1129,7 +1250,7 @@ export default function InsiderFlowDashboard() {
                       <input type="checkbox" className="toggle" defaultChecked />
                     </label>
                     <div className="text-xs text-gray-400 mt-1">
-                      ${selectedCoin === 'BTC' ? '100K' : '50K'}+ 거래 시 알림
+                      ${(configData?.thresholds.alertThreshold / 1000 || (selectedCoin === 'BTC' ? 100 : 50))}K+ 거래 시 알림
                     </div>
                   </div>
                   

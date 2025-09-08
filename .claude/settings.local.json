@@ -158,7 +158,9 @@
       "Bash(npx next:*)",
       "Bash(start http://localhost:3014/signals/liquidation)",
       "Bash(start http://localhost:3015/signals/liquidation)",
-      "Bash(iconv:*)"
+      "Bash(iconv:*)",
+      "Bash(git rm:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
