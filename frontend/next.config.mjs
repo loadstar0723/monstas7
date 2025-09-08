@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 서버 설정
+  output: 'standalone',
+  poweredByHeader: false,
+  generateEtags: false,
+  
   // 이미지 최적화
   images: {
     domains: ['localhost', '13.209.84.93'],
