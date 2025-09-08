@@ -1,41 +1,37 @@
-# GitHub Actions 배포 설정 가이드
+# GitHub Actions 자동 배포 시스템 📦
 
-## 필수 GitHub Secrets 설정
+## 🚀 자동 배포 프로세스
 
-GitHub 저장소 Settings → Secrets and variables → Actions에서 다음 시크릿을 추가하세요:
+이 저장소는 GitHub Actions를 통한 자동 배포가 구성되어 있습니다.
 
-### SSH_PRIVATE_KEY
-AWS EC2 인스턴스에 접속하기 위한 SSH 프라이빗 키
+### 배포 트리거
+- **자동**: master/main 브랜치에 push 시 자동 실행
+- **수동**: GitHub Actions 탭에서 수동 실행 가능
 
-```bash
-# monsta-key.pem 파일의 전체 내용을 복사하여 붙여넣기
------BEGIN RSA PRIVATE KEY-----
-... (키 내용) ...
------END RSA PRIVATE KEY-----
-```
+### 배포 순서
+1. 📥 최신 코드 가져오기 (git pull)
+2. 📦 의존성 설치 (npm install)
+3. 🏗️ 프로덕션 빌드 (npm run build)
+4. 🔄 PM2 재시작
+5. ✅ 배포 완료
 
-## 배포 프로세스
+## 🔐 필수 GitHub Secrets 설정
 
-1. **자동 배포**: master 브랜치에 push하면 자동으로 배포가 시작됩니다
-2. **수동 배포**: Actions 탭에서 "Deploy to AWS EC2" 워크플로우를 수동으로 실행할 수 있습니다
+**Settings → Secrets and variables → Actions**에서 설정:
 
-## 배포 단계
+### AWS_SERVER_KEY
+AWS EC2 인스턴스 접속용 SSH 프라이빗 키
+- monsta-key.pem 파일의 전체 내용을 복사하여 등록
+- BEGIN RSA PRIVATE KEY부터 END RSA PRIVATE KEY까지 모두 포함
 
-1. 코드 체크아웃
-2. SSH 키 설정
-3. EC2 서버 접속
-4. 최신 코드 pull
-5. 프론트엔드 빌드
-6. PM2로 애플리케이션 재시작
+## 📊 배포 상태 확인
 
-## 문제 해결
+- **GitHub Actions**: https://github.com/loadstar0723/monstas7/actions
+- **라이브 사이트**: http://13.209.84.93:3000
 
-### 배포 실패 시
-1. GitHub Actions 로그 확인
-2. EC2 서버에 직접 SSH 접속하여 상태 확인
-3. PM2 로그 확인: `pm2 logs monstas7`
+## 🛠️ 문제 해결
 
-### 일반적인 문제
-- **SSH 연결 실패**: SSH_PRIVATE_KEY 시크릿이 올바르게 설정되었는지 확인
-- **빌드 실패**: 로컬에서 `npm run build`가 성공하는지 확인
-- **PM2 재시작 실패**: `pm2 status`로 프로세스 상태 확인
+배포 실패 시:
+1. Actions 탭에서 에러 로그 확인
+2. SSH 키가 올바르게 등록되었는지 확인
+3. 서버 연결 상태 점검
