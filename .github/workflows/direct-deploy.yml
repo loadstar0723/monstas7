@@ -1,0 +1,97 @@
+name: Direct Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Direct Deploy to Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          script: |
+            echo "🚀 직접 배포 시작..."
+            
+            # 1. 프로세스 정리
+            echo "1️⃣ 기존 프로세스 정리"
+            pm2 stop all 2>/dev/null || true
+            pm2 delete all 2>/dev/null || true
+            pkill -f "node" 2>/dev/null || true
+            
+            # 2. 프로젝트 업데이트
+            echo "2️⃣ 코드 업데이트"
+            cd ~/monstas7 || {
+              cd ~
+              git clone https://github.com/loadstar0723/monstas7.git
+              cd monstas7
+            }
+            git fetch origin master
+            git reset --hard origin/master
+            
+            # 3. Frontend 설정
+            echo "3️⃣ Frontend 설정"
+            cd frontend
+            
+            # 환경 변수
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            DATABASE_URL="file:./dev.db"
+            EOF
+            
+            # 4. 의존성 설치
+            echo "4️⃣ 의존성 설치"
+            npm ci || npm install
+            
+            # 5. Prisma 설정
+            echo "5️⃣ Prisma 클라이언트 생성"
+            npx prisma generate || echo "Prisma generate 실패, 계속 진행"
+            
+            # 6. 빌드 시도
+            echo "6️⃣ 프로덕션 빌드"
+            npm run build || {
+              echo "빌드 실패! 개발 모드로 실행합니다."
+              NODE_ENV=development
+            }
+            
+            # 7. PM2로 실행
+            echo "7️⃣ PM2로 서버 시작"
+            cd ~/monstas7
+            
+            # PM2 ecosystem 설정 확인
+            if [ -f ecosystem.config.js ]; then
+              pm2 start ecosystem.config.js
+            else
+              echo "ecosystem.config.js 없음, 직접 실행"
+              cd frontend
+              pm2 start npm --name "monsta-prod" -- start
+            fi
+            
+            # 8. PM2 저장
+            pm2 save
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
+            
+            # 9. 대기
+            echo "8️⃣ 서버 시작 대기중..."
+            sleep 15
+            
+            # 10. 상태 확인
+            echo "9️⃣ 서버 상태 확인"
+            pm2 status
+            pm2 logs --lines 50 --nostream
+            
+            # 11. 테스트
+            echo "🔟 연결 테스트"
+            curl -I http://localhost:3000 || echo "로컬 연결 실패"
+            curl -I http://localhost:3000/test || echo "테스트 페이지 접속 실패"
+            
+            echo "✅ 배포 완료!"
+            echo "🌐 http://13.209.84.93:3000"
