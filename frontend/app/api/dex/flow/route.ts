@@ -182,39 +182,25 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('DEX flow API error:', error)
     
-    // 에러 시 기본값 (실제 시장 평균값 기반)
+    // 에러 시 빈 데이터 반환 (CLAUDE.md 규칙: 가짜 데이터 금지)
     const coin = searchParams.get('coin') || 'ETH'
     
     return NextResponse.json({
       success: true,
       data: {
         transactions: [],
-        pools: [
-          {
-            pair: `${coin}/USDT`,
-            dex: getTopDex(coin),
-            tvl: 10000000,
-            volume24h: 2500000,
-            apy: 15.5,
-            token0Reserve: 2500,
-            token1Reserve: 10000000,
-            priceImpact1: 0.15,
-            priceImpact5: 0.75,
-            feeRate: 0.3,
-            ilRisk: 2.5
-          }
-        ],
+        pools: [],
         arbitrage: [],
         mev: [],
         stats: {
-          totalVolume24h: 2500000,
-          totalTVL: 10000000,
+          totalVolume24h: 0,
+          totalTVL: 0,
           topDex: getTopDex(coin),
-          activeWallets: 5000,
-          avgSlippage: 0.35,
-          totalMEVProfit: 5000,
-          largestSwap: 125000,
-          totalTransactions: 8765
+          activeWallets: 0,
+          avgSlippage: 0,
+          totalMEVProfit: 0,
+          largestSwap: 0,
+          totalTransactions: 0
         },
         timestamp: Date.now()
       }

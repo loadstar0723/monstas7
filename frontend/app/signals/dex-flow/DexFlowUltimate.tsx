@@ -388,10 +388,12 @@ export default function DexFlowUltimate() {
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex items-center justify-between mb-2">
                   <FaExchangeAlt className="text-purple-400" />
-                  <span className="text-xs text-green-400">+12.5%</span>
+                  {stats.largestSwap > 0 && (
+                    <span className="text-xs text-gray-400">최대</span>
+                  )}
                 </div>
                 <p className="text-gray-400 text-sm">대규모 스왑</p>
-                <p className="text-2xl font-bold">{stats.largestSwap > 0 ? `$${(stats.largestSwap / 1000).toFixed(0)}K` : '-'}</p>
+                <p className="text-2xl font-bold">{stats.largestSwap > 0 ? `$${(stats.largestSwap / 1000).toFixed(0)}K` : '$0'}</p>
               </div>
               
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
@@ -414,7 +416,12 @@ export default function DexFlowUltimate() {
                   <span className="text-xs text-red-400">MEV</span>
                 </div>
                 <p className="text-gray-400 text-sm">MEV 수익</p>
-                <p className="text-2xl font-bold">${(stats.totalMEVProfit / 1000).toFixed(1)}K</p>
+                <p className="text-2xl font-bold">
+                  {stats.totalMEVProfit > 0 
+                    ? `$${(stats.totalMEVProfit / 1000).toFixed(1)}K`
+                    : '$0'
+                  }
+                </p>
               </div>
               
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
@@ -434,21 +441,32 @@ export default function DexFlowUltimate() {
                 {coinInfo.chain} 체인 DEX
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {availableDexes.map((dex) => (
-                  <div key={dex} className="bg-gray-900/50 rounded-lg p-3 border border-gray-600">
-                    <p className="font-medium">{dex}</p>
-                    <div className="mt-2 text-xs text-gray-400">
-                      <div className="flex justify-between">
-                        <span>TVL</span>
-                        <span className="text-gray-300">$-M</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Vol 24h</span>
-                        <span className="text-gray-300">$-M</span>
+                {availableDexes.map((dex, index) => {
+                  // 각 DEX의 실제 데이터 찾기
+                  const pool = liquidityPools.find(p => p.dex === dex)
+                  const tvl = pool ? pool.tvl / 1000000 : 0
+                  const volume = pool ? pool.volume24h / 1000000 : 0
+                  
+                  return (
+                    <div key={dex} className="bg-gray-900/50 rounded-lg p-3 border border-gray-600">
+                      <p className="font-medium">{dex}</p>
+                      <div className="mt-2 text-xs text-gray-400">
+                        <div className="flex justify-between">
+                          <span>TVL</span>
+                          <span className="text-gray-300">
+                            ${tvl > 0 ? tvl.toFixed(1) : '0'}M
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Vol 24h</span>
+                          <span className="text-gray-300">
+                            ${volume > 0 ? volume.toFixed(1) : '0'}M
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </motion.div>
