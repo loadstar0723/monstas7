@@ -141,7 +141,8 @@
       "Bash(mv:*)",
       "Bash(rm:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(npm run start:*)"
+      "Bash(npm run start:*)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\insider-flow\\InsiderFlowSimple.tsx\")"
     ],
     "deny": [],
     "ask": []

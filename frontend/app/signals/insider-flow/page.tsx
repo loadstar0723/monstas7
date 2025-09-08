@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic'
 
-// InsiderFlowSimple 컴포넌트를 먼저 사용 (디버깅용)
-const InsiderFlowSimple = dynamic(
-  () => import('./InsiderFlowSimple'),
+// InsiderFlowUltimate 컴포넌트로 전환
+const InsiderFlowUltimate = dynamic(
+  () => import('./InsiderFlowUltimate'),
   { 
     ssr: false,
     loading: () => (
@@ -18,12 +18,6 @@ const InsiderFlowSimple = dynamic(
   }
 )
 
-// 나중에 Ultimate로 전환 예정
-// const InsiderFlowUltimate = dynamic(
-//   () => import('./InsiderFlowUltimate'),
-//   { ssr: false }
-// )
-
 export default function InsiderFlowPage() {
-  return <InsiderFlowSimple />
+  return <InsiderFlowUltimate />
 }
