@@ -152,6 +152,7 @@ export default function InsiderFlowDashboard() {
   const [insiderMetrics, setInsiderMetrics] = useState<Record<string, InsiderMetrics>>({})
   const [transactions, setTransactions] = useState<Record<string, Transaction[]>>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [dataLoaded, setDataLoaded] = useState(false)
   
   // API에서 가져온 설정 데이터
   const [configData, setConfigData] = useState<ConfigData | null>(null)
@@ -167,11 +168,25 @@ export default function InsiderFlowDashboard() {
     const initMetrics: Record<string, InsiderMetrics> = {}
     const initTransactions: Record<string, Transaction[]> = {}
     
+    // 기본값으로 초기화 (실제 가격에 가까운 값)
+    const defaultPrices: Record<string, number> = {
+      BTC: 98000,
+      ETH: 3500,
+      BNB: 700,
+      SOL: 240,
+      XRP: 2.5,
+      ADA: 1.2,
+      AVAX: 45,
+      DOT: 10,
+      MATIC: 1.5,
+      LINK: 20
+    }
+    
     MAIN_COINS.forEach(coin => {
       initData[coin.symbol] = {
         symbol: coin.symbol,
         name: coin.name,
-        price: 0,
+        price: defaultPrices[coin.symbol] || 0,
         change24h: 0,
         volume24h: 0,
         marketCap: 0
@@ -187,8 +202,8 @@ export default function InsiderFlowDashboard() {
         teamActivity: 0,
         exchangeInflow: 0,
         exchangeOutflow: 0,
-        riskScore: 0,
-        signalStrength: 0,
+        riskScore: 50,
+        signalStrength: 50,
         trend: 'neutral'
       }
       
@@ -198,85 +213,135 @@ export default function InsiderFlowDashboard() {
     setCoinData(initData)
     setInsiderMetrics(initMetrics)
     setTransactions(initTransactions)
+    
+    // 초기화 완료 후 바로 로딩 해제
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
   }, [])
   
   // API에서 설정 데이터 가져오기
   useEffect(() => {
     const fetchApiData = async () => {
       try {
+        // 병렬로 모든 API 호출
+        const [configRes, onchainRes, walletRes] = await Promise.allSettled([
+          fetch(`/api/insider/config?symbol=${selectedCoin}`),
+          fetch(`/api/insider/onchain?symbol=${selectedCoin}`),
+          fetch(`/api/insider/wallets?symbol=${selectedCoin}`)
+        ])
+        
         // 설정 데이터
-        const configRes = await fetch(`/api/insider/config?symbol=${selectedCoin}`)
-        const configJson = await configRes.json()
-        if (configJson.success) {
-          setConfigData(configJson.data)
+        if (configRes.status === 'fulfilled' && configRes.value.ok) {
+          const configJson = await configRes.value.json()
+          if (configJson.success) {
+            setConfigData(configJson.data)
+          }
         }
         
         // 온체인 데이터
-        const onchainRes = await fetch(`/api/insider/onchain?symbol=${selectedCoin}`)
-        const onchainJson = await onchainRes.json()
-        if (onchainJson.success) {
-          setOnchainData(onchainJson.data)
+        if (onchainRes.status === 'fulfilled' && onchainRes.value.ok) {
+          const onchainJson = await onchainRes.value.json()
+          if (onchainJson.success) {
+            setOnchainData(onchainJson.data)
+          }
         }
         
         // 지갑 데이터
-        const walletRes = await fetch(`/api/insider/wallets?symbol=${selectedCoin}`)
-        const walletJson = await walletRes.json()
-        if (walletJson.success) {
-          setWalletData(walletJson.data)
+        if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
+          const walletJson = await walletRes.value.json()
+          if (walletJson.success) {
+            setWalletData(walletJson.data)
+          }
         }
       } catch (error) {
         console.error('Error fetching API data:', error)
       }
     }
     
+    // 즉시 호출
     fetchApiData()
-    const interval = setInterval(fetchApiData, 60000) // 1분마다 업데이트
+    
+    // 30초마다 업데이트 (너무 자주 호출하지 않도록)
+    const interval = setInterval(fetchApiData, 30000)
     
     return () => clearInterval(interval)
   }, [selectedCoin])
 
   // 24시간 티커 데이터 가져오기
   useEffect(() => {
+    console.log('Starting to fetch ticker data...')
+    
     const fetchTickerData = async () => {
       try {
-        for (const coin of MAIN_COINS) {
+        // 병렬로 모든 코인 데이터 가져오기
+        const promises = MAIN_COINS.map(async (coin) => {
           try {
             const response = await fetch(`/api/binance/ticker24hr?symbol=${coin.symbol}USDT`)
             const data = await response.json()
             
             if (data.success && data.data) {
-              setCoinData(prev => ({
-                ...prev,
-                [coin.symbol]: {
-                  ...prev[coin.symbol],
+              return {
+                symbol: coin.symbol,
+                data: {
+                  symbol: coin.symbol,
+                  name: coin.name,
                   price: data.data.lastPrice,
                   change24h: data.data.priceChangePercent,
                   volume24h: data.data.quoteVolume,
                   marketCap: data.data.lastPrice * data.data.volume
                 }
-              }))
+              }
             }
+            return null
           } catch (error) {
             console.error(`Error fetching ticker for ${coin.symbol}:`, error)
+            // 에러가 발생해도 기본값 반환
+            return {
+              symbol: coin.symbol,
+              data: {
+                symbol: coin.symbol,
+                name: coin.name,
+                price: 0,
+                change24h: 0,
+                volume24h: 0,
+                marketCap: 0
+              }
+            }
           }
-        }
+        })
+        
+        const results = await Promise.all(promises)
+        
+        // 결과를 한 번에 업데이트
+        const newCoinData: Record<string, CoinData> = {}
+        results.forEach(result => {
+          if (result) {
+            newCoinData[result.symbol] = result.data
+          }
+        })
+        
+        setCoinData(prev => ({ ...prev, ...newCoinData }))
+        console.log('Ticker data fetched successfully')
+      } catch (error) {
+        console.error('Error in fetchTickerData:', error)
       } finally {
         // 에러가 발생하더라도 로딩 상태를 해제
+        console.log('Setting loading to false')
         setIsLoading(false)
       }
     }
     
+    // 즉시 실행
     fetchTickerData()
-    const interval = setInterval(fetchTickerData, 30000) // 30초마다 업데이트
     
-    // 2초 후에도 로딩 중이면 강제로 로딩 해제
-    const timeout = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
+    // 30초마다 업데이트
+    const interval = setInterval(fetchTickerData, 30000)
+    
+    // 로딩은 초기 데이터 설정에서 이미 해제됨
     
     return () => {
       clearInterval(interval)
-      clearTimeout(timeout)
     }
   }, [])
 
@@ -469,7 +534,9 @@ export default function InsiderFlowDashboard() {
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-          <p className="text-xl">내부자 거래 대시보드 로딩 중...</p>
+          <p className="text-xl mb-2">내부자 거래 대시보드 로딩 중...</p>
+          <p className="text-sm text-gray-400">실시간 데이터를 가져오는 중입니다</p>
+          <p className="text-xs text-gray-500 mt-2">잠시만 기다려주세요</p>
         </div>
       </div>
     )
