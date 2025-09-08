@@ -113,6 +113,11 @@ class AudioService {
       })
     }
   }
+
+  // 신호 알림 재생 (내부자 거래용)
+  playSignalAlert() {
+    this.playNotification('whale')
+  }
 }
 
 // 싱글톤 인스턴스
