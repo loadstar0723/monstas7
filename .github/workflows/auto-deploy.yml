@@ -26,6 +26,10 @@ jobs:
             echo "📥 최신 코드 가져오는 중..."
             git pull origin master
             
+            # 파일 타임스탬프 업데이트
+            echo "🕐 파일 타임스탬프 업데이트 중..."
+            find . -type f \( -name "*.tsx" -o -name "*.ts" -o -name "*.jsx" -o -name "*.js" \) -exec touch {} \;
+            
             # Frontend 빌드
             cd frontend
             echo "📦 의존성 설치 중..."
