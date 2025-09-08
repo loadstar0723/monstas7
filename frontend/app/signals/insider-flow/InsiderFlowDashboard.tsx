@@ -902,7 +902,7 @@ export default function InsiderFlowDashboard() {
                         </div>
                       </div>
                     </div>
-                  )))
+                  ))
                 ) : (
                   <div className="text-center text-gray-500 text-sm py-4">
                     아직 대규모 거래가 감지되지 않았습니다
