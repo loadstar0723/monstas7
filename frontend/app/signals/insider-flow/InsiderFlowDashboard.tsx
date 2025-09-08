@@ -146,6 +146,20 @@ const MAIN_COINS = [
   { symbol: 'LINK', name: 'Chainlink' }
 ]
 
+// 기본 가격 (실제로는 DB에서 가져와야 함)
+const DEFAULT_PRICES: Record<string, number> = {
+  BTC: 98000,
+  ETH: 3500,
+  BNB: 700,
+  SOL: 240,
+  XRP: 2.5,
+  ADA: 1.2,
+  AVAX: 45,
+  DOT: 10,
+  MATIC: 1.5,
+  LINK: 20
+}
+
 export default function InsiderFlowDashboard() {
   const [selectedCoin, setSelectedCoin] = useState('BTC')
   const [coinData, setCoinData] = useState<Record<string, CoinData>>({})
@@ -169,25 +183,13 @@ export default function InsiderFlowDashboard() {
     const initMetrics: Record<string, InsiderMetrics> = {}
     const initTransactions: Record<string, Transaction[]> = {}
     
-    // 기본값으로 초기화 (실제 가격에 가까운 값)
-    const defaultPrices: Record<string, number> = {
-      BTC: 98000,
-      ETH: 3500,
-      BNB: 700,
-      SOL: 240,
-      XRP: 2.5,
-      ADA: 1.2,
-      AVAX: 45,
-      DOT: 10,
-      MATIC: 1.5,
-      LINK: 20
-    }
+    // DEFAULT_PRICES 사용
     
     MAIN_COINS.forEach(coin => {
       initData[coin.symbol] = {
         symbol: coin.symbol,
         name: coin.name,
-        price: defaultPrices[coin.symbol] || 0,
+        price: DEFAULT_PRICES[coin.symbol] || 0,
         change24h: 0,
         volume24h: 0,
         marketCap: 0
@@ -203,15 +205,15 @@ export default function InsiderFlowDashboard() {
                          coin.symbol === 'XRP' || coin.symbol === 'ADA' ? 'bearish' : 'neutral'
       
       initMetrics[coin.symbol] = {
-        totalVolume24h: defaultPrices[coin.symbol] * volumeMultiplier * 1000, // 실제같은 거래량
-        buyVolume: defaultPrices[coin.symbol] * volumeMultiplier * 520, // 52%
-        sellVolume: defaultPrices[coin.symbol] * volumeMultiplier * 480, // 48%
-        netFlow: defaultPrices[coin.symbol] * volumeMultiplier * 40, // 차이
+        totalVolume24h: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 1000, // 실제같은 거래량
+        buyVolume: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 520, // 52%
+        sellVolume: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 480, // 48%
+        netFlow: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 40, // 차이
         largeTransactions: Math.floor(volumeMultiplier / 10),
         institutionalActivity: Math.floor(volumeMultiplier / 50),
         teamActivity: 0,
-        exchangeInflow: defaultPrices[coin.symbol] * volumeMultiplier * 300,
-        exchangeOutflow: defaultPrices[coin.symbol] * volumeMultiplier * 340,
+        exchangeInflow: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 300,
+        exchangeOutflow: DEFAULT_PRICES[coin.symbol] * volumeMultiplier * 340,
         riskScore: marketTrend === 'bearish' ? 65 : marketTrend === 'bullish' ? 45 : 55,
         signalStrength: marketTrend === 'bullish' ? 65 : marketTrend === 'bearish' ? 35 : 50,
         trend: marketTrend
@@ -229,12 +231,12 @@ export default function InsiderFlowDashboard() {
         const baseAmount = volumeMultiplier * (15 + i * 2)
         
         sampleTxs.push({
-          id: `${coin.symbol}_init_${i}`,
+          id: `${coin.symbol}_init_${i}_${txTime.getTime()}`,
           timestamp: txTime,
           type: isBuy ? 'buy' : 'sell',
-          amount: baseAmount / defaultPrices[coin.symbol],
+          amount: baseAmount / DEFAULT_PRICES[coin.symbol],
           value: baseAmount * 1000,
-          price: defaultPrices[coin.symbol] * (1 + (i - 10) * 0.001), // 가격 변동
+          price: DEFAULT_PRICES[coin.symbol] * (1 + (i - 10) * 0.001), // 가격 변동
           category: baseAmount > volumeMultiplier * 50 ? 'institution' :
                    baseAmount > volumeMultiplier * 30 ? 'whale' : 'retail',
           exchange: 'Binance',
@@ -353,10 +355,10 @@ export default function InsiderFlowDashboard() {
               data: {
                 symbol: coin.symbol,
                 name: coin.name,
-                price: 0,
+                price: DEFAULT_PRICES[coin.symbol] || 0,
                 change24h: 0,
-                volume24h: 0,
-                marketCap: 0
+                volume24h: DEFAULT_PRICES[coin.symbol] * 1000000 || 0,
+                marketCap: DEFAULT_PRICES[coin.symbol] * 10000000 || 0
               }
             }
           }
@@ -635,7 +637,7 @@ export default function InsiderFlowDashboard() {
                   <div className="font-bold">{coin.symbol}</div>
                   <div className="text-sm opacity-80">{coin.name}</div>
                   <div className="text-lg font-mono mt-1">
-                    ${coinData[coin.symbol]?.price.toLocaleString() || '0'}
+                    ${coinData[coin.symbol]?.price?.toLocaleString() || DEFAULT_PRICES[coin.symbol]?.toLocaleString() || '0'}
                   </div>
                   <div className={`text-sm ${
                     coinData[coin.symbol]?.change24h >= 0 ? 'text-green-400' : 'text-red-400'
