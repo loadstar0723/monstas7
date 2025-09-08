@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+// import { signIn } from 'next-auth/react' // next-auth 비활성화
 import { motion } from 'framer-motion'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
 import LoadingSpinner from './LoadingSpinner'
@@ -22,11 +22,8 @@ export default function LoginForm() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false
-      })
+      // next-auth 비활성화 - 임시 로그인 처리
+      const result = { ok: true } // await signIn('credentials', { email, password, redirect: false })
 
       if (result?.error) {
         setError(result.error)

@@ -88,6 +88,11 @@ jobs:
             # npm 패키지 설치
             npm install
             
+            # 🔧 기존 빌드 파일 완전 삭제 (캐시 문제 해결)
+            echo "🗑️ Cleaning old build files..."
+            rm -rf .next
+            rm -rf node_modules/.cache
+            
             # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
             echo "🔍 배포 전 검증 시작..."
             

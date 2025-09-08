@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SidebarNew from "@/components/SidebarNew";
-import AuthProvider from "@/components/AuthProvider";
+// import AuthProvider from "@/components/AuthProvider"; // next-auth 비활성화
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import MainContent from "@/components/MainContent";
@@ -45,19 +45,18 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} dark:bg-black dark:text-white bg-white text-gray-900 antialiased`}>
-        <AuthProvider>
-          <ThemeProvider>
-            <SidebarProvider>
-              <ServiceWorkerRegistration />
-              <PWAInstallPrompt />
-              <div className="min-h-screen">
-                <SidebarNew />
-                <MainContent>{children}</MainContent>
-                <MobileBottomNav />
-              </div>
-            </SidebarProvider>
-          </ThemeProvider>
-        </AuthProvider>
+        {/* AuthProvider 제거 - next-auth 비활성화 */}
+        <ThemeProvider>
+          <SidebarProvider>
+            <ServiceWorkerRegistration />
+            <PWAInstallPrompt />
+            <div className="min-h-screen">
+              <SidebarNew />
+              <MainContent>{children}</MainContent>
+              <MobileBottomNav />
+            </div>
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
