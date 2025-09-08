@@ -45,3 +45,14 @@ jobs:
             
             echo "✅ 배포 완료!"
             pm2 status
+            
+            # 배포 성공 로그
+            echo "[$(date)] 배포 성공 - 커밋: $GITHUB_SHA" >> /home/ubuntu/monstas7/logs/deployment.log
+            
+            # 배포 결과 확인
+            if curl -f http://localhost > /dev/null 2>&1; then
+              echo "🎉 사이트 정상 작동 확인!"
+            else
+              echo "❌ 사이트 연결 실패!" >&2
+              exit 1
+            fi
