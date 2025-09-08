@@ -633,15 +633,19 @@ export default function DexFlowUltimate() {
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-gray-400 mb-3">TVL 변화 추이</h4>
                 <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={[
-                    { time: '00:00', tvl: 45000000 },
-                    { time: '04:00', tvl: 46500000 },
-                    { time: '08:00', tvl: 48200000 },
-                    { time: '12:00', tvl: 51000000 },
-                    { time: '16:00', tvl: 49800000 },
-                    { time: '20:00', tvl: 52300000 },
-                    { time: '24:00', tvl: 53100000 }
-                  ]}>
+                  <AreaChart data={
+                    liquidityPools.length > 0 
+                      ? [
+                          { time: '00:00', tvl: stats.totalTVL },
+                          { time: '04:00', tvl: stats.totalTVL },
+                          { time: '08:00', tvl: stats.totalTVL },
+                          { time: '12:00', tvl: stats.totalTVL },
+                          { time: '16:00', tvl: stats.totalTVL },
+                          { time: '20:00', tvl: stats.totalTVL },
+                          { time: '24:00', tvl: stats.totalTVL }
+                        ]
+                      : []
+                  }>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="time" stroke="#9ca3af" />
                     <YAxis stroke="#9ca3af" tickFormatter={(value) => `$${(value / 1000000).toFixed(0)}M`} />
@@ -1006,17 +1010,23 @@ export default function DexFlowUltimate() {
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">활성 지갑</p>
                   <p className="text-xl font-bold">{stats.activeWallets.toLocaleString()}</p>
-                  <p className="text-xs text-green-400">+12.5%</p>
+                  {stats.activeWallets > 0 && (
+                    <p className="text-xs text-gray-500">수집중</p>
+                  )}
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">평균 슬리피지</p>
                   <p className="text-xl font-bold">{stats.avgSlippage.toFixed(2)}%</p>
-                  <p className="text-xs text-yellow-400">보통</p>
+                  <p className="text-xs text-gray-500">
+                    {stats.avgSlippage > 1 ? '높음' : stats.avgSlippage > 0.5 ? '보통' : '낮음'}
+                  </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">Gas 가격</p>
                   <p className="text-xl font-bold">{gasPrice} Gwei</p>
-                  <p className="text-xs text-red-400">높음</p>
+                  <p className="text-xs text-gray-500">
+                    {gasPrice > 50 ? '높음' : gasPrice > 20 ? '보통' : '낮음'}
+                  </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">혼잡도</p>
@@ -1029,14 +1039,18 @@ export default function DexFlowUltimate() {
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-3">시간대별 거래 패턴</h4>
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={[
-                    { hour: '00', volume: 2400000, count: 234 },
-                    { hour: '04', volume: 1800000, count: 189 },
-                    { hour: '08', volume: 3200000, count: 312 },
-                    { hour: '12', volume: 4500000, count: 456 },
-                    { hour: '16', volume: 5200000, count: 523 },
-                    { hour: '20', volume: 3800000, count: 387 }
-                  ]}>
+                  <BarChart data={
+                    transactions.length > 0
+                      ? [
+                          { hour: '00', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) },
+                          { hour: '04', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) },
+                          { hour: '08', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) },
+                          { hour: '12', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) },
+                          { hour: '16', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) },
+                          { hour: '20', volume: stats.totalVolume24h / 6, count: Math.floor(stats.totalTransactions / 6) }
+                        ]
+                      : []
+                  }>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="hour" stroke="#9ca3af" />
                     <YAxis yAxisId="left" stroke="#9ca3af" />
