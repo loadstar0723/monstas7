@@ -53,11 +53,10 @@ export async function GET(request: Request) {
       },
       holderDistribution: {
         // 실제로는 온체인 데이터 제공업체 API에서 가져와야 함
-        // 실제로는 온체인 데이터 제공업체 API에서 가져와야 함
         // 임시로 거래량 기반 계산 (실제 온체인 API 연동 필요)
-        top10: Math.min(45, 30 + (volume / 1000000)), 
-        top11to50: Math.min(30, 20 + (count / 100000)),
-        top51to100: Math.min(20, 15 + (priceChange / 10)),
+        top10: Math.min(45, 30 + Math.min(volume / 10000000, 15)), 
+        top11to50: Math.min(30, 20 + Math.min(count / 1000000, 10)),
+        top51to100: Math.min(20, 15 + Math.abs(priceChange) / 20),
         others: 0, // 나머지 계산
       },
       timestamp: new Date().toISOString()
