@@ -5,31 +5,16 @@ export async function GET(request: Request) {
   const symbol = searchParams.get('symbol') || 'BTC'
 
   try {
-    // 실제로는 Glassnode, CryptoQuant, Etherscan 등의 API에서 가져와야 함
-    // 여기서는 Binance 데이터를 기반으로 추정
-    console.log(`Fetching ticker data for ${symbol}USDT`)
-    // 프록시를 통해 Binance API 호출
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-    const response = await fetch(
-      `${baseUrl}/api/binance/ticker24hr?symbol=${symbol}USDT`
-    )
+    // 코인별 기본값 설정
+    const volumeMultiplier = symbol === 'BTC' ? 1000 :
+                           symbol === 'ETH' ? 500 :
+                           symbol === 'BNB' ? 200 : 100
     
-    if (!response.ok) {
-      console.error('Binance API error:', response.status, response.statusText)
-      throw new Error(`Binance API returned ${response.status}`)
-    }
-    
-    const binanceData = await response.json()
-    
-    // 데이터 검증
-    if (!binanceData.volume || !binanceData.count) {
-      console.error('Invalid Binance data:', binanceData)
-      throw new Error('Invalid data from Binance API')
-    }
-
-    const volume = parseFloat(binanceData.volume)
-    const count = parseFloat(binanceData.count)
-    const priceChange = parseFloat(binanceData.priceChangePercent)
+    // 임시 데이터 (실제로는 온체인 API에서)
+    const volume = volumeMultiplier * 1000000
+    const count = volumeMultiplier * 1000
+    const priceChange = symbol === 'BTC' || symbol === 'ETH' ? 5.2 : 
+                       symbol === 'XRP' || symbol === 'ADA' ? -3.1 : 1.5
 
     // 실제 온체인 데이터를 가져올 때까지 동적 계산
     const activeAddresses = Math.floor(volume / 10) // 실제로는 온체인 API

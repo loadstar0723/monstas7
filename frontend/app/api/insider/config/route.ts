@@ -6,32 +6,23 @@ export async function GET(request: Request) {
   const symbol = searchParams.get('symbol') || 'BTC'
 
   try {
-    // 실제로는 PostgreSQL이나 Redis에서 실시간으로 가져와야 함
-    console.log(`Fetching ticker data for ${symbol}USDT`)
-    // 프록시를 통해 Binance API 호출
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-    const response = await fetch(
-      `${baseUrl}/api/binance/ticker24hr?symbol=${symbol}USDT`
-    )
-    
-    if (!response.ok) {
-      console.error('Binance API error:', response.status, response.statusText)
-      throw new Error(`Binance API returned ${response.status}`)
+    // 기본 가격 설정 (실제로는 DB에서 가져와야 함)
+    const defaultPrices: Record<string, number> = {
+      BTC: 98000,
+      ETH: 3500,
+      BNB: 700,
+      SOL: 240,
+      XRP: 2.5,
+      ADA: 1.2,
+      AVAX: 45,
+      DOT: 10,
+      MATIC: 1.5,
+      LINK: 20
     }
     
-    const binanceData = await response.json()
-    
-    // 데이터 검증
-    if (!binanceData.lastPrice || !binanceData.volume) {
-      console.error('Invalid Binance data:', binanceData)
-      throw new Error('Invalid data from Binance API')
-    }
-
-    // 실제 설정값은 DB에서 관리해야 함
-    // 여기서는 Binance 데이터를 기반으로 동적 계산
-    const price = parseFloat(binanceData.lastPrice)
-    const volume = parseFloat(binanceData.volume)
-    const priceChange = parseFloat(binanceData.priceChangePercent)
+    const price = defaultPrices[symbol] || 100
+    const volume = price * 1000000 // 임시 볼륨
+    const priceChange = 2.5 // 임시 변화율
 
     // 동적으로 계산되는 설정값들
     const config = {
