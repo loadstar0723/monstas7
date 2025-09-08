@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic'
 
-// InsiderFlowUltimate 컴포넌트를 동적으로 가져오기
-const InsiderFlowUltimate = dynamic(
-  () => import('./InsiderFlowUltimate'),
+// InsiderFlowSimple 컴포넌트를 먼저 사용 (디버깅용)
+const InsiderFlowSimple = dynamic(
+  () => import('./InsiderFlowSimple'),
   { 
     ssr: false,
     loading: () => (
@@ -18,6 +18,12 @@ const InsiderFlowUltimate = dynamic(
   }
 )
 
+// 나중에 Ultimate로 전환 예정
+// const InsiderFlowUltimate = dynamic(
+//   () => import('./InsiderFlowUltimate'),
+//   { ssr: false }
+// )
+
 export default function InsiderFlowPage() {
-  return <InsiderFlowUltimate />
+  return <InsiderFlowSimple />
 }
