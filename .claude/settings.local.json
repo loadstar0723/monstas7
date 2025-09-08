@@ -138,7 +138,10 @@
       "Bash(taskkill:*)",
       "Bash(gh workflow run:*)",
       "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/emergency-fix.yml)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npm run start:*)"
     ],
     "deny": [],
     "ask": []
