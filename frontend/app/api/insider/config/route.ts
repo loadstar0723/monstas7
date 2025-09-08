@@ -7,10 +7,25 @@ export async function GET(request: Request) {
 
   try {
     // 실제로는 PostgreSQL이나 Redis에서 실시간으로 가져와야 함
+    console.log(`Fetching ticker data for ${symbol}USDT`)
+    // 프록시를 통해 Binance API 호출
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`
+      `${baseUrl}/api/binance/ticker24hr?symbol=${symbol}USDT`
     )
+    
+    if (!response.ok) {
+      console.error('Binance API error:', response.status, response.statusText)
+      throw new Error(`Binance API returned ${response.status}`)
+    }
+    
     const binanceData = await response.json()
+    
+    // 데이터 검증
+    if (!binanceData.lastPrice || !binanceData.volume) {
+      console.error('Invalid Binance data:', binanceData)
+      throw new Error('Invalid data from Binance API')
+    }
 
     // 실제 설정값은 DB에서 관리해야 함
     // 여기서는 Binance 데이터를 기반으로 동적 계산

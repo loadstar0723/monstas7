@@ -7,10 +7,25 @@ export async function GET(request: Request) {
   try {
     // 실제로는 Etherscan, BSCscan 등에서 팀 지갑 추적
     // 또는 프로젝트별 토큰 컨트랙트에서 확인
+    console.log(`Fetching ticker data for ${symbol}USDT`)
+    // 프록시를 통해 Binance API 호출
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`
+      `${baseUrl}/api/binance/ticker24hr?symbol=${symbol}USDT`
     )
+    
+    if (!response.ok) {
+      console.error('Binance API error:', response.status, response.statusText)
+      throw new Error(`Binance API returned ${response.status}`)
+    }
+    
     const binanceData = await response.json()
+    
+    // 데이터 검증
+    if (!binanceData.volume || !binanceData.lastPrice) {
+      console.error('Invalid Binance data:', binanceData)
+      throw new Error('Invalid data from Binance API')
+    }
 
     const volume = parseFloat(binanceData.volume)
     const price = parseFloat(binanceData.lastPrice)
