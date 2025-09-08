@@ -137,7 +137,8 @@
       "Bash(start http://localhost:3008/signals/insider-flow)",
       "Bash(taskkill:*)",
       "Bash(gh workflow run:*)",
-      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/emergency-fix.yml)"
+      "Bash(start https://github.com/loadstar0723/monstas7/actions/workflows/emergency-fix.yml)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
