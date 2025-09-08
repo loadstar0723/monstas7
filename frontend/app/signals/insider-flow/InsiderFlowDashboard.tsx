@@ -357,6 +357,58 @@ export default function InsiderFlowDashboard() {
     }
   }, [])
 
+  // 메트릭 업데이트 함수 (WebSocket useEffect 전에 선언)
+  const updateMetrics = useCallback((symbol: string, transaction: Transaction) => {
+    setInsiderMetrics(prev => {
+      const current = prev[symbol] || {}
+      const recentTxs = transactions[symbol] || []
+      
+      // 최근 거래 분석
+      const buyVolume = recentTxs
+        .filter(tx => tx.type === 'buy')
+        .reduce((sum, tx) => sum + tx.value, 0)
+      
+      const sellVolume = recentTxs
+        .filter(tx => tx.type === 'sell')
+        .reduce((sum, tx) => sum + tx.value, 0)
+      
+      const institutionalTxs = recentTxs.filter(tx => tx.category === 'institution').length
+      const whaleTxs = recentTxs.filter(tx => tx.category === 'whale').length
+      
+      // 리스크 스코어 계산
+      const sellPressure = sellVolume / (buyVolume + sellVolume + 1) * 100
+      const riskScore = Math.min(100, sellPressure * 0.6 + (institutionalTxs > 5 ? 20 : 0))
+      
+      // 시그널 강도 계산
+      const signalStrength = Math.min(100, 
+        (buyVolume - sellVolume) / (buyVolume + sellVolume + 1) * 50 + 50
+      )
+      
+      // 트렌드 판단
+      let trend: InsiderMetrics['trend'] = 'neutral'
+      if (signalStrength > (configData?.thresholds.signalStrengthBullish || 65)) trend = 'bullish'
+      else if (signalStrength < (configData?.thresholds.signalStrengthBearish || 35)) trend = 'bearish'
+      
+      return {
+        ...prev,
+        [symbol]: {
+          totalVolume24h: buyVolume + sellVolume,
+          buyVolume,
+          sellVolume,
+          netFlow: buyVolume - sellVolume,
+          largeTransactions: recentTxs.length,
+          institutionalActivity: institutionalTxs,
+          teamActivity: walletData?.activity.last24h || 0, // API에서 가져온 실제 데이터
+          exchangeInflow: sellVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
+          exchangeOutflow: buyVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
+          riskScore,
+          signalStrength,
+          trend
+        }
+      }
+    })
+  }, [transactions, configData, walletData])
+
   // WebSocket 연결
   useEffect(() => {
     const streams = MAIN_COINS.map(coin => `${coin.symbol.toLowerCase()}usdt@aggTrade`)
@@ -436,58 +488,6 @@ export default function InsiderFlowDashboard() {
       }
     }
   }, [configData, updateMetrics])
-
-  // 메트릭 업데이트 함수
-  const updateMetrics = useCallback((symbol: string, transaction: Transaction) => {
-    setInsiderMetrics(prev => {
-      const current = prev[symbol] || {}
-      const recentTxs = transactions[symbol] || []
-      
-      // 최근 거래 분석
-      const buyVolume = recentTxs
-        .filter(tx => tx.type === 'buy')
-        .reduce((sum, tx) => sum + tx.value, 0)
-      
-      const sellVolume = recentTxs
-        .filter(tx => tx.type === 'sell')
-        .reduce((sum, tx) => sum + tx.value, 0)
-      
-      const institutionalTxs = recentTxs.filter(tx => tx.category === 'institution').length
-      const whaleTxs = recentTxs.filter(tx => tx.category === 'whale').length
-      
-      // 리스크 스코어 계산
-      const sellPressure = sellVolume / (buyVolume + sellVolume + 1) * 100
-      const riskScore = Math.min(100, sellPressure * 0.6 + (institutionalTxs > 5 ? 20 : 0))
-      
-      // 시그널 강도 계산
-      const signalStrength = Math.min(100, 
-        (buyVolume - sellVolume) / (buyVolume + sellVolume + 1) * 50 + 50
-      )
-      
-      // 트렌드 판단
-      let trend: InsiderMetrics['trend'] = 'neutral'
-      if (signalStrength > (configData?.thresholds.signalStrengthBullish || 65)) trend = 'bullish'
-      else if (signalStrength < (configData?.thresholds.signalStrengthBearish || 35)) trend = 'bearish'
-      
-      return {
-        ...prev,
-        [symbol]: {
-          totalVolume24h: buyVolume + sellVolume,
-          buyVolume,
-          sellVolume,
-          netFlow: buyVolume - sellVolume,
-          largeTransactions: recentTxs.length,
-          institutionalActivity: institutionalTxs,
-          teamActivity: walletData?.activity.last24h || 0, // API에서 가져온 실제 데이터
-          exchangeInflow: sellVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
-          exchangeOutflow: buyVolume * (configData?.estimations.exchangeFlowRatio || 0.7),
-          riskScore,
-          signalStrength,
-          trend
-        }
-      }
-    })
-  }, [transactions, configData, walletData])
 
   // 현재 선택된 코인의 데이터
   const currentCoinData = coinData[selectedCoin] || {}
