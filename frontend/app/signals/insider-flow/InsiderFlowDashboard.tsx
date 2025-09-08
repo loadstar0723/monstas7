@@ -164,6 +164,7 @@ export default function InsiderFlowDashboard() {
 
   // 초기 데이터 설정
   useEffect(() => {
+    console.log('Initializing data...')
     const initData: Record<string, CoinData> = {}
     const initMetrics: Record<string, InsiderMetrics> = {}
     const initTransactions: Record<string, Transaction[]> = {}
@@ -213,56 +214,71 @@ export default function InsiderFlowDashboard() {
     setCoinData(initData)
     setInsiderMetrics(initMetrics)
     setTransactions(initTransactions)
+    console.log('Initial data set, disabling loading...')
     
-    // 초기화 완료 후 바로 로딩 해제
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
+    // 초기화 완료 후 즉시 로딩 해제 (setTimeout 제거)
+    setIsLoading(false)
+    console.log('Loading disabled')
   }, [])
   
   // API에서 설정 데이터 가져오기
   useEffect(() => {
+    console.log('Starting API data fetch for:', selectedCoin)
     const fetchApiData = async () => {
       try {
-        // 병렬로 모든 API 호출
-        const [configRes, onchainRes, walletRes] = await Promise.allSettled([
-          fetch(`/api/insider/config?symbol=${selectedCoin}`),
-          fetch(`/api/insider/onchain?symbol=${selectedCoin}`),
-          fetch(`/api/insider/wallets?symbol=${selectedCoin}`)
-        ])
-        
-        // 설정 데이터
-        if (configRes.status === 'fulfilled' && configRes.value.ok) {
-          const configJson = await configRes.value.json()
+        // 각 API를 개별적으로 호출하고 상세 로그
+        console.log('Fetching config data...')
+        const configRes = await fetch(`/api/insider/config?symbol=${selectedCoin}`)
+        console.log('Config response status:', configRes.status)
+        if (configRes.ok) {
+          const configJson = await configRes.json()
+          console.log('Config data received:', configJson)
           if (configJson.success) {
             setConfigData(configJson.data)
+            console.log('Config data set successfully')
           }
+        } else {
+          console.error('Config API failed with status:', configRes.status)
         }
         
-        // 온체인 데이터
-        if (onchainRes.status === 'fulfilled' && onchainRes.value.ok) {
-          const onchainJson = await onchainRes.value.json()
+        console.log('Fetching onchain data...')
+        const onchainRes = await fetch(`/api/insider/onchain?symbol=${selectedCoin}`)
+        console.log('Onchain response status:', onchainRes.status)
+        if (onchainRes.ok) {
+          const onchainJson = await onchainRes.json()
+          console.log('Onchain data received:', onchainJson)
           if (onchainJson.success) {
             setOnchainData(onchainJson.data)
+            console.log('Onchain data set successfully')
           }
+        } else {
+          console.error('Onchain API failed with status:', onchainRes.status)
         }
         
-        // 지갑 데이터
-        if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
-          const walletJson = await walletRes.value.json()
+        console.log('Fetching wallet data...')
+        const walletRes = await fetch(`/api/insider/wallets?symbol=${selectedCoin}`)
+        console.log('Wallet response status:', walletRes.status)
+        if (walletRes.ok) {
+          const walletJson = await walletRes.json()
+          console.log('Wallet data received:', walletJson)
           if (walletJson.success) {
             setWalletData(walletJson.data)
+            console.log('Wallet data set successfully')
           }
+        } else {
+          console.error('Wallet API failed with status:', walletRes.status)
         }
+        
+        console.log('All API data fetched successfully')
       } catch (error) {
-        console.error('Error fetching API data:', error)
+        console.error('Error in fetchApiData:', error)
       }
     }
     
     // 즉시 호출
     fetchApiData()
     
-    // 30초마다 업데이트 (너무 자주 호출하지 않도록)
+    // 30초마다 업데이트
     const interval = setInterval(fetchApiData, 30000)
     
     return () => clearInterval(interval)
@@ -325,10 +341,6 @@ export default function InsiderFlowDashboard() {
         console.log('Ticker data fetched successfully')
       } catch (error) {
         console.error('Error in fetchTickerData:', error)
-      } finally {
-        // 에러가 발생하더라도 로딩 상태를 해제
-        console.log('Setting loading to false')
-        setIsLoading(false)
       }
     }
     
@@ -529,6 +541,13 @@ export default function InsiderFlowDashboard() {
     return <FaBalanceScale className="text-yellow-500" />
   }
 
+  // 로딩 상태 디버깅
+  console.log('Component render - isLoading:', isLoading)
+  console.log('coinData keys:', Object.keys(coinData))
+  console.log('configData:', configData)
+  console.log('onchainData:', onchainData)
+  console.log('walletData:', walletData)
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -537,6 +556,7 @@ export default function InsiderFlowDashboard() {
           <p className="text-xl mb-2">내부자 거래 대시보드 로딩 중...</p>
           <p className="text-sm text-gray-400">실시간 데이터를 가져오는 중입니다</p>
           <p className="text-xs text-gray-500 mt-2">잠시만 기다려주세요</p>
+          <p className="text-xs text-gray-600 mt-4">디버그: isLoading = {String(isLoading)}</p>
         </div>
       </div>
     )
