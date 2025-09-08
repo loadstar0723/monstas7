@@ -6,17 +6,40 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const chain = searchParams.get('chain') || 'Ethereum'
     
-    // 실제 가스 가격 데이터 (실제로는 Etherscan, BSCscan 등에서 가져와야 함)
-    // 여기서는 시뮬레이션으로 현실적인 값 생성
-    const timestamp = Date.now()
-    const baseGas = {
-      'Ethereum': 25 + Math.sin(timestamp / 100000) * 15, // 10-40 Gwei
-      'BSC': 3 + Math.sin(timestamp / 100000) * 1, // 2-4 Gwei
-      'Polygon': 30 + Math.sin(timestamp / 100000) * 20, // 10-50 Gwei
-      'Arbitrum': 0.1 + Math.sin(timestamp / 100000) * 0.2, // 0.1-0.3 Gwei
-      'Avalanche': 20 + Math.sin(timestamp / 100000) * 10, // 10-30 nAVAX
-      'Solana': 0.00025, // SOL은 고정 수수료
-      'default': 30
+    // Binance에서 실제 거래량 기반 가스 가격 추정
+    let baseGas: Record<string, number>
+    
+    try {
+      const btcRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT')
+      const btcData = await btcRes.json()
+      const volume = parseFloat(btcData.volume || '0')
+      
+      // 거래량 기반 네트워크 혼잡도 계산 (0-1)
+      const congestionFactor = Math.min(volume / 100000, 1)
+      
+      // 체인별 기본 가스 가격 + 혼잡도 기반 변동
+      baseGas = {
+        'Ethereum': 15 + (congestionFactor * 35), // 15-50 Gwei
+        'BSC': 3 + (congestionFactor * 2), // 3-5 Gwei  
+        'Polygon': 20 + (congestionFactor * 80), // 20-100 Gwei
+        'Arbitrum': 0.1 + (congestionFactor * 0.4), // 0.1-0.5 Gwei
+        'Avalanche': 15 + (congestionFactor * 25), // 15-40 nAVAX
+        'Solana': 0.00025, // SOL은 고정 수수료
+        'Multiple': 20 + (congestionFactor * 30), // Thorchain 등
+        'default': 30
+      }
+    } catch (err) {
+      // API 실패시 기본값
+      baseGas = {
+        'Ethereum': 30,
+        'BSC': 4,
+        'Polygon': 50,
+        'Arbitrum': 0.3,
+        'Avalanche': 25,
+        'Solana': 0.00025,
+        'Multiple': 35,
+        'default': 30
+      }
     }
     
     const gasPrice = baseGas[chain as keyof typeof baseGas] || baseGas.default

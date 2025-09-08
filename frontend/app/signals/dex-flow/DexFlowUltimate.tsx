@@ -361,16 +361,24 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">IL 손실</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>1.5x</span>
-                      <span className="text-yellow-400">-2.02%</span>
+                      <span>가격 변동</span>
+                      <span className="text-yellow-400">
+                        {priceChange24h > 0 ? `+${priceChange24h.toFixed(2)}%` : `${priceChange24h.toFixed(2)}%`}
+                      </span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>2x</span>
-                      <span className="text-orange-400">-5.72%</span>
+                      <span>IL 리스크</span>
+                      <span className="text-orange-400">
+                        {liquidityPools.length > 0 && liquidityPools[0].ilRisk 
+                          ? `-${liquidityPools[0].ilRisk.toFixed(2)}%`
+                          : '계산중'}
+                      </span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>3x</span>
-                      <span className="text-red-400">-13.40%</span>
+                      <span>최대 속실</span>
+                      <span className="text-red-400">
+                        {Math.abs(priceChange24h) > 50 ? '고위험' : Math.abs(priceChange24h) > 20 ? '중간' : '낮음'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -726,24 +734,36 @@ export default function DexFlowUltimate() {
                     }}
                   />
                   <div className="flex justify-between text-sm text-gray-400 mt-1">
-                    <span>0.5x</span>
-                    <span>1x</span>
-                    <span>3x</span>
+                    <span>최소</span>
+                    <span>현재</span>
+                    <span>최대</span>
                   </div>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">IL 손실</span>
-                      <span className="font-bold text-red-400">-5.72%</span>
+                      <span className="font-bold text-red-400">
+                        {liquidityPools.length > 0 && liquidityPools[0].ilRisk
+                          ? `-${liquidityPools[0].ilRisk.toFixed(2)}%`
+                          : '-'}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">수수료 수익</span>
-                      <span className="font-bold text-green-400">+8.45%</span>
+                      <span className="font-bold text-green-400">
+                        {liquidityPools.length > 0 && liquidityPools[0].feeRate
+                          ? `+${(liquidityPools[0].feeRate * 10).toFixed(2)}%`
+                          : '-'}
+                      </span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-700">
                       <span className="text-gray-400">순수익</span>
-                      <span className="font-bold text-green-400">+2.73%</span>
+                      <span className="font-bold text-green-400">
+                        {liquidityPools.length > 0 && liquidityPools[0].ilRisk && liquidityPools[0].feeRate
+                          ? `${((liquidityPools[0].feeRate * 10) - liquidityPools[0].ilRisk).toFixed(2)}%`
+                          : '-'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1083,7 +1103,11 @@ export default function DexFlowUltimate() {
                   <div className="space-y-2">
                     <div className="bg-gray-900/50 rounded p-3 flex justify-between">
                       <span>PEPE/USDT</span>
-                      <span className="text-yellow-400">+892%</span>
+                      <span className="text-yellow-400">
+                        {liquidityPools.length > 0 && liquidityPools[0].apy
+                          ? `+${liquidityPools[0].apy.toFixed(0)}%`
+                          : '-'}
+                      </span>
                     </div>
                     <div className="bg-gray-900/50 rounded p-3 flex justify-between">
                       <span>SHIB/ETH</span>
@@ -1100,7 +1124,9 @@ export default function DexFlowUltimate() {
                   <span className="font-medium">러그풀 위험 감지</span>
                 </div>
                 <p className="text-sm text-gray-300 mt-1">
-                  SCAM/USDT 풀: 유동성 제거 징후 포착 (LP -85%)
+                  {mevActivity.length > 0 
+                    ? `MEV 활동 감지: ${mevActivity.length}건 포착`
+                    : '위험 신호 모니터링 중...'}
                 </p>
               </div>
             </div>
@@ -1126,7 +1152,11 @@ export default function DexFlowUltimate() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-400">DEX 활동 종합 점수</span>
-                  <span className="text-2xl font-bold text-green-400">78/100</span>
+                  <span className="text-2xl font-bold text-green-400">
+                    {transactions.length > 0 && stats.totalVolume24h > 0
+                      ? Math.min(Math.floor((stats.totalVolume24h / 1000000) + (transactions.length / 10)), 100)
+                      : 0}/100
+                  </span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-4">
                   <div className="bg-gradient-to-r from-green-500 to-green-400 h-4 rounded-full" style={{ width: '78%' }}></div>
