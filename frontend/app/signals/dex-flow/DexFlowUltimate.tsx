@@ -200,17 +200,11 @@ export default function DexFlowUltimate() {
 
       // Gas 가격 가져오기
       const chain = COIN_LIST.find(c => c.symbol === coin)?.chain || 'Ethereum'
-      const gasRes = await fetch('/api/gas/price', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chain })
-      })
+      const gasRes = await fetch(`/api/gas/price?chain=${encodeURIComponent(chain)}`)
       if (gasRes.ok) {
         const gasData = await gasRes.json()
-        if (gasData.success && gasData.data) {
-          setGasPrice(gasData.data.standard || 0)
-          setNetworkCongestion(gasData.data.congestion || 0)
-        }
+        setGasPrice(gasData.standard || 0)
+        setNetworkCongestion(gasData.congestion || 0)
       }
     } catch (error) {
       console.error('Failed to load DEX data:', error)
