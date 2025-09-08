@@ -57,19 +57,21 @@ export default function TabGuide({
       </div>
       
       {/* 트레이딩 팁 */}
-      <div className="bg-blue-900/30 rounded-lg p-3 mb-3">
-        <h4 className="text-xs font-semibold text-blue-300 mb-2 flex items-center gap-1">
-          💡 실전 트레이딩 팁
-        </h4>
-        <ul className="text-xs text-gray-300 space-y-1">
-          {tradingTips.map((tip, idx) => (
-            <li key={idx} className="flex items-start gap-1">
-              <span className="text-blue-400 mt-0.5">•</span>
-              <span>{tip}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {tradingTips && tradingTips.length > 0 && (
+        <div className="bg-blue-900/30 rounded-lg p-3 mb-3">
+          <h4 className="text-xs font-semibold text-blue-300 mb-2 flex items-center gap-1">
+            💡 실전 트레이딩 팁
+          </h4>
+          <ul className="text-xs text-gray-300 space-y-1">
+            {tradingTips.map((tip, idx) => (
+              <li key={idx} className="flex items-start gap-1">
+                <span className="text-blue-400 mt-0.5">•</span>
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       
       {/* 주의사항 */}
       {warnings && warnings.length > 0 && (

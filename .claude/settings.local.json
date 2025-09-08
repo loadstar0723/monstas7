@@ -142,7 +142,13 @@
       "Bash(rm:*)",
       "Bash(npx prisma generate:*)",
       "Bash(npm run start:*)",
-      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\insider-flow\\InsiderFlowSimple.tsx\")"
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\signals\\insider-flow\\InsiderFlowSimple.tsx\")",
+      "Bash(start http://localhost:3002/signals/smart-money)",
+      "Bash(start http://localhost:3003/signals/smart-money)",
+      "Bash(npx tsc:*)",
+      "Bash(start http://localhost:3007/signals/smart-money)",
+      "Bash(git pull:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": [],
     "ask": []

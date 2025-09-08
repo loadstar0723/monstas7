@@ -89,106 +89,225 @@ export default function ComprehensiveAnalysis({
   }, [currentPrice, marketData, whaleData, fearGreedIndex, fundingRate])
 
   const calculateAnalysis = () => {
+    // currentPrice가 없으면 계산하지 않음
+    if (!currentPrice || currentPrice <= 0) {
+      return
+    }
+    
     // 시장 상황 분석
     const isGreedy = fearGreedIndex > 70
     const isFearful = fearGreedIndex < 30
     const netFlow = whaleData?.netFlow || 0
     const isBullish = netFlow > 0 || fearGreedIndex > 50
     const isBearish = netFlow < 0 || fearGreedIndex < 50
-    const highFunding = Math.abs(fundingRate) > config.decimals.value05
+    const highFunding = Math.abs(fundingRate) > 0.05
     
-    // 거래 전략 계산
+    // 거래 전략 계산 (실제 시장 데이터 기반)
+    const volatility = marketData?.volatility || 0.02 // 변동성 기본값 2%
+    const stopLossPercent = Math.max(1, Math.min(5, volatility * 100)) // 1-5% 범위
+    
+    // 시장 상황에 따른 동적 리스크/리워드 비율
+    const marketStrength = Math.abs(netFlow) / Math.max(1000, currentPrice * 100)
+    const riskRewardRatio = 1.5 + (marketStrength * 0.5) + (isBullish ? 0.5 : 0) + (fearGreedIndex > 60 ? 0.3 : 0)
+    const takeProfitPercent = stopLossPercent * Math.min(3, Math.max(1.2, riskRewardRatio))
+    
+    // 신뢰도 계산 - 여러 요소 종합
+    const flowConfidence = Math.min(30, Math.abs(netFlow) / 100000 * 5) // 최대 30점
+    const fearGreedConfidence = fearGreedIndex > 70 || fearGreedIndex < 30 ? 20 : 10 // 극단적 심리 가중치
+    const volumeConfidence = marketData?.volume24h ? Math.min(20, marketData.volume24h / (currentPrice * 100000) * 10) : 5
+    const volatilityConfidence = volatility < 0.03 ? 15 : volatility < 0.05 ? 10 : 5
+    const fundingConfidence = Math.abs(fundingRate) > 0.01 ? 15 : 5
+    
+    const totalConfidence = Math.min(95, Math.max(20, 
+      flowConfidence + fearGreedConfidence + volumeConfidence + volatilityConfidence + fundingConfidence
+    ))
+    
     const tradingStrategy = {
       direction: isBullish ? 'long' : isBearish ? 'short' : 'neutral',
-      confidence: Math.min(95, Math.abs(whaleData?.netFlow || 0) / 1000000 * 10 + 50),
-      entry: currentPrice,
-      stopLoss: isBullish ? currentPrice * config.decimals.value97 : currentPrice * 1.03,
-      takeProfit: isBullish ? currentPrice * 1.05 : currentPrice * config.decimals.value95,
-      riskReward: 1.67
+      confidence: Math.round(totalConfidence), // 정수로 반올림
+      entry: currentPrice || 0,
+      stopLoss: isBullish 
+        ? currentPrice * (1 - stopLossPercent / 100) 
+        : currentPrice * (1 + stopLossPercent / 100),
+      takeProfit: isBullish 
+        ? currentPrice * (1 + takeProfitPercent / 100)
+        : currentPrice * (1 - takeProfitPercent / 100),
+      riskReward: takeProfitPercent / stopLossPercent
     }
 
-    // 레버리지 전략 계산
+    // 레버리지 전략 계산 (실제 위험도 기반)
+    const riskScore = (fearGreedIndex / 100) * 0.5 + Math.abs(fundingRate) * 10 + volatility * 100
+    const safeRiskScore = isNaN(riskScore) ? 1 : Math.max(0, riskScore)
+    const recommendedLeverage = Math.max(1, Math.min(5, 5 - Math.floor(safeRiskScore)))
+    const maxLeverage = Math.max(recommendedLeverage, Math.min(10, 10 - Math.floor(safeRiskScore * 0.5)))
+    
     const leverageStrategy = {
-      recommended: isGreedy ? 1 : isFearful ? 3 : 2,
-      maximum: highFunding ? 3 : 5,
-      risk: isGreedy ? 'high' : isFearful ? 'low' : 'medium',
-      reasoning: isGreedy ? 
-        '시장 과열, 저레버리지 권장' : 
-        isFearful ? 
-        '시장 공포, 기회 포착 가능' : 
-        '중립 구간, 표준 레버리지'
+      recommended: recommendedLeverage,
+      maximum: maxLeverage,
+      risk: safeRiskScore > 3 ? 'high' : safeRiskScore > 1.5 ? 'medium' : 'low',
+      reasoning: `위험 점수 ${safeRiskScore.toFixed(1)}, 변동성 ${(volatility * 100).toFixed(2)}%`
     }
 
-    // 자본금 대비 전략
+    // 자본금 대비 전략 (켓리 방식 기반 + 시장 상황 조정)
+    const winProbability = tradingStrategy.confidence / 100
+    const kellyFraction = (winProbability * tradingStrategy.riskReward - (1 - winProbability)) / tradingStrategy.riskReward
+    const rawKellyPercent = kellyFraction * 100
+    const kellyPercent = isNaN(rawKellyPercent) || rawKellyPercent <= 0 ? 5 : Math.min(30, Math.max(1, rawKellyPercent))
+    
+    // 시장 상황에 따른 조정
+    const marketAdjustment = fearGreedIndex > 75 ? 0.5 : fearGreedIndex < 25 ? 0.5 : 1 // 극단적 심리에서는 보수적
+    const volatilityAdjustment = volatility > 0.05 ? 0.5 : volatility > 0.03 ? 0.75 : 1 // 높은 변동성에서는 보수적
+    const adjustedKelly = kellyPercent * marketAdjustment * volatilityAdjustment
+    const finalKelly = Math.max(2, adjustedKelly) // 최소 2% 보장
+    
     const capitalStrategy = {
-      position: isGreedy ? 3 : isFearful ? 10 : 5,
-      split: highFunding ? 5 : 3,
-      reserve: isGreedy ? 80 : isFearful ? 40 : 60,
-      reasoning: `리스크 수준 ${leverageStrategy.risk}에 따른 자본 배분`
+      position: Math.round(Math.max(2, Math.min(15, finalKelly / 2))), // 보수적 켈리 (50%), 2-15% 범위
+      split: Math.max(2, Math.min(5, Math.ceil(volatility * 100))),
+      reserve: Math.max(40, Math.min(80, 100 - finalKelly)),
+      reasoning: `켈리 ${kellyPercent.toFixed(1)}% → 조정 ${finalKelly.toFixed(1)}% (시장 ${marketAdjustment.toFixed(1)}x, 변동성 ${volatilityAdjustment.toFixed(1)}x)`
     }
 
-    // 시간대별 전략
+    // 시간대별 전략 (실제 시장 지표 기반)
+    const shortTermVolatility = volatility * 100 // 단기 변동성
+    const mediumTermTrend = (whaleData?.netFlow || 0) / Math.max(1, currentPrice * 1000) // 중기 추세
+    const longTermOutlook = (100 - fearGreedIndex) / 100 // 장기 전망 (공포일수록 기회)
+    
+    // 단기 전략 (1-24시간) - 펀딩률과 변동성 기반
+    const shortTermAction = Math.abs(fundingRate) > 0.01 || volatility > 0.03 ? 'trade' : 
+                            volatility < 0.01 ? 'wait' : 'observe'
+    const shortTermProbCalc = 50 + (Math.abs(fundingRate) * 1000) + (volatility > 0.03 ? 20 : -10) + (netFlow > 0 ? 10 : -10)
+    const shortTermProb = isNaN(shortTermProbCalc) ? 50 : Math.min(90, Math.max(20, shortTermProbCalc))
+    const shortTermTargetMultiplier = Math.max(0.005, Math.min(0.03, shortTermVolatility / 100))
+    const shortTermTarget = currentPrice * (1 + (isBullish ? 1 : -1) * shortTermTargetMultiplier)
+    
+    // 중기 전략 (1-7일) - 신뢰도와 추세 기반
+    const mediumTermAction = tradingStrategy.confidence > 70 ? 'position' : 
+                             tradingStrategy.confidence < 40 ? 'exit' : 
+                             Math.abs(netFlow) > 50000 ? 'adjust' : 'hold'
+    const mediumTermProb = tradingStrategy.confidence
+    const mediumTermTarget = tradingStrategy.takeProfit
+    
+    // 장기 전략 (1개월+) - 시장 사이클과 누적 플로우 기반
+    const accumulationPhase = fearGreedIndex < 40 && netFlow > 0
+    const distributionPhase = fearGreedIndex > 70 && netFlow < 0
+    const longTermAction = accumulationPhase ? 'accumulate' : 
+                          distributionPhase ? 'distribute' : 
+                          fearGreedIndex < 25 ? 'buy' : 
+                          fearGreedIndex > 80 ? 'sell' : 'hold'
+    const longTermProb = Math.min(85, Math.max(30, 
+      accumulationPhase ? 70 : distributionPhase ? 30 : 50 + (100 - fearGreedIndex) / 2
+    ))
+    const longTermGrowth = accumulationPhase ? 1.3 : distributionPhase ? 0.8 : 1.1
+    const longTermTarget = currentPrice * longTermGrowth * (1 + Math.abs(mediumTermTrend))
+    
     const timeframeStrategy = {
       short: {
-        action: highFunding ? 'trade' : 'wait',
-        probability: Math.round((fearGreedIndex * 0.8) + (netFlow > 0 ? 20 : 0)), // 실제 지표 기반
-        target: currentPrice * (isBullish ? 1.02 : config.decimals.value98)
+        action: shortTermAction,
+        probability: Math.round(shortTermProb),
+        target: Math.round(shortTermTarget / 100) * 100 // 100단위 반올림
       },
       medium: {
-        action: isFearful ? 'accumulate' : isGreedy ? 'reduce' : 'hold',
-        probability: Math.round((fearGreedIndex * 0.6) + (whaleData?.totalWhales > 10 ? 15 : 0)), // 고래 활동 기반
-        target: currentPrice * (isBullish ? 1.08 : config.decimals.value92)
+        action: mediumTermAction,
+        probability: Math.round(mediumTermProb),
+        target: Math.round(mediumTermTarget / 100) * 100
       },
       long: {
-        action: isFearful ? 'buy' : 'hold',
-        probability: Math.round((fearGreedIndex * 0.5) + (fundingRate < 0 ? 30 : 10)), // 펀딩 비율 기반
-        target: currentPrice * (isBullish ? 1.5 : config.decimals.value7)
+        action: longTermAction,
+        probability: Math.round(longTermProb),
+        target: Math.round(longTermTarget / 100) * 100
       }
     }
 
-    // 시그널 종합 (실제 데이터 기반 계산)
+    // 시그널 종합 (실제 API 데이터와 지표 기반)
+    // 기술적 지표: 변동성과 가격 변화율 기반
+    const priceChange = marketData?.priceChange24h || 0
+    const technicalScore = isNaN(volatility) || volatility === 0 ? 0 : (priceChange / Math.max(1, volatility * 100)) * 50
+    
+    // 펀더멘털: 펀딩 비율과 거래량 기반
+    const volume24h = marketData?.volume24h || 0
+    const avgVolume = currentPrice * 1000 // 예상 평균 거래량
+    const volumeScore = volume24h > 0 ? ((volume24h / avgVolume) - 1) * 20 : 0
+    const fundingScore = fundingRate * -500 // 펀딩률이 높으면 부정적
+    const fundamentalScore = volumeScore + fundingScore + (volume24h > avgVolume * 2 ? 20 : volume24h < avgVolume * 0.5 ? -20 : 0)
+    
+    // 센티먼트: Fear & Greed와 실제 시장 심리
+    const fearGreedScore = (fearGreedIndex - 50) * 1.2 // 중립 50 기준
+    const flowSentiment = netFlow > 100000 ? 15 : netFlow < -100000 ? -15 : (netFlow / 10000)
+    const sentimentScore = fearGreedScore + flowSentiment
+    
+    // 온체인: 고래 데이터 기반 (더 민감하게 조정)
+    const whaleActivityScore = Math.abs(netFlow) > 0 
+      ? Math.sign(netFlow) * Math.min(50, Math.sqrt(Math.abs(netFlow)) / 10)
+      : 0
+    const accumulationScore = (whaleData?.accumulationScore || 50) - 50 // 50 기준 조정
+    const onchainScore = whaleActivityScore + accumulationScore * 0.5
+    
     const signals = {
-      // Technical: RSI, MACD, 볼린저밴드 등을 시뮬레이션
-      technical: Math.round(
-        (isBullish ? 30 : -30) + 
-        (fearGreedIndex > 50 ? 20 : -20) + 
-        (highFunding ? -10 : 10) +
-        (marketData?.volatility ? marketData.volatility * 0.2 : 0) // 실제 변동성 데이터 사용
-      ),
-      // Fundamental: 펀딩 비율과 시장 구조 기반
-      fundamental: Math.round(
-        (40 - fearGreedIndex) + 
-        (fundingRate < 0 ? 20 : -10)
-      ),
-      // Sentiment: Fear & Greed 지수 기반
-      sentiment: Math.round(fearGreedIndex - 50 + (netFlow > 0 ? 10 : -10)),
-      // Onchain: 고래 활동 기반
-      onchain: Math.round(
-        (whaleData?.totalWhales > 10 ? 40 : 20) +
-        (netFlow > 0 ? 30 : netFlow < 0 ? -30 : 0)
-      ),
+      technical: isNaN(technicalScore) ? 0 : Math.max(-100, Math.min(100, technicalScore)),
+      fundamental: isNaN(fundamentalScore) ? 0 : Math.max(-100, Math.min(100, fundamentalScore)),
+      sentiment: isNaN(sentimentScore) ? 0 : Math.max(-100, Math.min(100, sentimentScore)),
+      onchain: isNaN(onchainScore) ? 0 : Math.max(-100, Math.min(100, onchainScore)),
       overall: 0
     }
     
-    // 범위 제한 (-100 ~ 100)
-    Object.keys(signals).forEach(key => {
-      if (key !== 'overall') {
-        signals[key] = Math.max(-100, Math.min(100, signals[key]))
-      }
-    })
+    // overall 계산
+    const validScores = [signals.technical, signals.fundamental, signals.sentiment, signals.onchain]
+      .filter(score => !isNaN(score))
     
-    signals.overall = Math.round((signals.technical + signals.fundamental + signals.sentiment + signals.onchain) / 4)
+    signals.overall = validScores.length > 0 
+      ? Math.round(validScores.reduce((sum, score) => sum + score, 0) / validScores.length)
+      : 0
 
-    // 리스크 평가
+    // 리스크 평가 (정량적 지표 기반)
     const riskFactors = []
-    if (isGreedy) riskFactors.push('시장 과열')
-    if (highFunding) riskFactors.push('높은 펀딩 비율')
-    if (whaleData?.sellCount > whaleData?.buyCount) riskFactors.push('고래 매도 우세')
+    let baseRiskScore = 20 // 기본 리스크 점수
+    
+    // 변동성 리스크 (0-25점)
+    const safeVolatility = isNaN(volatility) ? 0.02 : volatility
+    const volatilityRisk = Math.min(25, safeVolatility * 500)
+    if (safeVolatility > 0.02) {
+      riskFactors.push(`높은 변동성 (${(safeVolatility * 100).toFixed(2)}%)`)
+    }
+    baseRiskScore += isNaN(volatilityRisk) ? 0 : volatilityRisk
+    
+    // 펀딩 리스크 (0-20점)
+    const safeFundingRate = isNaN(fundingRate) ? 0 : fundingRate
+    const fundingRisk = Math.min(20, Math.abs(safeFundingRate) * 2000)
+    if (Math.abs(safeFundingRate) > 0.01) {
+      riskFactors.push(`펀딩 비율 ${(safeFundingRate * 100).toFixed(3)}%`)
+    }
+    baseRiskScore += isNaN(fundingRisk) ? 0 : fundingRisk
+    
+    // 고래 리스크 (0-20점)
+    const safeNetFlow = isNaN(netFlow) ? 0 : netFlow
+    const whaleRisk = safeNetFlow < 0 ? Math.min(20, Math.abs(safeNetFlow) / 50000) : 0
+    if (safeNetFlow < -100000) {
+      riskFactors.push(`고래 매도 $${Math.abs(safeNetFlow).toLocaleString()}`)
+    }
+    baseRiskScore += isNaN(whaleRisk) ? 0 : whaleRisk
+    
+    // 심리 리스크 (0-20점)
+    const safeFearGreed = isNaN(fearGreedIndex) ? 50 : fearGreedIndex
+    const sentimentRisk = Math.abs(safeFearGreed - 50) * 0.4
+    if (safeFearGreed > 75 || safeFearGreed < 25) {
+      riskFactors.push(`극단적 심리 (${safeFearGreed})`)
+    }
+    baseRiskScore += isNaN(sentimentRisk) ? 0 : sentimentRisk
+    
+    // 레버리지 리스크 (0-15점)
+    const currentLeverage = isNaN(recommendedLeverage) ? 2 : recommendedLeverage
+    const leverageRisk = currentLeverage > 3 ? 15 : currentLeverage > 2 ? 10 : 5
+    if (currentLeverage > 3) {
+      riskFactors.push(`높은 레버리지 권장 (${currentLeverage}x)`)
+    }
+    baseRiskScore += isNaN(leverageRisk) ? 5 : leverageRisk
+    
+    const totalRiskScore = Math.round(Math.min(100, Math.max(0, isNaN(baseRiskScore) ? 30 : baseRiskScore)))
     
     const riskAssessment = {
-      level: riskFactors.length > 2 ? 'high' : riskFactors.length > 0 ? 'medium' : 'low',
-      score: Math.min(100, riskFactors.length * 25 + 25),
-      factors: riskFactors
+      level: totalRiskScore > 70 ? 'high' : totalRiskScore > 40 ? 'medium' : 'low',
+      score: totalRiskScore,
+      factors: riskFactors.length > 0 ? riskFactors : ['정상 시장 상황']
     }
 
     setAnalysis({
@@ -328,19 +447,19 @@ export default function ComprehensiveAnalysis({
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-gray-400">진입가</p>
-                  <p className="text-white font-medium">${analysis.tradingStrategy.entry.toLocaleString()}</p>
+                  <p className="text-white font-medium">${(analysis.tradingStrategy.entry || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">손절가</p>
-                  <p className="text-red-400 font-medium">${analysis.tradingStrategy.stopLoss.toLocaleString()}</p>
+                  <p className="text-red-400 font-medium">${(analysis.tradingStrategy.stopLoss || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">목표가</p>
-                  <p className="text-green-400 font-medium">${analysis.tradingStrategy.takeProfit.toLocaleString()}</p>
+                  <p className="text-green-400 font-medium">${(analysis.tradingStrategy.takeProfit || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">손익비</p>
-                  <p className="text-yellow-400 font-medium">1:{analysis.tradingStrategy.riskReward.toFixed(2)}</p>
+                  <p className="text-yellow-400 font-medium">1:{(analysis.tradingStrategy.riskReward || 1).toFixed(2)}</p>
                 </div>
               </div>
             </div>
