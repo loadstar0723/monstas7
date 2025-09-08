@@ -160,7 +160,9 @@
       "Bash(start http://localhost:3015/signals/liquidation)",
       "Bash(iconv:*)",
       "Bash(git rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(start http://localhost:3001/signals/insider-flow)",
+      "Bash(del /f \"C:\\monsta\\monstas7\\frontend\\app\\signals\\insider-flow\\InsiderFlowTest.tsx\")"
     ],
     "deny": [],
     "ask": []

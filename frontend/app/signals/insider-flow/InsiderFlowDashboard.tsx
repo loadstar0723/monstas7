@@ -435,7 +435,7 @@ export default function InsiderFlowDashboard() {
         ws.close()
       }
     }
-  }, [])
+  }, [configData, updateMetrics])
 
   // 메트릭 업데이트 함수
   const updateMetrics = useCallback((symbol: string, transaction: Transaction) => {
@@ -487,7 +487,7 @@ export default function InsiderFlowDashboard() {
         }
       }
     })
-  }, [transactions])
+  }, [transactions, configData, walletData])
 
   // 현재 선택된 코인의 데이터
   const currentCoinData = coinData[selectedCoin] || {}
