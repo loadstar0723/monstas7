@@ -36,7 +36,7 @@ jobs:
     
     - name: Deploy via SSH
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY: ${{ secrets.AWS_SERVER_KEY }}
       run: |
         # SSH 키 설정
         mkdir -p ~/.ssh
