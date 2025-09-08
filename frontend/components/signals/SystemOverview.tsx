@@ -221,3 +221,51 @@ export const liquidationOverview = {
   ],
   tips: "청산은 시장의 과열/과냉을 보여주는 지표입니다. 극단적 청산 후에는 반대 방향 움직임이 자주 나타납니다. 레버리지는 항상 신중하게!"
 }
+
+// 내부자 거래 추적 시스템 프리셋
+export const insiderFlowOverview = {
+  title: "내부자 거래 추적 시스템이란?",
+  sections: [
+    {
+      title: "내부자란?",
+      icon: "👤",
+      color: "text-yellow-400",
+      description: "프로젝트 팀, 초기 투자자, 어드바이저 등 프로젝트 내부 정보를 가진 관계자들. 토큰 분배를 받은 특권층입니다."
+    },
+    {
+      title: "추적 방법",
+      icon: "🔍",
+      color: "text-blue-400",
+      description: "팀 지갑 주소 모니터링, 거래소 입출금 추적, 대규모 이동 감지를 통해 내부자 거래를 파악합니다."
+    },
+    {
+      title: "활용 방법",
+      icon: "📊",
+      color: "text-green-400",
+      description: "내부자 매도 → 프로젝트 위험 신호, 내부자 보유 → 긍정적 신호. 특히 락업 해제 일정이 중요합니다."
+    }
+  ],
+  signals: [
+    {
+      color: "text-green-400",
+      title: "내부자 홀딩",
+      description: "팀/투자자 지갑 보유 지속 → 프로젝트 신뢰도 상승"
+    },
+    {
+      color: "text-red-400",
+      title: "대규모 매도",
+      description: "팀 지갑에서 거래소 이동 → 매도 압력 증가"
+    },
+    {
+      color: "text-yellow-400",
+      title: "락업 해제",
+      description: "베스팅 일정 도래 → 일시적 매도 압력 가능"
+    },
+    {
+      color: "text-purple-400",
+      title: "스테이킹 증가",
+      description: "내부자 스테이킹/락업 연장 → 장기 신뢰 신호"
+    }
+  ],
+  tips: "내부자 거래는 프로젝트의 건전성을 판단하는 핵심 지표입니다. 특히 여러 내부자가 동시에 매도하면 위험 신호입니다. 락업 일정과 토큰 분배 계획을 반드시 확인하세요."
+}
