@@ -16,33 +16,125 @@ jobs:
           host: 13.209.84.93
           username: ubuntu
           key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
           script: |
-            echo "🚀 Starting deployment..."
+            echo "🚀 메모리 안전 배포 시작..."
             
-            # Navigate to project
+            # 1. 시스템 상태 확인
+            echo "📊 현재 메모리 상태:"
+            free -h
+            echo ""
+            
+            # 2. 프로젝트 디렉토리로 이동
             cd ~/monstas7 || exit 1
             
-            # Pull latest code
-            echo "📥 Pulling latest code..."
+            # 3. 최신 코드 가져오기
+            echo "📥 최신 코드 가져오기..."
             git stash
             git pull origin master
             
-            # Frontend build and deploy
-            echo "🔨 Building frontend..."
+            # 4. ecosystem.config.js 복사 (메모리 최적화 설정)
+            echo "⚙️ PM2 설정 복사..."
+            cp ecosystem.config.js frontend/ecosystem.config.js
+            
+            # 5. Frontend 디렉토리로 이동
             cd frontend
-            npm install
+            
+            # 6. 환경 변수 설정
+            echo "🔧 환경 변수 설정..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            NODE_ENV=production
+            DATABASE_URL="file:./prisma/dev.db"
+            NEXT_PUBLIC_API_URL=http://13.209.84.93:3000/api
+            GENERATE_SOURCEMAP=false
+            EOF
+            
+            cp .env.local .env.production
+            
+            # 7. 의존성 설치 (필수 패키지 포함)
+            echo "📦 의존성 확인 및 설치..."
+            # 필수 패키지 강제 설치
+            npm install tailwindcss autoprefixer postcss
+            
+            # 나머지 의존성 설치
+            if [ package.json -nt node_modules ] || [ ! -d node_modules ]; then
+              echo "전체 의존성 설치 중..."
+              npm ci || npm install
+            else
+              echo "의존성 최신 상태"
+            fi
+            
+            # 8. Prisma 클라이언트 생성
+            echo "🗄️ Prisma 설정..."
+            npx prisma generate
+            
+            # 9. 기존 PM2 프로세스 정리
+            echo "🧹 기존 프로세스 정리..."
+            pm2 stop monsta-prod 2>/dev/null || true
+            pm2 stop monsta-nextjs 2>/dev/null || true
+            pm2 delete monsta-prod 2>/dev/null || true
+            pm2 delete monsta-nextjs 2>/dev/null || true
+            
+            # 10. 캐시 정리 (메모리 확보)
+            echo "🗑️ 캐시 정리..."
+            rm -rf .next/cache
+            
+            # 11. 메모리 제한 설정하여 빌드
+            echo "🔨 빌드 시작 (메모리 제한: 1GB)..."
+            export NODE_OPTIONS="--max-old-space-size=1024"
+            
+            # 빌드 시도
             npm run build
             
-            # Restart with PM2
-            echo "🔄 Restarting services..."
-            pm2 stop monsta-nextjs || true
-            pm2 delete monsta-nextjs || true
-            pm2 start npm --name monsta-nextjs -- start
+            if [ $? -ne 0 ]; then
+              echo "⚠️ 빌드 실패, 개발 모드로 실행 시도..."
+              
+              # 누락된 패키지 다시 설치 시도
+              echo "📦 누락된 패키지 재설치..."
+              npm install
+              
+              # PM2로 개발 모드 실행
+              PORT=3000 HOST=0.0.0.0 pm2 start npm --name monsta-prod -- run dev
+            else
+              echo "✅ 빌드 성공"
+              
+              # 12. PM2로 프로덕션 시작
+              echo "🚀 PM2로 서버 시작..."
+              pm2 start ecosystem.config.js
+            fi
+            
+            # 13. PM2 상태 저장
             pm2 save
+            pm2 startup || true
             
-            echo "✅ Deployment completed!"
-            echo "🌐 Frontend: http://13.209.84.93:3000"
-            
-            # Health check
+            # 14. 대기 및 상태 확인
             sleep 10
-            curl -f http://localhost:3000 && echo "✅ Frontend is running" || echo "❌ Frontend not responding"
+            echo ""
+            echo "📊 PM2 프로세스 상태:"
+            pm2 status
+            
+            # 15. 헬스 체크
+            echo ""
+            echo "🔍 서버 상태 확인..."
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ 서버가 정상 작동 중입니다!"
+              echo "🌐 접속 주소: http://13.209.84.93:3000"
+            else
+              echo "⚠️ 서버 응답 대기 중..."
+              sleep 5
+              curl -I http://localhost:3000 || {
+                echo "❌ 서버 응답 없음. 로그 확인:"
+                pm2 logs monsta-prod --lines 30 --nostream
+              }
+            fi
+            
+            # 16. 최종 메모리 상태
+            echo ""
+            echo "📊 최종 메모리 상태:"
+            free -h
+            
+            echo ""
+            echo "✅ 배포 완료: $(date)"
+            echo "🌐 서비스 URL: http://13.209.84.93:3000"

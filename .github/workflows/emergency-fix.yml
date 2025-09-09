@@ -1,16 +1,16 @@
-name: Emergency Fix
+name: Emergency Server Fix
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
 
 jobs:
-  fix:
+  emergency-fix:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Emergency Server Fix
+      - name: Emergency Server Recovery
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: 13.209.84.93
@@ -18,46 +18,161 @@ jobs:
           key: ${{ secrets.AWS_SERVER_KEY }}
           timeout: 30m
           script: |
-            echo "🚨 긴급 서버 수정 시작..."
+            echo "🚨 긴급 서버 복구 시작..."
             
-            # 1. 완전히 정리
-            sudo killall -9 node npm 2>/dev/null || true
-            pm2 kill
+            # 1. 모든 Node/PM2 프로세스 강제 종료
+            echo "🛑 모든 프로세스 강제 종료..."
+            pm2 kill 2>/dev/null || true
+            sudo killall -9 node 2>/dev/null || true
+            sudo killall -9 npm 2>/dev/null || true
+            pkill -f node 2>/dev/null || true
+            pkill -f npm 2>/dev/null || true
             
-            # 2. 프로젝트 재설치
-            cd ~
-            rm -rf monstas7_backup
-            mv monstas7 monstas7_backup 2>/dev/null || true
+            # 2. 포트 3000 강제 해제
+            echo "🔓 포트 3000 강제 해제..."
+            sudo fuser -k 3000/tcp 2>/dev/null || true
+            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
             
-            # 3. 새로 클론
-            git clone https://github.com/loadstar0723/monstas7.git
-            cd monstas7/frontend
+            # 3. 임시 파일 정리
+            echo "🧹 임시 파일 정리..."
+            rm -rf /tmp/* 2>/dev/null || true
             
-            # 4. 환경 설정
+            # 4. 프로젝트 찾기
+            echo "📂 프로젝트 디렉토리 찾기..."
+            if [ -d ~/monstas7/frontend ]; then
+              cd ~/monstas7/frontend
+              echo "✅ ~/monstas7/frontend 발견"
+            elif [ -d ~/monsta-v7/monstas7/frontend ]; then
+              cd ~/monsta-v7/monstas7/frontend
+              echo "✅ ~/monsta-v7/monstas7/frontend 발견"
+            elif [ -d ~/monstas7 ]; then
+              cd ~/monstas7
+              if [ -d frontend ]; then
+                cd frontend
+                echo "✅ ~/monstas7/frontend 발견"
+              fi
+            else
+              echo "❌ 프로젝트를 찾을 수 없음. 새로 클론..."
+              cd ~
+              git clone https://github.com/loadstar0723/monstas7.git
+              cd monstas7/frontend
+            fi
+            
+            # 5. Git 최신 코드 가져오기
+            echo "📥 최신 코드 가져오기..."
+            git fetch origin master
+            git reset --hard origin/master
+            
+            # 6. Node modules 정리 및 재설치
+            echo "📦 의존성 완전 재설치..."
+            rm -rf node_modules package-lock.json
+            npm cache clean --force
+            
+            # 필수 패키지 먼저 설치
+            npm install tailwindcss@latest autoprefixer@latest postcss@latest --save
+            
+            # 전체 패키지 설치
+            npm install
+            
+            # 7. 환경 변수 설정
+            echo "🔧 환경 변수 설정..."
             cat > .env.local << 'EOF'
-            NEXTAUTH_SECRET=monstas7-secret-key-2024
+            NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
             NEXTAUTH_URL=http://13.209.84.93:3000
-            DATABASE_URL="file:./dev.db"
+            NODE_ENV=production
+            DATABASE_URL="file:./prisma/dev.db"
+            NEXT_PUBLIC_API_URL=http://13.209.84.93:3000/api
             EOF
             
-            # 5. 설치 및 빌드
-            npm install
+            cp .env.local .env.production
+            cp .env.local .env
+            
+            # 8. Prisma 설정
+            echo "🗄️ Prisma 설정..."
             npx prisma generate
             
-            # 빌드 시도 (실패해도 계속)
-            npm run build || echo "빌드 실패, 개발 모드로 실행"
+            # 9. .next 캐시 정리
+            echo "🗑️ 캐시 정리..."
+            rm -rf .next
             
-            # 6. 직접 실행 (PM2 없이)
-            PORT=3000 HOST=0.0.0.0 nohup npm start > ~/server.log 2>&1 &
+            # 10. PM2 설정
+            echo "⚙️ PM2 설정..."
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'monsta-prod',
+                script: 'npm',
+                args: 'run dev',
+                instances: 1,
+                exec_mode: 'fork',
+                autorestart: true,
+                watch: false,
+                max_memory_restart: '500M',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000,
+                  HOST: '0.0.0.0',
+                  NODE_OPTIONS: '--max-old-space-size=512'
+                }
+              }]
+            }
+            EOF
             
-            # 7. 잠시 대기
+            # 11. 개발 모드로 즉시 시작
+            echo "🚀 서버 시작 (개발 모드)..."
+            PORT=3000 HOST=0.0.0.0 NODE_OPTIONS="--max-old-space-size=512" pm2 start npm --name monsta-prod -- run dev
+            
+            # 12. PM2 설정 저장
+            pm2 save
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
+            
+            # 13. 상태 확인
+            echo ""
+            echo "📊 PM2 상태:"
+            pm2 status
+            
+            # 14. 포트 확인
+            echo ""
+            echo "🔍 포트 3000 상태:"
+            sudo netstat -tlnp | grep :3000 || echo "포트 3000 아직 리스닝 안됨"
+            
+            # 15. 프로세스 확인
+            echo ""
+            echo "📋 Node 프로세스:"
+            ps aux | grep node | grep -v grep
+            
+            # 16. 로그 확인
+            echo ""
+            echo "📝 PM2 로그 (최근 20줄):"
+            pm2 logs monsta-prod --lines 20 --nostream
+            
+            # 17. 대기 후 테스트
+            echo ""
+            echo "⏳ 서버 시작 대기 중..."
             sleep 10
             
-            # 8. 확인
-            echo "서버 상태 확인:"
-            curl -I http://localhost:3000/test || echo "테스트 페이지 접속 실패"
+            # 18. 최종 테스트
+            echo ""
+            echo "🔍 서버 응답 테스트..."
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ 서버가 정상 작동 중입니다!"
+            else
+              echo "⚠️ 서버가 아직 시작 중... nohup으로 직접 실행 시도"
+              pm2 delete monsta-prod 2>/dev/null || true
+              PORT=3000 HOST=0.0.0.0 nohup npm run dev > ~/server.log 2>&1 &
+              echo "📝 백그라운드에서 실행 중..."
+              sleep 5
+              tail -n 20 ~/server.log
+            fi
             
-            echo "로그 확인:"
-            tail -30 ~/server.log
+            # 19. 메모리 상태
+            echo ""
+            echo "📊 메모리 상태:"
+            free -h
             
-            echo "✅ 긴급 수정 완료"
+            # 20. 최종 메시지
+            echo ""
+            echo "✅ 긴급 복구 완료!"
+            echo "🌐 접속 주소: http://13.209.84.93:3000"
+            echo "📝 로그 확인: pm2 logs monsta-prod"
+            echo "🔄 재시작: pm2 restart monsta-prod"

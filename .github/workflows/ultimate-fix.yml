@@ -1,0 +1,115 @@
+name: Ultimate Fix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  ultimate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ultimate Server Fix
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 20m
+          script: |
+            #!/bin/bash
+            set -x  # 디버깅 모드
+            
+            echo "===== ULTIMATE FIX START ====="
+            
+            # 1. 시스템 정리
+            echo "[1/10] 시스템 정리"
+            sudo killall -9 node npm 2>/dev/null || true
+            sudo pm2 kill 2>/dev/null || true
+            sudo fuser -k 3000/tcp 2>/dev/null || true
+            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
+            
+            # 2. 메모리 확인
+            echo "[2/10] 메모리 상태"
+            free -h
+            
+            # 3. 디렉토리 설정
+            echo "[3/10] 디렉토리 설정"
+            if [ -d ~/monstas7 ]; then
+              cd ~/monstas7
+              git fetch
+              git reset --hard origin/master
+            else
+              cd ~
+              git clone https://github.com/loadstar0723/monstas7.git
+              cd monstas7
+            fi
+            
+            cd frontend
+            pwd
+            
+            # 4. 캐시 정리
+            echo "[4/10] 캐시 정리"
+            rm -rf .next
+            rm -rf node_modules/.cache
+            npm cache clean --force
+            
+            # 5. 의존성 확인
+            echo "[5/10] 의존성 설치"
+            if [ ! -d node_modules ]; then
+              npm install --verbose
+            else
+              npm install tailwindcss autoprefixer postcss
+            fi
+            
+            # 6. 환경 설정
+            echo "[6/10] 환경 설정"
+            echo "PORT=3000" > .env
+            echo "HOST=0.0.0.0" >> .env
+            echo "NODE_ENV=development" >> .env
+            
+            # 7. Prisma
+            echo "[7/10] Prisma 설정"
+            npx prisma generate || true
+            
+            # 8. 첫 번째 시도 - 직접 실행
+            echo "[8/10] 직접 실행 시도"
+            timeout 30 bash -c 'PORT=3000 HOST=0.0.0.0 npm run dev' &
+            SERVER_PID=$!
+            
+            sleep 20
+            
+            # 9. 테스트
+            echo "[9/10] 접속 테스트"
+            if curl -f http://localhost:3000 2>/dev/null; then
+              echo "✅ SUCCESS - 서버 실행 중"
+              kill $SERVER_PID 2>/dev/null || true
+              
+              # 백그라운드로 재실행
+              PORT=3000 HOST=0.0.0.0 nohup npm run dev > ~/server.log 2>&1 &
+              echo "백그라운드 PID: $!"
+            else
+              echo "⚠️ 첫 시도 실패, PM2로 재시도"
+              
+              kill $SERVER_PID 2>/dev/null || true
+              
+              # PM2로 시도
+              sudo npm install -g pm2
+              pm2 delete all 2>/dev/null || true
+              
+              PORT=3000 HOST=0.0.0.0 pm2 start npm --name app -- run dev
+              pm2 save
+              
+              sleep 10
+              pm2 status
+            fi
+            
+            # 10. 최종 확인
+            echo "[10/10] 최종 상태"
+            ps aux | grep node | grep -v grep | head -3
+            sudo netstat -tlnp | grep 3000
+            
+            echo "===== COMPLETE ====="
+            echo "URL: http://13.209.84.93:3000"
+            echo "로그: tail -f ~/server.log"

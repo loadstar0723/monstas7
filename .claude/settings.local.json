@@ -188,7 +188,11 @@
       "mcp__serena__find_file",
       "mcp__serena__create_text_file",
       "Bash(start chrome http://localhost:3000/quant/options)",
-      "Bash(start http://localhost:3000/quant/options)"
+      "Bash(start http://localhost:3000/quant/options)",
+      "Bash(start http://localhost:3000/quant/pair-trading)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\page.tsx\")",
+      "Bash(start http://localhost:3006/quant/mean-reversion)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\components\\SimpleChart.tsx\")"
     ],
     "deny": [],
     "ask": []
