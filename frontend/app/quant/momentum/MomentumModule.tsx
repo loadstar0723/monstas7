@@ -98,7 +98,7 @@ export default function MomentumModule() {
   }, [])
 
   // 히스토리컬 데이터 가져오기
-  const const fetchHistoricalData = useCallback(async (symbol: string) => {
+  const fetchHistoricalData = useCallback(async (symbol: string) => {
     try {
       setError(null)
       const response = await fetch(
