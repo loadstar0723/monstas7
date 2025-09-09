@@ -9,7 +9,8 @@ import {
 import { 
   SiSolana, SiRipple, SiCardano, SiDogecoin, SiPolygon 
 } from 'react-icons/si'
-// Chart.js 컴포넌트는 필요시 import
+// Chart.js 컴포넌트 import
+import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
