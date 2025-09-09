@@ -61,18 +61,37 @@ export const binanceAPI = {
   
   // 24시간 티커 정보
   get24hrTicker: async (symbol: string) => {
-    const response = await fetch(
-      `${BINANCE_CONFIG.REST_BASE}${BINANCE_CONFIG.API_VERSION}/ticker/24hr?symbol=${symbol}`
-    )
-    return response.json()
+    try {
+      const response = await fetch(
+        `${BINANCE_CONFIG.REST_BASE}${BINANCE_CONFIG.API_VERSION}/ticker/24hr?symbol=${symbol}`
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return { data, error: null }
+    } catch (error) {
+      console.error(`Error fetching 24hr ticker for ${symbol}:`, error)
+      return { data: null, error }
+    }
   },
   
   // K라인 (캔들스틱) 데이터
-  getKlines: async (symbol: string, interval: string, limit: number = 100) => {
-    const response = await fetch(
-      `${BINANCE_CONFIG.REST_BASE}${BINANCE_CONFIG.API_VERSION}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    )
-    return response.json()
+  getKlines: async (params: { symbol: string, interval: string, limit?: number }) => {
+    try {
+      const { symbol, interval, limit = 100 } = params
+      const response = await fetch(
+        `${BINANCE_CONFIG.REST_BASE}${BINANCE_CONFIG.API_VERSION}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return { data, error: null }
+    } catch (error) {
+      console.error(`Error fetching klines for ${params.symbol}:`, error)
+      return { data: null, error }
+    }
   },
   
   // 오더북 데이터

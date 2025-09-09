@@ -171,7 +171,11 @@
       "mcp__serena__read_memory",
       "mcp__serena__find_symbol",
       "mcp__serena__replace_symbol_body",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "mcp__serena__check_onboarding_performed",
+      "Bash(ls:*)",
+      "Bash(copy page.tsx page-backup.tsx)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
