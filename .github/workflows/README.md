@@ -1,37 +1,52 @@
-# GitHub Actions 자동 배포 시스템 📦
+# GitHub Actions 배포 시스템
 
-## 🚀 자동 배포 프로세스
+## 📁 활성 워크플로우 (2개)
 
-이 저장소는 GitHub Actions를 통한 자동 배포가 구성되어 있습니다.
+### 1. simple-deploy.yml ⭐ 권장
+- **용도**: 메모리 안전 배포 (AWS 프리티어 최적화)
+- **트리거**: master 브랜치 push 또는 수동 실행
+- **특징**: 
+  - Node.js 메모리 1GB 제한
+  - PM2 단일 인스턴스 (fork 모드)
+  - 빌드 실패 시 개발 모드 폴백
+  - 메모리 상태 모니터링
 
-### 배포 트리거
-- **자동**: master/main 브랜치에 push 시 자동 실행
-- **수동**: GitHub Actions 탭에서 수동 실행 가능
+### 2. deploy.yml
+- **용도**: Next.js + FastAPI 전체 시스템 배포
+- **트리거**: master 브랜치 push
+- **포트**: 
+  - 3000: Next.js Frontend
+  - 8000: FastAPI Backend
 
-### 배포 순서
-1. 📥 최신 코드 가져오기 (git pull)
-2. 📦 의존성 설치 (npm install)
-3. 🏗️ 프로덕션 빌드 (npm run build)
-4. 🔄 PM2 재시작
-5. ✅ 배포 완료
+## 🚀 배포 방법
 
-## 🔐 필수 GitHub Secrets 설정
+### 자동 배포
+```bash
+git push origin master
+```
 
-**Settings → Secrets and variables → Actions**에서 설정:
+### 수동 배포
+```bash
+# GitHub CLI 사용
+gh workflow run simple-deploy.yml
 
-### AWS_SERVER_KEY
-AWS EC2 인스턴스 접속용 SSH 프라이빗 키
-- monsta-key.pem 파일의 전체 내용을 복사하여 등록
-- BEGIN RSA PRIVATE KEY부터 END RSA PRIVATE KEY까지 모두 포함
+# 상태 확인
+gh run list --workflow=simple-deploy.yml
+```
 
-## 📊 배포 상태 확인
+## ⚙️ 필수 설정
+
+### GitHub Secrets
+`Settings → Secrets → Actions`에서 설정:
+- **AWS_SERVER_KEY**: EC2 SSH 프라이빗 키
+
+## 📊 모니터링
 
 - **GitHub Actions**: https://github.com/loadstar0723/monstas7/actions
 - **라이브 사이트**: http://13.209.84.93:3000
 
-## 🛠️ 문제 해결
+## ⚠️ 주의사항
 
-배포 실패 시:
-1. Actions 탭에서 에러 로그 확인
-2. SSH 키가 올바르게 등록되었는지 확인
-3. 서버 연결 상태 점검
+- 메모리 부족 시 `simple-deploy.yml` 사용
+- master 브랜치 push 시 자동 배포 시작
+- 배포 중 서버 일시 중단 가능 (3-5분)
