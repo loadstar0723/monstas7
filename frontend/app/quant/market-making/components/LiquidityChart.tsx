@@ -48,8 +48,8 @@ export default function LiquidityChart({ selectedCoin }: Props) {
     try {
       setLoading(true)
       
-      // 오더북 깊이 데이터 가져오기
-      const response = await fetch(`${BINANCE_CONFIG.BASE_URL}/depth?symbol=${selectedCoin.fullSymbol}&limit=100`)
+      // 오더북 깊이 데이터 가져오기 (프록시 API 사용)
+      const response = await fetch(`/api/binance/depth?symbol=${selectedCoin.fullSymbol}&limit=100`)
       const orderBook = await response.json()
       
       // 유동성 데이터 처리

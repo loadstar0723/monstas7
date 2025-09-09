@@ -48,7 +48,6 @@ export default function MarketMakingUltraModule() {
   const [selectedCoin, setSelectedCoin] = useState(MAJOR_COINS[0])
   const [activeSection, setActiveSection] = useState('guide')
   const [isLoading, setIsLoading] = useState(true)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
     // 초기 로딩 완료
@@ -87,36 +86,24 @@ export default function MarketMakingUltraModule() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* 헤더 */}
       <div className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-800"
-              >
-                <div className="space-y-1">
-                  <div className="w-5 h-0.5 bg-gray-400"></div>
-                  <div className="w-5 h-0.5 bg-gray-400"></div>
-                  <div className="w-5 h-0.5 bg-gray-400"></div>
-                </div>
-              </button>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Link href="/" className="hover:text-white">홈</Link>
-                <span>/</span>
-                <Link href="/quant" className="hover:text-white">퀀트 전략</Link>
-                <span>/</span>
-                <span className="text-white">마켓 메이킹</span>
-              </div>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-3 sm:py-0 sm:h-16 gap-2 sm:gap-0">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 overflow-x-auto whitespace-nowrap">
+              <Link href="/" className="hover:text-white">홈</Link>
+              <span>/</span>
+              <Link href="/quant" className="hover:text-white">퀀트</Link>
+              <span>/</span>
+              <span className="text-white">마켓 메이킹</span>
             </div>
-            <h1 className="text-xl font-bold text-white hidden md:block">
-              🎯 마켓 메이킹 전문 분석
+            <h1 className="text-lg sm:text-xl font-bold text-white">
+              🎯 마켓 메이킹
             </h1>
           </div>
         </div>
       </div>
 
       {/* 코인 선택기 */}
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-5 lg:py-6">
         <CoinSelector
           coins={MAJOR_COINS}
           selectedCoin={selectedCoin}
@@ -124,49 +111,45 @@ export default function MarketMakingUltraModule() {
         />
       </div>
 
-      <div className="flex">
-        {/* 사이드바 */}
-        <aside className={`${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-900/95 backdrop-blur-sm lg:bg-transparent transition-transform duration-300 ease-in-out lg:transition-none`}>
-          <div className="h-full overflow-y-auto pt-20 lg:pt-0 px-4">
-            <nav className="space-y-2">
-              {SECTIONS.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id)
-                    setIsSidebarOpen(false)
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    activeSection === section.id
-                      ? 'bg-purple-600/20 text-purple-400 border border-purple-600/30'
-                      : 'text-gray-300 hover:bg-gray-800'
-                  }`}
-                >
-                  <span className="text-xl">{section.icon}</span>
-                  <span className="font-medium">{section.title}</span>
-                </button>
-              ))}
-            </nav>
+      {/* 가로 탭 메뉴 */}
+      <div className="px-3 sm:px-4 md:px-6 lg:px-8 mb-4 sm:mb-6">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-gray-700 p-1.5 sm:p-2">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto hide-scrollbar lg:justify-center">
+            {SECTIONS.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-md sm:rounded-lg whitespace-nowrap transition-all ${
+                  activeSection === section.id
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                <span className="text-base sm:text-lg">{section.icon}</span>
+                <span className="text-xs sm:text-sm font-medium hidden sm:inline">{section.title}</span>
+                <span className="text-xs sm:text-sm font-medium sm:hidden">{section.title.split(' ')[0]}</span>
+              </button>
+            ))}
           </div>
-        </aside>
-
-        {/* 메인 콘텐츠 */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="max-w-6xl mx-auto">
-            {renderSection()}
-          </div>
-        </main>
+        </div>
       </div>
 
-      {/* 모바일 오버레이 */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      {/* 메인 콘텐츠 */}
+      <main className="px-3 sm:px-4 md:px-6 lg:px-8 pb-6 sm:pb-8">
+        <div className="max-w-7xl mx-auto">
+          {renderSection()}
+        </div>
+      </main>
+      
+      <style jsx>{`
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   )
 }

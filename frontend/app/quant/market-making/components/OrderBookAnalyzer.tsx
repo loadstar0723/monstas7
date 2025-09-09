@@ -55,7 +55,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
   const fetchInitialOrderBook = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${BINANCE_CONFIG.BASE_URL}/depth?symbol=${selectedCoin.fullSymbol}&limit=${depth}`)
+      const response = await fetch(`/api/binance/depth?symbol=${selectedCoin.fullSymbol}&limit=${depth}`)
       const data = await response.json()
       
       const processedData = processOrderBook(data)
@@ -104,6 +104,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
 
   const processOrderBook = (data: any): OrderBookData => {
     const processBids = (bids: any[]) => {
+      if (!bids || !Array.isArray(bids)) return []
       let total = 0
       return bids.slice(0, depth).map((bid) => {
         total += parseFloat(bid[1])
@@ -116,6 +117,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
     }
 
     const processAsks = (asks: any[]) => {
+      if (!asks || !Array.isArray(asks)) return []
       let total = 0
       return asks.slice(0, depth).map((ask) => {
         total += parseFloat(ask[1])
@@ -128,7 +130,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
     }
 
     return {
-      lastUpdateId: data.lastUpdateId,
+      lastUpdateId: data.lastUpdateId || 0,
       bids: processBids(data.bids),
       asks: processAsks(data.asks)
     }

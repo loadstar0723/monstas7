@@ -67,8 +67,8 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
     try {
       setLoading(true)
       
-      // 오더북에서 스프레드 계산
-      const response = await fetch(`${BINANCE_CONFIG.BASE_URL}/depth?symbol=${selectedCoin.fullSymbol}&limit=5`)
+      // 오더북에서 스프레드 계산 (프록시 API 사용)
+      const response = await fetch(`/api/binance/depth?symbol=${selectedCoin.fullSymbol}&limit=5`)
       const orderBook = await response.json()
       
       if (orderBook.bids.length > 0 && orderBook.asks.length > 0) {
@@ -112,7 +112,7 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
 
   const updateSpreadData = async () => {
     try {
-      const response = await fetch(`${BINANCE_CONFIG.BASE_URL}/depth?symbol=${selectedCoin.fullSymbol}&limit=5`)
+      const response = await fetch(`/api/binance/depth?symbol=${selectedCoin.fullSymbol}&limit=5`)
       const orderBook = await response.json()
       
       if (orderBook.bids.length > 0 && orderBook.asks.length > 0) {

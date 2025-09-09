@@ -6,6 +6,7 @@ export const BINANCE_CONFIG = {
   
   // REST API 엔드포인트
   REST_BASE: 'https://api.binance.com',
+  BASE_URL: 'https://api.binance.com/api/v3', // 컴포넌트에서 사용하는 BASE_URL 추가
   FUTURES_BASE: 'https://fapi.binance.com',
   API_VERSION: '/api/v3',
   
