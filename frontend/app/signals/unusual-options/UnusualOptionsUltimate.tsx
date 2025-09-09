@@ -9,7 +9,7 @@ import {
 import { 
   SiSolana, SiRipple, SiCardano, SiDogecoin, SiPolygon 
 } from 'react-icons/si'
-import { Bar, Line } from 'react-chartjs-2'
+// Chart.js 컴포넌트는 필요시 import
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -117,7 +117,7 @@ export default function UnusualOptionsUltimate() {
   const fetchOptionsFlow = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/binance/options-flow?symbol=${selectedCoin}`)
+      const res = await fetch(`/api/binance/options-flow-v2?symbol=${selectedCoin}`)
       const data = await res.json()
       
       if (data.success) {
