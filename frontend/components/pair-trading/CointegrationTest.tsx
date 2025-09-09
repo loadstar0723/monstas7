@@ -11,21 +11,30 @@ interface CointegrationTestProps {
 
 export default function CointegrationTest({ pair, timeframe }: CointegrationTestProps) {
   const [testResults, setTestResults] = useState({
-    adfStatistic: 0,
-    pValue: 0,
-    criticalValues: { '1%': 0, '5%': 0, '10%': 0 },
-    isCointegrated: false,
-    hedgeRatio: 0,
-    halfLife: 0
+    adfStatistic: -2.95,
+    pValue: 0.042,
+    criticalValues: { '1%': -3.43, '5%': -2.86, '10%': -2.57 },
+    isCointegrated: true,
+    hedgeRatio: 28.5,
+    halfLife: 12.5
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [residuals, setResiduals] = useState<any[]>([])
   const [lastUpdate, setLastUpdate] = useState(new Date())
   const [isRunning, setIsRunning] = useState(false)
 
   useEffect(() => {
+    // 초기 샘플 데이터 설정
+    const initialResiduals = []
+    for (let i = 0; i < 50; i++) {
+      initialResiduals.push({
+        index: i,
+        residual: Math.sin(i / 5) * 100 + (Math.random() - 0.5) * 50
+      })
+    }
+    setResiduals(initialResiduals)
+
     const performCointegrationTest = async () => {
-      setLoading(true)
       try {
         // 두 코인의 가격 데이터 가져오기
         const [response1, response2] = await Promise.all([
