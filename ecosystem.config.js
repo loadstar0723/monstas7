@@ -4,11 +4,11 @@ module.exports = {
     script: 'npm',
     args: 'start',
     cwd: './frontend',
-    instances: 2,  // 클러스터 모드로 2개 인스턴스 실행
-    exec_mode: 'cluster',  // 클러스터 모드로 변경 (무중단 배포 가능)
+    instances: 1,  // 메모리 절약을 위해 1개 인스턴스만 실행
+    exec_mode: 'fork',  // fork 모드로 변경 (메모리 절약)
     autorestart: true,
     watch: false,
-    max_memory_restart: '1G',
+    max_memory_restart: '600M',  // 메모리 제한을 600MB로 낮춤
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
