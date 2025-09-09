@@ -247,12 +247,12 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
               <div className="text-xs text-gray-400 mb-1">순수익</div>
               <div className={`text-2xl font-bold ${
-                results.netProfit > 0 ? 'text-green-400' : 'text-red-400'
+                (results.totalProfit || 0) > 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                ${results.netProfit.toFixed(0)}
+                {((results.totalProfit || 0) * 100).toFixed(0)}%
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                ROI: {results.roi.toFixed(1)}%
+                ROI: {(results.roi || 0).toFixed(1)}%
               </div>
             </div>
             
