@@ -5,6 +5,8 @@ export async function GET(request: NextRequest) {
   const symbol = searchParams.get('symbol')
   const interval = searchParams.get('interval')
   const limit = searchParams.get('limit') || '100'
+  const startTime = searchParams.get('startTime')
+  const endTime = searchParams.get('endTime')
 
   if (!symbol || !interval) {
     return NextResponse.json(
@@ -14,9 +16,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
-      {
+    let url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    
+    if (startTime) {
+      url += `&startTime=${startTime}`
+    }
+    
+    if (endTime) {
+      url += `&endTime=${endTime}`
+    }
+
+    const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
         },
