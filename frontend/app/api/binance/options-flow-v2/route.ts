@@ -18,14 +18,14 @@ export async function GET(request: Request) {
       fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=20`),
       fetch(`https://api.binance.com/api/v3/aggTrades?symbol=${symbol}&limit=100`),
       fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=24`),
-      fetch(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${symbol}`)
+      fetch(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${symbol}`).catch(() => null)
     ])
 
     const ticker = await tickerRes.json()
     const depth = await depthRes.json()
     const trades = await trades24hrRes.json()
     const klines = await klinesRes.json()
-    const openInterest = await openInterestRes.json().catch(() => ({ openInterest: "0" }))
+    const openInterest = openInterestRes ? await openInterestRes.json().catch(() => ({ openInterest: "0" })) : ({ openInterest: "0" })
 
     const currentPrice = parseFloat(ticker.lastPrice)
     const volume24h = parseFloat(ticker.volume)
