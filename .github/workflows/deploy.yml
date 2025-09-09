@@ -93,13 +93,20 @@ jobs:
                 sudo apt-get install -y nodejs
             }
             
-            # npm 패키지 설치
-            npm install
-            
             # 🔧 기존 빌드 파일 완전 삭제 (캐시 문제 해결)
             echo "🗑️ Cleaning old build files..."
             rm -rf .next
             rm -rf node_modules/.cache
+            rm -rf node_modules
+            rm -f package-lock.json
+            
+            # npm 패키지 설치 (클린 설치)
+            echo "📦 Installing npm packages..."
+            npm install
+            
+            # lucide-react 명시적 설치 (빌드 에러 방지)
+            echo "📦 Ensuring lucide-react is installed..."
+            npm install lucide-react --save
             
             # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
             echo "🔍 배포 전 검증 시작..."
