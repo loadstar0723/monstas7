@@ -1,28 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BINANCE_API_BASE = 'https://api.binance.com'
-
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const symbol = searchParams.get('symbol')
+
+  if (!symbol) {
+    return NextResponse.json({ error: 'Symbol is required' }, { status: 400 })
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const symbol = searchParams.get('symbol') || 'BTCUSDT'
-    
-    const response = await fetch(`${BINANCE_API_BASE}/api/v3/ticker/24hr?symbol=${symbol}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      next: { revalidate: 5 }
-    })
-    
+    const response = await fetch(
+      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      }
+    )
+
     if (!response.ok) {
       throw new Error(`Binance API error: ${response.status}`)
     }
-    
+
     const data = await response.json()
     
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Binance ticker proxy error:', error)
+    console.error('Binance API error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch ticker data' },
       { status: 500 }
