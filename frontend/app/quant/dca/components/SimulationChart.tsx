@@ -324,7 +324,7 @@ export default function SimulationChart({ selectedCoin, settings }: Props) {
                 <Area
                   type="monotone"
                   dataKey="totalInvested"
-                  stackId="1"
+                  stackId="stack1"
                   stroke="#8B5CF6"
                   fill="#8B5CF6"
                   fillOpacity={0.3}
@@ -333,7 +333,7 @@ export default function SimulationChart({ selectedCoin, settings }: Props) {
                 <Area
                   type="monotone"
                   dataKey="portfolioValue"
-                  stackId="2"
+                  stackId="stack2"
                   stroke="#10B981"
                   fill="#10B981"
                   fillOpacity={0.3}
