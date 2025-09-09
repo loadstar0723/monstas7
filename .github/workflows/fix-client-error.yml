@@ -1,0 +1,79 @@
+name: Fix Client Error
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'fix-client.trigger'
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Fix Client Side Error
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          script: |
+            echo "🔧 클라이언트 에러 수정 시작..."
+            
+            # 1. 현재 프로세스 확인
+            echo "현재 실행 중인 프로세스:"
+            ps aux | grep node | grep -v grep
+            
+            # 2. PM2 프로세스 정리
+            pm2 stop all 2>/dev/null || true
+            pm2 delete all 2>/dev/null || true
+            
+            # 3. 프로젝트 디렉토리로 이동
+            cd ~/monstas7/frontend
+            
+            # 4. 최신 코드 가져오기
+            echo "최신 코드 가져오기..."
+            git pull origin master
+            
+            # 5. 캐시 정리
+            echo "캐시 정리..."
+            rm -rf .next
+            
+            # 6. 환경 변수 설정
+            echo "환경 변수 설정..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            DATABASE_URL="file:./dev.db"
+            NODE_ENV=development
+            EOF
+            
+            # 7. 의존성 설치
+            echo "의존성 확인..."
+            npm install
+            
+            # 8. Prisma 설정
+            npx prisma generate
+            
+            # 9. PM2로 개발 모드 실행
+            echo "PM2로 개발 서버 시작..."
+            pm2 start "npm run dev" --name monsta-dev
+            pm2 save
+            
+            # 10. 로그 확인
+            echo "PM2 로그:"
+            pm2 logs --lines 30 --nostream
+            
+            # 11. 상태 확인
+            echo "PM2 상태:"
+            pm2 status
+            
+            # 12. 포트 확인
+            echo "포트 3000 상태:"
+            sudo netstat -tlnp | grep :3000
+            
+            echo "✅ 클라이언트 에러 수정 완료"
+            echo "🌐 접속 주소: http://13.209.84.93:3000"
+            echo "📋 비정상 옵션 페이지: http://13.209.84.93:3000/signals/unusual-options"

@@ -175,7 +175,8 @@
       "mcp__serena__check_onboarding_performed",
       "Bash(ls:*)",
       "Bash(copy page.tsx page-backup.tsx)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(start http://localhost:3000/signals/unusual-options)"
     ],
     "deny": [],
     "ask": []
