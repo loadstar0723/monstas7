@@ -76,7 +76,15 @@ jobs:
             cat > .env.local << 'EOF'
             NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
             NEXTAUTH_URL=http://13.209.84.93:3000
+            NODE_ENV=production
+            DATABASE_URL="file:./prisma/dev.db"
+            NEXT_PUBLIC_API_URL=http://13.209.84.93:3000/api
+            GENERATE_SOURCEMAP=false
+            NEXT_PUBLIC_ENV=production
             EOF
+            
+            # .env.production 파일도 생성
+            cp .env.local .env.production
             
             # Node.js 버전 확인
             node -v || {
@@ -136,10 +144,17 @@ jobs:
             pm2 stop all || true
             pm2 delete all || true
             
-            # PM2로 Next.js 시작
-            pm2 start npm --name "monsta-nextjs" -- start
+            # PM2로 Next.js 시작 (에러 처리 강화)
+            pm2 start npm --name "monsta-nextjs" -- start -- --hostname 0.0.0.0 --port 3000
             pm2 save
             pm2 startup || true
+            
+            # PM2 로그 실시간 확인 (10초)
+            echo "📋 Checking PM2 logs..."
+            timeout 10 pm2 logs monsta-nextjs --lines 50 || true
+            
+            # PM2 상태 확인
+            pm2 describe monsta-nextjs || echo "PM2 app status check failed"
             
             echo "✅ Next.js started with PM2"
             
