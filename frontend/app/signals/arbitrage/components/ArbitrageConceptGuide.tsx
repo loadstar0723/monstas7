@@ -202,12 +202,12 @@ export default function ArbitrageConceptGuide({ selectedCoin }: Props) {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-900 rounded-lg p-4">
-                  <p className="font-bold mb-2">롱 포지션 펀딩 > 0</p>
+                  <p className="font-bold mb-2">롱 포지션 펀딩 &gt; 0</p>
                   <p className="text-sm text-gray-300">• 현물 매수 + 선물 숏</p>
                   <p className="text-sm text-green-400">• 펀딩 수수료 수취</p>
                 </div>
                 <div className="bg-gray-900 rounded-lg p-4">
-                  <p className="font-bold mb-2">숏 포지션 펀딩 < 0</p>
+                  <p className="font-bold mb-2">숏 포지션 펀딩 &lt; 0</p>
                   <p className="text-sm text-gray-300">• 현물 매도 + 선물 롱</p>
                   <p className="text-sm text-green-400">• 역펀딩 수수료 수취</p>
                 </div>
