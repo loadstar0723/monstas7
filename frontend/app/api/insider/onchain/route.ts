@@ -1,31 +1,63 @@
 import { NextResponse } from 'next/server'
 
+// Prisma 임포트를 조건적으로 처리
+let prisma: any = null
+try {
+  prisma = require('@/lib/prisma').default
+} catch (e) {
+  console.log('Prisma not available, using API only')
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const symbol = searchParams.get('symbol') || 'BTC'
 
   try {
-    // 코인별 기본값 설정
-    const volumeMultiplier = symbol === 'BTC' ? 1000 :
-                           symbol === 'ETH' ? 500 :
-                           symbol === 'BNB' ? 200 : 100
+    // Binance API에서 실시간 거래량 데이터 가져오기
+    const binanceSymbol = `${symbol}USDT`
+    const ticker24hrResponse = await fetch(
+      `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`
+    )
     
-    // 임시 데이터 (실제로는 온체인 API에서)
-    const volume = volumeMultiplier * 1000000
-    const count = volumeMultiplier * 1000
-    const priceChange = symbol === 'BTC' || symbol === 'ETH' ? 5.2 : 
-                       symbol === 'XRP' || symbol === 'ADA' ? -3.1 : 1.5
+    let volume = 0
+    let count = 0
+    let priceChange = 0
+    
+    if (ticker24hrResponse.ok) {
+      const ticker24hrData = await ticker24hrResponse.json()
+      volume = parseFloat(ticker24hrData.volume) * parseFloat(ticker24hrData.lastPrice)
+      count = parseInt(ticker24hrData.count)
+      priceChange = parseFloat(ticker24hrData.priceChangePercent)
+    }
 
-    // 실제 온체인 데이터를 가져올 때까지 동적 계산
-    const activeAddresses = Math.floor(volume / 10) // 실제로는 온체인 API
-    const transactionCount = count * 100 // 실제로는 온체인 API
-    const largeHolders = Math.floor(volume / 100000) // 실제로는 온체인 API
-    const networkActivity = Math.min(100, Math.abs(priceChange) * 10 + 50) // 실제로는 온체인 API
+    // 거래량 기반으로 온체인 메트릭 추정 (실제 온체인 API 연동 전까지)
+    const activeAddresses = Math.max(1000, Math.floor(count / 10))
+    const transactionCount = count
+    const largeHolders = Math.max(100, Math.floor(volume / 1000000))
+    const networkActivity = Math.min(100, Math.max(10, (count / 1000) + Math.abs(priceChange) * 2))
 
-    // 변화율은 실제 히스토리 데이터와 비교해야 함
-    const activeAddressChange = priceChange * 0.5 // 실제로는 24시간 전 데이터와 비교
-    const transactionCountChange = -priceChange * 0.2 // 실제로는 24시간 전 데이터와 비교
-    const largeHoldersChange = Math.floor(priceChange) // 실제로는 24시간 전 데이터와 비교
+    // 변화율 계산 (가격 변화와 연동)
+    const activeAddressChange = priceChange > 0 ? Math.abs(priceChange) * 2.5 : -Math.abs(priceChange) * 1.5
+    const transactionCountChange = priceChange > 0 ? Math.abs(priceChange) * 1.2 : -Math.abs(priceChange) * 0.8
+    const largeHoldersChange = priceChange > 0 ? Math.floor(Math.abs(priceChange) / 2) : -Math.floor(Math.abs(priceChange) / 3)
+
+    // DB에서 과거 데이터 가져오기 (있으면)
+    let historicalData = null
+    if (prisma) {
+      try {
+        historicalData = await prisma.onchainMetrics.findFirst({
+          where: { 
+            symbol,
+            createdAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24시간 전
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        })
+      } catch (dbError) {
+        console.log('Historical data not found')
+      }
+    }
 
     const onchainData = {
       symbol,
@@ -52,12 +84,20 @@ export async function GET(request: Request) {
         }
       },
       holderDistribution: {
-        // 실제로는 온체인 데이터 제공업체 API에서 가져와야 함
-        // 임시로 거래량 기반 계산 (실제 온체인 API 연동 필요)
-        top10: Math.min(45, 30 + Math.min(volume / 10000000, 15)), 
-        top11to50: Math.min(30, 20 + Math.min(count / 1000000, 10)),
-        top51to100: Math.min(20, 15 + Math.abs(priceChange) / 20),
+        // 거래량과 변동성 기반으로 홀더 분포 추정
+        // 높은 거래량 = 더 분산된 분포
+        top10: Math.max(25, Math.min(60, 50 - (volume / 50000000))),
+        top11to50: Math.max(15, Math.min(30, 25 + (count / 2000000))),
+        top51to100: Math.max(10, Math.min(20, 15 + Math.abs(priceChange) / 10)),
         others: 0, // 나머지 계산
+      },
+      // 거래소별 보유량 (실제 API 연동 전까지 거래량 기반 추정)
+      exchangeBalances: {
+        binance: Math.floor(volume * 0.35),
+        coinbase: Math.floor(volume * 0.20),
+        kraken: Math.floor(volume * 0.10),
+        bitfinex: Math.floor(volume * 0.08),
+        others: Math.floor(volume * 0.27)
       },
       timestamp: new Date().toISOString()
     }
@@ -67,6 +107,25 @@ export async function GET(request: Request) {
                         onchainData.holderDistribution.top11to50 + 
                         onchainData.holderDistribution.top51to100
     onchainData.holderDistribution.others = Math.max(0, 100 - totalPercent)
+
+    // 현재 데이터를 DB에 저장 (다음 비교를 위해)
+    if (prisma) {
+      try {
+        await prisma.onchainMetrics.create({
+          data: {
+            symbol,
+            activeAddresses,
+            transactionCount,
+            largeHolders,
+            networkActivity,
+            volume,
+            priceChange,
+          }
+        })
+      } catch (dbError) {
+        console.log('Failed to save metrics:', dbError)
+      }
+    }
 
     return NextResponse.json({
       success: true,

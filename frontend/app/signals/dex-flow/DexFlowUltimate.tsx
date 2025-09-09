@@ -140,7 +140,7 @@ export default function DexFlowUltimate() {
     // 자동 새로고침
     const interval = autoRefresh ? setInterval(() => {
       loadCoinData(selectedCoin)
-    }, 10000) : null
+    }, 30000) : null // 30초로 변경
     
     return () => {
       if (interval) clearInterval(interval)
@@ -188,10 +188,12 @@ export default function DexFlowUltimate() {
         const dexResponse = await dexRes.json()
         if (dexResponse.success && dexResponse.data) {
           const dexData = dexResponse.data
-          setTransactions(dexData.transactions || [])
-          setLiquidityPools(dexData.pools || [])
-          setArbitrageOps(dexData.arbitrage || [])
-          setMevActivity(dexData.mev || [])
+          console.log('DEX transactions loaded:', dexData.transactions?.length || 0)
+          // 데이터 개수 제한으로 무한 증가 방지
+          setTransactions((dexData.transactions || []).slice(0, 100))
+          setLiquidityPools((dexData.pools || []).slice(0, 20))
+          setArbitrageOps((dexData.arbitrage || []).slice(0, 20))
+          setMevActivity((dexData.mev || []).slice(0, 50))
           if (dexData.stats) {
             setStats(dexData.stats)
           }
@@ -321,6 +323,7 @@ export default function DexFlowUltimate() {
       </div>
 
       {/* 탭 컨텐츠 */}
+      <div className="relative">
       <AnimatePresence mode="wait">
         {activeTab === 'overview' && (
           <motion.div
@@ -496,30 +499,36 @@ export default function DexFlowUltimate() {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={
-                          transactions.length > 0
-                            ? (() => {
-                                let toUsdt = 0
-                                let fromUsdt = 0
-                                let other = 0
-                                transactions.forEach(tx => {
-                                  if (tx.tokenIn === selectedCoin && tx.tokenOut === 'USDT') toUsdt++
-                                  else if (tx.tokenIn === 'USDT' && tx.tokenOut === selectedCoin) fromUsdt++
-                                  else other++
-                                })
-                                const total = toUsdt + fromUsdt + other
-                                return [
-                                  { name: `${selectedCoin} → USDT`, value: total > 0 ? (toUsdt / total) * 100 : 0, fill: '#10b981' },
-                                  { name: `USDT → ${selectedCoin}`, value: total > 0 ? (fromUsdt / total) * 100 : 0, fill: '#ef4444' },
-                                  { name: '기타', value: total > 0 ? (other / total) * 100 : 0, fill: '#6b7280' }
-                                ]
-                              })()
-                            : [
-                                { name: `${selectedCoin} → USDT`, value: 0, fill: '#10b981' },
-                                { name: `USDT → ${selectedCoin}`, value: 0, fill: '#ef4444' },
-                                { name: '기타', value: 0, fill: '#6b7280' }
-                              ]
-                        }
+                        data={(() => {
+                          if (transactions.length === 0) {
+                            return [
+                              { name: `${selectedCoin} → USDT`, value: 33, fill: '#10b981' },
+                              { name: `USDT → ${selectedCoin}`, value: 33, fill: '#ef4444' },
+                              { name: '기타', value: 34, fill: '#6b7280' }
+                            ]
+                          }
+                          let toUsdt = 0
+                          let fromUsdt = 0
+                          let other = 0
+                          transactions.forEach(tx => {
+                            if (tx.tokenIn === selectedCoin && tx.tokenOut === 'USDT') toUsdt++
+                            else if (tx.tokenIn === 'USDT' && tx.tokenOut === selectedCoin) fromUsdt++
+                            else other++
+                          })
+                          const total = toUsdt + fromUsdt + other
+                          if (total === 0) {
+                            return [
+                              { name: `${selectedCoin} → USDT`, value: 33, fill: '#10b981' },
+                              { name: `USDT → ${selectedCoin}`, value: 33, fill: '#ef4444' },
+                              { name: '기타', value: 34, fill: '#6b7280' }
+                            ]
+                          }
+                          return [
+                            { name: `${selectedCoin} → USDT`, value: toUsdt, fill: '#10b981' },
+                            { name: `USDT → ${selectedCoin}`, value: fromUsdt, fill: '#ef4444' },
+                            { name: '기타', value: other, fill: '#6b7280' }
+                          ]
+                        })()}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -574,6 +583,7 @@ export default function DexFlowUltimate() {
 
               {/* 트랜잭션 테이블 */}
               <div className="overflow-x-auto">
+                <div className="max-h-[300px] overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-gray-400 border-b border-gray-700">
@@ -625,6 +635,7 @@ export default function DexFlowUltimate() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
 
@@ -735,7 +746,7 @@ export default function DexFlowUltimate() {
               </div>
 
               {/* 주요 풀 목록 */}
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
                 {liquidityPools.slice(0, 5).map((pool, index) => (
                   <div key={index} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                     <div className="flex items-center justify-between mb-2">
@@ -925,7 +936,7 @@ export default function DexFlowUltimate() {
               </div>
 
               {/* 차익거래 기회 목록 */}
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[350px] overflow-y-auto">
                 {arbitrageOps.slice(0, 5).map((arb, index) => (
                   <div key={index} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                     <div className="flex items-center justify-between mb-2">
@@ -1075,7 +1086,7 @@ export default function DexFlowUltimate() {
               </div>
 
               {/* MEV 활동 목록 */}
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[350px] overflow-y-auto">
                 {mevActivity.length > 0 ? mevActivity.slice(0, 5).map((mev, index) => (
                   <div key={index} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                     <div className="flex items-center justify-between mb-2">
@@ -1501,6 +1512,7 @@ export default function DexFlowUltimate() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       {/* 하단 정보 */}
       <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">

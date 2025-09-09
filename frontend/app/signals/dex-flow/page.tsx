@@ -44,8 +44,8 @@ const DexFlowUltimate = dynamic(
  */
 export default function DEXFlowAnalysisPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white overflow-hidden">
+      <div className="container mx-auto px-4 py-8 h-screen overflow-y-auto">
         {/* Error Boundary로 보호된 Ultimate 모듈 */}
         <ErrorBoundary moduleName="DexFlowUltimate">
           <DexFlowUltimate />
