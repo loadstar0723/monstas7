@@ -184,7 +184,11 @@
       "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\market-making\\page.tsx\")",
       "Bash(git clone:*)",
       "Bash(start http://localhost:3001/quant/pair-trading)",
-      "Read(//c/Users/**)"
+      "Read(//c/Users/**)",
+      "mcp__serena__find_file",
+      "mcp__serena__create_text_file",
+      "Bash(start chrome http://localhost:3000/quant/options)",
+      "Bash(start http://localhost:3000/quant/options)"
     ],
     "deny": [],
     "ask": []
