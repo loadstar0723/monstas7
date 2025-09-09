@@ -97,27 +97,26 @@ jobs:
             echo "🗑️ Cleaning old build files..."
             rm -rf .next
             rm -rf node_modules/.cache
-            rm -rf node_modules
-            rm -f package-lock.json
             
-            # npm 캐시 완전 삭제
-            echo "🗑️ Clearing npm cache..."
-            npm cache clean --force
+            # package-lock.json이 없으면 npm install, 있으면 npm ci 사용
+            if [ -f "package-lock.json" ]; then
+                echo "📦 Installing packages with npm ci..."
+                rm -rf node_modules
+                npm ci --legacy-peer-deps
+            else
+                echo "📦 Installing packages with npm install..."
+                rm -rf node_modules
+                npm install --legacy-peer-deps
+            fi
             
-            # npm 패키지 설치 (클린 설치)
-            echo "📦 Installing npm packages..."
-            npm install --legacy-peer-deps
-            
-            # lucide-react 명시적 설치 (빌드 에러 방지)
-            echo "📦 Ensuring lucide-react is installed..."
-            npm install lucide-react@latest --save --legacy-peer-deps
-            
-            # lucide-react 설치 확인
+            # lucide-react 설치 확인 및 재설치
             echo "🔍 Verifying lucide-react installation..."
-            ls -la node_modules/lucide-react || {
-                echo "❌ lucide-react not found, trying again..."
-                npm install lucide-react@0.543.0 --save --force
-            }
+            if [ ! -d "node_modules/lucide-react" ]; then
+                echo "❌ lucide-react not found, installing..."
+                npm install lucide-react@0.543.0 --save --legacy-peer-deps
+            else
+                echo "✅ lucide-react is installed"
+            fi
             
             # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
             echo "🔍 배포 전 검증 시작..."
