@@ -1,0 +1,58 @@
+name: 🔄 Auto Server Restart
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/auto-restart.yml'
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🚀 서버 자동 재시작
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          echo "🔄 서버 재시작 시작..."
+          
+          # 모든 Node 프로세스 강제 종료
+          sudo pkill -f node || true
+          sudo pkill -f npm || true
+          sudo pkill -f next || true
+          
+          # PM2로 실행 중인 프로세스 정리
+          pm2 kill || true
+          
+          # 포트 점유 프로세스 종료
+          sudo fuser -k 3000/tcp || true
+          sudo fuser -k 8000/tcp || true
+          
+          # 프로젝트 디렉토리로 이동
+          cd /home/ubuntu/monstas7 || exit 1
+          
+          # 최신 코드 pull
+          git pull origin master
+          
+          # Frontend 재시작
+          cd frontend
+          npm install
+          
+          # PM2로 프로세스 시작
+          pm2 start "npm run start" --name frontend -- --port 3000
+          
+          # PM2 상태 저장
+          pm2 save
+          pm2 startup systemd -u ubuntu --hp /home/ubuntu
+          
+          echo "✅ 서버 재시작 완료!"
+          
+          # 상태 확인
+          pm2 status
+          curl -I http://localhost:3000 || echo "서버 시작 중..."
