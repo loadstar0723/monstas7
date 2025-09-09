@@ -176,7 +176,11 @@
       "Bash(ls:*)",
       "Bash(copy page.tsx page-backup.tsx)",
       "Bash(cp:*)",
-      "Bash(start http://localhost:3000/signals/unusual-options)"
+      "Bash(start http://localhost:3000/signals/unusual-options)",
+      "Bash(start http://localhost:3000/signals/fear-greed)",
+      "Bash(start http://13.209.84.93:3000/signals/fear-greed)",
+      "Bash(git stash:*)",
+      "Bash(start http://localhost:3001/quant/backtesting)"
     ],
     "deny": [],
     "ask": []
