@@ -351,7 +351,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
             <div className="mt-4 flex gap-4 text-xs">
               <span className="flex items-center gap-1">
                 <div className="w-4 h-4 bg-green-500 rounded"></div>
-                수익 > 0.5%
+                수익 &gt; 0.5%
               </span>
               <span className="flex items-center gap-1">
                 <div className="w-4 h-4 bg-yellow-500 rounded"></div>
@@ -359,7 +359,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
               </span>
               <span className="flex items-center gap-1">
                 <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                수익 < 0.2%
+                수익 &lt; 0.2%
               </span>
             </div>
           </div>
