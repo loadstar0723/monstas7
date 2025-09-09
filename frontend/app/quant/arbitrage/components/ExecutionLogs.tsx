@@ -26,80 +26,49 @@ export default function ExecutionLogs({ selectedCoin, botStatus }: ExecutionLogs
   const [filter, setFilter] = useState<'all' | 'trade' | 'system' | 'error'>('all')
   const [autoScroll, setAutoScroll] = useState(true)
   
-  // 로그 생성 시뮬레이션
+  // 실시간 로그 수신
   useEffect(() => {
     if (botStatus === 'running') {
-      const logInterval = setInterval(() => {
-        generateLog()
-      }, 2000 + Math.random() * 3000) // 2-5초마다
+      const fetchLogs = async () => {
+        try {
+          const response = await fetch(`/api/arbitrage/logs?symbol=${selectedCoin.symbol}&limit=10`)
+          
+          if (response.ok) {
+            const data = await response.json()
+            
+            if (data && data.logs && Array.isArray(data.logs)) {
+              // 신규 로그만 추가
+              const newLogs = data.logs.filter((newLog: any) => 
+                !logs.some(existingLog => existingLog.id === newLog.id)
+              )
+              
+              if (newLogs.length > 0) {
+                setLogs(prev => [
+                  ...newLogs.map((log: any) => ({
+                    id: log.id || `${Date.now()}-${Math.floor(Date.now() / 1000)}`,
+                    timestamp: new Date(log.timestamp),
+                    type: log.type || 'info',
+                    category: log.category || 'system',
+                    message: log.message || '',
+                    details: log.details
+                  })),
+                  ...prev.slice(0, 90)
+                ])
+              }
+            }
+          }
+        } catch (error) {
+          console.error('로그 데이터 조회 실패:', error)
+        }
+      }
+      
+      const logInterval = setInterval(fetchLogs, 5000) // 5초마다 실제 로그 수신
       
       return () => clearInterval(logInterval)
     }
-  }, [botStatus, selectedCoin])
+  }, [botStatus, selectedCoin, logs])
   
-  const generateLog = () => {
-    const logTypes = [
-      {
-        type: 'info' as const,
-        category: 'system' as const,
-        messages: [
-          `${selectedCoin.symbol} 가격 업데이트 수신`,
-          'WebSocket 연결 상태 정상',
-          '시스템 상태 체크 완료',
-          'API Rate Limit: 85% 사용'
-        ]
-      },
-      {
-        type: 'success' as const,
-        category: 'trade' as const,
-        messages: [
-          `차익거래 기회 발견: ${selectedCoin.symbol} Binance→Upbit 0.3%`,
-          `주문 실행 성공: 매수 ${selectedCoin.symbol} $98,000`,
-          `주문 실행 성공: 매도 ${selectedCoin.symbol} $98,300`,
-          `수익 실현: +$15.50 (0.25%)`
-        ]
-      },
-      {
-        type: 'warning' as const,
-        category: 'risk' as const,
-        messages: [
-          '슬리피지 경고: 0.15% 초과',
-          '포지션 크기 한도 근접: 85%',
-          '일일 손실 한도 50% 도달',
-          'API 응답 지연: 2.5초'
-        ]
-      },
-      {
-        type: 'error' as const,
-        category: 'api' as const,
-        messages: [
-          'API 호출 실패: 타임아웃',
-          '주문 거부: 잔액 부족',
-          'WebSocket 연결 끊김',
-          '가격 데이터 불일치 감지'
-        ]
-      }
-    ]
-    
-    const randomLog = logTypes[Math.floor(Math.random() * logTypes.length)]
-    const message = randomLog.messages[Math.floor(Math.random() * randomLog.messages.length)]
-    
-    const newLog: LogEntry = {
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      type: randomLog.type,
-      category: randomLog.category,
-      message,
-      details: randomLog.category === 'trade' ? {
-        coin: selectedCoin.symbol,
-        price: selectedCoin.symbol === 'BTC' ? 98000 : 3500,
-        amount: 0.01 + Math.random() * 0.1,
-        exchange: ['Binance', 'Upbit', 'Coinbase'][Math.floor(Math.random() * 3)]
-      } : undefined
-    }
-    
-    setLogs(prev => [newLog, ...prev.slice(0, 99)]) // 최대 100개 로그 유지
-  }
+  // generateLog 함수 제거 - 실제 API에서 데이터 수신
   
   // 초기 로그 생성
   useEffect(() => {

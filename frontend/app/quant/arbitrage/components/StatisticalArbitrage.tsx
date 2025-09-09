@@ -45,32 +45,68 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
   })
   
   useEffect(() => {
-    // 통계적 지표 계산 (실제로는 API에서 받아옴)
-    const calculateIndicators = () => {
-      const basePrice = selectedCoin.symbol === 'BTC' ? 98000 : 3500
-      
-      setIndicators({
-        rsi: 30 + Math.random() * 40, // 30-70
-        bollingerUpper: basePrice * 1.02,
-        bollingerLower: basePrice * 0.98,
-        bollingerMiddle: basePrice,
-        sma20: basePrice * (0.99 + Math.random() * 0.02),
-        sma50: basePrice * (0.98 + Math.random() * 0.04),
-        correlation: -0.5 + Math.random(), // -0.5 to 0.5
-        zscore: -2 + Math.random() * 4 // -2 to 2
-      })
-      
-      // 백테스트 결과 시뮬레이션
-      setBacktestResults({
-        winRate: 55 + Math.random() * 20,
-        avgProfit: 0.3 + Math.random() * 0.7,
-        maxDrawdown: 2 + Math.random() * 3,
-        sharpeRatio: 1.2 + Math.random() * 0.8
-      })
+    // 통계적 지표 API에서 수신
+    const fetchIndicators = async () => {
+      try {
+        const response = await fetch(`/api/technical-indicators?symbol=${selectedCoin.symbol}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          
+          // API 데이터가 있으면 사용
+          if (data) {
+            setIndicators({
+              rsi: data.rsi || 50,
+              bollingerUpper: data.bollingerUpper || 0,
+              bollingerLower: data.bollingerLower || 0,
+              bollingerMiddle: data.bollingerMiddle || 0,
+              sma20: data.sma20 || 0,
+              sma50: data.sma50 || 0,
+              correlation: data.correlation || 0,
+              zscore: data.zscore || 0
+            })
+            
+            // 백테스트 결과도 API에서 가져오기
+            if (data.backtestResults) {
+              setBacktestResults({
+                winRate: data.backtestResults.winRate || 0,
+                avgProfit: data.backtestResults.avgProfit || 0,
+                maxDrawdown: data.backtestResults.maxDrawdown || 0,
+                sharpeRatio: data.backtestResults.sharpeRatio || 0
+              })
+            }
+          }
+        } else {
+          // API 실패 시 기본값 설정
+          setIndicators({
+            rsi: 50,
+            bollingerUpper: 0,
+            bollingerLower: 0,
+            bollingerMiddle: 0,
+            sma20: 0,
+            sma50: 0,
+            correlation: 0,
+            zscore: 0
+          })
+        }
+      } catch (error) {
+        console.error('통계적 지표 데이터 조회 실패:', error)
+        // 에러 시 기본값 설정
+        setIndicators({
+          rsi: 50,
+          bollingerUpper: 0,
+          bollingerLower: 0,
+          bollingerMiddle: 0,
+          sma20: 0,
+          sma50: 0,
+          correlation: 0,
+          zscore: 0
+        })
+      }
     }
     
-    calculateIndicators()
-    const interval = setInterval(calculateIndicators, 5000)
+    fetchIndicators()
+    const interval = setInterval(fetchIndicators, 30000) // 30초마다 업데이트
     
     return () => clearInterval(interval)
   }, [selectedCoin])

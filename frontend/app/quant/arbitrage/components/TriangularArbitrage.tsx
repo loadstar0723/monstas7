@@ -32,59 +32,39 @@ export default function TriangularArbitrage({ selectedCoin, botConfig }: Triangu
   const [lastScan, setLastScan] = useState<Date | null>(null)
   
   // 삼각 차익거래 경로 스캔
-  const scanTriangularPaths = () => {
+  const scanTriangularPaths = async () => {
     setScanning(true)
     
-    // 실제로는 API에서 데이터를 받아와야 함
-    setTimeout(() => {
-      const basePairs = [
-        { base: selectedCoin.symbol, quote: 'USDT' },
-        { base: 'USDT', quote: 'EUR' },
-        { base: 'EUR', quote: selectedCoin.symbol }
-      ]
+    try {
+      // 실제 API에서 삼각 차익거래 기회 조회
+      const response = await fetch(`/api/arbitrage/triangular?symbol=${selectedCoin.symbol}`)
       
-      const generatePaths = (): TriangularPath[] => {
-        const paths: TriangularPath[] = []
-        const exchanges = ['Binance', 'Coinbase', 'Kraken']
-        
-        // 5개의 예시 경로 생성
-        for (let i = 0; i < 5; i++) {
-          const basePrice = selectedCoin.symbol === 'BTC' ? 98000 : 3500
-          const profitPercent = 0.1 + Math.random() * 0.5
-          const fees = [0.075, 0.075, 0.075] // 0.075% per trade
-          
-          paths.push({
-            id: `path-${i}`,
-            path: [
-              `${selectedCoin.symbol}/USDT`,
-              'USDT/EUR',
-              `EUR/${selectedCoin.symbol}`
-            ],
-            exchanges: [
-              exchanges[Math.floor(Math.random() * exchanges.length)],
-              exchanges[Math.floor(Math.random() * exchanges.length)],
-              exchanges[Math.floor(Math.random() * exchanges.length)]
-            ],
-            prices: [
-              basePrice,
-              1.08, // USD to EUR
-              basePrice / 1.08 * (1 + profitPercent / 100)
-            ],
-            fees,
-            netProfit: (basePrice * profitPercent / 100) - (basePrice * 0.225 / 100), // 0.225% total fees
-            profitPercent: profitPercent - 0.225,
-            estimatedTime: 10 + Math.random() * 20, // 10-30 seconds
-            riskLevel: profitPercent > 0.3 ? 'low' : profitPercent > 0.15 ? 'medium' : 'high'
-          })
-        }
-        
-        return paths.sort((a, b) => b.profitPercent - a.profitPercent)
+      if (!response.ok) {
+        // API 실패 시 빈 배열 설정
+        setPaths([])
+        setLastScan(new Date())
+        setScanning(false)
+        return
       }
       
-      setPaths(generatePaths())
+      const data = await response.json()
+      
+      // API 응답이 있으면 사용, 없으면 빈 배열
+      if (data && data.paths && Array.isArray(data.paths)) {
+        setPaths(data.paths)
+      } else {
+        setPaths([])
+      }
+      
       setLastScan(new Date())
       setScanning(false)
-    }, 2000)
+    } catch (error) {
+      console.error('삼각 차익거래 데이터 조회 실패:', error)
+      // 에러 시 빈 배열 설정
+      setPaths([])
+      setLastScan(new Date())
+      setScanning(false)
+    }
   }
   
   useEffect(() => {
@@ -223,7 +203,7 @@ export default function TriangularArbitrage({ selectedCoin, botConfig }: Triangu
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium text-white">
-                        {path.path.join(' → ')}
+                        {path.path || path.coins?.join(' → ') || 'N/A'}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded ${
                         path.riskLevel === 'low' 
@@ -242,31 +222,31 @@ export default function TriangularArbitrage({ selectedCoin, botConfig }: Triangu
                       <div>
                         <span className="text-gray-500">순수익</span>
                         <div className="font-mono text-green-400">
-                          ${path.netProfit.toFixed(2)}
+                          ${path.netProfit?.toFixed(2) || '0.00'}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">수익률</span>
                         <div className="font-mono text-green-400">
-                          {path.profitPercent.toFixed(3)}%
+                          {path.profitPercent?.toFixed(3) || '0.000'}%
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">예상 시간</span>
                         <div className="font-mono text-white">
-                          {path.estimatedTime.toFixed(0)}초
+                          {path.estimatedTime?.toFixed(0) || '0'}초
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">거래소</span>
                         <div className="text-white">
-                          {path.exchanges.join(', ')}
+                          {path.exchanges?.join(', ') || 'N/A'}
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  {path.profitPercent >= botConfig.minProfit && (
+                  {path.profitPercent && path.profitPercent >= botConfig.minProfit && (
                     <button className="ml-4 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm transition-colors">
                       실행
                     </button>
@@ -292,9 +272,9 @@ export default function TriangularArbitrage({ selectedCoin, botConfig }: Triangu
                 <div className="flex-1">
                   <div className="font-medium text-white">{step}</div>
                   <div className="text-sm text-gray-400">
-                    거래소: {selectedPath.exchanges[index]} | 
-                    가격: ${selectedPath.prices[index].toFixed(2)} | 
-                    수수료: {selectedPath.fees[index]}%
+                    거래소: {selectedPath.exchanges?.[index] || 'N/A'} | 
+                    가격: ${selectedPath.prices?.[index]?.toFixed(2) || '0.00'} | 
+                    수수료: {selectedPath.fees?.[index] || 0}%
                   </div>
                 </div>
               </div>
@@ -305,19 +285,19 @@ export default function TriangularArbitrage({ selectedCoin, botConfig }: Triangu
                 <div>
                   <span className="text-sm text-gray-400">총 수수료</span>
                   <div className="text-lg font-mono text-yellow-400">
-                    {selectedPath.fees.reduce((a, b) => a + b, 0).toFixed(3)}%
+                    {selectedPath.fees?.reduce((a, b) => a + b, 0).toFixed(3) || '0.000'}%
                   </div>
                 </div>
                 <div>
                   <span className="text-sm text-gray-400">순수익</span>
                   <div className="text-lg font-mono text-green-400">
-                    ${selectedPath.netProfit.toFixed(2)}
+                    ${selectedPath.netProfit?.toFixed(2) || '0.00'}
                   </div>
                 </div>
                 <div>
                   <span className="text-sm text-gray-400">ROI</span>
                   <div className="text-lg font-mono text-green-400">
-                    {selectedPath.profitPercent.toFixed(3)}%
+                    {selectedPath.profitPercent?.toFixed(3) || '0.000'}%
                   </div>
                 </div>
               </div>

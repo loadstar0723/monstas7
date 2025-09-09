@@ -33,56 +33,76 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
   })
   
   useEffect(() => {
-    // 수익 데이터 생성 (실제로는 API에서 받아옴)
-    const days = timeRange === 'today' ? 1 :
-                 timeRange === '7d' ? 7 :
-                 timeRange === '30d' ? 30 :
-                 90
-    
-    const profits: DailyProfit[] = []
-    let totalProfit = 0
-    let bestDay = -Infinity
-    let worstDay = Infinity
-    let totalTrades = 0
-    let totalVolume = 0
-    let profitableDays = 0
-    
-    for (let i = 0; i < days; i++) {
-      const date = new Date()
-      date.setDate(date.getDate() - i)
-      
-      const dayProfit = -200 + Math.random() * 600
-      const dayTrades = 5 + Math.floor(Math.random() * 20)
-      const dayVolume = 1000 + Math.random() * 9000
-      
-      profits.push({
-        date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-        profit: dayProfit,
-        trades: dayTrades,
-        volume: dayVolume
-      })
-      
-      totalProfit += dayProfit
-      totalTrades += dayTrades
-      totalVolume += dayVolume
-      
-      if (dayProfit > bestDay) bestDay = dayProfit
-      if (dayProfit < worstDay) worstDay = dayProfit
-      if (dayProfit > 0) profitableDays++
+    // 수익 데이터 API에서 조회
+    const fetchProfitData = async () => {
+      try {
+        const response = await fetch(`/api/arbitrage/profits?symbol=${selectedCoin.symbol}&range=${timeRange}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          
+          if (data && data.dailyProfits && Array.isArray(data.dailyProfits)) {
+            setDailyProfits(data.dailyProfits)
+            
+            if (data.stats) {
+              setStats({
+                totalProfit: data.stats.totalProfit || 0,
+                avgDailyProfit: data.stats.avgDailyProfit || 0,
+                bestDay: data.stats.bestDay || 0,
+                worstDay: data.stats.worstDay || 0,
+                totalTrades: data.stats.totalTrades || 0,
+                totalVolume: data.stats.totalVolume || 0,
+                profitableDays: data.stats.profitableDays || 0,
+                unprofitableDays: data.stats.unprofitableDays || 0
+              })
+            }
+          } else {
+            // 데이터가 없으면 빈 배열
+            setDailyProfits([])
+            setStats({
+              totalProfit: 0,
+              avgDailyProfit: 0,
+              bestDay: 0,
+              worstDay: 0,
+              totalTrades: 0,
+              totalVolume: 0,
+              profitableDays: 0,
+              unprofitableDays: 0
+            })
+          }
+        } else {
+          // API 실패 시 기본값
+          setDailyProfits([])
+          setStats({
+            totalProfit: 0,
+            avgDailyProfit: 0,
+            bestDay: 0,
+            worstDay: 0,
+            totalTrades: 0,
+            totalVolume: 0,
+            profitableDays: 0,
+            unprofitableDays: 0
+          })
+        }
+      } catch (error) {
+        console.error('수익 데이터 조회 실패:', error)
+        // 에러 시 빈 배열
+        setDailyProfits([])
+        setStats({
+          totalProfit: 0,
+          avgDailyProfit: 0,
+          bestDay: 0,
+          worstDay: 0,
+          totalTrades: 0,
+          totalVolume: 0,
+          profitableDays: 0,
+          unprofitableDays: 0
+        })
+      }
     }
     
-    setDailyProfits(profits.reverse())
-    setStats({
-      totalProfit,
-      avgDailyProfit: totalProfit / days,
-      bestDay,
-      worstDay,
-      totalTrades,
-      totalVolume,
-      profitableDays,
-      unprofitableDays: days - profitableDays
-    })
-  }, [timeRange])
+    fetchProfitData()
+  }, [timeRange, selectedCoin])
   
   const timeRanges = [
     { value: 'today' as const, label: '오늘' },

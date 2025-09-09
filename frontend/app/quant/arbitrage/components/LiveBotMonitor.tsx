@@ -64,15 +64,11 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
         }
       }, 1000)
       
-      // 기회 생성 시뮬레이션 (실제로는 API에서 받아옴)
-      const opportunityInterval = setInterval(() => {
-        if (botStatus === 'running') {
-          generateOpportunity()
-        }
-      }, 3000 + Math.random() * 7000) // 3-10초마다
+      // 기회 생성 제거 - 실제 API로 부터 데이터 수신
+      // fetchArbitrageOpportunities를 통해 실제 데이터 사용
       
       return () => {
-        clearInterval(opportunityInterval)
+        // opportunityInterval 제거됨
         if (uptimeRef.current) clearInterval(uptimeRef.current)
       }
     } else {
@@ -158,69 +154,82 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
     }
   }, [selectedCoin])
   
-  const generateOpportunity = () => {
-    const exchanges = ['Binance', 'Upbit', 'Coinbase', 'Kraken', 'Bybit']
-    const buyExchange = exchanges[Math.floor(Math.random() * exchanges.length)]
-    let sellExchange = exchanges[Math.floor(Math.random() * exchanges.length)]
-    while (sellExchange === buyExchange) {
-      sellExchange = exchanges[Math.floor(Math.random() * exchanges.length)]
-    }
-    
-    const basePrice = currentPrice || (selectedCoin.symbol === 'BTC' ? 98000 : 3500)
-    const spread = (botConfig.minProfit + Math.random() * 2) / 100
-    const buyPrice = basePrice * (1 - spread / 2)
-    const sellPrice = basePrice * (1 + spread / 2)
-    const volume = Math.random() * botConfig.maxPosition
-    const profit = (sellPrice - buyPrice) * (volume / buyPrice)
-    
-    const opportunity: Opportunity = {
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      type: botConfig.strategy,
-      buyExchange,
-      sellExchange,
-      buyPrice,
-      sellPrice,
-      spread: spread * 100,
-      profit,
-      volume,
-      status: botConfig.autoExecute ? 'executing' : 'pending'
-    }
-    
-    setOpportunities(prev => [opportunity, ...prev.slice(0, 9)])
-    
-    // 자동 실행 모드일 때
-    if (botConfig.autoExecute) {
-      setTimeout(() => {
-        setOpportunities(prev => 
-          prev.map(opp => 
-            opp.id === opportunity.id 
-              ? { ...opp, status: Math.random() > 0.1 ? 'completed' : 'failed' }
-              : opp
-          )
-        )
-        
-        // 통계 업데이트
-        if (Math.random() > 0.1) {
-          setStats(prev => ({
-            ...prev,
-            totalTrades: prev.totalTrades + 1,
-            successfulTrades: prev.successfulTrades + 1,
-            totalProfit: prev.totalProfit + profit,
-            avgProfit: (prev.totalProfit + profit) / (prev.totalTrades + 1),
-            bestTrade: Math.max(prev.bestTrade, profit),
-            worstTrade: prev.worstTrade === 0 ? profit : Math.min(prev.worstTrade, profit)
-          }))
-        } else {
-          setStats(prev => ({
-            ...prev,
-            totalTrades: prev.totalTrades + 1,
-            failedTrades: prev.failedTrades + 1
-          }))
-        }
-      }, 2000)
+  // 실제 API에서 차익거래 기회 가져오기
+  const fetchArbitrageOpportunities = async () => {
+    try {
+      const response = await fetch(`/api/arbitrage/opportunities?symbol=${selectedCoin.symbol}USDT`)
+      const data = await response.json()
+      
+      if (data.opportunities && data.opportunities.length > 0) {
+        // 실제 차익거래 기회 처리
+        data.opportunities.forEach((opp: any) => {
+          const opportunity: Opportunity = {
+            id: opp.id,
+            timestamp: new Date(opp.timestamp),
+            type: botConfig.strategy,
+            buyExchange: opp.buyExchange,
+            sellExchange: opp.sellExchange,
+            buyPrice: opp.buyPrice,
+            sellPrice: opp.sellPrice,
+            spread: opp.spread,
+            profit: opp.profit * botConfig.maxPosition * 0.01, // 포지션 크기에 따른 수익
+            volume: botConfig.maxPosition,
+            status: botConfig.autoExecute ? 'executing' : 'pending'
+          }
+          
+          // 최소 수익률 필터
+          if (opp.profit >= botConfig.minProfit) {
+            setOpportunities(prev => {
+              const exists = prev.some(p => 
+                p.buyExchange === opportunity.buyExchange && 
+                p.sellExchange === opportunity.sellExchange &&
+                Math.abs(p.spread - opportunity.spread) < 0.01
+              )
+              if (!exists) {
+                return [opportunity, ...prev.slice(0, 9)]
+              }
+              return prev
+            })
+            
+            // 자동 실행 모드일 때
+            if (botConfig.autoExecute) {
+              setTimeout(() => {
+                setOpportunities(prev => 
+                  prev.map(prevOpp => 
+                    prevOpp.id === opportunity.id 
+                      ? { ...prevOpp, status: 'completed' }
+                      : prevOpp
+                  )
+                )
+                
+                // 통계 업데이트
+                setStats(prev => ({
+                  ...prev,
+                  totalTrades: prev.totalTrades + 1,
+                  successfulTrades: prev.successfulTrades + 1,
+                  totalProfit: prev.totalProfit + opportunity.profit,
+                  avgProfit: (prev.totalProfit + opportunity.profit) / (prev.totalTrades + 1),
+                  bestTrade: Math.max(prev.bestTrade, opportunity.profit),
+                  worstTrade: prev.worstTrade === 0 ? opportunity.profit : Math.min(prev.worstTrade, opportunity.profit)
+                }))
+              }, 3000)
+            }
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch arbitrage opportunities:', error)
     }
   }
+  
+  // 정기적으로 차익거래 기회 체크
+  useEffect(() => {
+    if (botStatus === 'running') {
+      fetchArbitrageOpportunities() // 즉시 실행
+      const interval = setInterval(fetchArbitrageOpportunities, 5000) // 5초마다 체크
+      return () => clearInterval(interval)
+    }
+  }, [botStatus, selectedCoin, botConfig])
   
   return (
     <div className="space-y-6">

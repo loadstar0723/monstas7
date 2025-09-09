@@ -50,71 +50,67 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
     setIsRunning(true)
     setProgress(0)
     
-    // 프로그레스 시뮬레이션
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
-    
-    // 백테스트 결과 시뮬레이션 (실제로는 API 호출)
-    setTimeout(() => {
-      const trades = selectedPeriod === '1w' ? 50 :
-                     selectedPeriod === '1m' ? 200 :
-                     selectedPeriod === '3m' ? 600 :
-                     selectedPeriod === '6m' ? 1200 :
-                     2400
-      
-      const winRate = 55 + Math.random() * 15 // 55-70%
-      const winningTrades = Math.floor(trades * winRate / 100)
-      const losingTrades = trades - winningTrades
-      const avgProfit = botConfig.minProfit * 1.5
-      const avgLoss = botConfig.minProfit * 0.8
-      const totalProfit = winningTrades * avgProfit * 100
-      const totalLoss = losingTrades * avgLoss * 100
-      const netProfit = totalProfit - totalLoss
-      
-      setResults({
-        period: selectedPeriod,
-        totalTrades: trades,
-        winningTrades,
-        losingTrades,
-        winRate,
-        totalProfit,
-        totalLoss,
-        netProfit,
-        avgProfit,
-        avgLoss,
-        profitFactor: totalProfit / (totalLoss || 1),
-        maxDrawdown: 5 + Math.random() * 10,
-        sharpeRatio: 1.2 + Math.random() * 0.8,
-        calmarRatio: netProfit / (5 + Math.random() * 10),
-        roi: (netProfit / 10000) * 100
-      })
-      
-      // 월별 결과 생성
-      const months = selectedPeriod === '1w' ? 1 :
-                    selectedPeriod === '1m' ? 1 :
-                    selectedPeriod === '3m' ? 3 :
-                    selectedPeriod === '6m' ? 6 :
-                    12
-      
-      const monthlyData = []
-      for (let i = 0; i < months; i++) {
-        monthlyData.push({
-          month: new Date(Date.now() - i * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('ko-KR', { month: 'short' }),
-          profit: -500 + Math.random() * 2000
+    try {
+      // 실제 백테스트 API 호출
+      const response = await fetch('/api/arbitrage/backtest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol: selectedCoin.symbol,
+          period: selectedPeriod,
+          config: botConfig
         })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // 진행률 시뮬레이션
+        const progressInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(progressInterval)
+              return 90
+            }
+            return prev + 15
+          })
+        }, 300)
+        
+        // API 결과가 와도 처리
+        if (data && data.results) {
+          setResults(data.results)
+          
+          if (data.monthlyResults && Array.isArray(data.monthlyResults)) {
+            setMonthlyResults(data.monthlyResults)
+          } else {
+            setMonthlyResults([])
+          }
+        } else {
+          // 데이터가 없으면 null 설정
+          setResults(null)
+          setMonthlyResults([])
+        }
+        
+        clearInterval(progressInterval)
+        setProgress(100)
+      } else {
+        // API 실패 시 에러 처리
+        console.error('백테스트 API 실패')
+        setResults(null)
+        setMonthlyResults([])
+        setProgress(0)
       }
-      setMonthlyResults(monthlyData.reverse())
       
       setIsRunning(false)
-      setProgress(100)
-    }, 2000)
+    } catch (error) {
+      console.error('백테스트 실행 오류:', error)
+      setResults(null)
+      setMonthlyResults([])
+      setIsRunning(false)
+      setProgress(0)
+    }
   }
   
   return (
