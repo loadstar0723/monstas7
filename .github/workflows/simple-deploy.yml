@@ -1,0 +1,48 @@
+name: Simple Deploy to AWS
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to AWS Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          script: |
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project
+            cd ~/monstas7 || exit 1
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git stash
+            git pull origin master
+            
+            # Frontend build and deploy
+            echo "🔨 Building frontend..."
+            cd frontend
+            npm install
+            npm run build
+            
+            # Restart with PM2
+            echo "🔄 Restarting services..."
+            pm2 stop monsta-nextjs || true
+            pm2 delete monsta-nextjs || true
+            pm2 start npm --name monsta-nextjs -- start
+            pm2 save
+            
+            echo "✅ Deployment completed!"
+            echo "🌐 Frontend: http://13.209.84.93:3000"
+            
+            # Health check
+            sleep 10
+            curl -f http://localhost:3000 && echo "✅ Frontend is running" || echo "❌ Frontend not responding"
