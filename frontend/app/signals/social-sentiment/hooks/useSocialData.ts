@@ -17,21 +17,36 @@ interface SocialSentimentData {
   influencers: Array<{ name: string; followers: number; sentiment: string }>
 }
 
-// 초기 데이터 - 실제 API 데이터를 받을 때까지 0으로 초기화
-const getInitialData = (): SocialSentimentData => ({
-  sentimentScore: 0,
-  sentimentChange: 0,
-  totalMentions: 0,
-  positive: 0,
-  neutral: 0,
-  negative: 0,
-  twitterMentions: 0,
-  redditPosts: 0,
-  telegramMessages: 0,
-  sentimentHistory: [],
-  trendingKeywords: [],
-  influencers: []
-})
+// 초기 데이터 - 실제 API 데이터를 받을 때까지 기본값 표시
+const getInitialData = (): SocialSentimentData => {
+  // 현재 시간 기준으로 24시간 히스토리 생성
+  const history = Array.from({ length: 24 }, (_, i) => {
+    const hour = new Date()
+    hour.setHours(hour.getHours() - (23 - i))
+    return {
+      time: hour.toLocaleTimeString('ko-KR', { 
+        hour: '2-digit',
+        hour12: true 
+      }),
+      score: 50 // 중립값으로 시작
+    }
+  })
+
+  return {
+    sentimentScore: 50,
+    sentimentChange: 0,
+    totalMentions: 0,
+    positive: 33,
+    neutral: 34,
+    negative: 33,
+    twitterMentions: 0,
+    redditPosts: 0,
+    telegramMessages: 0,
+    sentimentHistory: history,
+    trendingKeywords: [],
+    influencers: []
+  }
+}
 
 export default function useSocialData(coin: string) {
   const [sentimentData, setSentimentData] = useState<SocialSentimentData>(getInitialData())
@@ -77,15 +92,47 @@ export default function useSocialData(coin: string) {
                 positive = 100 - negative - neutral
               }
 
-              // 24시간 감성 히스토리 업데이트
-              const history = Array.from({ length: 24 }, (_, i) => {
-                const hour = new Date()
-                hour.setHours(hour.getHours() - (23 - i))
-                return {
-                  time: hour.toLocaleTimeString('ko-KR', { hour: '2-digit' }),
-                  score: Math.max(20, Math.min(80, finalSentiment + (Math.sin(i) * 10)))
-                }
-              })
+              // 실제 과거 가격 데이터 가져오기
+              const klinesResponse = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=24`)
+              let history: Array<{ time: string; score: number }> = []
+              
+              if (klinesResponse.ok) {
+                const klines = await klinesResponse.json()
+                
+                // 기준 가격 (24시간 전)
+                const basePrice = parseFloat(klines[0]?.[4] || ticker.lastPrice)
+                
+                history = klines.map((kline: any[]) => {
+                  const closePrice = parseFloat(kline[4])
+                  const priceChangePercent = ((closePrice - basePrice) / basePrice) * 100
+                  
+                  // 가격 변화를 감성 점수로 변환
+                  // 기본 시장 감성에 개별 코인의 가격 변화를 반영
+                  const hourSentiment = marketSentiment + (priceChangePercent * 2)
+                  const normalizedScore = Math.max(10, Math.min(90, hourSentiment))
+                  
+                  return {
+                    time: new Date(kline[0]).toLocaleTimeString('ko-KR', { 
+                      hour: '2-digit', 
+                      hour12: true 
+                    }),
+                    score: Math.floor(normalizedScore)
+                  }
+                })
+              } else {
+                // 폴백: API 실패 시 현재 감성 점수 기반으로 생성
+                history = Array.from({ length: 24 }, (_, i) => {
+                  const hour = new Date()
+                  hour.setHours(hour.getHours() - (23 - i))
+                  return {
+                    time: hour.toLocaleTimeString('ko-KR', { 
+                      hour: '2-digit',
+                      hour12: true 
+                    }),
+                    score: finalSentiment
+                  }
+                })
+              }
 
               setSentimentData({
                 sentimentScore: Math.floor(finalSentiment),
