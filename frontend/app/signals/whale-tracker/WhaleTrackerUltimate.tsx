@@ -1014,7 +1014,7 @@ export default function WhaleTrackerUltimate() {
   // 알림 추가
   const addNotification = (type: 'info' | 'warning' | 'success' | 'error', message: string) => {
     const notification = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${data.E || Date.now()}`,
       type,
       message,
       time: new Date().toLocaleTimeString()

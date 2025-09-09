@@ -61,6 +61,7 @@ export default function LiquidationModule() {
   })
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([])
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTCUSDT')
+  const [currentPrice, setCurrentPrice] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'realtime' | 'heatmap' | 'analysis' | 'strategy' | 'tools'>('realtime')
   
@@ -91,8 +92,9 @@ export default function LiquidationModule() {
         // 가격 레벨별 청산 예상치 계산
         for (let i = -10; i <= 10; i++) {
           const priceLevel = currentPrice * (1 + i * config.decimals.value01) // ${config.percentage.value1} 간격
-          const longLiq = Math.abs(i) * 500000 * Math.random() // 롱 청산
-          const shortLiq = Math.abs(i) * 500000 * Math.random() // 숏 청산
+          // 오더북 데이터를 기반으로 청산 예상치 계산
+          const longLiq = i < 0 ? Math.abs(i) * parseFloat(orderBook.bids[Math.abs(i) - 1]?.[1] || '0') * currentPrice * 0.1 : 0
+          const shortLiq = i > 0 ? Math.abs(i) * parseFloat(orderBook.asks[Math.abs(i) - 1]?.[1] || '0') * currentPrice * 0.1 : 0
           
           heatmap.push({
             price: priceLevel,
@@ -166,8 +168,13 @@ export default function LiquidationModule() {
         const tickerUrl = `${BINANCE_CONFIG.WS_BASE}/${selectedSymbol.toLowerCase()}@ticker`
         
         tickerWs.connect(tickerUrl, (data) => {
-          // 가격 변동시 히트맵 업데이트
-          if (Math.random() > config.decimals.value9) { // ${config.percentage.value10} 확률로 업데이트
+          // 현재 가격 업데이트
+          const newPrice = parseFloat(data.c)
+          const oldPrice = currentPrice
+          setCurrentPrice(newPrice)
+          
+          // 가격이 일정 비율 이상 변동했을 때만 히트맵 업데이트
+          if (oldPrice > 0 && Math.abs(newPrice - oldPrice) / oldPrice > 0.001) { // 0.1% 이상 변동 시
             generateHeatmapData()
           }
         })
@@ -514,13 +521,13 @@ export default function LiquidationModule() {
             trend={stats.totalLongs > stats.totalShorts ? 'bearish' : stats.totalShorts > stats.totalLongs ? 'bullish' : 'neutral'} // 청산에 반대 방향
             signalStrength={Math.min((stats.total24h / 1000000) * 2, 100)} // 24시간 청산 규모 기반
             marketCondition={stats.currentRiskLevel === 'EXTREME' || stats.currentRiskLevel === 'HIGH' ? 'volatile' : 'normal'}
-            currentPrice={45000} // 샘플 가격, 실제로는 WebSocket에서 가져와야 함
+            currentPrice={currentPrice || 45000} // WebSocket에서 실시간 가격 사용
           />
           
           {/* 투자금액별 전략 */}
           <InvestmentStrategy 
             symbol={selectedSymbol.replace('USDT', '')}
-            currentPrice={45000}
+            currentPrice={currentPrice || 45000}
             signalType="liquidation"
             marketCondition={stats.currentRiskLevel === 'EXTREME' || stats.currentRiskLevel === 'HIGH' ? 'volatile' : stats.totalLongs > stats.totalShorts ? 'bearish' : stats.totalShorts > stats.totalLongs ? 'bullish' : 'neutral'}
             volatility={stats.currentRiskLevel === 'EXTREME' ? 80 : stats.currentRiskLevel === 'HIGH' ? 60 : stats.currentRiskLevel === 'MEDIUM' ? 40 : 20}

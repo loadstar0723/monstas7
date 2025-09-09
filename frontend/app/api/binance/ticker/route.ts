@@ -26,10 +26,8 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    // 단일 심볼 요청시 객체를 배열로 감싸서 반환
-    if (symbol && !Array.isArray(data)) {
-      return NextResponse.json([data])
-    }
+    // 단일 심볼 요청시 객체 그대로 반환
+    // (배열로 반환하면 클라이언트에서 파싱 에러 발생)
     
     return NextResponse.json(data)
   } catch (error) {

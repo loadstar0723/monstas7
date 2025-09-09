@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
-import WebSocketManager from '@/lib/websocketManager';
+import { getBinanceWebSocket } from '@/lib/binanceWebSocket';
 
-// CryptoPrice type import
-import type { CryptoPrice } from '@/lib/websocketManager';
-export type { CryptoPrice };
+export interface CryptoPrice {
+  symbol: string;
+  price: number;
+  change: number;
+  volume: string;
+  high?: number;
+  low?: number;
+}
 
 export function useBinanceWebSocket() {
   const [prices, setPrices] = useState<CryptoPrice[]>([]);
@@ -11,20 +16,39 @@ export function useBinanceWebSocket() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const wsManager = WebSocketManager.getInstance();
+    const ws = getBinanceWebSocket();
     
-    const handleUpdate = (data: { prices: CryptoPrice[], isConnected: boolean, error: string | null }) => {
-      setPrices(data.prices);
-      setIsConnected(data.isConnected);
-      setError(data.error);
-    };
+    if (!ws) {
+      setError('WebSocket not initialized');
+      return;
+    }
 
-    // 구독
-    wsManager.subscribe(handleUpdate);
+    // WebSocket이 연결되면 상태 업데이트
+    setIsConnected(true);
 
-    // Cleanup - 언마운트 시 구독 해제만 하고 연결은 유지
+    // 주요 코인들 구독
+    const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT'];
+    const priceData: Map<string, CryptoPrice> = new Map();
+
+    symbols.forEach(symbol => {
+      ws.subscribe(symbol, (data) => {
+        priceData.set(symbol, {
+          symbol: data.symbol,
+          price: data.price,
+          change: data.change,
+          volume: (data.volume / 1000000).toFixed(1) + 'M',
+          high: data.high,
+          low: data.low
+        });
+        
+        // 배열로 변환하여 상태 업데이트
+        setPrices(Array.from(priceData.values()));
+      });
+    });
+
+    // Cleanup - 언마운트 시 구독 해제
     return () => {
-      wsManager.unsubscribe(handleUpdate);
+      symbols.forEach(symbol => ws.unsubscribe(symbol));
     };
   }, []);
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 import CoinSelector from './components/CoinSelector'
 import MomentumOverview from './components/MomentumOverview'
 import PriceChart from './components/PriceChart'
@@ -62,14 +63,20 @@ export default function MomentumModule() {
   const [priceHistory, setPriceHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected')
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // 코인 정보 가져오기
   const fetchCoinData = useCallback(async (symbol: string) => {
     try {
-      const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`)
-      if (!response.ok) throw new Error('Failed to fetch coin data')
+      setError(null)
+      const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
+      if (!response.ok) {
+        const errorData = await response.text()
+        throw new Error(`Failed to fetch coin data: ${errorData}`)
+      }
       
       const data = await response.json()
       const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
@@ -86,32 +93,36 @@ export default function MomentumModule() {
       })
     } catch (err) {
       console.error('Error fetching coin data:', err)
-      setError('코인 데이터를 불러오는데 실패했습니다')
+      setError('코인 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.')
     }
   }, [])
 
   // 히스토리컬 데이터 가져오기
-  const fetchHistoricalData = useCallback(async (symbol: string) => {
+  const const fetchHistoricalData = useCallback(async (symbol: string) => {
     try {
+      setError(null)
       const response = await fetch(
-        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=100`
+        `/api/binance/klines?symbol=${symbol}&interval=1h&limit=100`
       )
-      if (!response.ok) throw new Error('Failed to fetch historical data')
+      if (!response.ok) {
+        const errorData = await response.text()
+        throw new Error(`Failed to fetch historical data: ${errorData}`)
+      }
       
       const data = await response.json()
-      const formattedData = data.map((candle: any) => ({
-        time: candle[0],
-        open: parseFloat(candle[1]),
-        high: parseFloat(candle[2]),
-        low: parseFloat(candle[3]),
-        close: parseFloat(candle[4]),
-        volume: parseFloat(candle[5])
+      const history = data.map((item: any[]) => ({
+        time: item[0],
+        open: parseFloat(item[1]),
+        high: parseFloat(item[2]),
+        low: parseFloat(item[3]),
+        close: parseFloat(item[4]),
+        volume: parseFloat(item[5])
       }))
       
-      setPriceHistory(formattedData)
-      calculateMomentumIndicators(formattedData)
+      setPriceHistory(history)
     } catch (err) {
       console.error('Error fetching historical data:', err)
+      setError('히스토리컬 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.')
     }
   }, [])
 
@@ -290,6 +301,52 @@ export default function MomentumModule() {
     return 'neutral'
   }
 
+  // 폴링 폴백 함수
+  const startPolling = useCallback((symbol: string) => {
+    console.log('Starting polling for', symbol)
+    
+    // 기존 폴링 정리
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+    }
+    
+    // 즉시 한 번 업데이트
+    fetchTickerData(symbol)
+    
+    // 3초마다 가격 업데이트
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        await fetchTickerData(symbol)
+      } catch (err) {
+        console.error('Polling error:', err)
+      }
+    }, 3000) as any
+  }, [])
+  
+  // 티커 데이터 가져오기 (API 라우트 사용)
+  const fetchTickerData = useCallback(async (symbol: string) => {
+    try {
+      const response = await fetch(`/api/ticker-stream?symbol=${symbol}`)
+      if (!response.ok) throw new Error('Failed to fetch ticker')
+      
+      const data = await response.json()
+      const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
+      
+      setCoinData({
+        symbol: data.s,
+        name: coin?.name || symbol,
+        price: parseFloat(data.c),
+        change24h: parseFloat(data.P),
+        volume24h: parseFloat(data.v),
+        high24h: parseFloat(data.h),
+        low24h: parseFloat(data.l),
+        marketCap: parseFloat(data.q)
+      })
+    } catch (err) {
+      console.error('Ticker fetch error:', err)
+    }
+  }, [])
+
   // WebSocket 연결
   const connectWebSocket = useCallback((symbol: string) => {
     // 기존 연결 정리
@@ -308,59 +365,119 @@ export default function MomentumModule() {
 
     try {
       const streamName = symbol.toLowerCase() + '@ticker'
-      const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
+      const wsUrl = `${BINANCE_CONFIG.WS_BASE}/${streamName}`
+      console.log('Connecting to WebSocket:', wsUrl)
+      const ws = new WebSocket(wsUrl)
+      
+      wsRef.current = ws
+      setConnectionStatus('connecting')
+
+      // 연결 타임아웃 설정 (10초)
+      const connectionTimeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.error('WebSocket connection timeout')
+          ws.close()
+          setError('WebSocket 연결 시간이 초과되었습니다.')
+          setConnectionStatus('disconnected')
+          
+          // 재연결 시도
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
+          }
+          reconnectTimeoutRef.current = setTimeout(() => {
+            if (selectedSymbol) {
+              connectWebSocket(selectedSymbol)
+            }
+          }, 5000)
+        }
+      }, 10000)
 
       ws.onopen = () => {
-        console.log('WebSocket connected for', symbol)
+        clearTimeout(connectionTimeout)
+        console.log('WebSocket connected:', symbol)
+        setConnectionStatus('connected')
         setError(null)
       }
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.e === '24hrTicker') {
-        const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
-        setCoinData(prev => ({
-          ...prev!,
-          symbol: data.s,
-          name: coin?.name || symbol,
-          price: parseFloat(data.c),
-          change24h: parseFloat(data.P),
-          volume24h: parseFloat(data.v),
-          high24h: parseFloat(data.h),
-          low24h: parseFloat(data.l),
-          marketCap: parseFloat(data.q)
-        }))
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
+          setCoinData(prev => ({
+            ...prev!,
+            symbol: data.s,
+            name: coin?.name || symbol,
+            price: parseFloat(data.c),
+            change24h: parseFloat(data.P),
+            volume24h: parseFloat(data.v),
+            high24h: parseFloat(data.h),
+            low24h: parseFloat(data.l),
+            marketCap: parseFloat(data.q)
+          }))
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err)
+        }
       }
-    }
 
-    ws.onerror = (event) => {
-      console.error('WebSocket error occurred')
-      setError('WebSocket 연결 오류가 발생했습니다. 잠시 후 다시 시도합니다.')
-    }
+      ws.onerror = (event) => {
+        clearTimeout(connectionTimeout)
+        console.error('WebSocket error occurred:', {
+          url: url,
+          readyState: ws.readyState,
+          event: event
+        })
+        setError('WebSocket 연결 오류가 발생했습니다. 잠시 후 다시 시도합니다.')
+        setConnectionStatus('error')
+      }
 
-    ws.onclose = (event) => {
-      console.log('WebSocket disconnected:', {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean
-      })
-      // 재연결 로직
-      if (!event.wasClean && event.code !== 1000) {
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (wsRef.current?.readyState !== WebSocket.OPEN) {
-            console.log('Attempting to reconnect WebSocket...')
-            connectWebSocket(symbol)
+      ws.onclose = (event) => {
+        clearTimeout(connectionTimeout)
+        console.log('WebSocket disconnected. Code:', event.code, 'Reason:', event.reason)
+        setConnectionStatus('disconnected')
+        wsRef.current = null
+
+        // 정상적인 종료가 아닌 경우 재연결 시도
+        if (event.code !== 1000 && event.code !== 1001) {
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
           }
-        }, 5000)
+          
+          // 3회 재연결 시도 후 폴링으로 전환
+          const attempts = (wsRef.current as any)?.reconnectAttempts || 0
+          if (attempts < 3) {
+            console.log(`Attempting to reconnect WebSocket... (attempt ${attempts + 1}/3)`)
+            reconnectTimeoutRef.current = setTimeout(() => {
+              if (selectedSymbol) {
+                const newWs = wsRef.current
+                if (newWs) {
+                  (newWs as any).reconnectAttempts = attempts + 1
+                }
+                connectWebSocket(selectedSymbol)
+              }
+            }, 5000)
+          } else {
+            console.log('WebSocket reconnection failed, switching to polling mode')
+            setError('실시간 연결이 불안정합니다. 대체 방식으로 데이터를 가져옵니다.')
+            startPolling(selectedSymbol)
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error)
+      setError('WebSocket 연결을 생성하는 중 오류가 발생했습니다.')
+      setConnectionStatus('error')
+      
+      // 재연결 시도
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+      }
+      reconnectTimeoutRef.current = setTimeout(() => {
+        if (selectedSymbol) {
+          connectWebSocket(selectedSymbol)
+        }
+      }, 5000)
     }
-
-      wsRef.current = ws
-    } catch (err) {
-      console.error('Failed to create WebSocket:', err)
-      setError('WebSocket 연결을 생성할 수 없습니다.')
-    }
-  }, [])
+  }, [selectedSymbol])
 
   // 코인 변경 시
   useEffect(() => {
@@ -376,9 +493,11 @@ export default function MomentumModule() {
     fetchCoinData(selectedCoin)
     fetchHistoricalData(selectedCoin)
     
-    // WebSocket 연결은 약간의 지연 후에 시작
+    // WebSocket 대신 폴링 시작 (CORS 문제 회피)
     const wsTimer = setTimeout(() => {
-      connectWebSocket(selectedCoin)
+      console.log('Starting data polling instead of WebSocket due to CORS')
+      startPolling(selectedCoin)
+      setConnectionStatus('connected')
     }, 100)
     
     // 로딩 완료
@@ -391,13 +510,16 @@ export default function MomentumModule() {
         clearTimeout(reconnectTimeoutRef.current)
       }
     }
-  }, [selectedCoin, fetchCoinData, fetchHistoricalData, connectWebSocket])
+  }, [selectedCoin, fetchCoinData, fetchHistoricalData, startPolling])
 
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounting')
+      }
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
@@ -442,6 +564,33 @@ export default function MomentumModule() {
         onSelectCoin={setSelectedCoin}
         coinData={coinData}
       />
+
+      {/* WebSocket 연결 상태 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-0">
+        <div className="flex items-center justify-end gap-2 text-sm">
+          <div className={`flex items-center gap-2 ${
+            connectionStatus === 'connected' ? 'text-green-400' : 
+            connectionStatus === 'connecting' ? 'text-yellow-400' : 
+            connectionStatus === 'error' ? 'text-red-400' : 'text-gray-400'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-400' : 
+              connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' : 
+              connectionStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
+            }`} />
+            <span>
+              {connectionStatus === 'connected' ? '실시간 데이터 수신 중' :
+               connectionStatus === 'connecting' ? '데이터 연결 중...' :
+               connectionStatus === 'error' ? '연결 오류' : '연결 끊김'}
+            </span>
+          </div>
+          {error && (
+            <div className="text-red-400 text-xs">
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* 메인 대시보드 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">

@@ -192,7 +192,11 @@
       "Bash(start http://localhost:3000/quant/pair-trading)",
       "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\page.tsx\")",
       "Bash(start http://localhost:3006/quant/mean-reversion)",
-      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\components\\SimpleChart.tsx\")"
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\components\\SimpleChart.tsx\")",
+      "mcp__serena__think_about_task_adherence",
+      "mcp__serena__list_memories",
+      "Bash(pip install:*)",
+      "Bash(copy apppage.tsx apppage.backup.tsx)"
     ],
     "deny": [],
     "ask": []

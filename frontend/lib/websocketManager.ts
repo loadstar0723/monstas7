@@ -92,4 +92,4 @@ class WebSocketManager {
   }
 }
 
-export default WebSocketManager.getInstance()
+export default WebSocketManager

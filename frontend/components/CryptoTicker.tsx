@@ -77,7 +77,7 @@ export default function CryptoTicker() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {prices.map((crypto, index) => {
             const Icon = cryptoIcons[crypto.symbol] || FaBitcoin;
-            const isPositive = crypto.change24h >= 0;
+            const isPositive = crypto.change >= 0;
             const priceAnimation = getPriceAnimation(crypto.symbol, crypto.price);
 
             return (
@@ -97,7 +97,7 @@ export default function CryptoTicker() {
                   <div className={`text-xs px-2 py-1 rounded-full ${
                     isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                   }`}>
-                    {isPositive ? '+' : ''}{crypto.change24h.toFixed(2)}%
+                    {isPositive ? '+' : ''}{crypto.change.toFixed(2)}%
                   </div>
                 </div>
 
@@ -107,7 +107,7 @@ export default function CryptoTicker() {
 
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>24h Vol</span>
-                  <span className="text-gray-400">${formatVolume(crypto.volume24h)}</span>
+                  <span className="text-gray-400">{crypto.volume}</span>
                 </div>
 
                 {/* 미니 스파크라인 효과 */}
