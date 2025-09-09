@@ -1,0 +1,120 @@
+name: Server Restart
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Restart Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 10m
+          script: |
+            echo "🔄 서버 재시작 시작..."
+            
+            # 1. 현재 상태 확인
+            echo "📊 현재 프로세스 상태:"
+            pm2 status || echo "PM2 상태 확인 실패"
+            
+            # 2. 모든 Node 프로세스 종료
+            echo "🛑 기존 프로세스 정리..."
+            pm2 kill
+            sudo killall -9 node npm 2>/dev/null || true
+            
+            # 3. 프로젝트 디렉토리로 이동
+            cd ~/monstas7/frontend || {
+              echo "❌ 프로젝트 디렉토리 없음"
+              cd ~
+              if [ -d "monsta-v7/monstas7" ]; then
+                cd monsta-v7/monstas7/frontend
+              else
+                echo "프로젝트를 찾을 수 없습니다"
+                exit 1
+              fi
+            }
+            
+            # 4. 환경 변수 설정
+            echo "🔧 환경 변수 설정..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            NODE_ENV=production
+            DATABASE_URL="file:./prisma/dev.db"
+            EOF
+            
+            cp .env.local .env.production
+            
+            # 5. Prisma 생성
+            echo "🗄️ Prisma 설정..."
+            npx prisma generate || echo "Prisma 생성 실패"
+            
+            # 6. PM2 설정 파일 생성
+            echo "⚙️ PM2 설정 생성..."
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'monsta-prod',
+                script: 'npm',
+                args: 'start',
+                instances: 1,
+                exec_mode: 'fork',
+                autorestart: true,
+                watch: false,
+                max_memory_restart: '600M',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000,
+                  HOST: '0.0.0.0'
+                }
+              }]
+            }
+            EOF
+            
+            # 7. 개발 모드로 빠르게 시작 (빌드 생략)
+            echo "🚀 개발 모드로 시작..."
+            PORT=3000 HOST=0.0.0.0 pm2 start npm --name monsta-prod -- run dev
+            pm2 save
+            
+            # 8. 상태 확인
+            sleep 5
+            echo ""
+            echo "📊 PM2 상태:"
+            pm2 status
+            
+            # 9. 포트 확인
+            echo ""
+            echo "🔍 포트 3000 상태:"
+            netstat -tlnp | grep 3000 || echo "포트 3000 리스닝 안됨"
+            
+            # 10. 프로세스 확인
+            echo ""
+            echo "📋 Node 프로세스:"
+            ps aux | grep node | grep -v grep || echo "Node 프로세스 없음"
+            
+            # 11. 로그 확인
+            echo ""
+            echo "📝 최근 로그:"
+            pm2 logs monsta-prod --lines 20 --nostream
+            
+            # 12. 최종 테스트
+            echo ""
+            echo "🔍 서버 응답 테스트..."
+            sleep 5
+            curl -I http://localhost:3000 || {
+              echo "❌ 서버 응답 없음"
+              echo "직접 실행 시도..."
+              pm2 delete monsta-prod
+              PORT=3000 HOST=0.0.0.0 nohup npm run dev > ~/server.log 2>&1 &
+              sleep 5
+              curl -I http://localhost:3000 || echo "여전히 응답 없음"
+            }
+            
+            echo ""
+            echo "✅ 재시작 완료"
+            echo "🌐 접속 주소: http://13.209.84.93:3000"
