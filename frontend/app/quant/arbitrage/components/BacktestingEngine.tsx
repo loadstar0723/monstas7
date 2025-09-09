@@ -275,19 +275,19 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">평균 수익 (거래당)</span>
-                  <span className="text-sm text-green-400">+{results.avgProfit.toFixed(2)}%</span>
+                  <span className="text-sm text-green-400">+{(results.avgWin || 0).toFixed(2)}%</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">평균 손실 (거래당)</span>
-                  <span className="text-sm text-red-400">-{results.avgLoss.toFixed(2)}%</span>
+                  <span className="text-sm text-red-400">-{(results.avgLoss || 0).toFixed(2)}%</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
-                  <span className="text-sm text-gray-400">총 수익</span>
-                  <span className="text-sm text-white">${results.totalProfit.toFixed(0)}</span>
+                  <span className="text-sm text-gray-400">성공 거래</span>
+                  <span className="text-sm text-green-400">{results.winTrades || 0}건</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-sm text-gray-400">총 손실</span>
-                  <span className="text-sm text-white">${results.totalLoss.toFixed(0)}</span>
+                  <span className="text-sm text-gray-400">실패 거래</span>
+                  <span className="text-sm text-red-400">{results.lossTrades || 0}건</span>
                 </div>
               </div>
               
