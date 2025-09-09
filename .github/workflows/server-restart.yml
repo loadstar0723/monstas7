@@ -50,11 +50,16 @@ jobs:
             
             cp .env.local .env.production
             
-            # 5. Prisma 생성
+            # 5. 필수 패키지 설치
+            echo "📦 필수 패키지 설치..."
+            npm install tailwindcss autoprefixer postcss
+            npm install
+            
+            # 6. Prisma 생성
             echo "🗄️ Prisma 설정..."
             npx prisma generate || echo "Prisma 생성 실패"
             
-            # 6. PM2 설정 파일 생성
+            # 7. PM2 설정 파일 생성
             echo "⚙️ PM2 설정 생성..."
             cat > ecosystem.config.js << 'EOF'
             module.exports = {
@@ -76,33 +81,33 @@ jobs:
             }
             EOF
             
-            # 7. 개발 모드로 빠르게 시작 (빌드 생략)
+            # 8. 개발 모드로 빠르게 시작 (빌드 생략)
             echo "🚀 개발 모드로 시작..."
             PORT=3000 HOST=0.0.0.0 pm2 start npm --name monsta-prod -- run dev
             pm2 save
             
-            # 8. 상태 확인
+            # 9. 상태 확인
             sleep 5
             echo ""
             echo "📊 PM2 상태:"
             pm2 status
             
-            # 9. 포트 확인
+            # 10. 포트 확인
             echo ""
             echo "🔍 포트 3000 상태:"
             netstat -tlnp | grep 3000 || echo "포트 3000 리스닝 안됨"
             
-            # 10. 프로세스 확인
+            # 11. 프로세스 확인
             echo ""
             echo "📋 Node 프로세스:"
             ps aux | grep node | grep -v grep || echo "Node 프로세스 없음"
             
-            # 11. 로그 확인
+            # 12. 로그 확인
             echo ""
             echo "📝 최근 로그:"
             pm2 logs monsta-prod --lines 20 --nostream
             
-            # 12. 최종 테스트
+            # 13. 최종 테스트
             echo ""
             echo "🔍 서버 응답 테스트..."
             sleep 5
