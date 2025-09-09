@@ -1,0 +1,82 @@
+name: Force Restart Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'force-restart.trigger'
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Force Restart AWS Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          script: |
+            echo "🔥 강제 서버 재시작 시작..."
+            
+            # 1. 모든 Node/PM2 프로세스 강제 종료
+            echo "기존 프로세스 종료..."
+            sudo killall -9 node 2>/dev/null || true
+            sudo killall -9 npm 2>/dev/null || true
+            pm2 kill 2>/dev/null || true
+            
+            # 2. 포트 3000 사용 중인 프로세스 강제 종료
+            echo "포트 3000 정리..."
+            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
+            
+            # 3. 캐시 및 임시 파일 정리
+            echo "캐시 정리..."
+            cd ~/monstas7/frontend
+            rm -rf .next node_modules package-lock.json
+            
+            # 4. 의존성 재설치
+            echo "의존성 설치..."
+            npm install --force
+            
+            # 5. Prisma 재생성
+            echo "Prisma 설정..."
+            npx prisma generate
+            
+            # 6. 환경 변수 설정
+            echo "환경 변수 설정..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            DATABASE_URL="file:./dev.db"
+            NODE_ENV=production
+            EOF
+            
+            # 7. 개발 모드로 직접 실행 (빌드 건너뜀)
+            echo "개발 모드로 서버 시작..."
+            HOST=0.0.0.0 PORT=3000 nohup npm run dev > ~/server.log 2>&1 &
+            
+            # 8. 서버 시작 대기
+            echo "서버 시작 대기 중..."
+            sleep 15
+            
+            # 9. 프로세스 확인
+            echo "실행 중인 프로세스:"
+            ps aux | grep node | grep -v grep
+            
+            # 10. 포트 확인
+            echo "포트 3000 상태:"
+            sudo netstat -tlnp | grep :3000
+            
+            # 11. 로그 확인
+            echo "서버 로그 (마지막 50줄):"
+            tail -50 ~/server.log
+            
+            # 12. 헬스 체크
+            echo "헬스 체크:"
+            curl -f http://localhost:3000 && echo "✅ 서버 실행 중!" || echo "❌ 서버 응답 없음"
+            
+            echo "✅ 강제 재시작 완료"
+            echo "🌐 접속 주소: http://13.209.84.93:3000"

@@ -1,0 +1,135 @@
+name: Complete Server Reset
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'reset.trigger'
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Complete Server Reset
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 13.209.84.93
+          username: ubuntu
+          key: ${{ secrets.AWS_SERVER_KEY }}
+          timeout: 30m
+          script: |
+            echo "🔥 완전한 서버 리셋 시작..."
+            
+            # 1. 모든 프로세스 강제 종료
+            echo "모든 Node 프로세스 종료..."
+            sudo killall -9 node 2>/dev/null || true
+            sudo killall -9 npm 2>/dev/null || true
+            pm2 kill 2>/dev/null || true
+            
+            # 2. 포트 정리
+            echo "포트 3000 정리..."
+            sudo fuser -k 3000/tcp 2>/dev/null || true
+            
+            # 3. 기존 프로젝트 백업 및 새로 클론
+            echo "프로젝트 새로 클론..."
+            cd ~
+            rm -rf monstas7_old
+            mv monstas7 monstas7_old 2>/dev/null || true
+            git clone https://github.com/loadstar0723/monstas7.git
+            
+            # 4. 프로젝트 설정
+            cd ~/monstas7/frontend
+            
+            # 5. 환경 변수 설정
+            echo "환경 변수 설정..."
+            cat > .env.local << 'EOF'
+            NEXTAUTH_SECRET=monstas7-secret-key-2024
+            NEXTAUTH_URL=http://13.209.84.93:3000
+            DATABASE_URL="file:./dev.db"
+            NODE_ENV=production
+            EOF
+            
+            # 6. Node.js 버전 확인 및 설정
+            echo "Node.js 버전 확인..."
+            node -v
+            npm -v
+            
+            # 7. 의존성 설치 (캐시 정리)
+            echo "의존성 클린 설치..."
+            npm cache clean --force
+            npm install --legacy-peer-deps
+            
+            # 8. Prisma 설정
+            echo "Prisma 설정..."
+            npx prisma generate
+            npx prisma db push
+            
+            # 9. 프로덕션 빌드
+            echo "프로덕션 빌드 시작..."
+            npm run build || {
+              echo "빌드 실패, 개발 모드로 전환..."
+              NODE_ENV=development
+            }
+            
+            # 10. PM2 설정 파일 생성
+            echo "PM2 설정 파일 생성..."
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'monsta-nextjs',
+                script: 'npm',
+                args: 'start',
+                cwd: '/home/ubuntu/monstas7/frontend',
+                instances: 1,
+                autorestart: true,
+                watch: false,
+                max_memory_restart: '1G',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000,
+                  HOST: '0.0.0.0'
+                }
+              }]
+            }
+            EOF
+            
+            # 11. PM2로 시작
+            echo "PM2로 앱 시작..."
+            pm2 start ecosystem.config.js
+            pm2 save
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu
+            
+            # 12. 대기
+            echo "서버 시작 대기..."
+            sleep 15
+            
+            # 13. 상태 확인
+            echo "=== PM2 상태 ==="
+            pm2 status
+            
+            echo "=== PM2 로그 (마지막 50줄) ==="
+            pm2 logs --lines 50 --nostream
+            
+            echo "=== 포트 확인 ==="
+            sudo netstat -tlnp | grep :3000
+            
+            echo "=== 프로세스 확인 ==="
+            ps aux | grep node | grep -v grep
+            
+            # 14. 헬스 체크
+            echo "=== 헬스 체크 ==="
+            for i in {1..5}; do
+              echo "시도 $i/5..."
+              curl -f http://localhost:3000 && echo "✅ 서버 실행 중!" && break
+              sleep 3
+            done
+            
+            # 15. 최종 확인
+            echo "=== 최종 상태 ==="
+            curl -I http://localhost:3000 || echo "서버 응답 없음"
+            
+            echo "✅ 완전한 서버 리셋 완료"
+            echo "🌐 접속 주소: http://13.209.84.93:3000"
+            echo "📊 비정상 옵션: http://13.209.84.93:3000/signals/unusual-options"
