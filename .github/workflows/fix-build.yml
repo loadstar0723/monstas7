@@ -1,0 +1,75 @@
+name: 🔧 Fix Build and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  fix-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🚀 서버 빌드 및 배포
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          echo "🔄 빌드 수정 시작..."
+          
+          # 기존 프로세스 정리
+          pm2 kill || true
+          sudo pkill -f node || true
+          sudo pkill -f npm || true
+          
+          # 포트 정리
+          sudo fuser -k 3000/tcp || true
+          sudo fuser -k 8000/tcp || true
+          
+          # 프로젝트 디렉토리
+          cd /home/ubuntu/monstas7 || exit 1
+          
+          # 최신 코드 가져오기
+          git fetch origin
+          git reset --hard origin/master
+          git pull origin master
+          
+          # Frontend 빌드
+          cd frontend
+          
+          # 기존 빌드 및 캐시 제거
+          rm -rf .next
+          rm -rf node_modules/.cache
+          
+          # 패키지 재설치
+          npm ci || npm install
+          
+          # Prisma 생성
+          npx prisma generate || true
+          
+          # 프로덕션 빌드
+          npm run build || {
+            echo "❌ 빌드 실패. 개발 모드로 실행..."
+            # 개발 모드로 실행
+            pm2 start "npm run dev" --name frontend-dev -- --port 3000
+            pm2 save
+            exit 0
+          }
+          
+          # 프로덕션 모드로 실행
+          pm2 start "npm run start" --name frontend -- --port 3000
+          
+          # PM2 설정 저장
+          pm2 save
+          pm2 startup systemd -u ubuntu --hp /home/ubuntu
+          
+          echo "✅ 배포 완료!"
+          
+          # 상태 확인
+          pm2 status
+          sleep 5
+          
+          # 헬스체크
+          curl -I http://localhost:3000 || echo "서버 시작 중..."

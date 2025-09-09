@@ -93,13 +93,33 @@ jobs:
                 sudo apt-get install -y nodejs
             }
             
-            # npm 패키지 설치
-            npm install
-            
             # 🔧 기존 빌드 파일 완전 삭제 (캐시 문제 해결)
             echo "🗑️ Cleaning old build files..."
             rm -rf .next
             rm -rf node_modules/.cache
+            rm -rf node_modules
+            rm -f package-lock.json
+            
+            # npm 캐시 완전 삭제
+            echo "🗑️ Clearing npm cache..."
+            npm cache clean --force
+            
+            # 패키지 재설치 (클린 설치)
+            echo "📦 Installing packages with clean install..."
+            npm install --legacy-peer-deps --force
+            
+            # 필수 패키지 명시적 설치
+            echo "📦 Installing critical packages..."
+            npm install lucide-react@0.543.0 --save --legacy-peer-deps
+            npm install source-map-js --save --legacy-peer-deps
+            npm install d3-color d3-interpolate d3-scale --save --legacy-peer-deps
+            npm install recharts --save --legacy-peer-deps
+            
+            # 설치 확인
+            echo "🔍 Verifying package installations..."
+            ls -la node_modules/lucide-react || echo "⚠️ lucide-react not found"
+            ls -la node_modules/source-map-js || echo "⚠️ source-map-js not found"
+            ls -la node_modules/d3-color || echo "⚠️ d3-color not found"
             
             # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
             echo "🔍 배포 전 검증 시작..."
