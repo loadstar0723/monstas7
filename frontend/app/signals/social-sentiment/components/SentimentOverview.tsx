@@ -15,6 +15,19 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
   const [currentPrice, setCurrentPrice] = useState(0)
   const [priceChange24h, setPriceChange24h] = useState(0)
 
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log('SentimentOverview - sentimentData:', {
+      score: sentimentData.sentimentScore,
+      historyLength: sentimentData.sentimentHistory?.length,
+      firstHistory: sentimentData.sentimentHistory?.[0],
+      lastHistory: sentimentData.sentimentHistory?.[sentimentData.sentimentHistory.length - 1],
+      positive: sentimentData.positive,
+      neutral: sentimentData.neutral,
+      negative: sentimentData.negative
+    })
+  }, [sentimentData])
+
   useEffect(() => {
     const fetchPriceData = async () => {
       try {
@@ -62,9 +75,9 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
 
   // 감성 분포 데이터 (실제 API 데이터 기반)
   const sentimentDistribution = [
-    { name: '긍정', value: sentimentData.positive || 0, color: '#10B981' },
-    { name: '중립', value: sentimentData.neutral || 0, color: '#F59E0B' },
-    { name: '부정', value: sentimentData.negative || 0, color: '#EF4444' }
+    { name: '긍정', value: sentimentData.positive || 33, color: '#10B981' },
+    { name: '중립', value: sentimentData.neutral || 34, color: '#F59E0B' },
+    { name: '부정', value: sentimentData.negative || 33, color: '#EF4444' }
   ]
 
   // 플랫폼별 언급 수 (실제 데이터 기반 - API가 제공하면)
@@ -142,13 +155,21 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h3 className="text-lg font-bold mb-4">감성 점수 추이</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={sentimentData.sentimentHistory || []}>
+            <LineChart data={sentimentData.sentimentHistory || []} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="time" stroke="#9CA3AF" />
+              <XAxis 
+                dataKey="time" 
+                stroke="#9CA3AF"
+                interval={3}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
               <YAxis stroke="#9CA3AF" domain={[0, 100]} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#9CA3AF' }}
+                formatter={(value: any) => [`${value}점`, '감성 점수']}
               />
               <Line
                 type="monotone"
@@ -157,6 +178,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
                 strokeWidth={2}
                 dot={{ fill: '#A855F7', r: 4 }}
                 activeDot={{ r: 6 }}
+                animationDuration={500}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -182,6 +204,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
               </Pie>
               <Tooltip
                 contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                formatter={(value: any, name: any) => [`${value}%`, name]}
               />
             </PieChart>
           </ResponsiveContainer>
