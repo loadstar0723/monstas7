@@ -18,11 +18,14 @@ const nextConfig = {
   // 번들 분석 (필요시 활성화)
   // analyzeBundle: process.env.ANALYZE === 'true',
   
-  // 실험적 기능
+  // 실험적 기능 (클라이언트 사이드 에러 방지)
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,  // CSS 최적화 비활성화
     scrollRestoration: true,
   },
+  
+  // React Strict Mode 비활성화 (프로덕션 에러 방지)
+  reactStrictMode: false,
   
   // ESLint와 TypeScript 에러 무시 (프로덕션 빌드용)
   eslint: {
