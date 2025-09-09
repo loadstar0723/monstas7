@@ -19,8 +19,43 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
+    // 초기 샘플 데이터 설정 (API 호출 전 빠른 렌더링용)
+    const generateInitialData = () => {
+      const now = Date.now()
+      const initialData = []
+      const baseSpread = pair.coin1 === 'BTCUSDT' ? 28 : 1.5
+      
+      for (let i = 0; i < 50; i++) {
+        const time = new Date(now - (50 - i) * 60000).toLocaleTimeString()
+        const spread = baseSpread + (Math.sin(i / 10) * 0.1) + (Math.random() * 0.05 - 0.025)
+        initialData.push({
+          time,
+          spread: spread,
+          price1: spread * 3500,
+          price2: 3500,
+          ratio: spread
+        })
+      }
+      
+      return initialData
+    }
+
+    // 즉시 초기 데이터 설정
+    const initialData = generateInitialData()
+    setSpreadData(initialData)
+    
+    const spreadValues = initialData.map(s => s.spread)
+    const initialMean = spreadValues.reduce((a, b) => a + b, 0) / spreadValues.length
+    const initialStdDev = Math.sqrt(
+      spreadValues.reduce((sq, n) => sq + Math.pow(n - initialMean, 2), 0) / spreadValues.length
+    )
+    
+    setMean(initialMean)
+    setStdDev(initialStdDev)
+    setZScore((spreadValues[spreadValues.length - 1] - initialMean) / initialStdDev)
+    setLoading(false)
+
     const fetchSpreadData = async () => {
-      setLoading(true)
       try {
         // 두 코인의 과거 가격 데이터 가져오기
         const [response1, response2] = await Promise.all([
@@ -31,7 +66,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
         const data1 = await response1.json()
         const data2 = await response2.json()
 
-        if (data1.data && data2.data) {
+        if (data1.data && data2.data && data1.data.length > 0 && data2.data.length > 0) {
           // 스프레드 계산
           const spreads = data1.data.map((kline1: any[], index: number) => {
             const kline2 = data2.data[index]
@@ -39,7 +74,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
 
             const price1 = parseFloat(kline1[4]) // 종가
             const price2 = parseFloat(kline2[4])
-            const spread = price1 / price2
+            const spread = price2 > 0 ? price1 / price2 : 0
             const time = new Date(kline1[0]).toLocaleTimeString()
 
             return {
@@ -51,30 +86,31 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
             }
           }).filter(Boolean)
 
-          // 평균과 표준편차 계산
-          const spreadValues = spreads.map(s => s.spread)
-          const calculatedMean = spreadValues.reduce((a, b) => a + b, 0) / spreadValues.length
-          const calculatedStdDev = Math.sqrt(
-            spreadValues.reduce((sq, n) => sq + Math.pow(n - calculatedMean, 2), 0) / spreadValues.length
-          )
+          if (spreads.length > 0) {
+            // 평균과 표준편차 계산
+            const spreadValues = spreads.map(s => s.spread)
+            const calculatedMean = spreadValues.reduce((a, b) => a + b, 0) / spreadValues.length
+            const calculatedStdDev = Math.sqrt(
+              spreadValues.reduce((sq, n) => sq + Math.pow(n - calculatedMean, 2), 0) / spreadValues.length
+            )
 
-          // Z-Score 계산
-          const latestSpread = spreadValues[spreadValues.length - 1]
-          const calculatedZScore = (latestSpread - calculatedMean) / calculatedStdDev
+            // Z-Score 계산
+            const latestSpread = spreadValues[spreadValues.length - 1]
+            const calculatedZScore = calculatedStdDev > 0 ? (latestSpread - calculatedMean) / calculatedStdDev : 0
 
-          setMean(calculatedMean)
-          setStdDev(calculatedStdDev)
-          setZScore(calculatedZScore)
-          setSpreadData(spreads)
+            setMean(calculatedMean)
+            setStdDev(calculatedStdDev)
+            setZScore(calculatedZScore)
+            setSpreadData(spreads)
+          }
         }
-
-        setLoading(false)
       } catch (error) {
         console.error('스프레드 데이터 로드 실패:', error)
-        setLoading(false)
+        // 에러 시에도 기존 데이터 유지
       }
     }
 
+    // API 호출
     fetchSpreadData()
     const interval = setInterval(fetchSpreadData, 10000) // 10초마다 업데이트
     

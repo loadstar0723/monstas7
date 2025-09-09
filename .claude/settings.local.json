@@ -181,7 +181,10 @@
       "Bash(start http://13.209.84.93:3000/signals/fear-greed)",
       "Bash(git stash:*)",
       "Bash(start http://localhost:3001/quant/backtesting)",
-      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\market-making\\page.tsx\")"
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\market-making\\page.tsx\")",
+      "Bash(git clone:*)",
+      "Bash(start http://localhost:3001/quant/pair-trading)",
+      "Read(//c/Users/**)"
     ],
     "deny": [],
     "ask": []
