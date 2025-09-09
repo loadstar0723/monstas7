@@ -140,21 +140,29 @@ jobs:
                 sudo npm install -g pm2
             }
             
-            # 기존 PM2 프로세스 제거
-            pm2 stop all || true
-            pm2 delete all || true
+            # ecosystem.config.js를 상위 디렉토리에 복사
+            cp ../ecosystem.config.js ./ecosystem.config.js || echo "ecosystem.config.js not found in parent"
             
-            # PM2로 Next.js 시작 (에러 처리 강화)
-            pm2 start npm --name "monsta-nextjs" -- start -- --hostname 0.0.0.0 --port 3000
+            # PM2 무중단 배포 (reload 사용)
+            # 기존 프로세스가 있으면 reload, 없으면 start
+            pm2 describe monsta-prod > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "🔄 PM2 reload로 무중단 배포 시작..."
+                pm2 reload ecosystem.config.js --update-env
+            else
+                echo "🚀 PM2 최초 시작..."
+                pm2 start ecosystem.config.js
+            fi
+            
             pm2 save
             pm2 startup || true
             
             # PM2 로그 실시간 확인 (10초)
             echo "📋 Checking PM2 logs..."
-            timeout 10 pm2 logs monsta-nextjs --lines 50 || true
+            timeout 10 pm2 logs monsta-prod --lines 50 || true
             
             # PM2 상태 확인
-            pm2 describe monsta-nextjs || echo "PM2 app status check failed"
+            pm2 describe monsta-prod || echo "PM2 app status check failed"
             
             echo "✅ Next.js started with PM2"
             
@@ -182,8 +190,8 @@ jobs:
             else
               echo "❌ Frontend not responding"
               echo "Checking PM2 logs..."
-              pm2 logs monsta-nextjs --lines 50 --nostream || echo "No PM2 logs"
-              pm2 describe monsta-nextjs || echo "PM2 app not found"
+              pm2 logs monsta-prod --lines 50 --nostream || echo "No PM2 logs"
+              pm2 describe monsta-prod || echo "PM2 app not found"
             fi
             
             # AWS 보안 그룹 확인 메시지

@@ -184,7 +184,11 @@
       "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\market-making\\page.tsx\")",
       "Bash(git clone:*)",
       "Bash(start http://localhost:3001/quant/pair-trading)",
-      "Read(//c/Users/**)"
+      "Read(//c/Users/**)",
+      "Bash(start http://localhost:3000/quant/pair-trading)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\page.tsx\")",
+      "Bash(start http://localhost:3006/quant/mean-reversion)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\quant\\mean-reversion\\components\\SimpleChart.tsx\")"
     ],
     "deny": [],
     "ask": []
