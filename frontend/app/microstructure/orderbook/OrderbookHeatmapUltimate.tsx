@@ -10,13 +10,55 @@ import {
   FaEye, FaBookOpen, FaRocket, FaShieldAlt, FaLightbulb
 } from 'react-icons/fa'
 import dynamic from 'next/dynamic'
-import { config } from '@/lib/config'
-import CoinSelector from './components/CoinSelector'
-import ConceptGuide from './components/ConceptGuide'
-import ImbalanceIndicator from './components/ImbalanceIndicator'
-import TradingStrategy from './components/TradingStrategy'
+const CoinSelector = dynamic(
+  () => import('./components/CoinSelector'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-24 bg-gray-800/50 animate-pulse rounded-lg mb-6" />
+  }
+)
+
+const ConceptGuide = dynamic(
+  () => import('./components/ConceptGuide'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
+)
+
+const ImbalanceIndicator = dynamic(
+  () => import('./components/ImbalanceIndicator'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-64 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
+)
+
+const TradingStrategy = dynamic(
+  () => import('./components/TradingStrategy'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
+)
 import { useOrderbookWebSocket } from './hooks/useOrderbookWebSocket'
 import { useOrderbookAnalysis } from './hooks/useOrderbookAnalysis'
+
+const PriceImpactCalculator = dynamic(
+  () => import('./components/PriceImpactCalculator'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
+)
+
+const OrderFlowAnimation = dynamic(
+  () => import('./components/OrderFlowAnimation'),
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
+)
 
 // 동적 임포트로 성능 최적화
 const OrderbookHeatmap = dynamic(
@@ -26,27 +68,42 @@ const OrderbookHeatmap = dynamic(
 
 const DynamicsAnalysis = dynamic(
   () => import('./components/DynamicsAnalysis'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
 )
 
 const LiquidityDepth = dynamic(
   () => import('./components/LiquidityDepth'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
 )
 
 const WhaleDetector = dynamic(
   () => import('./components/WhaleDetector'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
 )
 
 const MomentumPredictor = dynamic(
   () => import('./components/MomentumPredictor'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
 )
 
 const HistoricalReplay = dynamic(
   () => import('./components/HistoricalReplay'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-lg" />
+  }
 )
 
 const PriceImpactCalculator = dynamic(

@@ -193,8 +193,10 @@ export default function OrderbookHeatmap({
       }
     }
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
   }, [orderbook, render2DHeatmap])
 
   if (!orderbook) {

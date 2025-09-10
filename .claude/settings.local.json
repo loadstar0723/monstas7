@@ -198,7 +198,8 @@
       "Bash(pip install:*)",
       "Bash(copy apppage.tsx apppage.backup.tsx)",
       "Bash(start cmd /k \"npm run dev\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": [],
     "ask": []
