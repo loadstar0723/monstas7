@@ -40,14 +40,23 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Binance API error:', error)
     
-    // 에러 발생 시 기본값 반환
+    // 에러 발생 시 빈 객체 또는 에러 정보 반환
+    console.log(`Binance ticker API 실패 - ${symbol}`)
     const defaultData = {
       symbol: symbol || 'BTCUSDT',
-      lastPrice: '98000.00',
-      priceChangePercent: '2.5',
-      quoteVolume: '1500000000'
+      lastPrice: '0',
+      priceChangePercent: '0',
+      quoteVolume: '0',
+      error: 'API_FAILED'
     }
     
-    return NextResponse.json(defaultData, { status: 200 })
+    // CORS 헤더 추가
+    const headers = new Headers({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    })
+    
+    return NextResponse.json(defaultData, { status: 200, headers })
   }
 }

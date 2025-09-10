@@ -199,7 +199,15 @@
       "Bash(copy apppage.tsx apppage.backup.tsx)",
       "Bash(start cmd /k \"npm run dev\")",
       "Bash(find:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)",
+      "Bash(npx kill-port:*)",
+      "Bash(npx eslint:*)",
+      "mcp__serena__execute_shell_command",
+      "Bash(npx shadcn-ui@latest add:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "ask": []
