@@ -127,37 +127,83 @@ export default function StrategyBuilderModule() {
   const [strategyMode, setStrategyMode] = useState<'nocode' | 'code'>('nocode')
   const [showScrollTop, setShowScrollTop] = useState(false)
   
-  const wsRef = useRef<ModuleWebSocket | null>(null)
+  const wsRef = useRef<WebSocket | null>(null)
   const performance = useRef(new ModulePerformance('StrategyBuilder'))
   
-  // WebSocket 연결 관리
+  // WebSocket 연결 관리 (직접 관리로 변경)
   useEffect(() => {
-    const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.disconnect()
-      }
-      
-      wsRef.current = new ModuleWebSocket('StrategyBuilder')
-      
-      // 실시간 가격 스트림
-      const wsUrl = `wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`
-      wsRef.current.connect(wsUrl, (data) => {
-        setMarketData({
-          symbol: selectedCoin,
-          price: parseFloat(data.c),
-          change24h: parseFloat(data.P),
-          volume24h: parseFloat(data.v),
-          high24h: parseFloat(data.h),
-          low24h: parseFloat(data.l)
-        })
-      })
+    let isActive = true // cleanup 플래그
+    
+    // 기존 연결 완전 종료
+    if (wsRef.current) {
+      console.log(`기존 WebSocket 연결 종료`)
+      wsRef.current.close(1000, 'Switching symbol')
+      wsRef.current = null
     }
     
-    connectWebSocket()
+    // 연결 지연을 통해 빠른 전환 시 문제 방지
+    const connectionTimer = setTimeout(() => {
+      if (!isActive) return // 이미 cleanup된 경우 중단
+      
+      const wsUrl = `wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`
+      console.log(`새 WebSocket 연결 시도: ${selectedCoin}`)
+      
+      try {
+        const ws = new WebSocket(wsUrl)
+        
+        ws.onopen = () => {
+          console.log(`WebSocket 연결 성공: ${selectedCoin}`)
+        }
+        
+        ws.onmessage = (event) => {
+          if (!isActive) return // cleanup된 경우 무시
+          
+          try {
+            const data = JSON.parse(event.data)
+            
+            // 현재 선택된 심볼과 일치하는 경우만 업데이트
+            if (data.s === selectedCoin) {
+              setMarketData({
+                symbol: selectedCoin,
+                price: parseFloat(data.c),
+                change24h: parseFloat(data.P),
+                volume24h: parseFloat(data.v),
+                high24h: parseFloat(data.h),
+                low24h: parseFloat(data.l)
+              })
+            } else {
+              console.warn(`심볼 불일치 - 받은: ${data.s}, 기대: ${selectedCoin}`)
+              // 잘못된 심볼 데이터를 받으면 연결 재시작
+              ws.close(1000, 'Wrong symbol')
+            }
+          } catch (error) {
+            console.error('WebSocket 메시지 파싱 에러:', error)
+          }
+        }
+        
+        ws.onerror = (error) => {
+          console.log('WebSocket 재연결 중...')
+        }
+        
+        ws.onclose = () => {
+          console.log(`WebSocket 연결 종료: ${selectedCoin}`)
+          wsRef.current = null
+        }
+        
+        wsRef.current = ws
+      } catch (error) {
+        console.error('WebSocket 생성 실패:', error)
+      }
+    }, 500)
     
+    // Cleanup 함수
     return () => {
+      isActive = false
+      clearTimeout(connectionTimer)
       if (wsRef.current) {
-        wsRef.current.disconnect()
+        console.log(`Cleanup - WebSocket 종료: ${selectedCoin}`)
+        wsRef.current.close(1000, 'Component unmount or symbol change')
+        wsRef.current = null
       }
     }
   }, [selectedCoin])
