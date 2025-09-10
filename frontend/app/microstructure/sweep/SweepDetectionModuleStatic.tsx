@@ -94,6 +94,7 @@ const SweepDetectionModule: React.FC = () => {
   const fetchRecentTrades = useCallback(async (symbol: string) => {
     try {
       console.log(`🔍 거래 데이터 가져오기 시도: ${symbol}`)
+      // API 프록시 사용 - CORS 회피
       const response = await fetch(`/api/binance/trades?symbol=${symbol}&limit=50`)
       console.log(`📊 응답 상태: ${response.status} ${response.statusText}`)
       
@@ -150,6 +151,7 @@ const SweepDetectionModule: React.FC = () => {
   // 주기적인 오더북 업데이트
   const updateOrderBook = useCallback(async (symbol: string) => {
     try {
+      // API 프록시 사용 - CORS 회피
       const response = await fetch(`/api/binance/depth?symbol=${symbol}&limit=20`)
       if (response.ok) {
         const data = await response.json()
@@ -311,8 +313,7 @@ const SweepDetectionModule: React.FC = () => {
       console.log(`🚀 초기 데이터 가져오기 시작: ${symbol}`)
       
       // 1. 현재 가격 가져오기
-      const baseUrl = window.location.origin
-      const priceUrl = `${baseUrl}/api/binance/ticker?symbol=${symbol}`
+      const priceUrl = `/api/binance/ticker?symbol=${symbol}`
       console.log(`📍 가격 API 호출: ${priceUrl}`)
       
       const priceResponse = await fetch(priceUrl)
@@ -320,8 +321,8 @@ const SweepDetectionModule: React.FC = () => {
       
       if (priceResponse.ok) {
         const data = await priceResponse.json()
-        // Binance ticker API는 lastPrice 필드를 사용
-        const price = data.lastPrice || data.price
+        // Binance ticker/price API는 price 필드를 사용
+        const price = data.price
         if (price) {
           setCurrentPrice(parseFloat(price))
           console.log(`✅ ${symbol} 초기 가격 로드: $${price}`)

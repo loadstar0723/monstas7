@@ -39,6 +39,9 @@ const nextConfig = {
           },
         },
       }
+      // 청크 파일명에 타임스탬프 추가하여 캐시 문제 방지
+      config.output.filename = 'static/chunks/[name].[contenthash].js'
+      config.output.chunkFilename = 'static/chunks/[name].[contenthash].js'
     }
     return config
   },
