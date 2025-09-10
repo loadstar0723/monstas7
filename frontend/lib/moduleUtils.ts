@@ -64,7 +64,8 @@ export class ModuleWebSocket {
       }
       
       this.ws.onerror = (error) => {
-        console.error(`[${this.moduleName}] WebSocket error:`, error)
+        // WebSocket 에러는 자동 재연결되므로 로그 레벨을 낮춤
+        console.log(`[${this.moduleName}] WebSocket 재연결 중...`)
       }
       
       this.ws.onclose = () => {
