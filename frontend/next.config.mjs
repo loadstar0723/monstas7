@@ -22,6 +22,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,  // CSS 최적화 비활성화
     scrollRestoration: true,
+    optimizePackageImports: ['recharts', 'framer-motion', 'react-icons'],
   },
   
   // Webpack 설정
