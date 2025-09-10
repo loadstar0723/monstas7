@@ -103,7 +103,7 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
       try {
         // 병렬로 모든 코인 가격 요청
         const pricePromises = symbols.map(async (symbol) => {
-          const response = await fetch(`/api/binance/ticker/24hr?symbol=${symbol}`)
+          const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
           if (response.ok) {
             const data = await response.json()
             return {
