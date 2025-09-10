@@ -21,19 +21,40 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
   const [valueAreaHigh, setValueAreaHigh] = useState<number>(0)
   const [valueAreaLow, setValueAreaLow] = useState<number>(0)
   const [loading, setLoading] = useState(true)
+  
+  // 코인별 초기 가격 설정
+  const initialPrices: Record<string, number> = {
+    'BTCUSDT': 98000,
+    'ETHUSDT': 3500,
+    'BNBUSDT': 700,
+    'SOLUSDT': 200,
+    'XRPUSDT': 2.5,
+    'ADAUSDT': 1.0,
+    'DOGEUSDT': 0.4,
+    'AVAXUSDT': 50,
+    'MATICUSDT': 1.5,
+    'DOTUSDT': 10
+  }
 
   useEffect(() => {
+    // 즉시 초기값 설정
+    const initPrice = initialPrices[symbol] || 100
+    setPoc(initPrice)
+    setValueAreaHigh(initPrice * 1.01)
+    setValueAreaLow(initPrice * 0.99)
+    
+    // 실제 데이터 로드
     generateVolumeProfile()
   }, [symbol])
 
   const generateVolumeProfile = async () => {
     setLoading(true)
     try {
-      // 실제 API에서 최근 거래 데이터 가져오기
-      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=5m&limit=50`)
+      // 실제 API에서 최근 거래 데이터 가져오기 - 더 많은 데이터로
+      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=1m&limit=500`)
       const klines = await response.json()
       
-      if (Array.isArray(klines)) {
+      if (Array.isArray(klines) && klines.length > 0) {
         // 가격대별 거래량 집계
         const priceVolumeMap = new Map<number, PriceLevel>()
         let totalVolume = 0
@@ -44,11 +65,22 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
           const high = parseFloat(kline[2])
           const low = parseFloat(kline[3])
           const volume = parseFloat(kline[5])
-          const avgPrice = Math.round((high + low) / 2)
+          const avgPrice = (high + low) / 2
           
-          if (!priceVolumeMap.has(avgPrice)) {
-            priceVolumeMap.set(avgPrice, {
-              price: avgPrice,
+          // 코인별로 적절한 가격 단위 설정
+          let priceUnit = 10 // 기본값
+          if (avgPrice > 10000) priceUnit = 100 // BTC 같은 고가 코인
+          else if (avgPrice > 1000) priceUnit = 10
+          else if (avgPrice > 100) priceUnit = 1
+          else if (avgPrice > 10) priceUnit = 0.5
+          else if (avgPrice > 1) priceUnit = 0.1
+          else priceUnit = 0.01 // 저가 코인
+          
+          const priceLevel = Math.floor(avgPrice / priceUnit) * priceUnit
+          
+          if (!priceVolumeMap.has(priceLevel)) {
+            priceVolumeMap.set(priceLevel, {
+              price: priceLevel,
               volume: 0,
               buyVolume: 0,
               sellVolume: 0,
@@ -56,7 +88,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
             })
           }
           
-          const level = priceVolumeMap.get(avgPrice)!
+          const level = priceVolumeMap.get(priceLevel)!
           level.volume += volume
           totalVolume += volume
           
@@ -71,7 +103,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
           
           if (level.volume > maxVolume) {
             maxVolume = level.volume
-            pocPrice = avgPrice
+            pocPrice = priceLevel
           }
         })
         
@@ -122,6 +154,8 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
       }
     } catch (error) {
       console.error('거래량 프로파일 생성 실패:', error)
+      // 에러 시 재시도 (5초 후)
+      setTimeout(() => generateVolumeProfile(), 5000)
     } finally {
       setLoading(false)
     }

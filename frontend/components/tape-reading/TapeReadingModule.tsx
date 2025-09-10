@@ -124,8 +124,8 @@ export default function TapeReadingModule() {
       setVolume24h(parseFloat(data.v))
     }
 
-    ws.onerror = (error) => {
-      console.error('WebSocket 에러:', error)
+    ws.onerror = () => {
+      console.log('WebSocket 연결 오류 발생')
       setWsConnected(false)
     }
 

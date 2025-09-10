@@ -29,7 +29,8 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
 
   const generateSignals = async () => {
     try {
-      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=15m&limit=20`)
+      // 더 많은 데이터로 정확도 향상
+      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=15m&limit=50`)
       const klines = await response.json()
       
       if (Array.isArray(klines) && klines.length > 0) {

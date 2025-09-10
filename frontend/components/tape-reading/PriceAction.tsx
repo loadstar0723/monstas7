@@ -20,7 +20,7 @@ export default function PriceAction({ symbol, currentPrice }: PriceActionProps) 
 
   const fetchPriceData = async () => {
     try {
-      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=5m&limit=30`)
+      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=15m&limit=96`)
       const klines = await response.json()
       
       if (Array.isArray(klines)) {
@@ -32,13 +32,20 @@ export default function PriceAction({ symbol, currentPrice }: PriceActionProps) 
           volume: parseFloat(k[5])
         }))
         
-        setPriceData(data)
+        setPriceData(data.slice(-48)) // 최근 48개 캔들만 표시
         
-        // 지지/저항 계산
-        const highs = data.map(d => d.high)
-        const lows = data.map(d => d.low)
-        setResistance(Math.max(...highs))
-        setSupport(Math.min(...lows))
+        // 고급 지지/저항 계산 - 피벗 포인트 방식
+        const latestCandle = klines[klines.length - 1]
+        const high = parseFloat(latestCandle[2])
+        const low = parseFloat(latestCandle[3])
+        const close = parseFloat(latestCandle[4])
+        
+        const pivot = (high + low + close) / 3
+        const r1 = (2 * pivot) - low
+        const s1 = (2 * pivot) - high
+        
+        setResistance(r1)
+        setSupport(s1)
         
         // 추세 판단
         const firstPrice = data[0]?.price || 0

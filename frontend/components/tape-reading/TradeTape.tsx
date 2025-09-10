@@ -88,7 +88,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
       const newTrade: Trade = {
-        id: data.t,
+        id: data.t || `${Date.now()}-${Math.random()}`,
         time: new Date(data.T).toLocaleTimeString('ko-KR'),
         price: parseFloat(data.p),
         quantity: parseFloat(data.q),
@@ -106,7 +106,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
     }
 
     ws.onerror = (error) => {
-      console.error('WebSocket 에러:', error)
+      console.error('WebSocket 연결 오류')
     }
 
     ws.onclose = () => {
@@ -195,9 +195,9 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
         className="overflow-y-auto" 
         style={{ height: '400px' }}
       >
-        {trades.map((trade) => (
+        {trades.map((trade, index) => (
           <div 
-            key={trade.id}
+            key={trade.id || `trade-${index}-${Date.now()}`}
             className={`grid grid-cols-4 gap-2 px-4 py-2 border-b border-gray-800 hover:bg-gray-700/30 transition ${
               trade.isLarge ? 'animate-pulse bg-yellow-900/20' : ''
             }`}

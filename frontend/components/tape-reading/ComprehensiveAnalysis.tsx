@@ -42,8 +42,15 @@ export default function ComprehensiveAnalysis({
 
   const analyzeMarket = async () => {
     try {
-      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=1h&limit=24`)
-      const klines = await response.json()
+      // 더 많은 데이터로 정확한 분석
+      const [hourlyRes, dailyRes] = await Promise.all([
+        fetch(`/api/binance/klines?symbol=${symbol}&interval=1h&limit=48`),
+        fetch(`/api/binance/klines?symbol=${symbol}&interval=1d&limit=14`)
+      ])
+      const hourlyKlines = await hourlyRes.json()
+      const dailyKlines = await dailyRes.json()
+      
+      const klines = hourlyKlines
       
       if (Array.isArray(klines) && klines.length > 0) {
         const prices = klines.map((k: any) => parseFloat(k[4]))

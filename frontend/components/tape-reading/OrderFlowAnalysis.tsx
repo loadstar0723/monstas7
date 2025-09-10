@@ -20,12 +20,35 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
   const [cumDelta, setCumDelta] = useState(0)
   const [imbalance, setImbalance] = useState(0)
   const [trend, setTrend] = useState<'bullish' | 'bearish' | 'neutral'>('neutral')
+  const [bidAskRatio, setBidAskRatio] = useState(1)
+  const [aggression, setAggression] = useState(0)
 
   useEffect(() => {
+    // 초기 과거 데이터 로드
+    fetch(`/api/binance/trades?symbol=${symbol}&limit=100`)
+      .then(res => res.json())
+      .then(trades => {
+        if (Array.isArray(trades)) {
+          let cumulative = 0
+          const historicalData = trades.slice(-30).map((trade: any) => {
+            const volume = parseFloat(trade.qty)
+            const delta = trade.isBuyerMaker ? -volume : volume
+            cumulative += delta
+            return {
+              time: new Date(trade.time).toLocaleTimeString('ko-KR'),
+              delta: delta,
+              cumDelta: cumulative
+            }
+          })
+          setDeltaData(historicalData)
+          setCumDelta(cumulative)
+        }
+      })
+    
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@trade`)
     let buyVolume = 0
     let sellVolume = 0
-    let cumulative = 0
+    let cumulative = cumDelta
     
     const interval = setInterval(() => {
       const delta = buyVolume - sellVolume

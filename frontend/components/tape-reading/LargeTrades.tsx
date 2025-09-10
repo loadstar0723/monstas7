@@ -39,6 +39,46 @@ export default function LargeTrades({ symbol }: LargeTradesProps) {
   })
 
   useEffect(() => {
+    // 초기 과거 대량 거래 데이터 로드
+    fetch(`/api/binance/trades?symbol=${symbol}&limit=500`)
+      .then(res => res.json())
+      .then(trades => {
+        if (Array.isArray(trades)) {
+          const minValue = LARGE_TRADE_USD[symbol] || 50000
+          const largeTrades = trades
+            .filter((trade: any) => {
+              const value = parseFloat(trade.price) * parseFloat(trade.qty)
+              return value >= minValue
+            })
+            .map((trade: any) => ({
+              id: trade.id,
+              time: new Date(trade.time).toLocaleTimeString('ko-KR'),
+              price: parseFloat(trade.price),
+              quantity: parseFloat(trade.qty),
+              value: parseFloat(trade.price) * parseFloat(trade.qty),
+              side: trade.isBuyerMaker ? 'sell' : 'buy'
+            }))
+            .slice(0, 20)
+          
+          setLargeTrades(largeTrades)
+          
+          // 통계 계산
+          let buyVol = 0, sellVol = 0, maxTrade = 0
+          largeTrades.forEach(trade => {
+            if (trade.side === 'buy') buyVol += trade.value
+            else sellVol += trade.value
+            maxTrade = Math.max(maxTrade, trade.value)
+          })
+          
+          setStats({
+            count24h: largeTrades.length,
+            buyVolume24h: buyVol,
+            sellVolume24h: sellVol,
+            largestTrade: maxTrade
+          })
+        }
+      })
+    
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@trade`)
     const minValue = LARGE_TRADE_USD[symbol] || 50000
     
