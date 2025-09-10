@@ -18,6 +18,23 @@ interface SweepVolumeAnalysisProps {
 }
 
 export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: SweepVolumeAnalysisProps) {
+  // 코인별 소수점 자리수
+  const getDecimalPlaces = (symbol: string) => {
+    const decimals: Record<string, number> = {
+      'BTCUSDT': 4,
+      'ETHUSDT': 3,
+      'BNBUSDT': 2,
+      'SOLUSDT': 1,
+      'XRPUSDT': 0,
+      'ADAUSDT': 0,
+      'DOGEUSDT': 0,
+      'AVAXUSDT': 1,
+      'MATICUSDT': 0,
+      'DOTUSDT': 1
+    }
+    return decimals[symbol] || 2
+  }
+
   // 시간대별 분석
   const timeAnalysis = useMemo(() => {
     const hourlyData: Record<number, { volume: number, count: number, buyVolume: number, sellVolume: number }> = {}
@@ -117,7 +134,10 @@ export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: Swee
                  entry.name === 'Buy Sweep' ? '매수 스윕' :
                  entry.name === 'Sell Sweep' ? '매도 스윕' : entry.name}
               </span>
-              <span className="text-white font-medium">{entry.value.toFixed(2)}</span>
+              <span className="text-white font-medium">
+                {entry.value.toFixed(getDecimalPlaces(symbol))}
+                {entry.name.includes('Sweep') ? ` ${symbol.replace('USDT', '')}` : ''}
+              </span>
             </div>
           ))}
         </div>
@@ -202,7 +222,7 @@ export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: Swee
                     />
                     <p className="text-xs text-gray-400">{data.name === 'Buy Sweep' ? '매수 스윕' : '매도 스윕'}</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">{data.value.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white">{data.value.toFixed(getDecimalPlaces(symbol))}</p>
                   <p className="text-xs text-gray-500 mt-1">{data.count}회 감지</p>
                 </div>
               ))}
@@ -233,7 +253,7 @@ export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: Swee
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
                       <span className="text-gray-500">거래량</span>
-                      <p className="text-white font-medium mt-1">{stats.volume.toFixed(2)}</p>
+                      <p className="text-white font-medium mt-1">{stats.volume.toFixed(getDecimalPlaces(symbol))}</p>
                     </div>
                     <div>
                       <span className="text-gray-500">평균 영향도</span>

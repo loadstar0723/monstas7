@@ -19,6 +19,23 @@ interface PriceImpactChartProps {
 }
 
 export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUSDT' }: PriceImpactChartProps) {
+  // 코인별 소수점 자리수
+  const getDecimalPlaces = (symbol: string) => {
+    const decimals: Record<string, number> = {
+      'BTCUSDT': 4,
+      'ETHUSDT': 3,
+      'BNBUSDT': 2,
+      'SOLUSDT': 1,
+      'XRPUSDT': 0,
+      'ADAUSDT': 0,
+      'DOGEUSDT': 0,
+      'AVAXUSDT': 1,
+      'MATICUSDT': 0,
+      'DOTUSDT': 1
+    }
+    return decimals[symbol] || 2
+  }
+
   // 차트 데이터 준비
   const chartData = useMemo(() => {
     return sweeps.slice(-50).map((sweep, index) => {
@@ -98,7 +115,7 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
             </div>
             <div className="flex justify-between items-center gap-4">
               <span className="text-gray-400 text-xs">거래량</span>
-              <span className="text-white font-medium">{data.volume.toFixed(4)}</span>
+              <span className="text-white font-medium">{data.volume.toFixed(getDecimalPlaces(symbol))} {symbol.replace('USDT', '')}</span>
             </div>
             <div className="flex justify-between items-center gap-4">
               <span className="text-gray-400 text-xs">타입</span>
@@ -282,9 +299,9 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
                 <span className="text-xs text-gray-400">{impactLevels.low.count}회</span>
               </div>
               <p className="text-2xl font-bold text-green-400">
-                {impactLevels.low.avgVolume.toFixed(2)}
+                {impactLevels.low.avgVolume.toFixed(getDecimalPlaces(symbol))}
               </p>
-              <p className="text-xs text-gray-500 mt-1">평균 거래량</p>
+              <p className="text-xs text-gray-500 mt-1">평균 {symbol.replace('USDT', '')}</p>
             </div>
             
             <div className="bg-yellow-900/20 p-4 rounded-lg border border-yellow-800/30">
@@ -293,9 +310,9 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
                 <span className="text-xs text-gray-400">{impactLevels.medium.count}회</span>
               </div>
               <p className="text-2xl font-bold text-yellow-400">
-                {impactLevels.medium.avgVolume.toFixed(2)}
+                {impactLevels.medium.avgVolume.toFixed(getDecimalPlaces(symbol))}
               </p>
-              <p className="text-xs text-gray-500 mt-1">평균 거래량</p>
+              <p className="text-xs text-gray-500 mt-1">평균 {symbol.replace('USDT', '')}</p>
             </div>
             
             <div className="bg-orange-900/20 p-4 rounded-lg border border-orange-800/30">
@@ -304,9 +321,9 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
                 <span className="text-xs text-gray-400">{impactLevels.high.count}회</span>
               </div>
               <p className="text-2xl font-bold text-orange-400">
-                {impactLevels.high.avgVolume.toFixed(2)}
+                {impactLevels.high.avgVolume.toFixed(getDecimalPlaces(symbol))}
               </p>
-              <p className="text-xs text-gray-500 mt-1">평균 거래량</p>
+              <p className="text-xs text-gray-500 mt-1">평균 {symbol.replace('USDT', '')}</p>
             </div>
             
             <div className="bg-red-900/20 p-4 rounded-lg border border-red-800/30">
@@ -315,9 +332,9 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
                 <span className="text-xs text-gray-400">{impactLevels.extreme.count}회</span>
               </div>
               <p className="text-2xl font-bold text-red-400">
-                {impactLevels.extreme.avgVolume.toFixed(2)}
+                {impactLevels.extreme.avgVolume.toFixed(getDecimalPlaces(symbol))}
               </p>
-              <p className="text-xs text-gray-500 mt-1">평균 거래량</p>
+              <p className="text-xs text-gray-500 mt-1">평균 {symbol.replace('USDT', '')}</p>
             </div>
           </div>
         </div>
