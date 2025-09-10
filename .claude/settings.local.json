@@ -197,7 +197,8 @@
       "mcp__serena__list_memories",
       "Bash(pip install:*)",
       "Bash(copy apppage.tsx apppage.backup.tsx)",
-      "Bash(start cmd /k \"npm run dev\")"
+      "Bash(start cmd /k \"npm run dev\")",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
