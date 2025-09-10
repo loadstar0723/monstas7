@@ -62,8 +62,8 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
       const data = await response.json()
       
       if (Array.isArray(data)) {
-        const formattedTrades = data.map((trade: any) => ({
-          id: trade.id || `${trade.time}-${trade.price}`,
+        const formattedTrades = data.map((trade: any, idx: number) => ({
+          id: trade.id ? String(trade.id) : `${trade.time}-${idx}`,
           time: new Date(trade.time).toLocaleTimeString('ko-KR'),
           price: parseFloat(trade.price),
           quantity: parseFloat(trade.qty),
@@ -96,8 +96,9 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
       if (!isActive) return
       try {
         const data = JSON.parse(event.data)
+        const timestamp = Date.now()
         const newTrade: Trade = {
-          id: data.t || `${Date.now()}-${Math.random()}`,
+          id: data.t ? String(data.t) : `${timestamp}-${Math.floor(Math.random() * 10000)}`,
           time: new Date(data.T).toLocaleTimeString('ko-KR'),
           price: parseFloat(data.p),
           quantity: parseFloat(data.q),
@@ -221,7 +222,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
       >
         {trades.map((trade, index) => (
           <div 
-            key={trade.id || `trade-${index}-${Date.now()}`}
+            key={`${trade.id}-${index}`}
             className={`grid grid-cols-4 gap-2 px-4 py-2 border-b border-gray-800 hover:bg-gray-700/30 transition ${
               trade.isLarge ? 'animate-pulse bg-yellow-900/20' : ''
             }`}
