@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BINANCE_API_BASE = 'https://api.binance.com'
 
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  })
+  
+  return new NextResponse(null, { status: 200, headers })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -12,7 +22,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 10 }
+      next: { revalidate: 0 }
     })
     
     if (!response.ok) {

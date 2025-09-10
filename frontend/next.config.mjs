@@ -24,6 +24,25 @@ const nextConfig = {
     scrollRestoration: true,
   },
   
+  // Webpack 설정
+  webpack: (config, { dev, isServer }) => {
+    // 개발 환경에서 청크 로딩 최적화
+    if (dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        runtimeChunk: false,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+          },
+        },
+      }
+    }
+    return config
+  },
+  
   // React Strict Mode 비활성화 (프로덕션 에러 방지)
   reactStrictMode: false,
   

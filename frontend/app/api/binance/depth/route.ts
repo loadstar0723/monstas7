@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  })
+  
+  return new NextResponse(null, { status: 200, headers })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
