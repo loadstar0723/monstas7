@@ -119,12 +119,22 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
         // 병렬로 모든 코인 가격 요청
         const pricePromises = symbols.map(async (symbol) => {
           try {
-            const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
+            console.log(`Fetching price for ${symbol}...`)
+            const response = await fetch(`/api/binance/ticker?symbol=${symbol}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+            
             if (!response.ok) {
               console.error(`Failed to fetch ${symbol}: ${response.status} ${response.statusText}`)
               return null
             }
+            
             const data = await response.json()
+            console.log(`Received data for ${symbol}:`, data)
+            
             return {
               symbol,
               price: parseFloat(data.lastPrice) || defaultPrices[symbol]?.price || 0,
@@ -133,7 +143,13 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
             }
           } catch (error) {
             console.error(`Error fetching ${symbol}:`, error)
-            return null
+            // 에러 시 기본값 반환
+            return {
+              symbol,
+              price: defaultPrices[symbol]?.price || 0,
+              change: defaultPrices[symbol]?.change || 0,
+              volume24h: defaultPrices[symbol]?.volume24h || 0
+            }
           }
         })
 
@@ -150,7 +166,10 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
           }
         })
 
-        setPrices(priceMap)
+        // 결과가 비어있지 않으면 업데이트
+        if (Object.keys(priceMap).length > 0) {
+          setPrices(priceMap)
+        }
         setLoading(false)
       } catch (error) {
         console.error('Failed to fetch prices:', error)
