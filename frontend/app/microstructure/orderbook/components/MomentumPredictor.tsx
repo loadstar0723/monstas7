@@ -87,33 +87,42 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
 
   // 모멘텀 히스토리 업데이트
   useEffect(() => {
-    const now = Date.now()
-    const newData: MomentumData = {
-      timestamp: now,
-      momentum: currentMomentum.value,
-      velocity: 0, // 이전 데이터와 비교해서 계산
-      acceleration: 0,
-      pressure: currentMomentum.buyPressure - currentMomentum.sellPressure,
-      signal: currentMomentum.direction
-    }
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const newData: MomentumData = {
+        timestamp: now,
+        momentum: currentMomentum.value,
+        velocity: 0, // 이전 데이터와 비교해서 계산
+        acceleration: 0,
+        pressure: currentMomentum.buyPressure - currentMomentum.sellPressure,
+        signal: currentMomentum.direction
+      }
 
-    // 속도와 가속도 계산
-    if (momentumHistory.length > 0) {
-      const prevData = momentumHistory[momentumHistory.length - 1]
-      const timeDiff = (now - prevData.timestamp) / 1000 // 초 단위
-      newData.velocity = (newData.momentum - prevData.momentum) / timeDiff
-      newData.acceleration = (newData.velocity - prevData.velocity) / timeDiff
-    }
+      setMomentumHistory(prev => {
+        // 속도와 가속도 계산
+        if (prev.length > 0) {
+          const prevData = prev[prev.length - 1]
+          const timeDiff = (now - prevData.timestamp) / 1000 // 초 단위
+          if (timeDiff > 0) {
+            newData.velocity = (newData.momentum - prevData.momentum) / timeDiff
+            newData.acceleration = (newData.velocity - prevData.velocity) / timeDiff
+          }
+        }
 
-    setMomentumHistory(prev => [...prev.slice(-99), newData])
+        // 예측 신뢰도 계산
+        const newHistory = [...prev.slice(-99), newData]
+        const recentData = newHistory.slice(-20)
+        if (recentData.length >= 10) {
+          const consistency = recentData.filter(d => d.signal === currentMomentum.direction).length / recentData.length
+          setPredictionConfidence(consistency * 100)
+        }
 
-    // 예측 신뢰도 계산
-    const recentData = momentumHistory.slice(-20)
-    if (recentData.length >= 10) {
-      const consistency = recentData.filter(d => d.signal === currentMomentum.direction).length / recentData.length
-      setPredictionConfidence(consistency * 100)
-    }
-  }, [currentMomentum, momentumHistory])
+        return newHistory
+      })
+    }, 1000) // 1초마다 업데이트
+
+    return () => clearInterval(interval)
+  }, [currentMomentum.value, currentMomentum.direction, currentMomentum.buyPressure, currentMomentum.sellPressure])
 
   // 전환점 감지
   const turningPoint = useMemo(() => {
