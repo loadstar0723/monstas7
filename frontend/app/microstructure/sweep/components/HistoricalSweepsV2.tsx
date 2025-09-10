@@ -15,6 +15,7 @@ interface SweepData {
 interface HistoricalSweepsV2Props {
   sweeps: SweepData[]
   currentPrice: number
+  symbol?: string
 }
 
 interface HistoricalData {
@@ -27,7 +28,7 @@ interface HistoricalData {
   maxImpact: number
 }
 
-export default function HistoricalSweepsV2({ sweeps, currentPrice }: HistoricalSweepsV2Props) {
+export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTCUSDT' }: HistoricalSweepsV2Props) {
   // 상태 정의
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([])
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d')
@@ -117,7 +118,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice }: HistoricalS
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>📈</span>
-              <span>과거 스윕 기록</span>
+              <span>과거 스윕 기록 - {symbol.replace('USDT', '')}</span>
             </h3>
             
             <div className="flex gap-2">
@@ -269,7 +270,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice }: HistoricalS
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
                 <span className="text-gray-500">볼륨:</span>
-                <span className="text-white ml-1">125.5 BTC</span>
+                <span className="text-white ml-1">125.5 {symbol.replace('USDT', '')}</span>
               </div>
               <div>
                 <span className="text-gray-500">임팩트:</span>
@@ -295,7 +296,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice }: HistoricalS
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
                 <span className="text-gray-500">볼륨:</span>
-                <span className="text-white ml-1">89.3 BTC</span>
+                <span className="text-white ml-1">89.3 {symbol.replace('USDT', '')}</span>
               </div>
               <div>
                 <span className="text-gray-500">임팩트:</span>

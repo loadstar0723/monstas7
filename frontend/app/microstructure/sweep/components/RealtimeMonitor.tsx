@@ -14,11 +14,13 @@ interface SweepData {
 interface RealtimeMonitorProps {
   sweeps: SweepData[]
   currentPrice: number
+  symbol?: string
 }
 
 export default function RealtimeMonitor({ 
   sweeps, 
-  currentPrice
+  currentPrice,
+  symbol = 'BTCUSDT'
 }: RealtimeMonitorProps) {
   const [autoScroll, setAutoScroll] = useState(true)
   const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all')
@@ -81,7 +83,9 @@ export default function RealtimeMonitor({
       {/* 실시간 대시보드 */}
       <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white">실시간 모니터</h3>
+          <h3 className="text-lg font-bold text-white">
+            실시간 모니터 - {symbol.replace('USDT', '')}
+          </h3>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <span className="text-sm text-green-500">실시간</span>

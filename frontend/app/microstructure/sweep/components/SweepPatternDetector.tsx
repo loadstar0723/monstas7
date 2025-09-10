@@ -14,9 +14,10 @@ interface SweepData {
 
 interface SweepPatternDetectorProps {
   sweeps: SweepData[]
+  symbol?: string
 }
 
-export default function SweepPatternDetector({ sweeps }: SweepPatternDetectorProps) {
+export default function SweepPatternDetector({ sweeps, symbol = 'BTCUSDT' }: SweepPatternDetectorProps) {
   // 패턴 분석
   const patternAnalysis = useMemo(() => {
     const patterns = {
@@ -175,7 +176,9 @@ export default function SweepPatternDetector({ sweeps }: SweepPatternDetectorPro
   return (
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-white">스윕 패턴 감지</h3>
+        <h3 className="text-lg font-bold text-white">
+          스윕 패턴 감지 - {symbol.replace('USDT', '')}
+        </h3>
       </div>
       
       <div className="space-y-6">

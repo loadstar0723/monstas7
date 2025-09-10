@@ -14,9 +14,10 @@ interface SweepData {
 interface RiskAlertProps {
   sweeps: SweepData[]
   currentPrice: number
+  symbol?: string
 }
 
-export default function RiskAlert({ sweeps, currentPrice }: RiskAlertProps) {
+export default function RiskAlert({ sweeps, currentPrice, symbol = 'BTCUSDT' }: RiskAlertProps) {
   const riskAnalysis = useMemo(() => {
     if (sweeps.length === 0) {
       return {
@@ -109,7 +110,9 @@ export default function RiskAlert({ sweeps, currentPrice }: RiskAlertProps) {
   return (
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="flex items-start justify-between mb-4">
-        <h3 className="text-lg font-bold text-white">위험도 평가</h3>
+        <h3 className="text-lg font-bold text-white">
+          위험도 평가 - {symbol.replace('USDT', '')}
+        </h3>
         <div className={`px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(riskAnalysis.level)}`}>
           {getKoreanLevel(riskAnalysis.level)}
         </div>

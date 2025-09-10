@@ -14,9 +14,10 @@ interface SweepData {
 
 interface SweepVolumeAnalysisProps {
   sweeps: SweepData[]
+  symbol?: string
 }
 
-export default function SweepVolumeAnalysis({ sweeps }: SweepVolumeAnalysisProps) {
+export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: SweepVolumeAnalysisProps) {
   // 시간대별 분석
   const timeAnalysis = useMemo(() => {
     const hourlyData: Record<number, { volume: number, count: number, buyVolume: number, sellVolume: number }> = {}
@@ -149,7 +150,9 @@ export default function SweepVolumeAnalysis({ sweeps }: SweepVolumeAnalysisProps
   return (
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-white">거래량 분석</h3>
+        <h3 className="text-lg font-bold text-white">
+          거래량 분석 - {symbol.replace('USDT', '')}
+        </h3>
       </div>
       
       <div className="space-y-8">

@@ -11,9 +11,10 @@ interface OrderBookData {
 interface SweepHeatmapProps {
   orderBook: OrderBookData | null
   currentPrice: number
+  symbol?: string
 }
 
-export default function SweepHeatmap({ orderBook, currentPrice }: SweepHeatmapProps) {
+export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSDT' }: SweepHeatmapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   
   // 오더북 데이터를 히트맵 형식으로 변환
@@ -222,7 +223,9 @@ export default function SweepHeatmap({ orderBook, currentPrice }: SweepHeatmapPr
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">오더북 히트맵</h3>
+          <h3 className="text-lg font-bold text-white">
+            오더북 히트맵 - {symbol.replace('USDT', '')}
+          </h3>
           {stats && stats.totalSweepRisk > 0 && (
             <span className="text-sm text-yellow-500">
               ⚠️ {stats.totalSweepRisk}개 위험 레벨 감지

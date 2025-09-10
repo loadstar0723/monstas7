@@ -15,9 +15,10 @@ interface SweepData {
 interface PriceImpactChartProps {
   sweeps: SweepData[]
   currentPrice: number
+  symbol?: string
 }
 
-export default function PriceImpactChart({ sweeps, currentPrice }: PriceImpactChartProps) {
+export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUSDT' }: PriceImpactChartProps) {
   // 차트 데이터 준비
   const chartData = useMemo(() => {
     return sweeps.slice(-50).map((sweep, index) => {
@@ -132,7 +133,9 @@ export default function PriceImpactChart({ sweeps, currentPrice }: PriceImpactCh
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">가격 영향도 분석</h3>
+          <h3 className="text-lg font-bold text-white">
+            가격 영향도 분석 - {symbol.replace('USDT', '')}
+          </h3>
           <span className="text-sm text-gray-400">
             현재가: ${currentPrice.toFixed(2)}
           </span>

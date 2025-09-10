@@ -14,9 +14,10 @@ interface SweepData {
 
 interface LiquiditySweptChartProps {
   sweeps: SweepData[]
+  symbol?: string
 }
 
-export default function LiquiditySweptChart({ sweeps = [] }: LiquiditySweptChartProps) {
+export default function LiquiditySweptChart({ sweeps = [], symbol = 'BTCUSDT' }: LiquiditySweptChartProps) {
   // 시간별로 데이터 집계
   const chartData = React.useMemo(() => {
     const last30Sweeps = sweeps.slice(-30)
@@ -125,7 +126,9 @@ export default function LiquiditySweptChart({ sweeps = [] }: LiquiditySweptChart
   return (
     <div className="bg-gray-900/50 rounded-xl p-6 backdrop-blur-sm">
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-white">유동성 소진 분석</h3>
+        <h3 className="text-lg font-bold text-white">
+          유동성 소진 분석 - {symbol.replace('USDT', '')}
+        </h3>
       </div>
       
       <div className="space-y-8">

@@ -410,31 +410,31 @@ const SweepDetectionModule: React.FC = () => {
             <ConceptGuide />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SweepHeatmap orderBook={orderBookData} currentPrice={currentPrice} />
-              <LiquiditySweptChart sweeps={sweeps} />
+              <SweepHeatmap orderBook={orderBookData} currentPrice={currentPrice} symbol={selectedCoin} />
+              <LiquiditySweptChart sweeps={sweeps} symbol={selectedCoin} />
             </div>
             
-            <RiskAlert sweeps={sweeps} currentPrice={currentPrice} />
+            <RiskAlert sweeps={sweeps} currentPrice={currentPrice} symbol={selectedCoin} />
           </TabsContent>
 
           {/* 실시간 탭 */}
           <TabsContent value="realtime" className="space-y-6">
-            <RealtimeMonitor sweeps={sweeps} currentPrice={currentPrice} />
+            <RealtimeMonitor sweeps={sweeps} currentPrice={currentPrice} symbol={selectedCoin} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SweepVolumeAnalysis sweeps={sweeps} />
-              <PriceImpactChart sweeps={sweeps} currentPrice={currentPrice} />
+              <SweepVolumeAnalysis sweeps={sweeps} symbol={selectedCoin} />
+              <PriceImpactChart sweeps={sweeps} currentPrice={currentPrice} symbol={selectedCoin} />
             </div>
           </TabsContent>
 
           {/* 패턴 탭 */}
           <TabsContent value="patterns" className="space-y-6">
-            <SweepPatternDetector sweeps={sweeps} />
+            <SweepPatternDetector sweeps={sweeps} symbol={selectedCoin} />
           </TabsContent>
 
           {/* 히스토리 탭 */}
           <TabsContent value="history" className="space-y-6">
-            <HistoricalSweepsV2 sweeps={sweeps} currentPrice={currentPrice} />
+            <HistoricalSweepsV2 sweeps={sweeps} currentPrice={currentPrice} symbol={selectedCoin} />
           </TabsContent>
 
           {/* 전략 탭 */}
