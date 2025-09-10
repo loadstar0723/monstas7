@@ -1,206 +1,172 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { config } from '@/lib/config'
+import { useState } from 'react'
+import CoinSelector from '@/components/orderflow/CoinSelector'
+import OrderFlowImbalance from '@/components/orderflow/OrderFlowImbalance'
+import CumulativeDelta from '@/components/orderflow/CumulativeDelta'
+import FootprintChart from '@/components/orderflow/FootprintChart'
+import MarketProfile from '@/components/orderflow/MarketProfile'
+import VolumeAnalysis from '@/components/orderflow/VolumeAnalysis'
+import TradingStrategy from '@/components/orderflow/TradingStrategy'
 
-export default function Page() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // TODO: API 호출로 실제 데이터 가져오기
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-  }, [])
+export default function OrderFlowPage() {
+  const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
-      {/* 헤더 */}
-      <div className="max-w-7xl mx-auto mb-8">
-        <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
-          <Link href="/" className="hover:text-white">홈</Link>
-          <span>/</span>
-          <span>시장 미시구조</span>
-          <span>/</span>
-          <span className="text-white">오더플로우 분석</span>
+    <div className="min-h-screen bg-gray-950">
+      {/* 코인 선택 고정 헤더 */}
+      <div className="sticky top-0 z-50 bg-gray-950/95 backdrop-blur-xl border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <CoinSelector 
+            selectedSymbol={selectedSymbol}
+            onSymbolChange={setSelectedSymbol}
+          />
         </div>
-        
-        <h1 className="text-4xl font-bold text-white mb-2">오더플로우 분석</h1>
-        <p className="text-gray-400">카테고리: 시장 미시구조</p>
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="max-w-7xl mx-auto">
-        {loading ? (
-          <div className="bg-gray-800/50 rounded-xl p-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">데이터 로딩 중...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* 페이지 타이틀 및 설명 */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            오더 플로우 분석
+          </h1>
+          <p className="text-gray-400 text-lg">
+            실시간 오더북 임밸런스, 거래량 분석, 풋프린트 차트를 통한 스마트 머니 추적
+          </p>
+        </div>
+
+        {/* 컴포넌트 그리드 레이아웃 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* AI 트레이딩 전략 - 전체 너비 */}
+          <div className="lg:col-span-2">
+            <TradingStrategy symbol={selectedSymbol} />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* 카드 1 - 개발 예정 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">개발 예정</h3>
-                <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">
-                  Coming Soon
-                </span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                이 기능은 현재 개발 중입니다. 곧 업데이트될 예정입니다.
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">예상 완료</span>
-                  <span className="text-gray-300">2025 Q1</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">우선순위</span>
-                  <span className="text-purple-400">높음</span>
-                </div>
-              </div>
-            </div>
 
-            {/* 카드 2 - 기능 소개 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-4">주요 기능</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>실시간 데이터 분석</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>AI 기반 예측</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>자동화된 거래 실행</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>리스크 관리 도구</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* 카드 3 - 통계 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-4">예상 성능</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">정확도</span>
-                    <span className="text-green-400">${config.percentage.value87}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-400 h-2 rounded-full" style={{width: '${config.percentage.value87}'}}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">처리 속도</span>
-                    <span className="text-blue-400">${config.percentage.value95}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '${config.percentage.value95}'}}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">사용자 만족도</span>
-                    <span className="text-purple-400">${config.percentage.value92}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-purple-400 h-2 rounded-full" style={{width: '${config.percentage.value92}'}}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* 오더플로우 임밸런스 */}
+          <div>
+            <OrderFlowImbalance symbol={selectedSymbol} />
           </div>
-        )}
 
-        {/* 개발 로드맵 */}
-        <div className="mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <h3 className="text-xl font-bold text-white mb-4">개발 로드맵</h3>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-green-400 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 1: 기본 구조</h4>
-                <p className="text-gray-400 text-sm">UI/UX 디자인, 데이터베이스 설계</p>
-              </div>
-              <span className="text-green-400 text-sm">완료</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 2: 핵심 기능</h4>
-                <p className="text-gray-400 text-sm">API 연동, 실시간 데이터 처리</p>
-              </div>
-              <span className="text-yellow-400 text-sm">진행 중</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-gray-600 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 3: AI 통합</h4>
-                <p className="text-gray-400 text-sm">머신러닝 모델, 예측 엔진</p>
-              </div>
-              <span className="text-gray-400 text-sm">예정</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-gray-600 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 4: 최적화</h4>
-                <p className="text-gray-400 text-sm">성능 개선, 사용자 피드백 반영</p>
-              </div>
-              <span className="text-gray-400 text-sm">예정</span>
-            </div>
+          {/* 누적 델타 */}
+          <div>
+            <CumulativeDelta symbol={selectedSymbol} />
+          </div>
+
+          {/* 거래량 분석 */}
+          <div>
+            <VolumeAnalysis symbol={selectedSymbol} />
+          </div>
+
+          {/* 마켓 프로파일 */}
+          <div>
+            <MarketProfile symbol={selectedSymbol} />
+          </div>
+
+          {/* 풋프린트 차트 - 전체 너비 */}
+          <div className="lg:col-span-2">
+            <FootprintChart symbol={selectedSymbol} />
           </div>
         </div>
 
-        {/* TODO 리스트 */}
-        <div className="mt-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-6 border border-purple-700/30">
-          <h3 className="text-xl font-bold text-white mb-4">📋 구현 예정 기능</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>실시간 WebSocket 연결</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>PostgreSQL 데이터베이스 연동</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>FastAPI 백엔드 통합</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>차트 라이브러리 구현</span>
-              </label>
+        {/* 오더플로우 개념 설명 */}
+        <div className="mt-12 bg-gray-900/50 backdrop-blur-lg rounded-xl p-6 border border-purple-500/20">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span className="text-3xl">📚</span>
+            오더플로우 분석이란?
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
+            <div>
+              <h3 className="text-lg font-semibold text-purple-400 mb-2">핵심 개념</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">오더플로우 임밸런스 (OFI)</strong>
+                    <p>매수/매도 주문의 불균형을 측정하여 가격 방향성 예측</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">누적 델타</strong>
+                    <p>매수량과 매도량의 누적 차이로 추세 강도 파악</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">풋프린트 차트</strong>
+                    <p>가격별 거래량 분포를 시각화하여 주요 지지/저항 확인</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">마켓 프로파일</strong>
+                    <p>POC와 Value Area로 주요 거래 구간 파악</p>
+                  </div>
+                </li>
+              </ul>
             </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>사용자 인증 시스템</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>구독 등급 체크</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>다국어 지원</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>모바일 반응형 최적화</span>
-              </label>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-green-400 mb-2">실전 활용법</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">스마트 머니 추적</strong>
+                    <p>대량 주문의 흐름을 감지하여 기관 움직임 포착</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">진입/청산 타이밍</strong>
+                    <p>임밸런스 전환점에서 포지션 진입 및 청산</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">리스크 관리</strong>
+                    <p>거래량 급증 구간을 파악하여 변동성 대응</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">•</span>
+                  <div>
+                    <strong className="text-gray-200">다이버전스 활용</strong>
+                    <p>가격과 델타의 차이로 추세 전환 신호 포착</p>
+                  </div>
+                </li>
+              </ul>
             </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-yellow-900/10 border border-yellow-500/20 rounded-lg">
+            <p className="text-xs text-yellow-400 flex items-start gap-2">
+              <span className="text-lg">⚠️</span>
+              <span>
+                오더플로우 분석은 단기 트레이딩에 유용한 도구이지만, 시장 조작이나 
+                알고리즘 거래의 영향을 받을 수 있습니다. 다른 기술적 분석 도구와 
+                함께 사용하여 종합적인 판단을 내리시기 바랍니다.
+              </span>
+            </p>
+          </div>
+
+          {/* 활용 팁 */}
+          <div className="mt-6 p-4 bg-purple-900/10 border border-purple-500/20 rounded-lg">
+            <h4 className="text-sm font-medium text-purple-400 mb-2">💡 프로 트레이더 팁</h4>
+            <ul className="space-y-1 text-xs text-gray-300">
+              <li>• 오더플로우 임밸런스가 +50% 이상일 때 단기 롱 포지션 고려</li>
+              <li>• 누적 델타와 가격의 다이버전스 발생 시 추세 전환 주의</li>
+              <li>• 풋프린트 차트의 대량 거래 구간은 주요 지지/저항으로 작용</li>
+              <li>• POC 근처에서는 단타 매매, VA 벗어날 때 추세 추종</li>
+              <li>• 거래량 폭증 시 변동성 대비 포지션 축소 필수</li>
+            </ul>
           </div>
         </div>
       </div>

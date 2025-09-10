@@ -196,7 +196,8 @@
       "mcp__serena__think_about_task_adherence",
       "mcp__serena__list_memories",
       "Bash(pip install:*)",
-      "Bash(copy apppage.tsx apppage.backup.tsx)"
+      "Bash(copy apppage.tsx apppage.backup.tsx)",
+      "Bash(start cmd /k \"npm run dev\")"
     ],
     "deny": [],
     "ask": []
