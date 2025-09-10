@@ -40,11 +40,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Binance API error:', error)
     
-    // 에러 발생 시 기본값 반환
+    // 에러 발생 시 Binance API와 동일한 형식으로 반환
     const defaultData = {
       symbol: symbol || 'BTCUSDT',
+      price: '98000.00',
       lastPrice: '98000.00',
       priceChangePercent: '2.5',
+      volume: '15000',
       quoteVolume: '1500000000'
     }
     
