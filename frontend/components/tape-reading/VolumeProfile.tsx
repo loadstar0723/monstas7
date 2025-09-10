@@ -42,17 +42,28 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
     setPoc(initPrice)
     setValueAreaHigh(initPrice * 1.01)
     setValueAreaLow(initPrice * 0.99)
+    setLoading(false) // 초기값 설정 후 로딩 해제
     
     // 실제 데이터 로드
-    generateVolumeProfile()
+    const timer = setTimeout(() => {
+      generateVolumeProfile()
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [symbol])
 
   const generateVolumeProfile = async () => {
     setLoading(true)
     try {
-      // 실제 API에서 최근 거래 데이터 가져오기 - 더 많은 데이터로
-      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=1m&limit=500`)
+      // 실제 API에서 최근 거래 데이터 가져오기
+      const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=5m&limit=100`)
+      
+      if (!response.ok) {
+        throw new Error(`API 응답 에러: ${response.status}`)
+      }
+      
       const klines = await response.json()
+      console.log(`VolumeProfile 데이터 로드: ${symbol}`, klines?.length || 0, '개 캔들')
       
       if (Array.isArray(klines) && klines.length > 0) {
         // 가격대별 거래량 집계
@@ -147,15 +158,32 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
           }
         }
         
+        console.log('프로파일 데이터:', {
+          dataPoints: profileArray.length,
+          poc: pocPrice,
+          vaHigh,
+          vaLow
+        })
+        
         setProfileData(profileArray)
         setPoc(pocPrice)
         setValueAreaHigh(vaHigh)
         setValueAreaLow(vaLow)
+      } else {
+        console.log('Klines 데이터가 비어있음')
+        // 데이터가 없을 때 초기값 유지
+        const initPrice = initialPrices[symbol] || 100
+        setPoc(initPrice)
+        setValueAreaHigh(initPrice * 1.01)
+        setValueAreaLow(initPrice * 0.99)
       }
     } catch (error) {
       console.error('거래량 프로파일 생성 실패:', error)
-      // 에러 시 재시도 (5초 후)
-      setTimeout(() => generateVolumeProfile(), 5000)
+      // 에러 시 초기값 설정
+      const initPrice = initialPrices[symbol] || 100
+      setPoc(initPrice)
+      setValueAreaHigh(initPrice * 1.01)
+      setValueAreaLow(initPrice * 0.99)
     } finally {
       setLoading(false)
     }
