@@ -15,7 +15,7 @@ interface OrderFlowAnimationProps {
     bids: OrderbookLevel[]
     asks: OrderbookLevel[]
     lastUpdate?: Date
-  }
+  } | null
   showAnimation: boolean
 }
 
@@ -38,8 +38,74 @@ export default function OrderFlowAnimation({ orderbook, showAnimation }: OrderFl
   useEffect(() => {
     if (!showAnimation) return
 
+    // orderbook이 없을 때 샘플 데이터 생성
+    if (!orderbook || (!orderbook.bids?.length && !orderbook.asks?.length)) {
+      // 샘플 초기 플로우 생성
+      const sampleFlows: FlowOrder[] = [
+        {
+          id: `flow-${flowIdCounter.current++}`,
+          type: 'bid',
+          price: 98000,
+          amount: 0.5,
+          timestamp: Date.now() - 5000,
+          y: 50
+        },
+        {
+          id: `flow-${flowIdCounter.current++}`,
+          type: 'ask',
+          price: 98100,
+          amount: 0.3,
+          timestamp: Date.now() - 4000,
+          y: 35
+        },
+        {
+          id: `flow-${flowIdCounter.current++}`,
+          type: 'bid',
+          price: 97950,
+          amount: 0.8,
+          timestamp: Date.now() - 3000,
+          y: 65
+        }
+      ]
+      setOrderHistory(sampleFlows)
+      return
+    }
+
     const prev = previousOrderbook.current
     const curr = orderbook
+
+    // 초기 데이터가 없을 경우 현재 데이터를 이전 데이터로 설정
+    if (!prev) {
+      previousOrderbook.current = curr
+      // 초기 플로우 생성
+      const initialFlows: FlowOrder[] = []
+      curr.bids.slice(0, 3).forEach((bid, idx) => {
+        if (bid.amount > 0) {
+          initialFlows.push({
+            id: `flow-${flowIdCounter.current++}`,
+            type: 'bid',
+            price: bid.price,
+            amount: bid.amount,
+            timestamp: Date.now() - (idx * 1000),
+            y: 50 + idx * 15
+          })
+        }
+      })
+      curr.asks.slice(0, 3).forEach((ask, idx) => {
+        if (ask.amount > 0) {
+          initialFlows.push({
+            id: `flow-${flowIdCounter.current++}`,
+            type: 'ask',
+            price: ask.price,
+            amount: ask.amount,
+            timestamp: Date.now() - (idx * 1000),
+            y: 50 - idx * 15
+          })
+        }
+      })
+      setOrderHistory(initialFlows.slice(0, 10))
+      return
+    }
 
     // 비드 변화 감지
     curr.bids.slice(0, 5).forEach((bid, idx) => {
