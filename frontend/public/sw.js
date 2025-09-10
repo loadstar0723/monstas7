@@ -74,10 +74,20 @@ self.addEventListener('fetch', (event) => {
               if (!response || response.status !== 200 || response.type !== 'basic') {
                 return response;
               }
+              
+              // chrome-extension과 같은 특수 스킴은 캐시하지 않음
+              const url = new URL(event.request.url);
+              if (url.protocol === 'chrome-extension:' || url.protocol === 'moz-extension:') {
+                return response;
+              }
+              
               const responseToCache = response.clone();
               caches.open(CACHE_NAME)
                 .then((cache) => {
-                  cache.put(event.request, responseToCache);
+                  cache.put(event.request, responseToCache).catch(err => {
+                    // 캐시 실패 시 조용히 무시
+                    console.log('Cache put failed:', err.message);
+                  });
                 });
               return response;
             });

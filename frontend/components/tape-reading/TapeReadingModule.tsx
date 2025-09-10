@@ -99,47 +99,67 @@ export default function TapeReadingModule() {
     // 기존 연결 정리
     if (wsRef.current) {
       wsRef.current.onclose = null // 재연결 방지
-      wsRef.current.close()
+      wsRef.current.onerror = null
+      wsRef.current.onmessage = null
+      wsRef.current.onopen = null
+      if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
+        wsRef.current.close(1000, 'Switching symbol')
+      }
       wsRef.current = null
     }
 
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`)
+    let isActive = true
     
     ws.onopen = () => {
+      if (!isActive) return
       console.log('WebSocket 연결됨:', selectedCoin)
       setWsConnected(true)
     }
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      // 현재 선택된 코인의 데이터인지 확인
-      if (data.s === selectedCoin) {
-        setCurrentPrice(parseFloat(data.c))
-        setPriceChange(parseFloat(data.P))
-        // 거래량은 코인 개수 * 현재 가격으로 USD 환산
-        const coinVolume = parseFloat(data.v)
-        const price = parseFloat(data.c)
-        setVolume24h(coinVolume * price)
+      if (!isActive) return
+      try {
+        const data = JSON.parse(event.data)
+        // 현재 선택된 코인의 데이터인지 확인
+        if (data.s === selectedCoin) {
+          setCurrentPrice(parseFloat(data.c))
+          setPriceChange(parseFloat(data.P))
+          // 거래량은 코인 개수 * 현재 가격으로 USD 환산
+          const coinVolume = parseFloat(data.v)
+          const price = parseFloat(data.c)
+          setVolume24h(coinVolume * price)
+        }
+      } catch (error) {
+        console.error('WebSocket 메시지 파싱 오류:', error)
       }
     }
 
-    ws.onerror = () => {
-      console.log('WebSocket 연결 오류 발생')
+    ws.onerror = (error) => {
+      if (!isActive) return
+      console.log('WebSocket 연결 오류')
       setWsConnected(false)
     }
 
-    ws.onclose = () => {
-      console.log('WebSocket 연결 종료:', selectedCoin)
+    ws.onclose = (event) => {
+      if (!isActive) return
+      console.log('WebSocket 연결 종료')
       setWsConnected(false)
-      // 현재 활성 연결인 경우에만 재연결
-      if (wsRef.current === ws) {
+      // 정상 종료가 아닌 경우에만 재연결
+      if (event.code !== 1000 && event.code !== 1001) {
         setTimeout(() => {
-          connectWebSocket()
+          if (isActive && wsRef.current === ws) {
+            connectWebSocket()
+          }
         }, 5000)
       }
     }
 
     wsRef.current = ws
+    
+    return () => {
+      isActive = false
+    }
   }, [selectedCoin])
 
   useEffect(() => {

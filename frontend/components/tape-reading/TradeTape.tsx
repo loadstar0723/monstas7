@@ -80,41 +80,65 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
 
   const connectWebSocket = () => {
     if (wsRef.current) {
-      wsRef.current.close()
+      wsRef.current.onclose = null
+      wsRef.current.onerror = null
+      wsRef.current.onmessage = null
+      if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
+        wsRef.current.close(1000)
+      }
+      wsRef.current = null
     }
 
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@trade`)
+    let isActive = true
     
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      const newTrade: Trade = {
-        id: data.t || `${Date.now()}-${Math.random()}`,
-        time: new Date(data.T).toLocaleTimeString('ko-KR'),
-        price: parseFloat(data.p),
-        quantity: parseFloat(data.q),
-        isBuyerMaker: data.m,
-        isLarge: parseFloat(data.q) >= (LARGE_TRADE_THRESHOLD[symbol] || 1)
-      }
-      
-      setTrades(prev => [newTrade, ...prev].slice(0, 100))
-      updateStatsRealtime(newTrade)
-      
-      // 자동 스크롤
-      if (tradesContainerRef.current) {
-        tradesContainerRef.current.scrollTop = 0
+      if (!isActive) return
+      try {
+        const data = JSON.parse(event.data)
+        const newTrade: Trade = {
+          id: data.t || `${Date.now()}-${Math.random()}`,
+          time: new Date(data.T).toLocaleTimeString('ko-KR'),
+          price: parseFloat(data.p),
+          quantity: parseFloat(data.q),
+          isBuyerMaker: data.m,
+          isLarge: parseFloat(data.q) >= (LARGE_TRADE_THRESHOLD[symbol] || 1)
+        }
+        
+        setTrades(prev => [newTrade, ...prev].slice(0, 100))
+        updateStatsRealtime(newTrade)
+        
+        // 자동 스크롤
+        if (tradesContainerRef.current) {
+          tradesContainerRef.current.scrollTop = 0
+        }
+      } catch (error) {
+        console.error('Trade 데이터 파싱 오류:', error)
       }
     }
 
-    ws.onerror = (error) => {
+    ws.onerror = () => {
+      if (!isActive) return
       console.error('WebSocket 연결 오류')
     }
 
-    ws.onclose = () => {
-      // 5초 후 재연결
-      setTimeout(() => connectWebSocket(), 5000)
+    ws.onclose = (event) => {
+      if (!isActive) return
+      // 정상 종료가 아닌 경우에만 재연결
+      if (event.code !== 1000 && event.code !== 1001) {
+        setTimeout(() => {
+          if (isActive && wsRef.current === ws) {
+            connectWebSocket()
+          }
+        }, 5000)
+      }
     }
 
     wsRef.current = ws
+    
+    return () => {
+      isActive = false
+    }
   }
 
   const updateStats = (tradeList: Trade[]) => {
