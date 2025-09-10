@@ -93,7 +93,10 @@ const SweepDetectionModule: React.FC = () => {
   // REST API를 통한 거래 데이터 가져오기 (폴백용)
   const fetchRecentTrades = useCallback(async (symbol: string) => {
     try {
+      console.log(`🔍 거래 데이터 가져오기 시도: ${symbol}`)
       const response = await fetch(`/api/binance/trades?symbol=${symbol}&limit=50`)
+      console.log(`📊 응답 상태: ${response.status} ${response.statusText}`)
+      
       if (response.ok) {
         const trades = await response.json()
         
@@ -132,9 +135,15 @@ const SweepDetectionModule: React.FC = () => {
           setSweeps(prev => [...newSweeps, ...prev].slice(0, 100))
           console.log(`📈 ${symbol} REST API로 ${newSweeps.length}개 스윕 로드`)
         }
+      } else {
+        console.error(`❌ API 응답 실패: ${response.status}`)
+        const errorText = await response.text()
+        console.error('에러 내용:', errorText)
       }
     } catch (error) {
-      console.error('거래 데이터 가져오기 실패:', error)
+      console.error('❌ 거래 데이터 가져오기 실패:', error)
+      console.error('에러 타입:', error instanceof Error ? error.name : typeof error)
+      console.error('에러 메시지:', error instanceof Error ? error.message : error)
     }
   }, [])
 
@@ -299,8 +308,16 @@ const SweepDetectionModule: React.FC = () => {
   // 초기 가격 및 오더북 데이터 가져오기
   const fetchInitialData = async (symbol: string) => {
     try {
+      console.log(`🚀 초기 데이터 가져오기 시작: ${symbol}`)
+      
       // 1. 현재 가격 가져오기
-      const priceResponse = await fetch(`/api/binance/ticker?symbol=${symbol}`)
+      const baseUrl = window.location.origin
+      const priceUrl = `${baseUrl}/api/binance/ticker?symbol=${symbol}`
+      console.log(`📍 가격 API 호출: ${priceUrl}`)
+      
+      const priceResponse = await fetch(priceUrl)
+      console.log(`💰 가격 API 응답: ${priceResponse.status}`)
+      
       if (priceResponse.ok) {
         const data = await priceResponse.json()
         // Binance ticker API는 lastPrice 필드를 사용
@@ -317,9 +334,16 @@ const SweepDetectionModule: React.FC = () => {
         const depthData = await depthResponse.json()
         setOrderBookData(depthData)
         console.log(`📊 ${symbol} 오더북 로드 완료`)
+      } else {
+        console.error(`❌ 오더북 API 실패: ${depthResponse.status}`)
       }
     } catch (error) {
-      console.error('초기 데이터 가져오기 실패:', error)
+      console.error('❌ 초기 데이터 가져오기 실패:', error)
+      console.error('에러 상세:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
       // 실패 시 기본값 사용
       setCurrentPrice(initialPrices[symbol] || 0)
     }

@@ -39,25 +39,42 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
     const loadHistoricalData = async () => {
       setLoading(true)
       try {
-        // API 호출 시뮬레이션
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // 더미 데이터 생성 (실제로는 API에서 가져옴)
+        // 실제 스윕 데이터에서 일별로 집계
         const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90
         const data: HistoricalData[] = []
+        const now = new Date()
         
         for (let i = days; i >= 0; i--) {
           const date = new Date()
           date.setDate(date.getDate() - i)
+          const dateStart = new Date(date)
+          dateStart.setHours(0, 0, 0, 0)
+          const dateEnd = new Date(date)
+          dateEnd.setHours(23, 59, 59, 999)
+          
+          // 해당 날짜의 스윕 필터링
+          const dailySweeps = sweeps.filter(sweep => {
+            const sweepDate = new Date(sweep.timestamp)
+            return sweepDate >= dateStart && sweepDate <= dateEnd
+          })
+          
+          const buySweeps = dailySweeps.filter(s => s.side === 'buy')
+          const sellSweeps = dailySweeps.filter(s => s.side === 'sell')
           
           data.push({
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-            totalSweeps: Math.floor(Math.random() * 100) + 20,
-            buySweeps: Math.floor(Math.random() * 60) + 10,
-            sellSweeps: Math.floor(Math.random() * 60) + 10,
-            avgVolume: Math.random() * 50 + 10,
-            avgImpact: Math.random() * 3 + 0.5,
-            maxImpact: Math.random() * 8 + 2
+            totalSweeps: dailySweeps.length,
+            buySweeps: buySweeps.length,
+            sellSweeps: sellSweeps.length,
+            avgVolume: dailySweeps.length > 0 
+              ? dailySweeps.reduce((sum, s) => sum + s.volume, 0) / dailySweeps.length 
+              : 0,
+            avgImpact: dailySweeps.length > 0 
+              ? dailySweeps.reduce((sum, s) => sum + s.impact, 0) / dailySweeps.length 
+              : 0,
+            maxImpact: dailySweeps.length > 0 
+              ? Math.max(...dailySweeps.map(s => s.impact)) 
+              : 0
           })
         }
         
@@ -70,7 +87,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
     }
     
     loadHistoricalData()
-  }, [timeframe])
+  }, [timeframe, sweeps])
 
   // 통계 계산
   const stats = React.useMemo(() => {
