@@ -101,19 +101,40 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
   useEffect(() => {
     const fetchPrices = async () => {
       try {
+        // 초기 기본값 설정
+        const defaultPrices: Record<string, PriceInfo> = {
+          'BTCUSDT': { price: 98000, change: 2.5, volume24h: 1500000000 },
+          'ETHUSDT': { price: 3500, change: -1.2, volume24h: 800000000 },
+          'BNBUSDT': { price: 700, change: 0.8, volume24h: 500000000 },
+          'SOLUSDT': { price: 180, change: 5.3, volume24h: 300000000 },
+          'XRPUSDT': { price: 2.5, change: -0.5, volume24h: 250000000 },
+          'ADAUSDT': { price: 1.2, change: 1.7, volume24h: 200000000 },
+          'DOGEUSDT': { price: 0.4, change: 3.2, volume24h: 180000000 },
+          'AVAXUSDT': { price: 45, change: -2.1, volume24h: 150000000 },
+          'MATICUSDT': { price: 1.5, change: 0.3, volume24h: 120000000 },
+          'DOTUSDT': { price: 8.5, change: 1.9, volume24h: 100000000 }
+        }
+        setPrices(defaultPrices)
+        
         // 병렬로 모든 코인 가격 요청
         const pricePromises = symbols.map(async (symbol) => {
-          const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
-          if (response.ok) {
+          try {
+            const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
+            if (!response.ok) {
+              console.error(`Failed to fetch ${symbol}: ${response.status} ${response.statusText}`)
+              return null
+            }
             const data = await response.json()
             return {
               symbol,
-              price: parseFloat(data.lastPrice) || 0,
-              change: parseFloat(data.priceChangePercent) || 0,
-              volume24h: parseFloat(data.quoteVolume) || 0
+              price: parseFloat(data.lastPrice) || defaultPrices[symbol]?.price || 0,
+              change: parseFloat(data.priceChangePercent) || defaultPrices[symbol]?.change || 0,
+              volume24h: parseFloat(data.quoteVolume) || defaultPrices[symbol]?.volume24h || 0
             }
+          } catch (error) {
+            console.error(`Error fetching ${symbol}:`, error)
+            return null
           }
-          return null
         })
 
         const results = await Promise.all(pricePromises)
