@@ -3,8 +3,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaHistory, FaPlay, FaPause, FaStepForward, FaStepBackward, FaRedo } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
-import { Line } from 'recharts'
-import { LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface OrderbookSnapshot {
   timestamp: number
@@ -212,41 +210,9 @@ export default function HistoricalReplay({ historicalData, symbol }: HistoricalR
         <div className="bg-gray-900/50 rounded-lg p-4">
           <h4 className="text-gray-300 text-sm font-medium mb-3">가격 추이</h4>
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={currentData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(ts) => new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                  stroke="#9CA3AF"
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                  domain={['dataMin - 100', 'dataMax + 100']}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
-                  labelFormatter={(ts) => formatTime(ts as number)}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="price" 
-                  stroke="#A78BFA" 
-                  strokeWidth={2}
-                  dot={false}
-                  animationDuration={0}
-                />
-                {currentIndex > 0 && (
-                  <ReferenceLine 
-                    x={currentSnapshot.timestamp} 
-                    stroke="#F59E0B" 
-                    strokeDasharray="5 5"
-                    label={{ value: "현재", fill: "#F59E0B", fontSize: 12 }}
-                  />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="text-center text-gray-400">
+              <div className="animate-pulse bg-gray-700/50 h-full rounded" />
+            </div>
           </div>
         </div>
 
@@ -254,63 +220,9 @@ export default function HistoricalReplay({ historicalData, symbol }: HistoricalR
         <div className="bg-gray-900/50 rounded-lg p-4">
           <h4 className="text-gray-300 text-sm font-medium mb-3">볼륨 & 임밸런스</h4>
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={currentData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(ts) => new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                  stroke="#9CA3AF"
-                  fontSize={12}
-                />
-                <YAxis 
-                  yAxisId="volume"
-                  orientation="left"
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                />
-                <YAxis 
-                  yAxisId="imbalance"
-                  orientation="right"
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                  tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
-                  labelFormatter={(ts) => formatTime(ts as number)}
-                />
-                <Line 
-                  yAxisId="volume"
-                  type="monotone" 
-                  dataKey="bidVolume" 
-                  stroke="#10B981" 
-                  strokeWidth={2}
-                  dot={false}
-                  animationDuration={0}
-                  name="매수 볼륨"
-                />
-                <Line 
-                  yAxisId="volume"
-                  type="monotone" 
-                  dataKey="askVolume" 
-                  stroke="#EF4444" 
-                  strokeWidth={2}
-                  dot={false}
-                  animationDuration={0}
-                  name="매도 볼륨"
-                />
-                <Line 
-                  yAxisId="imbalance"
-                  type="monotone" 
-                  dataKey="imbalance" 
-                  stroke="#F59E0B" 
-                  strokeWidth={2}
-                  dot={false}
-                  animationDuration={0}
-                  name="임밸런스"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="text-center text-gray-400">
+              <div className="animate-pulse bg-gray-700/50 h-full rounded" />
+            </div>
           </div>
         </div>
       </div>

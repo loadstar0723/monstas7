@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaRocket, FaExclamationTriangle, FaChartLine, FaBolt } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from 'recharts'
 
 interface OrderbookLevel {
   price: number
@@ -326,34 +325,9 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
           모멘텀 히스토리
         </h4>
         <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={momentumHistory} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-              <XAxis 
-                dataKey="timestamp" 
-                tickFormatter={(ts) => new Date(ts).toLocaleTimeString('ko-KR', { minute: '2-digit', second: '2-digit' })}
-                stroke="#9CA3AF"
-                fontSize={12}
-              />
-              <YAxis 
-                stroke="#9CA3AF" 
-                fontSize={12}
-                domain={[-100, 100]}
-              />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
-                labelFormatter={(ts) => new Date(ts as number).toLocaleTimeString('ko-KR')}
-              />
-              <ReferenceLine y={0} stroke="#6B7280" strokeDasharray="3 3" />
-              <Area 
-                type="monotone" 
-                dataKey="momentum" 
-                stroke="#A78BFA" 
-                fill="#A78BFA"
-                fillOpacity={0.3}
-                strokeWidth={2}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="text-center text-gray-400">
+            <div className="animate-pulse bg-gray-700/50 h-full rounded" />
+          </div>
         </div>
       </div>
 
