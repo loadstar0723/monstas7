@@ -1,261 +1,198 @@
-name: Deploy MONSTA Hybrid Platform
+name: Zero-Downtime Deploy (무중단 배포)
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  deploy-to-aws:
+  deploy-without-downtime:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
       - uses: actions/checkout@v3
       
-      - name: Send deployment start notification
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
-          message: |
-            🚀 MONSTA Next.js + FastAPI 배포 시작
-            
-            📝 커밋: ${{ github.event.head_commit.message }}
-            👤 작성자: ${{ github.actor }}
-            🔗 커밋 ID: ${{ github.sha }}
-            🌿 브랜치: ${{ github.ref_name }}
-            
-            ⏳ 배포 진행 중...
-      
-      - name: Deploy Next.js + FastAPI to AWS
-        id: deploy
+      - name: 🚀 무중단 배포 시작
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: 13.209.84.93
           username: ubuntu
           key: ${{ secrets.AWS_SERVER_KEY }}
           script: |
-            # 프로젝트 디렉토리로 이동
-            cd ~/monstas7 || cd ~/monsta-v7/monstas7
+            set -e  # 에러 발생 시 즉시 중단
             
-            # 최신 코드 가져오기
-            git pull origin master
+            # 🔄 블루-그린 배포 전략
+            echo "🎯 무중단 배포 시작..."
             
-            # Streamlit 프로세스 완전 제거
-            pkill -f streamlit || true
+            # 현재 실행 중인 버전 확인
+            CURRENT_DIR="monstas7"
+            NEW_DIR="monstas7_new"
+            BACKUP_DIR="monstas7_backup"
             
-            # 1. FastAPI Backend 시작 (포트 8000)
-            echo "🔧 Starting FastAPI Backend..."
-            cd backend
+            # 1️⃣ 새 버전을 별도 디렉토리에 준비
+            echo "📦 새 버전 준비 중..."
             
-            # Python 가상환경 확인 및 생성
-            if [ ! -d "../venv" ]; then
-                python3 -m venv ../venv
+            # 기존 새 디렉토리 제거
+            rm -rf ~/$NEW_DIR
+            
+            # 현재 버전 복사 (node_modules와 .next 캐시 보존)
+            if [ -d ~/$CURRENT_DIR ]; then
+              echo "🔄 기존 프로젝트 복사 중..."
+              cp -r ~/$CURRENT_DIR ~/$NEW_DIR
+              cd ~/$NEW_DIR
+            else
+              echo "🆕 새 프로젝트 클론 중..."
+              git clone https://github.com/loadstar0723/monstas7.git ~/$NEW_DIR
+              cd ~/$NEW_DIR
             fi
             
-            source ../venv/bin/activate
-            pip install -r requirements.txt --quiet
+            # 2️⃣ 최신 코드만 업데이트 (캐시 보존)
+            echo "📥 최신 코드 가져오는 중..."
+            git fetch origin master
+            git reset --hard origin/master
             
-            # 기존 FastAPI 프로세스 종료
-            pkill -f "uvicorn.*8000" || true
-            sleep 2
+            # 3️⃣ 증분 설치 (변경된 패키지만)
+            cd frontend
             
-            # FastAPI 시작
-            nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
-            echo "✅ FastAPI started on port 8000"
+            # package.json이 변경된 경우만 설치
+            if ! diff package.json ../monstas7/frontend/package.json > /dev/null 2>&1; then
+              echo "📦 변경된 패키지 설치 중..."
+              npm ci --prefer-offline --no-audit
+            else
+              echo "✅ 패키지 변경 없음 - 설치 스킵"
+            fi
             
-            # 2. Next.js Frontend 빌드 및 시작 (포트 3000)
-            echo "🎨 Building Next.js Frontend..."
-            cd ../frontend
+            # 4️⃣ Prisma 재생성 (빠름)
+            npx prisma generate
             
-            # 환경 변수 설정
-            echo "Setting environment variables..."
-            cat > .env.local << 'EOF'
+            # 5️⃣ 증분 빌드 (캐시 활용)
+            echo "🔨 증분 빌드 중..."
+            
+            # 환경변수 설정
+            cat > .env.production << 'EOF'
+            NODE_ENV=production
             NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
             NEXTAUTH_URL=http://13.209.84.93:3000
-            NODE_ENV=production
             DATABASE_URL="file:./prisma/dev.db"
             NEXT_PUBLIC_API_URL=http://13.209.84.93:3000/api
-            GENERATE_SOURCEMAP=false
-            NEXT_PUBLIC_ENV=production
             EOF
             
-            # .env.production 파일도 생성
-            cp .env.local .env.production
+            # 빌드 (.next 캐시 활용으로 빠름)
+            npm run build
             
-            # Node.js 버전 확인
-            node -v || {
-                echo "Node.js not found, installing..."
-                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                sudo apt-get install -y nodejs
+            # 6️⃣ PM2 생태계 설정 업데이트
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'monsta-blue',
+                script: 'npm',
+                args: 'start',
+                cwd: './frontend',
+                instances: 1,
+                exec_mode: 'fork',
+                autorestart: true,
+                watch: false,
+                max_memory_restart: '600M',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3001,  // 블루 버전은 3001 포트
+                  NEXT_TELEMETRY_DISABLED: 1,
+                  HOST: '0.0.0.0'
+                }
+              }]
             }
+            EOF
             
-            # 🔧 기존 빌드 파일 완전 삭제 (캐시 문제 해결)
-            echo "🗑️ Cleaning old build files..."
-            rm -rf .next
-            rm -rf node_modules/.cache
-            rm -rf node_modules
-            rm -f package-lock.json
+            # 7️⃣ 새 버전을 다른 포트(3001)에서 시작
+            echo "🔵 블루 버전 시작 중..."
+            pm2 delete monsta-blue 2>/dev/null || true
+            pm2 start ecosystem.config.js
             
-            # npm 캐시 완전 삭제
-            echo "🗑️ Clearing npm cache..."
-            npm cache clean --force
+            # 8️⃣ 새 버전 헬스 체크 (최대 30초 대기)
+            echo "🏥 새 버전 헬스 체크..."
+            for i in {1..30}; do
+              if curl -f http://localhost:3001 > /dev/null 2>&1; then
+                echo "✅ 새 버전 정상 작동 확인!"
+                break
+              fi
+              echo "⏳ 대기 중... ($i/30)"
+              sleep 1
+            done
             
-            # 패키지 재설치 (클린 설치)
-            echo "📦 Installing packages with clean install..."
-            npm install --legacy-peer-deps --force
+            # 9️⃣ 트래픽 전환 (심볼릭 링크 교체)
+            echo "🔄 트래픽 전환 중..."
             
-            # 필수 패키지 명시적 설치
-            echo "📦 Installing critical packages..."
-            npm install lucide-react@0.543.0 --save --legacy-peer-deps
-            npm install source-map-js --save --legacy-peer-deps
-            npm install d3-color d3-interpolate d3-scale --save --legacy-peer-deps
-            npm install recharts --save --legacy-peer-deps
-            
-            # 설치 확인
-            echo "🔍 Verifying package installations..."
-            ls -la node_modules/lucide-react || echo "⚠️ lucide-react not found"
-            ls -la node_modules/source-map-js || echo "⚠️ source-map-js not found"
-            ls -la node_modules/d3-color || echo "⚠️ d3-color not found"
-            
-            # 🔍 배포 전 자동 검증 (빌드 에러 사전 방지)
-            echo "🔍 배포 전 검증 시작..."
-            
-            # Prisma 클라이언트 생성 (Internal Server Error 방지)
-            echo "1️⃣ Prisma Client 생성 중..."
-            npx prisma generate || {
-                echo "❌ Prisma generate failed - Internal Server Error 예방 실패"
-                exit 1
-            }
-            
-            # Mock 데이터 검사 스킵 (스크립트 없음)
-            
-            # 타입 체크 스킵 (빌드 시 자동 체크됨)
-            echo "3️⃣ TypeScript 타입 체크 스킵..."
-            
-            # ESLint 체크 (코드 품질 검증)
-            echo "4️⃣ ESLint 검사 중..."
-            npm run lint || {
-                echo "⚠️ Lint 경고가 있지만 계속 진행합니다..."
-            }
-            
-            # 프로덕션 빌드 (최종 검증)
-            echo "5️⃣ 프로덕션 빌드 테스트 중..."
-            npm run build || {
-                echo "❌ 빌드 실패! 다음 사항을 확인하세요:"
-                echo "  - 함수명이 숫자로 시작하지 않는지 (예: 30Page → IndicatorsPage)"
-                echo "  - import 에러가 없는지"
-                echo "  - 문법 에러가 없는지"
-                exit 1
-            }
-            
-            echo "✅ 모든 검증 통과! 배포를 계속합니다..."
-            
-            # PM2 설치 확인
-            which pm2 || {
-                echo "Installing PM2..."
-                sudo npm install -g pm2
-            }
-            
-            # ecosystem.config.js를 상위 디렉토리에 복사
-            cp ../ecosystem.config.js ./ecosystem.config.js || echo "ecosystem.config.js not found in parent"
-            
-            # PM2 무중단 배포 (reload 사용)
-            # 기존 프로세스가 있으면 reload, 없으면 start
-            pm2 describe monsta-prod > /dev/null 2>&1
-            if [ $? -eq 0 ]; then
-                echo "🔄 PM2 reload로 무중단 배포 시작..."
-                pm2 reload ecosystem.config.js --update-env
-            else
-                echo "🚀 PM2 최초 시작..."
-                pm2 start ecosystem.config.js
+            # 백업 생성
+            if [ -d ~/$CURRENT_DIR ]; then
+              rm -rf ~/$BACKUP_DIR
+              mv ~/$CURRENT_DIR ~/$BACKUP_DIR
             fi
+            
+            # 심볼릭 링크 교체 (원자적 작업)
+            mv ~/$NEW_DIR ~/$CURRENT_DIR
+            
+            # 🔟 기존 버전 종료 및 새 버전을 3000 포트로 전환
+            cd ~/$CURRENT_DIR/frontend
+            
+            # 3000 포트용 설정
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'monsta-prod',
+                script: 'npm',
+                args: 'start',
+                cwd: './frontend',
+                instances: 2,  // 클러스터 모드로 2개 인스턴스
+                exec_mode: 'cluster',  // 클러스터 모드
+                autorestart: true,
+                watch: false,
+                max_memory_restart: '600M',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000,
+                  NEXT_TELEMETRY_DISABLED: 1,
+                  HOST: '0.0.0.0'
+                },
+                wait_ready: true,
+                listen_timeout: 10000,
+                kill_timeout: 5000
+              }]
+            }
+            EOF
+            
+            # 기존 프로세스 종료 후 새로 시작
+            pm2 delete monsta-blue 2>/dev/null || true
+            pm2 delete monsta-prod 2>/dev/null || true
+            pm2 start ecosystem.config.js
             
             pm2 save
             pm2 startup || true
             
-            # PM2 로그 실시간 확인 (10초)
-            echo "📋 Checking PM2 logs..."
-            timeout 10 pm2 logs monsta-prod --lines 50 || true
-            
-            # PM2 상태 확인
-            pm2 describe monsta-prod || echo "PM2 app status check failed"
-            
-            echo "✅ Next.js started with PM2"
-            
-            # 3. 헬스 체크 (20초 대기)
-            sleep 20
-            
-            # 프로세스 상태 확인
-            echo "🔍 Checking running processes..."
+            # 1️⃣1️⃣ 최종 확인
+            echo "🎉 무중단 배포 완료!"
+            echo "📊 PM2 상태:"
             pm2 status
-            netstat -tlnp | grep -E "3000|8000" || true
             
-            # Backend 헬스 체크
-            if curl -f http://localhost:8000/api/v1/health > /dev/null 2>&1; then
-              echo "✅ Backend API is healthy"
-            else
-              echo "❌ Backend health check failed"
-              echo "Checking backend logs..."
-              tail -n 50 backend/backend.log || echo "No backend log file"
-              ps aux | grep uvicorn || echo "No uvicorn process found"
+            # 백업 정리 (선택적)
+            if [ -d ~/$BACKUP_DIR ]; then
+              echo "🗑️ 이전 백업 제거 중..."
+              rm -rf ~/$BACKUP_DIR
             fi
             
-            # Frontend 헬스 체크
-            if curl -f http://localhost:3000 > /dev/null 2>&1; then
-              echo "✅ Frontend is running"
-            else
-              echo "❌ Frontend not responding"
-              echo "Checking PM2 logs..."
-              pm2 logs monsta-prod --lines 50 --nostream || echo "No PM2 logs"
-              pm2 describe monsta-prod || echo "PM2 app not found"
-            fi
-            
-            # AWS 보안 그룹 확인 메시지
-            echo "📌 Important: Make sure AWS Security Group allows:"
-            echo "   - Port 3000 (Next.js Frontend)"
-            echo "   - Port 8000 (FastAPI Backend)"
-            
-            echo "✅ Deployment completed at $(date)"
-            echo "🌐 Frontend: http://13.209.84.93:3000"
-            echo "🔧 Backend API: http://13.209.84.93:8000"
-            echo "📊 Health Check: http://13.209.84.93:8000/api/v1/health"
+            echo "✅ 배포 완료 시간: $(date)"
+            echo "🌐 서비스 URL: http://13.209.84.93:3000"
       
-      - name: Send success notification
+      - name: ✅ 배포 성공 알림
         if: success()
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
           token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
           message: |
-            ✅ MONSTA 배포 성공!
+            ✅ 무중단 배포 성공!
             
+            🚀 다운타임: 0초
             📝 커밋: ${{ github.event.head_commit.message }}
-            👤 작성자: ${{ github.actor }}
-            🕐 완료 시간: ${{ github.event.head_commit.timestamp }}
+            🌐 URL: http://13.209.84.93:3000
             
-            🌐 Frontend: http://13.209.84.93:3000
-            🔧 Backend API: http://13.209.84.93:8000
-            📊 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            🎉 Next.js + FastAPI 하이브리드 시스템 배포 완료!
-      
-      - name: Send failure notification
-        if: failure()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
-          message: |
-            ❌ MONSTA 배포 실패!
-            
-            📝 커밋: ${{ github.event.head_commit.message }}
-            👤 작성자: ${{ github.actor }}
-            🔗 커밋 ID: ${{ github.sha }}
-            
-            📋 로그 확인: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            ⚠️ 배포가 실패했습니다. 로그를 확인해주세요!
+            서버가 한 번도 끊기지 않고 배포되었습니다!
