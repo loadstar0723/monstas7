@@ -26,6 +26,23 @@ export default function RealtimeMonitor({
   const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all')
   const [minVolume, setMinVolume] = useState(0)
   
+  // 심볼별 대량 주문 임계값
+  const getThresholdForSymbol = (symbol: string) => {
+    const thresholds: Record<string, number> = {
+      'BTCUSDT': 10,
+      'ETHUSDT': 100,
+      'BNBUSDT': 200,
+      'SOLUSDT': 500,
+      'XRPUSDT': 50000,
+      'ADAUSDT': 50000,
+      'DOGEUSDT': 500000,
+      'AVAXUSDT': 500,
+      'MATICUSDT': 50000,
+      'DOTUSDT': 1000
+    }
+    return thresholds[symbol] || 100
+  }
+  
   // 필터링된 스윕 데이터
   const filteredSweeps = React.useMemo(() => {
     return sweeps.filter(sweep => {
@@ -259,7 +276,9 @@ export default function RealtimeMonitor({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className="flex items-center gap-3 cursor-pointer group">
             <input type="checkbox" className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded focus:ring-purple-500" />
-            <span className="text-sm text-gray-400 group-hover:text-white transition-colors">대량 스윕 알림 (&gt;10 BTC)</span>
+            <span className="text-sm text-gray-400 group-hover:text-white transition-colors">
+              대량 스윕 알림 (&gt;{getThresholdForSymbol(symbol)} {symbol.replace('USDT', '')})
+            </span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer group">
             <input type="checkbox" className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded focus:ring-purple-500" />

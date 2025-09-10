@@ -26,6 +26,11 @@ interface HistoricalData {
   avgVolume: number
   avgImpact: number
   maxImpact: number
+  // 실제 가격 데이터 추가
+  high: number
+  low: number
+  close: number
+  volume: number
 }
 
 export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTCUSDT' }: HistoricalSweepsV2Props) {
@@ -34,12 +39,74 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d')
   const [loading, setLoading] = useState(true)
 
-  // 과거 데이터 로드 (실제 구현에서는 API 호출)
+  // 과거 데이터 로드 - Binance Klines API 사용
   useEffect(() => {
     const loadHistoricalData = async () => {
       setLoading(true)
       try {
-        // 실제 스윕 데이터에서 일별로 집계
+        console.log(`📊 ${symbol} 과거 데이터 로드 시작 (${timeframe})`)
+        
+        // Binance API interval 매핑
+        const interval = timeframe === '7d' ? '4h' : '1d'
+        const limit = timeframe === '7d' ? 42 : timeframe === '30d' ? 30 : 90
+        
+        // Binance Klines API 호출
+        const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`)
+        
+        if (!response.ok) {
+          throw new Error(`API 응답 실패: ${response.status}`)
+        }
+        
+        const klines = await response.json()
+        console.log(`📈 ${symbol} Klines 데이터 수신:`, klines.length, '개')
+        
+        // Binance Klines 데이터를 HistoricalData 형식으로 변환
+        // [openTime, open, high, low, close, volume, closeTime, quoteAssetVolume, numberOfTrades, ...]
+        const data: HistoricalData[] = klines.map((kline: any[]) => {
+          const timestamp = new Date(kline[0])
+          const dailyVolume = parseFloat(kline[5])
+          const priceRange = parseFloat(kline[2]) - parseFloat(kline[3]) // high - low
+          const priceChange = Math.abs(parseFloat(kline[4]) - parseFloat(kline[1])) // |close - open|
+          const priceImpact = (priceChange / parseFloat(kline[1])) * 100 // 가격 변동률
+          
+          // 해당 시간대의 실제 스윕 데이터 필터링
+          const periodStart = new Date(kline[0])
+          const periodEnd = new Date(kline[6])
+          const periodSweeps = sweeps.filter(sweep => {
+            const sweepTime = new Date(sweep.timestamp)
+            return sweepTime >= periodStart && sweepTime <= periodEnd
+          })
+          
+          const buySweeps = periodSweeps.filter(s => s.side === 'buy')
+          const sellSweeps = periodSweeps.filter(s => s.side === 'sell')
+          
+          return {
+            date: timestamp.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: interval === '4h' ? 'numeric' : undefined }),
+            totalSweeps: periodSweeps.length,
+            buySweeps: buySweeps.length,
+            sellSweeps: sellSweeps.length,
+            avgVolume: periodSweeps.length > 0 
+              ? periodSweeps.reduce((sum, s) => sum + s.volume, 0) / periodSweeps.length 
+              : dailyVolume / 1000, // 실제 스윕이 없으면 전체 볼륨의 일부를 표시
+            avgImpact: periodSweeps.length > 0 
+              ? periodSweeps.reduce((sum, s) => sum + s.impact, 0) / periodSweeps.length 
+              : priceImpact,
+            maxImpact: periodSweeps.length > 0 
+              ? Math.max(...periodSweeps.map(s => s.impact)) 
+              : priceImpact * 1.5,
+            // 실제 가격 데이터
+            high: parseFloat(kline[2]),
+            low: parseFloat(kline[3]),
+            close: parseFloat(kline[4]),
+            volume: dailyVolume
+          }
+        })
+        
+        setHistoricalData(data)
+        console.log(`✅ ${symbol} 과거 데이터 로드 완료`)
+      } catch (error) {
+        console.error('Historical data load error:', error)
+        // 에러 시 기본 데이터 생성
         const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90
         const data: HistoricalData[] = []
         const now = new Date()
@@ -74,20 +141,22 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
               : 0,
             maxImpact: dailySweeps.length > 0 
               ? Math.max(...dailySweeps.map(s => s.impact)) 
-              : 0
+              : 0,
+            high: currentPrice * 1.02,
+            low: currentPrice * 0.98,
+            close: currentPrice,
+            volume: 0
           })
         }
         
         setHistoricalData(data)
-      } catch (error) {
-        console.error('Historical data load error:', error)
       } finally {
         setLoading(false)
       }
     }
     
     loadHistoricalData()
-  }, [timeframe, sweeps])
+  }, [timeframe, sweeps, symbol, currentPrice])
 
   // 통계 계산
   const stats = React.useMemo(() => {
@@ -274,57 +343,81 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         </div>
         
         <div className="p-4 space-y-3">
-          <div className="bg-gray-800/50 p-3 rounded-lg">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <p className="text-white font-medium">대규모 매수 스윕</p>
-                <p className="text-gray-400 text-sm">2025년 1월 5일 14:23</p>
+          {historicalData.length > 0 && (
+            <>
+              <div className="bg-gray-800/50 p-3 rounded-lg">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="text-white font-medium">대규모 매수 스윕</p>
+                    <p className="text-gray-400 text-sm">{historicalData[historicalData.length - 1]?.date}</p>
+                  </div>
+                  <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+                    매수
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-500">볼륨:</span>
+                    <span className="text-white ml-1">
+                      {(historicalData[historicalData.length - 1]?.avgVolume || 0).toFixed(4)} {symbol.replace('USDT', '')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">임팩트:</span>
+                    <span className="text-yellow-400 ml-1">
+                      {(historicalData[historicalData.length - 1]?.maxImpact || 0).toFixed(2)}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">가격:</span>
+                    <span className="text-white ml-1">
+                      ${(historicalData[historicalData.length - 1]?.high || currentPrice).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
-                매수
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <span className="text-gray-500">볼륨:</span>
-                <span className="text-white ml-1">125.5 {symbol.replace('USDT', '')}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">임팩트:</span>
-                <span className="text-yellow-400 ml-1">4.2%</span>
-              </div>
-              <div>
-                <span className="text-gray-500">가격:</span>
-                <span className="text-white ml-1">$98,500</span>
-              </div>
-            </div>
-          </div>
+              
+              {historicalData.length > 5 && (
+                <div className="bg-gray-800/50 p-3 rounded-lg">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="text-white font-medium">연쇄 매도 스윕</p>
+                      <p className="text-gray-400 text-sm">{historicalData[historicalData.length - 5]?.date}</p>
+                    </div>
+                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
+                      매도
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-500">볼륨:</span>
+                      <span className="text-white ml-1">
+                        {(historicalData[historicalData.length - 5]?.avgVolume || 0).toFixed(4)} {symbol.replace('USDT', '')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">임팩트:</span>
+                      <span className="text-yellow-400 ml-1">
+                        {(historicalData[historicalData.length - 5]?.maxImpact || 0).toFixed(2)}%
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">가격:</span>
+                      <span className="text-white ml-1">
+                        ${(historicalData[historicalData.length - 5]?.low || currentPrice).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           
-          <div className="bg-gray-800/50 p-3 rounded-lg">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <p className="text-white font-medium">연쇄 매도 스윕</p>
-                <p className="text-gray-400 text-sm">2025년 1월 3일 09:15</p>
-              </div>
-              <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
-                매도
-              </span>
+          {historicalData.length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              <p>과거 데이터 로딩 중...</p>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <span className="text-gray-500">볼륨:</span>
-                <span className="text-white ml-1">89.3 {symbol.replace('USDT', '')}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">임팩트:</span>
-                <span className="text-yellow-400 ml-1">3.8%</span>
-              </div>
-              <div>
-                <span className="text-gray-500">가격:</span>
-                <span className="text-white ml-1">$97,200</span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
