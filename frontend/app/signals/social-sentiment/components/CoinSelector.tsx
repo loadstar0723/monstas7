@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { FaFire } from 'react-icons/fa'
 import { FiTrendingUp } from 'react-icons/fi'
-import websocketManager from '@/lib/websocketManager'
+import WebSocketManager from '@/lib/websocketManager'
+
+const websocketManager = WebSocketManager.getInstance()
 
 interface CoinSelectorProps {
   selectedCoin: string
