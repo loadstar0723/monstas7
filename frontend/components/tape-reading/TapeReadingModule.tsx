@@ -95,19 +95,12 @@ export default function TapeReadingModule() {
   const wsRef = useRef<WebSocket | null>(null)
 
   // WebSocket 연결 관리
-  useEffect(() => {
-    connectWebSocket()
-    
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-    }
-  }, [selectedCoin])
-
   const connectWebSocket = useCallback(() => {
+    // 기존 연결 정리
     if (wsRef.current) {
+      wsRef.current.onclose = null // 재연결 방지
       wsRef.current.close()
+      wsRef.current = null
     }
 
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`)
@@ -119,9 +112,15 @@ export default function TapeReadingModule() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      setCurrentPrice(parseFloat(data.c))
-      setPriceChange(parseFloat(data.P))
-      setVolume24h(parseFloat(data.v))
+      // 현재 선택된 코인의 데이터인지 확인
+      if (data.s === selectedCoin) {
+        setCurrentPrice(parseFloat(data.c))
+        setPriceChange(parseFloat(data.P))
+        // 거래량은 코인 개수 * 현재 가격으로 USD 환산
+        const coinVolume = parseFloat(data.v)
+        const price = parseFloat(data.c)
+        setVolume24h(coinVolume * price)
+      }
     }
 
     ws.onerror = () => {
@@ -130,16 +129,35 @@ export default function TapeReadingModule() {
     }
 
     ws.onclose = () => {
-      console.log('WebSocket 연결 종료')
+      console.log('WebSocket 연결 종료:', selectedCoin)
       setWsConnected(false)
-      // 5초 후 재연결
-      setTimeout(() => {
-        connectWebSocket()
-      }, 5000)
+      // 현재 활성 연결인 경우에만 재연결
+      if (wsRef.current === ws) {
+        setTimeout(() => {
+          connectWebSocket()
+        }, 5000)
+      }
     }
 
     wsRef.current = ws
   }, [selectedCoin])
+
+  useEffect(() => {
+    // 초기 값 리셋
+    setCurrentPrice(0)
+    setPriceChange(0)
+    setVolume24h(0)
+    
+    connectWebSocket()
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.onclose = null // 재연결 방지
+        wsRef.current.close()
+        wsRef.current = null
+      }
+    }
+  }, [selectedCoin, connectWebSocket])
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -149,7 +167,8 @@ export default function TapeReadingModule() {
         if (data.price) {
           setCurrentPrice(data.price)
           setPriceChange(data.priceChangePercent)
-          setVolume24h(data.volume)
+          // USD 거래량 계산
+          setVolume24h(data.volume * data.price)
         }
       })
       .catch(err => console.error('초기 데이터 로드 실패:', err))
@@ -224,7 +243,11 @@ export default function TapeReadingModule() {
               <div className="bg-gray-900/50 rounded-lg p-3">
                 <p className="text-gray-400 text-sm mb-1">24시간 거래량</p>
                 <p className="text-2xl font-bold text-white">
-                  {(volume24h / 1000000).toFixed(2)}M
+                  {volume24h > 1000000 
+                    ? `${(volume24h / 1000000).toFixed(2)}M`
+                    : volume24h > 1000 
+                    ? `${(volume24h / 1000).toFixed(2)}K`
+                    : volume24h.toFixed(2)}
                 </p>
               </div>
             </div>
