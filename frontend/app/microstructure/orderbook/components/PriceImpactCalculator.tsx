@@ -15,7 +15,7 @@ interface PriceImpactCalculatorProps {
     bids: OrderbookLevel[]
     asks: OrderbookLevel[]
     lastUpdate?: Date
-  }
+  } | null
   currentPrice: number
 }
 
@@ -37,6 +37,8 @@ export default function PriceImpactCalculator({ orderbook, currentPrice }: Price
     if (!orderSize || isNaN(parseFloat(orderSize)) || parseFloat(orderSize) <= 0) {
       return null
     }
+
+    if (!orderbook) return null
 
     const size = parseFloat(orderSize)
     const levels = orderType === 'buy' ? orderbook.asks : orderbook.bids
