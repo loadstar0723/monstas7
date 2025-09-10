@@ -106,15 +106,6 @@ const HistoricalReplay = dynamic(
   }
 )
 
-const PriceImpactCalculator = dynamic(
-  () => import('./components/PriceImpactCalculator'),
-  { ssr: false }
-)
-
-const OrderFlowAnimation = dynamic(
-  () => import('./components/OrderFlowAnimation'),
-  { ssr: false }
-)
 
 // 타입 정의
 interface OrderbookLevel {
