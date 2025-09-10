@@ -24,6 +24,21 @@ interface TradingStrategyProps {
 }
 
 export default function TradingStrategy({ sweeps, currentPrice, symbol }: TradingStrategyProps) {
+  // 코인별 전략 설정
+  const getStrategySettings = (symbol: string) => {
+    const settings: Record<string, { stopLossRatio: number, takeProfitRatio: number, minConfidence: number }> = {
+      'BTCUSDT': { stopLossRatio: 0.02, takeProfitRatio: 0.04, minConfidence: 60 },
+      'ETHUSDT': { stopLossRatio: 0.025, takeProfitRatio: 0.05, minConfidence: 55 },
+      'BNBUSDT': { stopLossRatio: 0.03, takeProfitRatio: 0.06, minConfidence: 50 },
+      'SOLUSDT': { stopLossRatio: 0.04, takeProfitRatio: 0.08, minConfidence: 50 },
+      'XRPUSDT': { stopLossRatio: 0.05, takeProfitRatio: 0.1, minConfidence: 45 },
+      'DOGEUSDT': { stopLossRatio: 0.06, takeProfitRatio: 0.12, minConfidence: 45 }
+    }
+    return settings[symbol] || { stopLossRatio: 0.03, takeProfitRatio: 0.06, minConfidence: 50 }
+  }
+
+  const settings = getStrategySettings(symbol)
+
   // 전략 분석
   const strategyAnalysis = useMemo(() => {
     if (sweeps.length === 0) {
@@ -32,9 +47,9 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
         confidence: 0,
         direction: 'hold',
         entry: currentPrice,
-        stopLoss: currentPrice * 0.98,
-        takeProfit: currentPrice * 1.02,
-        riskReward: 1,
+        stopLoss: currentPrice * (1 - settings.stopLossRatio),
+        takeProfit: currentPrice * (1 + settings.takeProfitRatio),
+        riskReward: settings.takeProfitRatio / settings.stopLossRatio,
         position: 'wait'
       }
     }
@@ -63,11 +78,11 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
     if (netVolume > totalVolume * 0.3) {
       signal = 'bullish'
       direction = 'long'
-      position = confidence > 70 ? 'aggressive' : confidence > 50 ? 'moderate' : 'conservative'
+      position = confidence > 70 ? 'aggressive' : confidence > settings.minConfidence ? 'moderate' : 'conservative'
     } else if (netVolume < -totalVolume * 0.3) {
       signal = 'bearish'
       direction = 'short'
-      position = confidence > 70 ? 'aggressive' : confidence > 50 ? 'moderate' : 'conservative'
+      position = confidence > 70 ? 'aggressive' : confidence > settings.minConfidence ? 'moderate' : 'conservative'
     } else {
       signal = 'neutral'
       direction = 'hold'
@@ -80,13 +95,13 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
                   direction === 'short' ? currentPrice * (1 - volatility * 0.1) :
                   currentPrice
     
-    const stopLoss = direction === 'long' ? entry * (1 - volatility * 2) :
-                     direction === 'short' ? entry * (1 + volatility * 2) :
-                     currentPrice * 0.98
+    const stopLoss = direction === 'long' ? entry * (1 - Math.max(settings.stopLossRatio, volatility * 2)) :
+                     direction === 'short' ? entry * (1 + Math.max(settings.stopLossRatio, volatility * 2)) :
+                     currentPrice * (1 - settings.stopLossRatio)
     
-    const takeProfit = direction === 'long' ? entry * (1 + volatility * 4) :
-                       direction === 'short' ? entry * (1 - volatility * 4) :
-                       currentPrice * 1.02
+    const takeProfit = direction === 'long' ? entry * (1 + Math.max(settings.takeProfitRatio, volatility * 4)) :
+                       direction === 'short' ? entry * (1 - Math.max(settings.takeProfitRatio, volatility * 4)) :
+                       currentPrice * (1 + settings.takeProfitRatio)
     
     const riskReward = Math.abs(takeProfit - entry) / Math.abs(entry - stopLoss)
     
@@ -105,7 +120,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
       avgImpact,
       volumeImbalance
     }
-  }, [sweeps, currentPrice])
+  }, [sweeps, currentPrice, settings])
 
   // 포지션 크기 계산
   const positionSizing = useMemo(() => {
@@ -146,7 +161,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
         <div className="p-4 border-b border-gray-800">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <span>🎯</span>
-            <span>스윕 기반 트레이딩 전략</span>
+            <span>스윕 기반 트레이딩 전략 - {symbol.replace('USDT', '')}</span>
             <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${
               strategyAnalysis.signal === 'bullish' ? 'bg-green-500/20 text-green-400' :
               strategyAnalysis.signal === 'bearish' ? 'bg-red-500/20 text-red-400' :

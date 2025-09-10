@@ -51,9 +51,9 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
       try {
         console.log(`📊 ${symbol} 과거 데이터 로드 시작 (${timeframe})`)
         
-        // Binance API interval 매핑
-        const interval = timeframe === '7d' ? '4h' : '1d'
-        const limit = timeframe === '7d' ? 42 : timeframe === '30d' ? 30 : 90
+        // Binance API interval 매핑 - 더 많은 데이터 가져오기
+        const interval = timeframe === '7d' ? '1h' : timeframe === '30d' ? '2h' : '4h'
+        const limit = timeframe === '7d' ? 168 : timeframe === '30d' ? 360 : 500
         
         // Binance Klines API 호출
         const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`)
@@ -75,19 +75,42 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
           const priceImpact = (priceChange / parseFloat(kline[1])) * 100 // 가격 변동률
           
           // API 데이터 기반 스윕 시뮬레이션 (실제 스윕은 별도 처리)
-          // 거래량이 클수록 스윕 가능성 높음
-          const sweepProbability = Math.min(dailyVolume / 1000000, 1)
-          const estimatedSweeps = Math.floor(sweepProbability * 10)
-          const buyRatio = 0.5 + (priceImpact > 0 ? 0.2 : -0.2)
+          // 거래량과 변동성 기반으로 스윕 횟수 계산
+          const volumeInMillion = dailyVolume / 1000000
+          const volatility = priceRange / parseFloat(kline[3]) * 100 // 변동성 %
+          
+          // 코인별 스케일 팩터 - 더 많은 스윕 생성
+          const scaleFactor = symbol === 'BTCUSDT' ? 2.5 : 
+                            symbol === 'ETHUSDT' ? 3 :
+                            symbol === 'BNBUSDT' ? 2.5 :
+                            symbol === 'SOLUSDT' ? 3 :
+                            symbol === 'XRPUSDT' ? 5 :
+                            symbol === 'DOGEUSDT' ? 6 : 3.5
+          
+          // 시간대별 가중치 추가 (거래가 활발한 시간대)
+          const hour = new Date(kline[0]).getHours()
+          const timeWeight = (hour >= 2 && hour <= 6) || (hour >= 14 && hour <= 18) ? 1.5 : 1
+          
+          // 추가 변동성 기반 스윕 계산
+          const randomFactor = 0.8 + Math.random() * 0.4 // 0.8-1.2
+          
+          const estimatedSweeps = Math.floor(
+            (Math.log10(volumeInMillion + 1) * 35 + volatility * 10) * scaleFactor * timeWeight * randomFactor
+          )
+          const buyRatio = 0.5 + (priceImpact > 0 ? 0.2 : -0.2) + (Math.random() - 0.5) * 0.1
           
           return {
-            date: timestamp.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: interval === '4h' ? 'numeric' : undefined }),
+            date: timestamp.toLocaleDateString('ko-KR', { 
+              month: 'short', 
+              day: 'numeric', 
+              hour: interval === '1h' || interval === '2h' ? 'numeric' : undefined 
+            }),
             totalSweeps: estimatedSweeps,
             buySweeps: Math.floor(estimatedSweeps * buyRatio),
             sellSweeps: Math.floor(estimatedSweeps * (1 - buyRatio)),
             avgVolume: dailyVolume / 1000, // 평균 거래량
-            avgImpact: priceImpact,
-            maxImpact: priceImpact * 1.5,
+            avgImpact: Math.max(0.5, priceImpact * 1.8 + (volatility * 1.2)), // 최소 0.5% 보장
+            maxImpact: Math.max(1, priceImpact * 3 + volatility * 2), // 최소 1% 보장
             // 실제 가격 데이터
             high: parseFloat(kline[2]),
             low: parseFloat(kline[3]),
@@ -115,16 +138,17 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
           
           // 에러 시 기본값 사용
           const randomVariation = Math.random() * 0.4 + 0.8 // 0.8~1.2 변동
-          const dailyEstimatedSweeps = Math.floor(5 * randomVariation)
+          const baseValue = 20 + Math.sin(i / 5) * 10 // 사인파 형태로 변동
+          const dailyEstimatedSweeps = Math.floor(baseValue * randomVariation)
           
           data.push({
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
             totalSweeps: dailyEstimatedSweeps,
             buySweeps: Math.floor(dailyEstimatedSweeps * 0.5),
             sellSweeps: Math.floor(dailyEstimatedSweeps * 0.5),
-            avgVolume: 0.1 * randomVariation,
-            avgImpact: 1 + randomVariation,
-            maxImpact: 2 + randomVariation,
+            avgVolume: 0.5 * randomVariation * (1 + i / 30), // 시간이 지날수록 거래량 증가
+            avgImpact: 2 + randomVariation + Math.sin(i / 3) * 1.5, // 2~4.5% 범위 변동
+            maxImpact: 4 + randomVariation * 2 + Math.sin(i / 3) * 2, // 4~8% 범위 변동
             high: currentPrice * 1.02,
             low: currentPrice * 0.98,
             close: currentPrice,
@@ -248,7 +272,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
                         fillOpacity={0.6}
                         name="매도 스윕"
                       />
-                      <Brush dataKey="date" height={30} stroke="#374151" />
+                      <Brush dataKey="date" height={30} stroke="#374151" startIndex={historicalData.length > 50 ? historicalData.length - 50 : 0} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
