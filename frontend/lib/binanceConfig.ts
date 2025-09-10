@@ -63,11 +63,21 @@ export const binanceAPI = {
   // 24시간 티커 정보
   get24hrTicker: async (symbol: string) => {
     try {
-      // 프록시 API 라우트 사용 (CORS 우회)
+      // 프록시 API 라우트 사용 (CORS 우회) - 올바른 경로 사용
       const response = await fetch(
-        `/api/binance/ticker/24hr?symbol=${symbol}`
+        `/api/binance/ticker?symbol=${symbol}`
       )
       if (!response.ok) {
+        // 404면 직접 Binance API 호출 시도
+        if (response.status === 404) {
+          const directResponse = await fetch(
+            `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
+          )
+          if (directResponse.ok) {
+            const data = await directResponse.json()
+            return { data, error: null }
+          }
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       // Content-Type 확인
@@ -79,7 +89,18 @@ export const binanceAPI = {
       return { data, error: null }
     } catch (error) {
       console.error(`Error fetching 24hr ticker for ${symbol}:`, error)
-      return { data: null, error }
+      // 기본값 반환
+      return { 
+        data: {
+          symbol,
+          lastPrice: '0',
+          priceChangePercent: '0',
+          volume: '0',
+          highPrice: '0',
+          lowPrice: '0'
+        }, 
+        error 
+      }
     }
   },
   
