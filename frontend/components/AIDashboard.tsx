@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
 import { FaRobot, FaChartLine, FaBrain, FaSignal } from 'react-icons/fa'
 import { config } from '@/lib/config'
+import { safeToFixed } from '@/lib/formatters'
 
 interface Prediction {
   symbol: string
@@ -162,7 +163,7 @@ export default function AIDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-gray-500 uppercase text-xs tracking-wider">Confidence</span>
-                      <span className="font-bold text-white">{(pred.confidence * 100).toFixed(1)}%</span>
+                      <span className="font-bold text-white">{safeToFixed(pred.confidence * 100, 1)}%</span>
                     </div>
                     <div className="relative">
                       <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
@@ -230,7 +231,7 @@ export default function AIDashboard() {
                 <FaChartLine className="text-purple-400" />
               </div>
               <div className="text-4xl font-bold mb-2 gradient-text">
-                {marketAnalysis.technical_indicators.rsi.toFixed(2)}
+                {safeToFixed(marketAnalysis.technical_indicators.rsi, 2)}
               </div>
               <div className={`text-sm font-medium ${
                 marketAnalysis.technical_indicators.rsi > 70 ? 'text-red-400' : 
@@ -247,10 +248,10 @@ export default function AIDashboard() {
             <div className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800">
               <h4 className="font-bold mb-2">MACD</h4>
               <div className="space-y-1 text-sm">
-                <div>Value: {marketAnalysis.technical_indicators.macd.value.toFixed(2)}</div>
-                <div>Signal: {marketAnalysis.technical_indicators.macd.signal.toFixed(2)}</div>
+                <div>Value: {safeToFixed(marketAnalysis.technical_indicators.macd.value, 2)}</div>
+                <div>Signal: {safeToFixed(marketAnalysis.technical_indicators.macd.signal, 2)}</div>
                 <div className={marketAnalysis.technical_indicators.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'}>
-                  Histogram: {marketAnalysis.technical_indicators.macd.histogram.toFixed(2)}
+                  Histogram: {safeToFixed(marketAnalysis.technical_indicators.macd.histogram, 2)}
                 </div>
               </div>
             </div>
@@ -292,7 +293,7 @@ export default function AIDashboard() {
             </div>
             <div>
               <span className="text-gray-400">신뢰도:</span>
-              <div className="font-bold">{(wsData.data.confidence * 100).toFixed(1)}%</div>
+              <div className="font-bold">{safeToFixed(wsData.data.confidence * 100, 1)}%</div>
             </div>
           </div>
         </motion.div>
@@ -330,7 +331,7 @@ export default function AIDashboard() {
             <div className="bg-gray-900/50 backdrop-blur rounded-xl p-4 border border-gray-800">
               <h4 className="font-bold mb-2">소셜 점수</h4>
               <div className="text-3xl font-bold">
-                {(marketAnalysis.sentiment.social_score * 100).toFixed(0)}%
+                {safeToFixed(marketAnalysis.sentiment.social_score * 100, 0)}%
               </div>
               <div className="text-sm text-gray-400">긍정적 언급</div>
             </div>

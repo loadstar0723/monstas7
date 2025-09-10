@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getBinanceWebSocket } from '@/lib/binanceWebSocket';
+import { formatVolume } from '@/lib/formatters';
 
 export interface CryptoPrice {
   symbol: string;
@@ -33,12 +34,12 @@ export function useBinanceWebSocket() {
     symbols.forEach(symbol => {
       ws.subscribe(symbol, (data) => {
         priceData.set(symbol, {
-          symbol: data.symbol,
-          price: data.price,
-          change: data.change,
-          volume: (data.volume / 1000000).toFixed(1) + 'M',
-          high: data.high,
-          low: data.low
+          symbol: data.symbol || symbol,
+          price: data.price || 0,
+          change: data.change || 0,
+          volume: formatVolume(data.volume || 0),
+          high: data.high || 0,
+          low: data.low || 0
         });
         
         // 배열로 변환하여 상태 업데이트
