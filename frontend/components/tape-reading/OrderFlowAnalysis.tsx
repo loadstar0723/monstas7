@@ -31,13 +31,13 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
         if (Array.isArray(trades)) {
           let cumulative = 0
           const historicalData = trades.slice(-30).map((trade: any) => {
-            const volume = parseFloat(trade.qty)
+            const volume = parseFloat(trade.qty) || 0
             const delta = trade.isBuyerMaker ? -volume : volume
             cumulative += delta
             return {
               time: new Date(trade.time).toLocaleTimeString('ko-KR'),
-              delta: delta,
-              cumDelta: cumulative
+              delta: isNaN(delta) ? 0 : delta,
+              cumDelta: isNaN(cumulative) ? 0 : cumulative
             }
           })
           setDeltaData(historicalData)
@@ -55,8 +55,8 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
       cumulative += delta
       const newPoint = {
         time: new Date().toLocaleTimeString('ko-KR'),
-        delta: delta,
-        cumDelta: cumulative
+        delta: isNaN(delta) ? 0 : delta,
+        cumDelta: isNaN(cumulative) ? 0 : cumulative
       }
       
       setDeltaData(prev => [...prev.slice(-29), newPoint])
@@ -77,7 +77,7 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      const volume = parseFloat(data.q)
+      const volume = parseFloat(data.q) || 0
       if (data.m) {
         sellVolume += volume
       } else {
