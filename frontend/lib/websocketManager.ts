@@ -23,13 +23,23 @@ class WebSocketManager {
     onClose?: () => void,
     onConnect?: (ws: WebSocket) => void
   ): WebSocket {
-    // 이미 연결이 있으면 재사용
+    // 기존 연결이 있으면 먼저 정리
     const existing = this.connections.get(key)
-    if (existing && existing.readyState === WebSocket.OPEN) {
-      return existing
+    if (existing) {
+      if (existing.readyState === WebSocket.OPEN) {
+        console.log(`WebSocket ${key} already connected, reusing`)
+        return existing
+      } else if (existing.readyState === WebSocket.CONNECTING) {
+        console.log(`WebSocket ${key} is connecting, waiting...`)
+        return existing
+      } else {
+        // 닫히거나 닫히는 중인 연결은 정리
+        this.disconnect(key)
+      }
     }
     
     // 새 연결 생성
+    console.log(`Creating new WebSocket connection for ${key}`)
     const ws = new WebSocket(url)
     
     ws.onopen = () => {
@@ -77,9 +87,26 @@ class WebSocketManager {
   disconnect(key: string) {
     const ws = this.connections.get(key)
     if (ws) {
-      ws.close(1000, 'Normal closure')
+      // 재연결 시도 차단을 위해 최대값 설정
+      this.reconnectAttempts.set(key, this.maxReconnectAttempts)
+      
+      // onclose 이벤트 제거하여 재연결 방지
+      ws.onclose = null
+      ws.onerror = null
+      ws.onmessage = null
+      ws.onopen = null
+      
+      // WebSocket 종료
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close(1000, 'Normal closure')
+      }
+      
       this.connections.delete(key)
-      this.reconnectAttempts.delete(key)
+      
+      // 약간의 지연 후 재연결 카운터 초기화
+      setTimeout(() => {
+        this.reconnectAttempts.delete(key)
+      }, 100)
     }
   }
   
