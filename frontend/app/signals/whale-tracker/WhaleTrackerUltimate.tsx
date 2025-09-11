@@ -889,9 +889,19 @@ export default function WhaleTrackerUltimate() {
     // 클린업
     return () => {
       clearTimeout(candleTimer)
-      Object.values(backgroundWsRefs.current).forEach(ws => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.close()
+      Object.entries(backgroundWsRefs.current).forEach(([symbol, ws]) => {
+        if (ws) {
+          try {
+            ws.onmessage = null
+            ws.onerror = null
+            ws.onclose = null
+            ws.onopen = null
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+              ws.close(1000, 'Component unmount')
+            }
+          } catch (error) {
+            console.error(`WebSocket cleanup error for ${symbol}:`, error)
+          }
         }
       })
       backgroundWsRefs.current = {}
@@ -1865,7 +1875,7 @@ export default function WhaleTrackerUltimate() {
                             </span>
                           </td>
                           <td className="py-3">
-                            <span className="text-white font-bold">{wallet.safePrice(balance)} {selectedSymbol.replace('USDT', '')}</span>
+                            <span className="text-white font-bold">{safeFixed(wallet.balance, 2)} {selectedSymbol.replace('USDT', '')}</span>
                           </td>
                           <td className="py-3">{wallet.totalTrades.toLocaleString()}</td>
                           <td className="py-3">
