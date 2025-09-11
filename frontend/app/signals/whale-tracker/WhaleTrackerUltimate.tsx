@@ -2115,7 +2115,7 @@ export default function WhaleTrackerUltimate() {
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">총 보유량</span>
                         <span className="text-sm font-bold text-white">
-                          {flow.safePrice(reserves)} BTC
+                          {safeFixed(flow.reserves, 2)} BTC
                         </span>
                       </div>
                     )}
