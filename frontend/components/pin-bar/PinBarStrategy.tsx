@@ -1,6 +1,7 @@
 'use client'
 
 import { FaChartLine, FaBalanceScale, FaCalculator, FaLightbulb } from 'react-icons/fa'
+import { safeFixed } from '@/lib/safeFormat'
 
 interface PinBarStrategyProps {
   symbol: string
