@@ -34,9 +34,16 @@ export default function SessionProfiles({ priceHistory, currentPrice, volumeProf
   const [selectedSession, setSelectedSession] = useState<string>('asia')
   const [compareMode, setCompareMode] = useState(false)
   
+  console.log('SessionProfiles props:', { 
+    priceHistory: priceHistory?.length || 0, 
+    currentPrice,
+    volumeProfileData: volumeProfileData ? 'exists' : 'null'
+  })
+  
   // 세션별 데이터 분석
   const sessionAnalysis = useMemo(() => {
     if (!priceHistory || priceHistory.length === 0) {
+      console.log('SessionProfiles: No priceHistory data available')
       return {
         asia: null,
         europe: null,
@@ -209,6 +216,64 @@ export default function SessionProfiles({ priceHistory, currentPrice, volumeProf
         <FaClock className="text-purple-400" />
         세션별 볼륨 프로파일 분석
       </h3>
+      
+      {!priceHistory || priceHistory.length === 0 ? (
+        <div className="space-y-6">
+          {/* 세션 정보 카드 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <FaGlobeAsia className="text-2xl text-amber-500" />
+                <h4 className="font-bold text-white">아시아 세션</h4>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">
+                08:00 - 16:00 KST (23:00 - 07:00 UTC)
+              </p>
+              <p className="text-sm text-gray-300">
+                도쿄와 싱가포르 시장이 주도하며, 일반적으로 변동성이 낮고 Range 트레이딩에 적합합니다.
+              </p>
+            </div>
+            
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <FaGlobeEurope className="text-2xl text-blue-500" />
+                <h4 className="font-bold text-white">유럽 세션</h4>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">
+                16:00 - 00:00 KST (07:00 - 15:00 UTC)
+              </p>
+              <p className="text-sm text-gray-300">
+                런던 시장 오픈과 함께 변동성이 증가하며, 주요 경제 지표 발표가 많습니다.
+              </p>
+            </div>
+            
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <FaGlobeAmericas className="text-2xl text-red-500" />
+                <h4 className="font-bold text-white">미주 세션</h4>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">
+                22:00 - 06:00 KST (13:00 - 21:00 UTC)
+              </p>
+              <p className="text-sm text-gray-300">
+                뉴욕 시장이 주도하며, 가장 높은 거래량과 변동성을 보입니다.
+              </p>
+            </div>
+          </div>
+          
+          {/* 로딩 메시지 */}
+          <div className="text-center py-4 bg-gray-900/50 rounded-lg border border-gray-700">
+            <FaChartArea className="text-gray-600 text-3xl mx-auto mb-3" />
+            <p className="text-gray-400">
+              실시간 세션별 거래량 데이터를 분석 중입니다...
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              곧 세션별 상세 분석이 표시됩니다.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
       
       {/* 세션 선택 및 비교 모드 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -530,6 +595,8 @@ export default function SessionProfiles({ priceHistory, currentPrice, volumeProf
             </div>
           </div>
         )
+      )}
+        </>
       )}
     </div>
   )
