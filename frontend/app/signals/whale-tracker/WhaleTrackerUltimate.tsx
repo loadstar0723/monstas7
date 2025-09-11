@@ -666,22 +666,28 @@ export default function WhaleTrackerUltimate() {
         const wsUrl = getWebSocketUrl(streamName)
         
         try {
-          const ws = createWebSocket(wsUrl)
-        
-        ws.onopen = () => {
-          console.log(`✅ ${symbol} WebSocket 연결 성공`)
-        }
-        
-        ws.onerror = (error) => {
-          console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
-          // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
-        }
-        
-        ws.onclose = (event) => {
-          console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
-        }
-        
-        ws.onmessage = (event) => {
+          const ws = new WebSocket(wsUrl)
+          
+          ws.onopen = () => {
+            console.log(`✅ ${symbol} WebSocket 연결 성공`)
+            if (symbol === selectedSymbol) {
+              setIsConnected(true)
+            }
+          }
+          
+          ws.onerror = (error) => {
+            console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
+            // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
+          }
+          
+          ws.onclose = (event) => {
+            console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
+            if (symbol === selectedSymbol) {
+              setIsConnected(false)
+            }
+          }
+          
+          ws.onmessage = (event) => {
           const data = JSON.parse(event.data)
           const price = parseFloat(data.p)
           const quantity = parseFloat(data.q)
@@ -1025,7 +1031,7 @@ export default function WhaleTrackerUltimate() {
   // 알림 추가
   const addNotification = (type: 'info' | 'warning' | 'success' | 'error', message: string) => {
     const notification = {
-      id: `${Date.now()}-${data.E || Date.now()}`,
+      id: `${Date.now()}-${Math.random()}`,
       type,
       message,
       time: new Date().toLocaleTimeString()

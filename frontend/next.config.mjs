@@ -1,12 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React Strict Mode 비활성화 (WebSocket 이중 연결 방지)
+  reactStrictMode: false,
+  
   // 서버 설정
   poweredByHeader: false,
   generateEtags: false,
+  swcMinify: true,
   
   // 이미지 최적화
   images: {
-    domains: ['localhost', '13.209.84.93'],
+    domains: ['localhost', '13.209.84.93', 'api.dicebear.com'],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -14,6 +18,13 @@ const nextConfig = {
   
   // 성능 최적화
   compress: true,
+  
+  // 컴파일러 설정
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
   
   // 번들 분석 (필요시 활성화)
   // analyzeBundle: process.env.ANALYZE === 'true',
@@ -125,6 +136,15 @@ const nextConfig = {
           },
         ],
       },
+      // API CORS 헤더
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
     ]
   },
   
@@ -133,9 +153,14 @@ const nextConfig = {
     return []
   },
   
-  // 리라이트
+  // 리라이트 (WebSocket 프록시 개발 환경용)
   async rewrites() {
-    return []
+    return process.env.NODE_ENV === 'development' ? [
+      {
+        source: '/ws/:path*',
+        destination: 'https://stream.binance.com:9443/ws/:path*',
+      },
+    ] : []
   }
 };
 
