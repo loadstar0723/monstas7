@@ -31,22 +31,19 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     console.log('Binance API data:', data)
     
-    // 24시간 데이터 반환
+    // 24시간 데이터 직접 반환 (VolumeProfileModule에서 사용하는 형식)
     return NextResponse.json({
-      success: true,
-      data: {
-        symbol: data.symbol,
-        priceChange: parseFloat(data.priceChange),
-        priceChangePercent: parseFloat(data.priceChangePercent),
-        volume: parseFloat(data.volume), // 24시간 거래량 (코인)
-        quoteVolume: parseFloat(data.quoteVolume), // 24시간 거래량 (USDT)
-        count: parseInt(data.count), // 24시간 거래 건수
-        bidPrice: parseFloat(data.bidPrice), // 현재 매수 호가
-        askPrice: parseFloat(data.askPrice), // 현재 매도 호가
-        lastPrice: parseFloat(data.lastPrice),
-        highPrice: parseFloat(data.highPrice),
-        lowPrice: parseFloat(data.lowPrice)
-      }
+      symbol: data.symbol,
+      priceChange: data.priceChange,
+      priceChangePercent: data.priceChangePercent,
+      volume: data.volume, // 24시간 거래량 (코인)
+      quoteVolume: data.quoteVolume, // 24시간 거래량 (USDT)
+      count: data.count, // 24시간 거래 건수
+      bidPrice: data.bidPrice, // 현재 매수 호가
+      askPrice: data.askPrice, // 현재 매도 호가
+      lastPrice: data.lastPrice,
+      highPrice: data.highPrice,
+      lowPrice: data.lowPrice
     })
   } catch (error) {
     console.error('Binance 24hr ticker API error details:', {

@@ -207,7 +207,9 @@
       "mcp__serena__execute_shell_command",
       "Bash(npx shadcn-ui@latest add:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(pkill:*)",
+      "Bash(true)"
     ],
     "deny": [],
     "ask": []

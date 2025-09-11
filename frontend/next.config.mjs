@@ -6,7 +6,6 @@ const nextConfig = {
   // 서버 설정
   poweredByHeader: false,
   generateEtags: false,
-  swcMinify: true,
   
   // 이미지 최적화
   images: {
@@ -35,33 +34,45 @@ const nextConfig = {
     return Date.now().toString()
   },
   
-  // 실험적 기능 (클라이언트 사이드 에러 방지)
+  // 실험적 기능
   experimental: {
-    optimizeCss: false,  // CSS 최적화 비활성화
+    optimizeCss: false,
     scrollRestoration: true,
-    optimizePackageImports: ['recharts', 'framer-motion', 'react-icons'],
   },
   
-  // Webpack 설정
+  // Webpack 설정 - ChunkLoadError 해결
   webpack: (config, { dev, isServer }) => {
-    // 개발 환경에서 청크 로딩 최적화
-    if (dev && !isServer) {
+    if (!isServer && dev) {
+      // 개발 모드에서 청크 로딩 개선
+      config.output = {
+        ...config.output,
+        chunkLoadTimeout: 300000, // 300초 (5분)
+        publicPath: '/_next/',
+        // 청크 파일명 단순화
+        chunkFilename: 'static/chunks/[name].js',
+      }
+      
+      // 청크 분할 최적화
       config.optimization = {
         ...config.optimization,
-        runtimeChunk: false,
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
             default: false,
             vendors: false,
+            // 모든 모듈을 하나의 청크로
+            framework: {
+              chunks: 'all',
+              name: 'framework',
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
           },
         },
       }
-      // 청크 파일명에 타임스탬프 추가하여 캐시 문제 방지
-      const timestamp = Date.now()
-      config.output.filename = `static/chunks/[name].${timestamp}.[contenthash].js`
-      config.output.chunkFilename = `static/chunks/[name].${timestamp}.[contenthash].js`
     }
+    
     return config
   },
   
