@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import {
   LineChart,
   Line,
@@ -91,12 +92,12 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
           <p className="text-white font-semibold">${label?.toFixed(2)}</p>
           {data.bidVolume > 0 && (
             <p className="text-green-400 text-sm">
-              매수 누적: ${data.bidVolume.toFixed(2)}M
+              매수 누적: ${safeFixed(data.bidVolume, 2)}M
             </p>
           )}
           {data.askVolume > 0 && (
             <p className="text-red-400 text-sm">
-              매도 누적: ${data.askVolume.toFixed(2)}M
+              매도 누적: ${safeFixed(data.askVolume, 2)}M
             </p>
           )}
           {data.type === 'current' && (
@@ -134,7 +135,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
               dataKey="price" 
               stroke="#9ca3af"
               tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
             />
             <YAxis 
               stroke="#9ca3af"
@@ -187,7 +188,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.level5.imbalance.toFixed(1)}%
+                {imbalanceMetrics?.safeFixed(level5.imbalance, 1)}%
               </span>
             </div>
           </div>
@@ -212,7 +213,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.level10.imbalance.toFixed(1)}%
+                {imbalanceMetrics?.safeFixed(level10.imbalance, 1)}%
               </span>
             </div>
           </div>
@@ -237,7 +238,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.level20.imbalance.toFixed(1)}%
+                {imbalanceMetrics?.safeFixed(level20.imbalance, 1)}%
               </span>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTachometerAlt, FaChartLine, FaSyncAlt } from 'react-icons/fa'
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
@@ -189,7 +190,7 @@ export default function RiskDashboard({ selectedCoin }: Props) {
               <FaTachometerAlt className={`text-2xl sm:text-3xl ${overallRisk.color}`} />
               <div>
                 <p className={`text-2xl sm:text-3xl font-bold ${overallRisk.color}`}>
-                  {overallRisk.score.toFixed(0)}
+                  {safeFixed(overallRisk.score, 0)}
                 </p>
                 <p className="text-sm sm:text-base text-gray-400">{overallRisk.level}</p>
               </div>
@@ -346,7 +347,7 @@ export default function RiskDashboard({ selectedCoin }: Props) {
             <div className="flex items-start justify-between mb-2">
               <h4 className="text-sm sm:text-base font-medium text-white">{metric.name}</h4>
               <span className={`text-xs px-2 py-0.5 rounded ${getStatusBg(metric.status)} ${getStatusColor(metric.status)}`}>
-                {metric.value.toFixed(0)}%
+                {safeFixed(metric.value, 0)}%
               </span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">

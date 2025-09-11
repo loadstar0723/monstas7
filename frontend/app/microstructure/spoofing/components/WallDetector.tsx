@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaShieldAlt, FaArrowUp, FaArrowDown, FaExclamationTriangle } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -165,7 +166,7 @@ export default function WallDetector({ orderbook, symbol, settings }: WallDetect
         </div>
         <div className="bg-gray-700/50 rounded-lg p-2 text-center">
           <div className="text-xs text-gray-400">평균 거리</div>
-          <div className="text-lg font-bold text-white">{stats.avgDistance.toFixed(2)}%</div>
+          <div className="text-lg font-bold text-white">{safeFixed(stats.avgDistance, 2)}%</div>
         </div>
       </div>
 
@@ -216,13 +217,13 @@ export default function WallDetector({ orderbook, symbol, settings }: WallDetect
                       <div>
                         <span className="text-gray-400">수량:</span>
                         <span className="text-white ml-1">
-                          {wall.amount.toFixed(4)}
+                          {safeAmount(wall.amount)}
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-400">BTC 가치:</span>
                         <span className="text-white ml-1">
-                          {wall.btcValue.toFixed(2)} BTC
+                          {safeFixed(wall.btcValue, 2)} BTC
                         </span>
                       </div>
                       <div>
@@ -232,7 +233,7 @@ export default function WallDetector({ orderbook, symbol, settings }: WallDetect
                           wall.distance < 1 ? 'text-yellow-400' : 
                           'text-white'
                         }`}>
-                          {wall.distance.toFixed(2)}%
+                          {safeFixed(wall.distance, 2)}%
                         </span>
                       </div>
                     </div>

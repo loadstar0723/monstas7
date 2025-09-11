@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaHistory, FaArrowUp, FaArrowDown, FaCalendarAlt } from 'react-icons/fa'
 
 interface PinBarHistoryProps {
@@ -142,22 +143,22 @@ export default function PinBarHistory({ symbol, timeframe }: PinBarHistoryProps)
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">성공률</p>
             <p className={`font-bold ${stats.successRate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.successRate.toFixed(1)}%
+              {safeFixed(stats.successRate, 1)}%
             </p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">평균 수익</p>
             <p className={`font-bold ${stats.avgProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.avgProfit >= 0 ? '+' : ''}{stats.avgProfit.toFixed(2)}%
+              {stats.avgProfit >= 0 ? '+' : ''}{safeFixed(stats.avgProfit, 2)}%
             </p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">최고 수익</p>
-            <p className="text-green-400 font-bold">+{stats.bestTrade.toFixed(2)}%</p>
+            <p className="text-green-400 font-bold">+{safeFixed(stats.bestTrade, 2)}%</p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">최대 손실</p>
-            <p className="text-red-400 font-bold">{stats.worstTrade.toFixed(2)}%</p>
+            <p className="text-red-400 font-bold">{safeFixed(stats.worstTrade, 2)}%</p>
           </div>
         </div>
       </div>
@@ -206,23 +207,23 @@ export default function PinBarHistory({ symbol, timeframe }: PinBarHistoryProps)
                 <div className="grid grid-cols-4 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500">진입가</span>
-                    <p className="text-white">${pattern.entryPrice.toFixed(2)}</p>
+                    <p className="text-white">${safeFixed(pattern.entryPrice, 2)}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">청산가</span>
-                    <p className="text-white">${pattern.exitPrice.toFixed(2)}</p>
+                    <p className="text-white">${safeFixed(pattern.exitPrice, 2)}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">수익률</span>
                     <p className={`font-medium ${
                       pattern.profit >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {pattern.profit >= 0 ? '+' : ''}{pattern.profit.toFixed(2)}%
+                      {pattern.profit >= 0 ? '+' : ''}{safeFixed(pattern.profit, 2)}%
                     </p>
                   </div>
                   <div>
                     <span className="text-gray-500">패턴 강도</span>
-                    <p className="text-purple-400 font-medium">{pattern.strength.toFixed(0)}%</p>
+                    <p className="text-purple-400 font-medium">{safeFixed(pattern.strength, 0)}%</p>
                   </div>
                 </div>
               </div>

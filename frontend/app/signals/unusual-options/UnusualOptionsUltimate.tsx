@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   FaBitcoin, FaEthereum, FaChartLine, FaChartBar, FaExclamationTriangle,
   FaArrowUp, FaArrowDown, FaBolt, FaFire, FaRocket, FaShieldAlt,
@@ -463,14 +464,14 @@ export default function UnusualOptionsUltimate() {
                         <td className="py-2">{flow.expiry}</td>
                         <td className="py-2">{flow.volume.toLocaleString()}</td>
                         <td className="py-2">${flow.premium.toLocaleString()}</td>
-                        <td className="py-2">{flow.iv.toFixed(1)}%</td>
+                        <td className="py-2">{safeFixed(flow.iv, 1)}%</td>
                         <td className="py-2">
                           <span className={`px-2 py-1 rounded text-xs ${
                             flow.unusualScore > 70 ? 'bg-red-500/20 text-red-400' :
                             flow.unusualScore > 50 ? 'bg-yellow-500/20 text-yellow-400' :
                             'bg-gray-700 text-gray-400'
                           }`}>
-                            {flow.unusualScore.toFixed(0)}
+                            {safeFixed(flow.unusualScore, 0)}
                           </span>
                         </td>
                       </tr>

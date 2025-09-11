@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { FaFireAlt, FaChartLine, FaExchangeAlt, FaBolt, FaTachometerAlt } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderbookLevel {
   price: number
@@ -150,7 +151,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
               주문 추가율
             </div>
             <div className="text-2xl font-bold text-white">
-              {dynamics.addRate.toFixed(1)}
+              {safeFixed(dynamics.addRate, 1)}
               <span className="text-sm text-gray-400 ml-1">/분</span>
             </div>
           </div>
@@ -161,7 +162,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
               주문 취소율
             </div>
             <div className="text-2xl font-bold text-white">
-              {dynamics.cancelRate.toFixed(1)}
+              {safeFixed(dynamics.cancelRate, 1)}
               <span className="text-sm text-gray-400 ml-1">/분</span>
             </div>
           </div>
@@ -172,7 +173,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
               주문 속도
             </div>
             <div className="text-2xl font-bold text-white">
-              {dynamics.orderVelocity.toFixed(0)}
+              {safeFixed(dynamics.orderVelocity, 0)}
               <span className="text-sm text-gray-400 ml-1">건/분</span>
             </div>
           </div>
@@ -195,7 +196,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-400">추가</span>
-                <span className="text-green-400">{orderPatterns.addRatio.toFixed(1)}%</span>
+                <span className="text-green-400">{safeFixed(orderPatterns.addRatio, 1)}%</span>
               </div>
               <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
@@ -208,7 +209,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-400">취소</span>
-                <span className="text-red-400">{orderPatterns.cancelRatio.toFixed(1)}%</span>
+                <span className="text-red-400">{safeFixed(orderPatterns.cancelRatio, 1)}%</span>
               </div>
               <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
@@ -221,7 +222,7 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-400">수정</span>
-                <span className="text-yellow-400">{orderPatterns.modifyRatio.toFixed(1)}%</span>
+                <span className="text-yellow-400">{safeFixed(orderPatterns.modifyRatio, 1)}%</span>
               </div>
               <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
@@ -263,10 +264,10 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-300">
-                      ${order.price.toFixed(2)}
+                      ${safePrice(order.price, 2)}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {order.amount.toFixed(4)} BTC
+                      {safeAmount(order.amount)} BTC
                     </div>
                   </div>
                 </motion.div>
@@ -294,14 +295,14 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              취소율 {dynamics.cancelRate.toFixed(1)}%는 
+              취소율 {safeFixed(dynamics.cancelRate, 1)}%는 
               {dynamics.cancelRate > 30 ? ' 높은 편으로 시장 불확실성이 존재' : ' 안정적인 수준'}합니다.
             </p>
           </div>
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              주문 속도가 분당 {dynamics.orderVelocity.toFixed(0)}건으로 
+              주문 속도가 분당 {safeFixed(dynamics.orderVelocity, 0)}건으로 
               {dynamics.orderVelocity > 100 ? ' 활발한 거래' : ' 보통 수준의 거래'}가 이루어지고 있습니다.
             </p>
           </div>

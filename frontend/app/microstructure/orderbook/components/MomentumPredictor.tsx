@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaRocket, FaExclamationTriangle, FaChartLine, FaBolt } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderbookLevel {
   price: number
@@ -224,7 +225,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
           <h4 className="text-gray-300 text-sm mb-3">현재 모멘텀</h4>
           <div className="flex items-center justify-between mb-3">
             <span className="text-3xl font-bold" style={{ color: getMomentumColor(currentMomentum.value) }}>
-              {currentMomentum.value.toFixed(1)}
+              {safeFixed(currentMomentum.value, 1)}
             </span>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               currentMomentum.direction === 'bullish' ? 'bg-green-500/20 text-green-400' :
@@ -241,7 +242,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-1">
                 <span>매수 압력</span>
-                <span>{currentMomentum.buyPressure.toFixed(1)}%</span>
+                <span>{safeFixed(currentMomentum.buyPressure, 1)}%</span>
               </div>
               <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
                 <motion.div
@@ -254,7 +255,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-1">
                 <span>매도 압력</span>
-                <span>{currentMomentum.sellPressure.toFixed(1)}%</span>
+                <span>{safeFixed(currentMomentum.sellPressure, 1)}%</span>
               </div>
               <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
                 <motion.div
@@ -286,7 +287,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-gray-400">신호 강도</span>
-                <p className="font-bold text-white">{prediction.strength.toFixed(0)}%</p>
+                <p className="font-bold text-white">{safeFixed(prediction.strength, 0)}%</p>
               </div>
               <div>
                 <span className="text-gray-400">예상 시간</span>
@@ -302,7 +303,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
                     animate={{ width: `${predictionConfidence}%` }}
                   />
                 </div>
-                <span className="text-xs text-gray-300">{predictionConfidence.toFixed(0)}%</span>
+                <span className="text-xs text-gray-300">{safeFixed(predictionConfidence, 0)}%</span>
               </div>
             </div>
           </div>
@@ -321,7 +322,7 @@ export default function MomentumPredictor({ orderbook, historicalData, stats, sy
             <p className="text-orange-400 font-semibold">전환점 감지</p>
             <p className="text-gray-300 text-sm mt-1">
               {turningPoint.type === 'bullish' ? '하락에서 상승' : '상승에서 하락'}으로의 전환 가능성 감지
-              (신뢰도: {turningPoint.confidence.toFixed(0)}%)
+              (신뢰도: {safeFixed(turningPoint.confidence, 0)}%)
             </p>
           </div>
         </motion.div>

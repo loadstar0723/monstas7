@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBell, FaArrowUp, FaArrowDown, FaChartLine, FaClock } from 'react-icons/fa'
 
 interface PinBarSignalsProps {
@@ -125,19 +126,19 @@ export default function PinBarSignals({ symbol, timeframe, currentPrice }: PinBa
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-gray-900/50 rounded-lg p-2">
                 <p className="text-gray-400 text-xs mb-1">진입가</p>
-                <p className="text-white font-bold">${activeSignal.price.toFixed(2)}</p>
+                <p className="text-white font-bold">${safePrice(activeSignal.price, 2)}</p>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-2">
                 <p className="text-gray-400 text-xs mb-1">손절가</p>
-                <p className="text-red-400 font-bold">${activeSignal.stopLoss.toFixed(2)}</p>
+                <p className="text-red-400 font-bold">${safeFixed(activeSignal.stopLoss, 2)}</p>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-2">
                 <p className="text-gray-400 text-xs mb-1">목표가</p>
-                <p className="text-green-400 font-bold">${activeSignal.takeProfit.toFixed(2)}</p>
+                <p className="text-green-400 font-bold">${safeFixed(activeSignal.takeProfit, 2)}</p>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-2">
                 <p className="text-gray-400 text-xs mb-1">신호 강도</p>
-                <p className="text-purple-400 font-bold">{activeSignal.strength.toFixed(0)}%</p>
+                <p className="text-purple-400 font-bold">{safeFixed(activeSignal.strength, 0)}%</p>
               </div>
             </div>
             

@@ -92,7 +92,7 @@ export default function StrategyTab({ currentPrice, selectedCoin, stats }: any) 
                 <td className="py-2">저변동성</td>
                 <td className="py-2">제한적</td>
                 <td className="py-2">순지불액</td>
-                <td className="py-2">${currentPrice.toFixed(0)}</td>
+                <td className="py-2">${safePrice(currentPrice, 0)}</td>
               </tr>
             </tbody>
           </table>

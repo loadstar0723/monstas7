@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Strategy {
   value: string
@@ -149,19 +150,19 @@ export default function StrategyAnalyzer({ strategies, selectedStrategy, onStrat
                       <div className="text-center">
                         <div className="text-xs text-gray-500">예상 수익</div>
                         <div className={`text-sm font-bold ${getPerformanceColor(strategy.performance.totalReturn || 0)}`}>
-                          {strategy.performance.totalReturn ? `${strategy.performance.totalReturn.toFixed(1)}%` : 'N/A'}
+                          {strategy.performance.totalReturn ? `${safeFixed(strategy.performance.totalReturn, 1)}%` : 'N/A'}
                         </div>
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-gray-500">승률</div>
                         <div className="text-sm font-bold text-blue-400">
-                          {strategy.performance.winRate ? `${strategy.performance.winRate.toFixed(0)}%` : 'N/A'}
+                          {strategy.performance.winRate ? `${safeFixed(strategy.performance.winRate, 0)}%` : 'N/A'}
                         </div>
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-gray-500">샤프비율</div>
                         <div className="text-sm font-bold text-purple-400">
-                          {strategy.performance.sharpeRatio ? strategy.performance.sharpeRatio.toFixed(2) : 'N/A'}
+                          {strategy.performance.sharpeRatio ? safeFixed(strategy.performance.sharpeRatio, 2) : 'N/A'}
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaEye, FaChartBar } from 'react-icons/fa'
 
@@ -73,7 +74,7 @@ export default function SpoofingHeatmap({ orderbook, symbol }: SpoofingHeatmapPr
     const currentPrice = (orderbook.bestBid + orderbook.bestAsk) / 2
     ctx.fillStyle = '#FFFFFF'
     ctx.font = 'bold 14px monospace'
-    ctx.fillText(`$${currentPrice.toFixed(2)}`, 10, midY - 5)
+    ctx.fillText(`$${safePrice(currentPrice, 2)}`, 10, midY - 5)
     
     // 매수 주문 렌더링 (아래쪽)
     renderOrders(ctx, orderbook.bids, width, height, midY, height, 'bid')
@@ -139,11 +140,11 @@ export default function SpoofingHeatmap({ orderbook, symbol }: SpoofingHeatmapPr
       if (intensity > 0.3) {
         ctx.fillStyle = '#FFFFFF'
         ctx.font = '10px monospace'
-        ctx.fillText(`$${order.price.toFixed(2)}`, 5, y + blockHeight/2 + 3)
+        ctx.fillText(`$${safePrice(order.price, 2)}`, 5, y + blockHeight/2 + 3)
         
         // 수량 텍스트
         ctx.fillStyle = '#AAAAAA'
-        ctx.fillText(`${order.amount.toFixed(4)}`, barWidth - 60, y + blockHeight/2 + 3)
+        ctx.fillText(`${safeAmount(order.amount)}`, barWidth - 60, y + blockHeight/2 + 3)
       }
       
       // 취소된 주문 표시
@@ -249,13 +250,13 @@ export default function SpoofingHeatmap({ orderbook, symbol }: SpoofingHeatmapPr
         {hoveredOrder && (
           <div className="absolute top-4 left-4 bg-black/90 rounded-lg p-3 text-sm">
             <div className="text-white font-semibold">
-              가격: ${hoveredOrder.price.toFixed(2)}
+              가격: ${safePrice(hoveredOrder.price, 2)}
             </div>
             <div className="text-gray-300">
-              수량: {hoveredOrder.amount.toFixed(4)}
+              수량: {safeAmount(hoveredOrder.amount)}
             </div>
             <div className="text-gray-300">
-              총액: ${hoveredOrder.total.toFixed(2)}
+              총액: ${safeFixed(hoveredOrder.total, 2)}
             </div>
             {hoveredOrder.lifespan && (
               <div className="text-yellow-400">
@@ -298,25 +299,25 @@ export default function SpoofingHeatmap({ orderbook, symbol }: SpoofingHeatmapPr
         <div className="text-center">
           <div className="text-xs text-gray-400">스프레드</div>
           <div className="text-sm font-semibold text-white">
-            ${orderbook?.spread.toFixed(2) || '0.00'}
+            ${orderbook?.safeFixed(spread, 2) || '0.00'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">스프레드 %</div>
           <div className="text-sm font-semibold text-white">
-            {orderbook?.spreadPercent.toFixed(3) || '0.000'}%
+            {orderbook?.safeFixed(spreadPercent, 3) || '0.000'}%
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">최우선 매수</div>
           <div className="text-sm font-semibold text-green-400">
-            ${orderbook?.bestBid.toFixed(2) || '0.00'}
+            ${orderbook?.safeFixed(bestBid, 2) || '0.00'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">최우선 매도</div>
           <div className="text-sm font-semibold text-red-400">
-            ${orderbook?.bestAsk.toFixed(2) || '0.00'}
+            ${orderbook?.safeFixed(bestAsk, 2) || '0.00'}
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaFish, FaBrain, FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
 import SignalIndicator from './SignalIndicator'
@@ -225,7 +226,7 @@ export default function WhaleAnalysis() {
           >
             <div className="text-sm text-gray-400 mb-1">활동 강도</div>
             <div className="text-2xl font-bold text-yellow-400">
-              {metrics.intensity.toFixed(1)}%
+              {safeFixed(metrics.intensity, 1)}%
             </div>
             <div className="text-xs text-gray-500 mt-1">
               {metrics.intensity > 30 ? '매우 활발' : metrics.intensity > 15 ? '활발' : '보통'}

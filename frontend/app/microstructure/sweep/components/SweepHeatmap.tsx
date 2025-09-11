@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderBookData {
   bids: Array<[number, number]>
@@ -93,14 +94,14 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
       ctx.fillStyle = '#9ca3af'
       ctx.font = '11px monospace'
       ctx.textAlign = 'right'
-      ctx.fillText(ask.price.toFixed(2), priceWidth, y + levelHeight / 2 + 4)
+      ctx.fillText(safePrice(ask.price, 2), priceWidth, y + levelHeight / 2 + 4)
       
       // 볼륨 표시
       if (ask.intensity > 0.5) {
         ctx.fillStyle = '#f87171'
         ctx.font = '9px monospace'
         ctx.textAlign = 'left'
-        ctx.fillText(ask.volume.toFixed(4), priceWidth + 15, y + levelHeight / 2 + 3)
+        ctx.fillText(safeFixed(ask.volume, 4), priceWidth + 15, y + levelHeight / 2 + 3)
       }
     })
     
@@ -119,7 +120,7 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
     ctx.fillStyle = '#8b5cf6'
     ctx.font = 'bold 14px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(`$${currentPrice.toFixed(2)}`, rect.width / 2, midY - 8)
+    ctx.fillText(`$${safePrice(currentPrice, 2)}`, rect.width / 2, midY - 8)
     
     // 매수 주문 (아래쪽) - 초록색 계열
     heatmapData.bids.slice(0, 20).forEach((bid, index) => {
@@ -134,14 +135,14 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
       ctx.fillStyle = '#9ca3af'
       ctx.font = '11px monospace'
       ctx.textAlign = 'right'
-      ctx.fillText(bid.price.toFixed(2), priceWidth, y + levelHeight / 2 + 4)
+      ctx.fillText(safePrice(bid.price, 2), priceWidth, y + levelHeight / 2 + 4)
       
       // 볼륨 표시
       if (bid.intensity > 0.5) {
         ctx.fillStyle = '#34d399'
         ctx.font = '9px monospace'
         ctx.textAlign = 'left'
-        ctx.fillText(bid.volume.toFixed(4), priceWidth + 15, y + levelHeight / 2 + 3)
+        ctx.fillText(safeFixed(bid.volume, 4), priceWidth + 15, y + levelHeight / 2 + 3)
       }
     })
     
@@ -286,7 +287,7 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
             <p className="text-xs text-gray-400 mb-1">매수 물량</p>
             <p className="text-xl font-bold text-green-400">
               {typeof stats.totalBidVolume === 'number' 
-                ? stats.totalBidVolume.toFixed(2) 
+                ? safeFixed(stats.totalBidVolume, 2) 
                 : '0.00'}
             </p>
           </div>
@@ -294,7 +295,7 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
             <p className="text-xs text-gray-400 mb-1">매도 물량</p>
             <p className="text-xl font-bold text-red-400">
               {typeof stats.totalAskVolume === 'number' 
-                ? stats.totalAskVolume.toFixed(2) 
+                ? safeFixed(stats.totalAskVolume, 2) 
                 : '0.00'}
             </p>
           </div>
@@ -304,7 +305,7 @@ export default function SweepHeatmap({ orderBook, currentPrice, symbol = 'BTCUSD
               stats.imbalance > 0 ? 'text-green-400' : 'text-red-400'
             }`}>
               {typeof stats.imbalance === 'number' 
-                ? `${stats.imbalance > 0 ? '+' : ''}${stats.imbalance.toFixed(1)}%`
+                ? `${stats.imbalance > 0 ? '+' : ''}${safeFixed(stats.imbalance, 1)}%`
                 : '0.0%'}
             </p>
           </div>

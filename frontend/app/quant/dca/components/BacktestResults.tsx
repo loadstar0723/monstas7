@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaHistory, FaChartPie, FaCalendarAlt, FaExchangeAlt, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, Cell } from 'recharts'
 
@@ -287,9 +288,9 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
             <p className={`text-lg sm:text-2xl font-bold ${
               selectedData.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'
             }`}>
-              {selectedData.totalReturn >= 0 ? '+' : ''}{selectedData.totalReturn.toFixed(2)}%
+              {selectedData.totalReturn >= 0 ? '+' : ''}{safeFixed(selectedData.totalReturn, 2)}%
             </p>
-            <p className="text-xs text-gray-400">연환산 {selectedData.annualizedReturn.toFixed(2)}%</p>
+            <p className="text-xs text-gray-400">연환산 {safeFixed(selectedData.annualizedReturn, 2)}%</p>
           </div>
 
           <div className="bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-700">
@@ -298,7 +299,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               selectedData.sharpeRatio > 1 ? 'text-green-400' : 
               selectedData.sharpeRatio > 0.5 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              {selectedData.sharpeRatio.toFixed(2)}
+              {safeFixed(selectedData.sharpeRatio, 2)}
             </p>
             <p className="text-xs text-gray-400">위험 조정 수익</p>
           </div>
@@ -309,7 +310,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               selectedData.winRate > 60 ? 'text-green-400' : 
               selectedData.winRate > 40 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              {selectedData.winRate.toFixed(1)}%
+              {safeFixed(selectedData.winRate, 1)}%
             </p>
             <p className="text-xs text-gray-400">{selectedData.totalTrades}회 거래</p>
           </div>
@@ -320,7 +321,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               selectedData.maxDrawdown < 15 ? 'text-green-400' : 
               selectedData.maxDrawdown < 25 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              -{selectedData.maxDrawdown.toFixed(1)}%
+              -{safeFixed(selectedData.maxDrawdown, 1)}%
             </p>
             <p className="text-xs text-gray-400">최대 손실</p>
           </div>
@@ -352,8 +353,8 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
                 }}
                 labelStyle={{ color: '#E5E7EB' }}
                 formatter={(value: number, name: string) => {
-                  if (name === '수익률') return `${value.toFixed(2)}%`
-                  if (name === '샤프비율') return value.toFixed(2)
+                  if (name === '수익률') return `${safeFixed(value, 2)}%`
+                  if (name === '샤프비율') return safeFixed(value, 2)
                   return value
                 }}
               />
@@ -385,7 +386,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
                 name="평균 수익률"
                 stroke="#9CA3AF"
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${value.toFixed(1)}%`}
+                tickFormatter={(value) => `${safeFixed(value, 1)}%`}
               />
               <YAxis 
                 type="number"
@@ -403,8 +404,8 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
                   borderRadius: '8px'
                 }}
                 formatter={(value: number, name: string) => {
-                  if (name === '평균 수익률') return `${value.toFixed(2)}%`
-                  if (name === '승률') return `${value.toFixed(1)}%`
+                  if (name === '평균 수익률') return `${safeFixed(value, 2)}%`
+                  if (name === '승률') return `${safeFixed(value, 1)}%`
                   return value
                 }}
               />
@@ -444,7 +445,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               <h4 className="font-medium text-white">최고 월간 성과</h4>
             </div>
             <p className="text-2xl font-bold text-green-400">
-              +{selectedData.bestMonth.toFixed(2)}%
+              +{safeFixed(selectedData.bestMonth, 2)}%
             </p>
             <p className="text-sm text-gray-300 mt-1">
               한 달 최대 수익률
@@ -457,7 +458,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               <h4 className="font-medium text-white">최저 월간 성과</h4>
             </div>
             <p className="text-2xl font-bold text-red-400">
-              {selectedData.worstMonth.toFixed(2)}%
+              {safeFixed(selectedData.worstMonth, 2)}%
             </p>
             <p className="text-sm text-gray-300 mt-1">
               한 달 최대 손실률
@@ -476,7 +477,7 @@ export default function BacktestResults({ selectedCoin, settings }: Props) {
               {selectedData && selectedData.winRate > 50 && (
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-0.5">✓</span>
-                  <span>높은 승률 ({selectedData.winRate.toFixed(1)}%)</span>
+                  <span>높은 승률 ({safeFixed(selectedData.winRate, 1)}%)</span>
                 </li>
               )}
               {selectedData && selectedData.sharpeRatio > 1 && (

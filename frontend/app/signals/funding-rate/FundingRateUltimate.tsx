@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   FaPercent, FaClock, FaChartLine, FaExclamationTriangle, 
   FaArrowUp, FaArrowDown, FaDollarSign, FaExchangeAlt,
@@ -259,7 +260,7 @@ export default function FundingRateUltimate() {
                       <FaUserGraduate /> 트레이딩 전략
                     </h3>
                     <p className="text-sm text-gray-300">
-                      현재 펀딩비: {fundingData?.current.fundingRate.toFixed(4)}%
+                      현재 펀딩비: {fundingData?.safeFixed(current.fundingRate, 4)}%
                     </p>
                     <div className="mt-2 p-3 bg-gray-900/50 rounded">
                       <p className="text-sm font-semibold text-yellow-400">
@@ -286,7 +287,7 @@ export default function FundingRateUltimate() {
                       </h3>
                       <div className="text-3xl font-bold">
                         <span className={fundingData?.current.fundingRate || 0 > 0 ? 'text-green-400' : 'text-red-400'}>
-                          {fundingData?.current.fundingRate.toFixed(4)}%
+                          {fundingData?.safeFixed(current.fundingRate, 4)}%
                         </span>
                       </div>
                     </div>
@@ -302,7 +303,7 @@ export default function FundingRateUltimate() {
                       <div>
                         <p className="text-xs text-gray-400">연율화 수익률</p>
                         <p className="text-lg font-semibold text-yellow-400">
-                          {fundingData?.current.annualizedRate.toFixed(2)}%
+                          {fundingData?.safeFixed(current.annualizedRate, 2)}%
                         </p>
                       </div>
                       <div>
@@ -316,7 +317,7 @@ export default function FundingRateUltimate() {
                         <p className={`text-lg font-semibold ${
                           (fundingData?.current.premium || 0) > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {fundingData?.current.premium.toFixed(3)}%
+                          {fundingData?.safeFixed(current.premium, 3)}%
                         </p>
                       </div>
                     </div>
@@ -354,7 +355,7 @@ export default function FundingRateUltimate() {
                       <div className="text-right">
                         <p className="text-xs text-gray-400">신뢰도</p>
                         <p className="text-lg font-bold text-yellow-400">
-                          {fundingData?.recommendation.confidence.toFixed(1)}%
+                          {fundingData?.safeFixed(recommendation.confidence, 1)}%
                         </p>
                       </div>
                     </div>
@@ -390,7 +391,7 @@ export default function FundingRateUltimate() {
                       <YAxis 
                         stroke="#9CA3AF"
                         fontSize={12}
-                        tickFormatter={(value) => `${value.toFixed(3)}%`}
+                        tickFormatter={(value) => `${safeFixed(value, 3)}%`}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -399,7 +400,7 @@ export default function FundingRateUltimate() {
                           borderRadius: '8px'
                         }}
                         labelFormatter={(time) => new Date(time).toLocaleString('ko-KR')}
-                        formatter={(value: any) => `${value.toFixed(4)}%`}
+                        formatter={(value: any) => `${safeFixed(value, 4)}%`}
                       />
                       <Line 
                         type="monotone" 
@@ -465,19 +466,19 @@ export default function FundingRateUltimate() {
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">평균 펀딩비</p>
                   <p className="text-xl font-bold text-white">
-                    {fundingData?.statistics.avgRate.toFixed(4)}%
+                    {fundingData?.safeFixed(statistics.avgRate, 4)}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">최대 펀딩비</p>
                   <p className="text-xl font-bold text-green-400">
-                    {fundingData?.statistics.maxRate.toFixed(4)}%
+                    {fundingData?.safeFixed(statistics.maxRate, 4)}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">최소 펀딩비</p>
                   <p className="text-xl font-bold text-red-400">
-                    {fundingData?.statistics.minRate.toFixed(4)}%
+                    {fundingData?.safeFixed(statistics.minRate, 4)}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
@@ -571,7 +572,7 @@ export default function FundingRateUltimate() {
                           <ol className="text-xs space-y-1 text-gray-400">
                             <li>1. 현물 {currentCoin?.name} 매수</li>
                             <li>2. 선물 {currentCoin?.name} 숏 포지션</li>
-                            <li>3. 펀딩비 {fundingData?.current.fundingRate.toFixed(4)}% 수취</li>
+                            <li>3. 펀딩비 {fundingData?.safeFixed(current.fundingRate, 4)}% 수취</li>
                             <li>4. 리스크 없는 수익 실현</li>
                           </ol>
                         </div>

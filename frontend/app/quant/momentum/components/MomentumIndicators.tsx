@@ -42,7 +42,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
           </div>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-2xl font-bold text-white">
-              {momentumData?.rsi.toFixed(1) || '0.0'}
+              {momentumData?.safeFixed(rsi, 1) || '0.0'}
             </span>
           </div>
           <div className="relative">
@@ -78,13 +78,13 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">MACD</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.macd.macd.toFixed(2) || '0.00'}
+                {momentumData?.safeFixed(macd.macd, 2) || '0.00'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">Signal</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.macd.signal.toFixed(2) || '0.00'}
+                {momentumData?.safeFixed(macd.signal, 2) || '0.00'}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -92,7 +92,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
               <span className={`text-sm font-semibold ${
                 momentumData?.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                {momentumData?.macd.histogram.toFixed(2) || '0.00'}
+                {momentumData?.safeFixed(macd.histogram, 2) || '0.00'}
               </span>
             </div>
           </div>
@@ -114,13 +114,13 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">%K</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.stochastic.k.toFixed(1) || '0.0'}
+                {momentumData?.safeFixed(stochastic.k, 1) || '0.0'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">%D</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.stochastic.d.toFixed(1) || '0.0'}
+                {momentumData?.safeFixed(stochastic.d, 1) || '0.0'}
               </span>
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
           </div>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-2xl font-bold text-white">
-              {momentumData?.williams.toFixed(1) || '0.0'}
+              {momentumData?.safeFixed(williams, 1) || '0.0'}
             </span>
             <span className="text-gray-500 text-sm mb-1">%</span>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartPie, FaBalanceScale, FaBrain, FaExclamationTriangle } from 'react-icons/fa'
 
 interface ComprehensiveAnalysisProps {
@@ -205,23 +206,23 @@ export default function ComprehensiveAnalysis({
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-red-500 text-sm">강한 저항</span>
-              <span className="text-white font-medium">${analysis.keyLevels.strongResistance.toFixed(2)}</span>
+              <span className="text-white font-medium">${safeFixed(analysis.keyLevels.strongResistance, 2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-red-400 text-sm">저항선</span>
-              <span className="text-white font-medium">${analysis.keyLevels.resistance.toFixed(2)}</span>
+              <span className="text-white font-medium">${safeFixed(analysis.keyLevels.resistance, 2)}</span>
             </div>
             <div className="flex justify-between items-center p-2 bg-yellow-900/30 rounded">
               <span className="text-yellow-400 text-sm font-medium">현재가</span>
-              <span className="text-yellow-400 font-bold">${currentPrice.toFixed(2)}</span>
+              <span className="text-yellow-400 font-bold">${safePrice(currentPrice, 2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-green-400 text-sm">지지선</span>
-              <span className="text-white font-medium">${analysis.keyLevels.support.toFixed(2)}</span>
+              <span className="text-white font-medium">${safeFixed(analysis.keyLevels.support, 2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-green-500 text-sm">강한 지지</span>
-              <span className="text-white font-medium">${analysis.keyLevels.strongSupport.toFixed(2)}</span>
+              <span className="text-white font-medium">${safeFixed(analysis.keyLevels.strongSupport, 2)}</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 
 interface SweepData {
@@ -187,7 +188,7 @@ export default function SweepPatternDetector({ sweeps, symbol = 'BTCUSDT' }: Swe
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm text-gray-400">패턴 분석</h4>
             <span className="text-xs text-gray-500">
-              신뢰도: {patternConfidence.toFixed(0)}%
+              신뢰도: {safeFixed(patternConfidence, 0)}%
             </span>
           </div>
         
@@ -212,7 +213,7 @@ export default function SweepPatternDetector({ sweeps, symbol = 'BTCUSDT' }: Swe
                         return (
                           <div className="bg-gray-900 border border-gray-700 rounded-lg p-3">
                             <p className="text-white font-medium">{data.pattern}</p>
-                            <p className="text-gray-400 text-sm">강도: {data.value.toFixed(1)}%</p>
+                            <p className="text-gray-400 text-sm">강도: {safeFixed(data.value, 1)}%</p>
                             <p className="text-gray-400 text-sm">횟수: {data.count}회</p>
                           </div>
                         )
@@ -256,11 +257,11 @@ export default function SweepPatternDetector({ sweeps, symbol = 'BTCUSDT' }: Swe
                   <div className="grid grid-cols-3 gap-4 text-xs">
                     <div>
                       <span className="text-gray-400">총 거래량</span>
-                      <p className="text-white font-medium mt-1">{seq.totalVolume.toFixed(2)}</p>
+                      <p className="text-white font-medium mt-1">{safeFixed(seq.totalVolume, 2)}</p>
                     </div>
                     <div>
                       <span className="text-gray-400">평균 영향도</span>
-                      <p className="text-yellow-400 font-medium mt-1">{seq.avgImpact.toFixed(2)}%</p>
+                      <p className="text-yellow-400 font-medium mt-1">{safeFixed(seq.avgImpact, 2)}%</p>
                     </div>
                     <div>
                       <span className="text-gray-400">지속 시간</span>

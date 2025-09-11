@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaLayerGroup, FaSearchPlus, FaSearchMinus, FaSyncAlt, FaExclamationCircle } from 'react-icons/fa'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
@@ -305,14 +306,14 @@ export default function MarketDepthAnalyzer({ selectedCoin }: Props) {
   }
 
   const formatPrice = (price: number) => {
-    if (price >= 10000) return price.toFixed(0)
-    if (price >= 100) return price.toFixed(2)
-    return price.toFixed(4)
+    if (price >= 10000) return safePrice(price, 0)
+    if (price >= 100) return safePrice(price, 2)
+    return safePrice(price, 4)
   }
 
   const formatVolume = (volume: number) => {
     if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`
-    return volume.toFixed(2)
+    return safeFixed(volume, 2)
   }
 
   if (loading) {
@@ -409,7 +410,7 @@ export default function MarketDepthAnalyzer({ selectedCoin }: Props) {
             marketInsights.imbalance > 10 ? 'text-green-400' : 
             marketInsights.imbalance < -10 ? 'text-red-400' : 'text-white'
           }`}>
-            {marketInsights.imbalance.toFixed(1)}%
+            {safeFixed(marketInsights.imbalance, 1)}%
           </p>
           <p className="text-xs text-gray-400">
             {marketInsights.imbalance > 10 ? '매수 우세' : 
@@ -505,7 +506,7 @@ export default function MarketDepthAnalyzer({ selectedCoin }: Props) {
           <p>• 현재 주문 불균형: <span className={`font-semibold ${
             marketInsights.imbalance > 10 ? 'text-green-400' : 
             marketInsights.imbalance < -10 ? 'text-red-400' : 'text-white'
-          }`}>{marketInsights.imbalance.toFixed(1)}%</span> {marketInsights.imbalance > 0 ? '매수' : '매도'} 쪽으로 편향</p>
+          }`}>{safeFixed(marketInsights.imbalance, 1)}%</span> {marketInsights.imbalance > 0 ? '매수' : '매도'} 쪽으로 편향</p>
           
           {marketInsights.buyWalls.length > 0 && (
             <p>• 주의: <span className="text-yellow-400">${formatPrice(marketInsights.buyWalls[0].price)}</span> 부근에 강한 매수 벽 존재</p>

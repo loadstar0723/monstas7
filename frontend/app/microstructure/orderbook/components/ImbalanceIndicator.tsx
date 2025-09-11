@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaBalanceScale, FaArrowUp, FaArrowDown, FaExclamationTriangle } from 'react-icons/fa'
 import { config } from '@/lib/config'
@@ -186,7 +187,7 @@ export default function ImbalanceIndicator({ stats, orderbook }: ImbalanceIndica
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">매수량</span>
-            <span className="text-green-400">{bidRatio.toFixed(1)}%</span>
+            <span className="text-green-400">{safeFixed(bidRatio, 1)}%</span>
           </div>
           <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
             <div 
@@ -202,7 +203,7 @@ export default function ImbalanceIndicator({ stats, orderbook }: ImbalanceIndica
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">매도량</span>
-            <span className="text-red-400">{askRatio.toFixed(1)}%</span>
+            <span className="text-red-400">{safeFixed(askRatio, 1)}%</span>
           </div>
           <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
             <div 

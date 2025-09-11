@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { useTheme } from '@/contexts/ThemeContext'
 import { motion } from 'framer-motion'
@@ -99,16 +100,16 @@ export default function MarketDepthChart({ symbol }: MarketDepthChartProps) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
           <p className="text-sm font-semibold text-gray-800 dark:text-white">
-            ${data.price.toFixed(2)}
+            ${safePrice(data.price, 2)}
           </p>
           {data.totalBid > 0 && (
             <p className="text-sm text-green-600 dark:text-green-400">
-              매수: {data.totalBid.toFixed(4)}
+              매수: {safeFixed(data.totalBid, 4)}
             </p>
           )}
           {data.totalAsk > 0 && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              매도: {data.totalAsk.toFixed(4)}
+              매도: {safeFixed(data.totalAsk, 4)}
             </p>
           )}
         </div>
@@ -141,7 +142,7 @@ export default function MarketDepthChart({ symbol }: MarketDepthChartProps) {
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">스프레드:</span>
             <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
-              ${spread.toFixed(2)}
+              ${safeFixed(spread, 2)}
             </span>
           </div>
         </div>
@@ -171,13 +172,13 @@ export default function MarketDepthChart({ symbol }: MarketDepthChartProps) {
             dataKey="price" 
             stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
             tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `$${value.toFixed(0)}`}
+            tickFormatter={(value) => `$${safeFixed(value, 0)}`}
           />
           
           <YAxis 
             stroke={isDarkMode ? '#9ca3af' : '#6b7280'}
             tick={{ fontSize: 12 }}
-            tickFormatter={(value) => value.toFixed(2)}
+            tickFormatter={(value) => safeFixed(value, 2)}
           />
           
           <Tooltip content={<CustomTooltip />} />

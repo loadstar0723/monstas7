@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import type { BotConfig } from '../ArbitrageBotModule'
 
 interface BacktestingEngineProps {
@@ -237,10 +238,10 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
                 results.winRate >= 50 ? 'text-yellow-400' :
                 'text-red-400'
               }`}>
-                {results.winRate.toFixed(1)}%
+                {safeFixed(results.winRate, 1)}%
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Profit Factor: {results.profitFactor.toFixed(2)}
+                Profit Factor: {safeFixed(results.profitFactor, 2)}
               </div>
             </div>
             
@@ -252,17 +253,17 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
                 {((results.totalProfit || 0) * 100).toFixed(0)}%
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                ROI: {(results.roi || 0).toFixed(1)}%
+                ROI: {safeFixed(results.roi, 1)}%
               </div>
             </div>
             
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
               <div className="text-xs text-gray-400 mb-1">최대 낙폭</div>
               <div className="text-2xl font-bold text-red-400">
-                -{results.maxDrawdown.toFixed(1)}%
+                -{safeFixed(results.maxDrawdown, 1)}%
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Sharpe: {results.sharpeRatio.toFixed(2)}
+                Sharpe: {safeFixed(results.sharpeRatio, 2)}
               </div>
             </div>
           </div>
@@ -275,11 +276,11 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">평균 수익 (거래당)</span>
-                  <span className="text-sm text-green-400">+{(results.avgWin || 0).toFixed(2)}%</span>
+                  <span className="text-sm text-green-400">+{safeFixed(results.avgWin, 2)}%</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">평균 손실 (거래당)</span>
-                  <span className="text-sm text-red-400">-{(results.avgLoss || 0).toFixed(2)}%</span>
+                  <span className="text-sm text-red-400">-{safeFixed(results.avgLoss, 2)}%</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">성공 거래</span>
@@ -299,16 +300,16 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
                     results.profitFactor >= 1.2 ? 'text-yellow-400' :
                     'text-red-400'
                   }`}>
-                    {results.profitFactor.toFixed(2)}
+                    {safeFixed(results.profitFactor, 2)}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">Sharpe Ratio</span>
-                  <span className="text-sm text-purple-400">{results.sharpeRatio.toFixed(2)}</span>
+                  <span className="text-sm text-purple-400">{safeFixed(results.sharpeRatio, 2)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-sm text-gray-400">Calmar Ratio</span>
-                  <span className="text-sm text-blue-400">{results.calmarRatio.toFixed(2)}</span>
+                  <span className="text-sm text-blue-400">{safeFixed(results.calmarRatio, 2)}</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-sm text-gray-400">일평균 거래</span>
@@ -348,7 +349,7 @@ export default function BacktestingEngine({ selectedCoin, botConfig }: Backtesti
                     <span className={`text-sm font-mono w-20 text-right ${
                       month.profit > 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      ${month.profit.toFixed(0)}
+                      ${safeFixed(month.profit, 0)}
                     </span>
                   </div>
                 ))}

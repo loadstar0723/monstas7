@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaExchangeAlt, FaArrowUp, FaArrowDown, FaSync, FaInfoCircle } from 'react-icons/fa'
 import { binanceAPI, BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -295,7 +296,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
               >
                 <h4 className="font-bold text-white mb-2">{exchange.exchange}</h4>
                 <p className="text-xl font-mono text-white">
-                  ${exchange.price.toFixed(2)}
+                  ${safePrice(exchange.price, 2)}
                 </p>
                 <p className={`text-sm flex items-center gap-1 mt-1 ${
                   exchange.change24h >= 0 ? 'text-green-400' : 'text-red-400'
@@ -304,7 +305,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
                   {Math.abs(exchange.change24h).toFixed(2)}%
                 </p>
                 <p className="text-xs text-gray-300 mt-2">
-                  스프레드: {exchange.spread.toFixed(3)}%
+                  스프레드: {safePercent(exchange.spread)}%
                 </p>
               </motion.div>
             ))}
@@ -340,7 +341,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
                           color: cell.color
                         }}
                       >
-                        {cell.profit.toFixed(2)}%
+                        {safeFixed(cell.profit, 2)}%
                       </td>
                     ))}
                   </tr>
@@ -449,11 +450,11 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-400">매수호가</span>
-                    <span className="text-green-400">${exchange.ask.toFixed(2)}</span>
+                    <span className="text-green-400">${safePercent(exchange.ask)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">매도호가</span>
-                    <span className="text-red-400">${exchange.bid.toFixed(2)}</span>
+                    <span className="text-red-400">${safePercent(exchange.bid)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">24시간 거래량</span>
@@ -466,7 +467,7 @@ export default function ExchangePriceMatrix({ selectedCoin }: Props) {
                       exchange.liquidityScore > 80 ? 'text-yellow-400' :
                       'text-red-400'
                     }`}>
-                      {exchange.liquidityScore.toFixed(0)}/100
+                      {safePercent(exchange.liquidityScore)}/100
                     </span>
                   </div>
                 </div>

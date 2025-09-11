@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaExclamationTriangle, FaShieldAlt, FaRocket, FaBalanceScale, FaCalculator } from 'react-icons/fa'
 import { config } from '@/lib/config'
 
@@ -152,7 +153,7 @@ export default function LeverageStrategy({
         </h3>
         <div className="text-sm text-gray-400">
           현재 변동성: <span className={`font-bold ${volatility > 40 ? 'text-red-400' : volatility > 25 ? 'text-yellow-400' : 'text-green-400'}`}>
-            {volatility.toFixed(1)}%
+            {safeFixed(volatility, 1)}%
           </span>
         </div>
       </div>
@@ -282,20 +283,20 @@ export default function LeverageStrategy({
                 calculatedRisk.liquidationDistance < 10 ? 'text-yellow-400' : 
                 'text-green-400'
               }`}>
-                {calculatedRisk.liquidationDistance.toFixed(2)}%
+                {safeFixed(calculatedRisk.liquidationDistance, 2)}%
               </span>
             </div>
             <div className="border-t border-gray-700 pt-2 mt-2">
               <div className="text-gray-400 mb-1">예상 손익</div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="text-green-400">
-                  +${config.percentage.value1}: ${calculatedRisk.estimatedPnL.profit1.toFixed(2)}
+                  +${config.percentage.value1}: ${safeFixed(calculatedRisk.estimatedPnL.profit1, 2)}
                 </div>
                 <div className="text-red-400">
                   -${config.percentage.value1}: ${Math.abs(calculatedRisk.estimatedPnL.loss1).toFixed(2)}
                 </div>
                 <div className="text-green-400">
-                  +${config.percentage.value5}: ${calculatedRisk.estimatedPnL.profit5.toFixed(2)}
+                  +${config.percentage.value5}: ${safeFixed(calculatedRisk.estimatedPnL.profit5, 2)}
                 </div>
                 <div className="text-red-400">
                   -${config.percentage.value5}: ${Math.abs(calculatedRisk.estimatedPnL.loss5).toFixed(2)}

@@ -2,6 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts'
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 interface Coin {
@@ -197,7 +198,7 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
             animatedMetrics.winRate >= 60 ? 'text-green-400' : 
             animatedMetrics.winRate >= 50 ? 'text-yellow-400' : 'text-red-400'
           }`}>
-            {animatedMetrics.winRate.toFixed(1)}%
+            {safeFixed(animatedMetrics.winRate, 1)}%
           </div>
         </motion.div>
         <div className="bg-black/30 rounded-lg p-4">
@@ -205,7 +206,7 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
           <div className={`text-2xl font-bold ${
             results.avgProfit > 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            {results.avgProfit > 0 ? '+' : ''}{results.avgProfit.toFixed(2)}%
+            {results.avgProfit > 0 ? '+' : ''}{safeFixed(results.avgProfit, 2)}%
           </div>
         </div>
         <div className="bg-black/30 rounded-lg p-4">
@@ -213,7 +214,7 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
           <div className={`text-2xl font-bold ${
             results.totalProfit > 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            {results.totalProfit > 0 ? '+' : ''}{results.totalProfit.toFixed(1)}%
+            {results.totalProfit > 0 ? '+' : ''}{safeFixed(results.totalProfit, 1)}%
           </div>
         </div>
       </div>
@@ -249,23 +250,23 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 rounded-lg p-3 border border-blue-700/30">
           <div className="text-blue-400 text-sm mb-1">최대 낙폭 (MDD)</div>
-          <div className="text-white font-bold">-{results.maxDrawdown.toFixed(1)}%</div>
+          <div className="text-white font-bold">-{safeFixed(results.maxDrawdown, 1)}%</div>
         </div>
         <div className="bg-gradient-to-r from-purple-900/20 to-purple-800/20 rounded-lg p-3 border border-purple-700/30">
           <div className="text-purple-400 text-sm mb-1">샤프 비율</div>
-          <div className="text-white font-bold">{results.sharpeRatio.toFixed(2)}</div>
+          <div className="text-white font-bold">{safeFixed(results.sharpeRatio, 2)}</div>
         </div>
         <div className="bg-gradient-to-r from-orange-900/20 to-orange-800/20 rounded-lg p-3 border border-orange-700/30">
           <div className="text-orange-400 text-sm mb-1">수익 팩터</div>
-          <div className="text-white font-bold">{results.profitFactor.toFixed(2)}</div>
+          <div className="text-white font-bold">{safeFixed(results.profitFactor, 2)}</div>
         </div>
         <div className="bg-gradient-to-r from-green-900/20 to-green-800/20 rounded-lg p-3 border border-green-700/30">
           <div className="text-green-400 text-sm mb-1">최고 수익</div>
-          <div className="text-white font-bold">+{results.bestTrade.toFixed(1)}%</div>
+          <div className="text-white font-bold">+{safeFixed(results.bestTrade, 1)}%</div>
         </div>
         <div className="bg-gradient-to-r from-red-900/20 to-red-800/20 rounded-lg p-3 border border-red-700/30">
           <div className="text-red-400 text-sm mb-1">최대 손실</div>
-          <div className="text-white font-bold">{results.worstTrade.toFixed(1)}%</div>
+          <div className="text-white font-bold">{safeFixed(results.worstTrade, 1)}%</div>
         </div>
         <div className="bg-gradient-to-r from-gray-900/20 to-gray-800/20 rounded-lg p-3 border border-gray-700/30">
           <div className="text-gray-400 text-sm mb-1">연환산 수익률</div>

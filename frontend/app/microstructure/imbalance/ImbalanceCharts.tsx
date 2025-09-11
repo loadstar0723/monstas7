@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   RadarChart, 
   PolarGrid, 
@@ -241,7 +242,7 @@ export function ImbalanceHeatmap({ history }: { history: any[] }) {
             key={i} 
             className="h-8 flex items-center justify-center rounded"
             style={{ backgroundColor: getColor(d.ofi) }}
-            title={`OFI: ${d.ofi.toFixed(3)}`}
+            title={`OFI: ${safeFixed(d.ofi, 3)}`}
           />
         ))}
       </div>
@@ -252,7 +253,7 @@ export function ImbalanceHeatmap({ history }: { history: any[] }) {
             key={i} 
             className="h-8 flex items-center justify-center rounded"
             style={{ backgroundColor: getColor(d.depth / 100) }}
-            title={`깊이: ${d.depth.toFixed(0)}`}
+            title={`깊이: ${safeFixed(d.depth, 0)}`}
           />
         ))}
       </div>
@@ -263,7 +264,7 @@ export function ImbalanceHeatmap({ history }: { history: any[] }) {
             key={i} 
             className="h-8 flex items-center justify-center rounded"
             style={{ backgroundColor: getColor(d.tick) }}
-            title={`틱: ${d.tick.toFixed(3)}`}
+            title={`틱: ${safeFixed(d.tick, 3)}`}
           />
         ))}
       </div>

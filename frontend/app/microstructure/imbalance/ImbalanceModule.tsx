@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ErrorBoundary } from 'react-error-boundary'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, Cell, AreaChart, Area } from 'recharts'
 import './imbalance.module.css'
@@ -470,7 +471,7 @@ export default function ImbalanceModule() {
                   <h3 className="text-sm text-gray-400 mb-2">OFI 지표</h3>
                   <div className="text-3xl font-bold transition-all duration-300">
                     <span className={imbalanceHistory[0]?.ofi > 0 ? 'text-green-400' : 'text-red-400'}>
-                      {imbalanceHistory[0]?.ofi.toFixed(3) || '0.000'}
+                      {imbalanceHistory[0]?.safeFixed(ofi, 3) || '0.000'}
                     </span>
                   </div>
                   <div className="text-sm text-gray-400 mt-2 flex items-center gap-1">
@@ -649,9 +650,9 @@ export default function ImbalanceModule() {
                       <div
                         key={idx}
                         className={`h-12 rounded ${bgColor} flex items-center justify-center text-xs`}
-                        title={`OFI: ${data.ofi.toFixed(3)}`}
+                        title={`OFI: ${safeFixed(data.ofi, 3)}`}
                       >
-                        {data.ofi.toFixed(2)}
+                        {safeFixed(data.ofi, 2)}
                       </div>
                     )
                   })}
@@ -682,8 +683,8 @@ export default function ImbalanceModule() {
                           } animate-pulse`}>
                             {trade.isBuyerMaker ? 'SELL' : 'BUY'}
                           </span>
-                          <span className="text-white font-mono">${trade.price.toFixed(2)}</span>
-                          <span className="text-gray-400 text-sm">{trade.quantity.toFixed(4)}</span>
+                          <span className="text-white font-mono">${safePrice(trade.price, 2)}</span>
+                          <span className="text-gray-400 text-sm">{safeAmount(trade.quantity)}</span>
                           <span className="text-xs text-gray-500 ml-auto">
                             {new Date(trade.time).toLocaleTimeString()}
                           </span>
@@ -775,7 +776,7 @@ export default function ImbalanceModule() {
                   <div className="mt-3 grid grid-cols-3 gap-4 text-xs">
                     <div>
                       <span className="text-gray-400">진입가:</span>
-                      <span className="text-white ml-2">${currentPrice.toFixed(2)}</span>
+                      <span className="text-white ml-2">${safePrice(currentPrice, 2)}</span>
                     </div>
                     <div>
                       <span className="text-gray-400">손절가:</span>
@@ -814,7 +815,7 @@ export default function ImbalanceModule() {
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-400">
-                        {imbalanceHistory[0]?.depthImbalance.toFixed(0) || '0'}
+                        {imbalanceHistory[0]?.safeFixed(depthImbalance, 0) || '0'}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">깊이 차이</div>
                     </div>

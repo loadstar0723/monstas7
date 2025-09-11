@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -220,22 +221,22 @@ export default function CointegrationTest({ pair, timeframe }: CointegrationTest
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <div className="text-xs text-gray-400 mb-1">ADF 통계량</div>
-                <div className="text-lg font-bold text-white">{testResults.adfStatistic.toFixed(3)}</div>
+                <div className="text-lg font-bold text-white">{safeFixed(testResults.adfStatistic, 3)}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-400 mb-1">P-Value</div>
                 <div className={`text-lg font-bold ${getTestResultColor()}`}>
-                  {testResults.pValue.toFixed(4)}
+                  {safeFixed(testResults.pValue, 4)}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-400 mb-1">헤지 비율</div>
-                <div className="text-lg font-bold text-blue-400">{testResults.hedgeRatio.toFixed(4)}</div>
+                <div className="text-lg font-bold text-blue-400">{safeFixed(testResults.hedgeRatio, 4)}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-400 mb-1">Half-Life</div>
                 <div className="text-lg font-bold text-purple-400">
-                  {testResults.halfLife.toFixed(1)} 기간
+                  {safeFixed(testResults.halfLife, 1)} 기간
                 </div>
               </div>
             </div>
@@ -251,7 +252,7 @@ export default function CointegrationTest({ pair, timeframe }: CointegrationTest
                   <div key={level} className="flex items-center justify-between p-2 bg-gray-800/30 rounded">
                     <span className="text-sm text-gray-400">{level} 수준</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-300">임계값: {value.toFixed(2)}</span>
+                      <span className="text-sm text-gray-300">임계값: {safeFixed(value, 2)}</span>
                       <span className={`text-sm font-bold ${isPassed ? 'text-green-400' : 'text-red-400'}`}>
                         {isPassed ? '통과' : '실패'}
                       </span>
@@ -303,8 +304,8 @@ export default function CointegrationTest({ pair, timeframe }: CointegrationTest
               {testResults.isCointegrated ? (
                 <>
                   <p>✅ 페어 트레이딩에 적합한 페어입니다.</p>
-                  <p>헤지 비율: 1 {pair.coin1.replace('USDT', '')} = {testResults.hedgeRatio.toFixed(4)} {pair.coin2.replace('USDT', '')}</p>
-                  <p>평균 회귀 기간: 약 {testResults.halfLife.toFixed(0)}개 캔들</p>
+                  <p>헤지 비율: 1 {pair.coin1.replace('USDT', '')} = {safeFixed(testResults.hedgeRatio, 4)} {pair.coin2.replace('USDT', '')}</p>
+                  <p>평균 회귀 기간: 약 {safeFixed(testResults.halfLife, 0)}개 캔들</p>
                 </>
               ) : (
                 <>

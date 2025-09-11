@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaTachometerAlt, FaTrophy, FaChartLine, FaMedal, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Area } from 'recharts'
 
@@ -264,7 +265,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
             <p className="text-xs sm:text-sm text-gray-400">샤프 비율</p>
           </div>
           <p className={`text-lg sm:text-2xl font-bold ${getMetricColor('sharpe', metrics.sharpeRatio)}`}>
-            {metrics.sharpeRatio.toFixed(2)}
+            {safeFixed(metrics.sharpeRatio, 2)}
           </p>
           <p className="text-xs text-gray-400 mt-1">리스크 조정 수익</p>
         </div>
@@ -275,7 +276,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
             <p className="text-xs sm:text-sm text-gray-400">승률</p>
           </div>
           <p className={`text-lg sm:text-2xl font-bold ${getMetricColor('winRate', metrics.winRate)}`}>
-            {metrics.winRate.toFixed(1)}%
+            {safeFixed(metrics.winRate, 1)}%
           </p>
           <p className="text-xs text-gray-400 mt-1">수익 발생 비율</p>
         </div>
@@ -286,7 +287,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
             <p className="text-xs sm:text-sm text-gray-400">수익 팩터</p>
           </div>
           <p className={`text-lg sm:text-2xl font-bold ${getMetricColor('profitFactor', metrics.profitFactor)}`}>
-            {metrics.profitFactor.toFixed(2)}
+            {safeFixed(metrics.profitFactor, 2)}
           </p>
           <p className="text-xs text-gray-400 mt-1">총수익/총손실</p>
         </div>
@@ -297,7 +298,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
             <p className="text-xs sm:text-sm text-gray-400">최대 낙폭</p>
           </div>
           <p className={`text-lg sm:text-2xl font-bold ${getMetricColor('drawdown', metrics.maxDrawdown)}`}>
-            -{metrics.maxDrawdown.toFixed(1)}%
+            -{safeFixed(metrics.maxDrawdown, 1)}%
           </p>
           <p className="text-xs text-gray-400 mt-1">최대 손실폭</p>
         </div>
@@ -339,7 +340,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
                   formatter={(value: number, name: string) => {
                     if (name === '투자금' || name === '포트폴리오') 
                       return `$${value.toLocaleString()}`
-                    return `${value.toFixed(2)}%`
+                    return `${safeFixed(value, 2)}%`
                   }}
                 />
                 <Legend />
@@ -406,7 +407,7 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
                   borderRadius: '8px'
                 }}
                 labelStyle={{ color: '#E5E7EB' }}
-                formatter={(value: number) => `${value.toFixed(2)}%`}
+                formatter={(value: number) => `${safeFixed(value, 2)}%`}
               />
               <Bar 
                 dataKey="monthlyReturn" 
@@ -425,19 +426,19 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">소르티노 비율</span>
-              <span className="text-white font-medium">{metrics.sortinoRatio.toFixed(2)}</span>
+              <span className="text-white font-medium">{safeFixed(metrics.sortinoRatio, 2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">칼마 비율</span>
-              <span className="text-white font-medium">{metrics.calmarRatio.toFixed(2)}</span>
+              <span className="text-white font-medium">{safeFixed(metrics.calmarRatio, 2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">평균 수익</span>
-              <span className="text-green-400 font-medium">+{metrics.avgWin.toFixed(2)}%</span>
+              <span className="text-green-400 font-medium">+{safeFixed(metrics.avgWin, 2)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">평균 손실</span>
-              <span className="text-red-400 font-medium">-{metrics.avgLoss.toFixed(2)}%</span>
+              <span className="text-red-400 font-medium">-{safeFixed(metrics.avgLoss, 2)}%</span>
             </div>
           </div>
         </div>
@@ -447,11 +448,11 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">최고 수익 기간</span>
-              <span className="text-green-400 font-medium">+{metrics.bestMonth.toFixed(2)}%</span>
+              <span className="text-green-400 font-medium">+{safeFixed(metrics.bestMonth, 2)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">최대 손실 기간</span>
-              <span className="text-red-400 font-medium">{metrics.worstMonth.toFixed(2)}%</span>
+              <span className="text-red-400 font-medium">{safeFixed(metrics.worstMonth, 2)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
               <span className="text-sm text-gray-300">연속 수익 기간</span>
@@ -481,13 +482,13 @@ export default function PerformanceAnalytics({ selectedCoin, settings }: Props) 
               {metrics.winRate > 60 && (
                 <li className="flex items-start gap-2">
                   <FaArrowUp className="text-green-400 mt-0.5" />
-                  <span>높은 승률 ({metrics.winRate.toFixed(1)}%)</span>
+                  <span>높은 승률 ({safeFixed(metrics.winRate, 1)}%)</span>
                 </li>
               )}
               {metrics.maxDrawdown < 15 && (
                 <li className="flex items-start gap-2">
                   <FaArrowUp className="text-green-400 mt-0.5" />
-                  <span>낮은 최대 낙폭 ({metrics.maxDrawdown.toFixed(1)}%)</span>
+                  <span>낮은 최대 낙폭 ({safeFixed(metrics.maxDrawdown, 1)}%)</span>
                 </li>
               )}
               <li className="flex items-start gap-2">

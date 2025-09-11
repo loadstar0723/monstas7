@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { TrendingUp, TrendingDown, AlertCircle, Activity } from 'lucide-react'
 import { LineChart, ScatterChart, Scatter, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
@@ -178,7 +179,7 @@ export default function IVAnalysis({ coin, optionChainData }: Props) {
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                   labelStyle={{ color: '#9CA3AF' }}
-                  formatter={(value: any) => [`${value.toFixed(1)}%`]}
+                  formatter={(value: any) => [`${safeFixed(value, 1)}%`]}
                 />
                 
                 <Line
@@ -206,7 +207,7 @@ export default function IVAnalysis({ coin, optionChainData }: Props) {
             <div className="bg-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-400">현재 IV</span>
-                <span className="text-lg font-bold text-purple-400">{avgIV.toFixed(1)}%</span>
+                <span className="text-lg font-bold text-purple-400">{safeFixed(avgIV, 1)}%</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">30일 HV</span>

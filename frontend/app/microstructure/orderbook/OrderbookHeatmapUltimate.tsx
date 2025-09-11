@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChartBar, FaBell, FaFireAlt, FaWater, FaBalanceScale, 
@@ -354,10 +355,10 @@ export default function OrderbookHeatmapUltimate() {
             </div>
             <div className="mt-2">
               <span className="text-2xl font-bold text-white">
-                ${orderbook?.spread.toFixed(2) || '0.00'}
+                ${orderbook?.safeFixed(spread, 2) || '0.00'}
               </span>
               <span className="text-sm text-gray-400 ml-2">
-                ({orderbook?.spreadPercent.toFixed(3) || '0.000'}%)
+                ({orderbook?.safeFixed(spreadPercent, 3) || '0.000'}%)
               </span>
             </div>
           </div>

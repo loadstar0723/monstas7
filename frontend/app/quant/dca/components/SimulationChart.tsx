@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaPlay, FaStop, FaRedo, FaExpand } from 'react-icons/fa'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from 'recharts'
 
@@ -199,9 +200,9 @@ export default function SimulationChart({ selectedCoin, settings }: Props) {
       return `$${value.toLocaleString()}`
     }
     if (name.includes('%')) {
-      return `${value.toFixed(2)}%`
+      return `${safeFixed(value, 2)}%`
     }
-    return value.toFixed(4)
+    return safeFixed(value, 4)
   }
 
   if (loading) {
@@ -279,14 +280,14 @@ export default function SimulationChart({ selectedCoin, settings }: Props) {
             }`}>
               ${simulationData[simulationData.length - 1].profitLoss.toLocaleString()}
               <span className="text-xs sm:text-sm ml-1">
-                ({simulationData[simulationData.length - 1].profitLossPercent.toFixed(2)}%)
+                ({simulationData[simulationData.length - 1].safeFixed(profitLossPercent, 2)}%)
               </span>
             </p>
           </div>
           <div className="bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-700">
             <p className="text-xs sm:text-sm text-gray-400 mb-1">평균 매수가</p>
             <p className="text-base sm:text-xl font-bold text-blue-400">
-              ${simulationData[simulationData.length - 1].avgBuyPrice.toFixed(2)}
+              ${simulationData[simulationData.length - 1].safeFixed(avgBuyPrice, 2)}
             </p>
           </div>
         </div>
@@ -375,7 +376,7 @@ export default function SimulationChart({ selectedCoin, settings }: Props) {
                     borderRadius: '8px'
                   }}
                   labelStyle={{ color: '#E5E7EB' }}
-                  formatter={(value: number) => `${value.toFixed(2)}%`}
+                  formatter={(value: number) => `${safeFixed(value, 2)}%`}
                 />
                 <Line
                   type="monotone"

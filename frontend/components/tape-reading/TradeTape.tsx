@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaArrowUp, FaArrowDown, FaFireAlt } from 'react-icons/fa'
 
 interface Trade {
@@ -175,11 +176,11 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="bg-green-900/30 rounded-lg p-2">
             <p className="text-green-400 text-xs mb-1">매수 거래량</p>
-            <p className="text-white font-bold">{stats.buyVolume.toFixed(4)}</p>
+            <p className="text-white font-bold">{safeFixed(stats.buyVolume, 4)}</p>
           </div>
           <div className="bg-red-900/30 rounded-lg p-2">
             <p className="text-red-400 text-xs mb-1">매도 거래량</p>
-            <p className="text-white font-bold">{stats.sellVolume.toFixed(4)}</p>
+            <p className="text-white font-bold">{safeFixed(stats.sellVolume, 4)}</p>
           </div>
         </div>
         
@@ -191,7 +192,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
           ></div>
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-white text-xs font-medium">
-              매수 {buyRatio.toFixed(1)}% / 매도 {(100 - buyRatio).toFixed(1)}%
+              매수 {safeFixed(buyRatio, 1)}% / 매도 {(100 - buyRatio).toFixed(1)}%
             </span>
           </div>
         </div>
@@ -231,12 +232,12 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
             <div className={`text-right text-sm font-medium ${
               trade.price > currentPrice ? 'text-green-400' : 'text-red-400'
             }`}>
-              ${trade.price.toFixed(2)}
+              ${safePrice(trade.price, 2)}
             </div>
             <div className={`text-right text-sm ${
               trade.isLarge ? 'font-bold text-yellow-400' : 'text-gray-300'
             }`}>
-              {trade.quantity.toFixed(4)}
+              {safeAmount(trade.quantity)}
             </div>
             <div className="flex justify-center">
               {!trade.isBuyerMaker ? (

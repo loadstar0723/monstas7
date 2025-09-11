@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface SweepData {
@@ -77,11 +78,11 @@ export default function LiquiditySweptChart({ sweeps = [], symbol = 'BTCUSDT' }:
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-xs">거래량</span>
-              <span className="text-white font-medium">{data.volume.toFixed(4)}</span>
+              <span className="text-white font-medium">{safeFixed(data.volume, 4)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-xs">영향도</span>
-              <span className="text-yellow-400 font-medium">{data.impact.toFixed(2)}%</span>
+              <span className="text-yellow-400 font-medium">{safeFixed(data.impact, 2)}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-xs">타입</span>
@@ -91,7 +92,7 @@ export default function LiquiditySweptChart({ sweeps = [], symbol = 'BTCUSDT' }:
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-xs">가격</span>
-              <span className="text-purple-400 font-medium">${data.price.toFixed(2)}</span>
+              <span className="text-purple-400 font-medium">${safePrice(data.price, 2)}</span>
             </div>
           </div>
         </div>
@@ -241,21 +242,21 @@ export default function LiquiditySweptChart({ sweeps = [], symbol = 'BTCUSDT' }:
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-green-900/20 p-4 rounded-lg border border-green-800/30">
               <p className="text-xs text-green-400 mb-2">매수 스윕</p>
-              <p className="text-2xl font-bold text-green-400">{stats.totalBuyVolume.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-400">{safeFixed(stats.totalBuyVolume, 2)}</p>
             </div>
             <div className="bg-red-900/20 p-4 rounded-lg border border-red-800/30">
               <p className="text-xs text-red-400 mb-2">매도 스윕</p>
-              <p className="text-2xl font-bold text-red-400">{stats.totalSellVolume.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-red-400">{safeFixed(stats.totalSellVolume, 2)}</p>
             </div>
             <div className="bg-purple-900/20 p-4 rounded-lg border border-purple-800/30">
               <p className="text-xs text-purple-400 mb-2">순 거래량</p>
               <p className={`text-2xl font-bold ${stats.netVolume > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {stats.netVolume > 0 ? '+' : ''}{stats.netVolume.toFixed(2)}
+                {stats.netVolume > 0 ? '+' : ''}{safeFixed(stats.netVolume, 2)}
               </p>
             </div>
             <div className="bg-yellow-900/20 p-4 rounded-lg border border-yellow-800/30">
               <p className="text-xs text-yellow-400 mb-2">평균 영향도</p>
-              <p className="text-2xl font-bold text-yellow-400">{stats.avgImpact.toFixed(2)}%</p>
+              <p className="text-2xl font-bold text-yellow-400">{safeFixed(stats.avgImpact, 2)}%</p>
             </div>
           </div>
         )}

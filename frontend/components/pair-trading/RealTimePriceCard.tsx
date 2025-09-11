@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 interface RealTimePriceCardProps {
@@ -83,16 +84,16 @@ export default function RealTimePriceCard({ symbol, name, icon }: RealTimePriceC
   }, [symbol])
 
   const formatPrice = (value: number) => {
-    if (value >= 1000) return value.toFixed(0)
-    if (value >= 10) return value.toFixed(2)
-    if (value >= 1) return value.toFixed(3)
-    return value.toFixed(6)
+    if (value >= 1000) return safeFixed(value, 0)
+    if (value >= 10) return safeFixed(value, 2)
+    if (value >= 1) return safeFixed(value, 3)
+    return safeFixed(value, 6)
   }
 
   const formatVolume = (value: number) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M`
     if (value >= 1000) return `${(value / 1000).toFixed(2)}K`
-    return value.toFixed(2)
+    return safeFixed(value, 2)
   }
 
   // 미니 차트 생성

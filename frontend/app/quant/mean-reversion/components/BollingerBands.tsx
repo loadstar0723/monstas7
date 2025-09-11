@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart } from 'recharts'
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Coin {
   symbol: string
@@ -104,7 +105,7 @@ export default function BollingerBands({ coin, historicalData, marketData }: Bol
 
   const formatTooltipValue = (value: any) => {
     if (value === null || value === undefined) return '-'
-    return `$${value.toFixed(2)}`
+    return `$${safeFixed(value, 2)}`
   }
 
   return (
@@ -113,7 +114,7 @@ export default function BollingerBands({ coin, historicalData, marketData }: Bol
         <h3 className="text-lg font-bold text-white">볼린저 밴드 분석</h3>
         <div className="flex items-center gap-4">
           <span className={`font-bold ${bandColor}`}>{bandStatus}</span>
-          <span className="text-sm text-gray-400">포지션: {bandPosition.toFixed(0)}%</span>
+          <span className="text-sm text-gray-400">포지션: {safeFixed(bandPosition, 0)}%</span>
         </div>
       </div>
       
@@ -215,19 +216,19 @@ export default function BollingerBands({ coin, historicalData, marketData }: Bol
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">상단 밴드</div>
           <div className="text-red-400 font-bold">
-            ${marketData?.upperBand.toFixed(2) || '-'}
+            ${marketData?.safeFixed(upperBand, 2) || '-'}
           </div>
         </div>
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">중간선 (SMA)</div>
           <div className="text-blue-400 font-bold">
-            ${marketData?.sma20.toFixed(2) || '-'}
+            ${marketData?.safeFixed(sma20, 2) || '-'}
           </div>
         </div>
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">하단 밴드</div>
           <div className="text-green-400 font-bold">
-            ${marketData?.lowerBand.toFixed(2) || '-'}
+            ${marketData?.safeFixed(lowerBand, 2) || '-'}
           </div>
         </div>
       </div>

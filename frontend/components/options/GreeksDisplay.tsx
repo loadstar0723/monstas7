@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { TrendingUp, TrendingDown, Activity, Clock, Zap } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -158,7 +159,7 @@ export default function GreeksDisplay({ coin, optionChainData }: Props) {
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
                   labelStyle={{ color: '#9CA3AF' }}
-                  formatter={(value: any) => value.toFixed(4)}
+                  formatter={(value: any) => safeFixed(value, 4)}
                 />
                 <Line 
                   type="monotone" 

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Scatter } from 'recharts'
 
 interface SweepData {
@@ -101,16 +102,16 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
             <div className="flex justify-between items-center gap-4">
               <span className="text-gray-400 text-xs">가격</span>
               <span className="text-white font-medium">
-                ${data.price.toFixed(2)}
+                ${safePrice(data.price, 2)}
                 <span className={`ml-2 ${data.priceChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  ({data.priceChange > 0 ? '+' : ''}{data.priceChange.toFixed(2)}%)
+                  ({data.priceChange > 0 ? '+' : ''}{safePrice(data.priceChange, 2)}%)
                 </span>
               </span>
             </div>
             <div className="flex justify-between items-center gap-4">
               <span className="text-gray-400 text-xs">영향도</span>
               <span className={`font-medium ${data.impact > 3 ? 'text-red-400' : data.impact > 1 ? 'text-yellow-400' : 'text-green-400'}`}>
-                {data.impact.toFixed(2)}%
+                {safeFixed(data.impact, 2)}%
               </span>
             </div>
             <div className="flex justify-between items-center gap-4">
@@ -154,7 +155,7 @@ export default function PriceImpactChart({ sweeps, currentPrice, symbol = 'BTCUS
             가격 영향도 분석 - {symbol.replace('USDT', '')}
           </h3>
           <span className="text-sm text-gray-400">
-            현재가: ${currentPrice.toFixed(2)}
+            현재가: ${safePrice(currentPrice, 2)}
           </span>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChartBar, FaChartLine, FaBrain, FaFireAlt, FaClock,
@@ -787,7 +788,7 @@ export default function FootprintChartModule() {
                       <FaChartLine className="text-purple-400" />
                     </div>
                     <p className="text-2xl font-bold text-white">
-                      ${marketMetrics.price.toFixed(2)}
+                      ${safePrice(marketMetrics.price, 2)}
                     </p>
                     <p className={`text-sm mt-1 ${marketMetrics.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {marketMetrics.change24h >= 0 ? '▲' : '▼'} {Math.abs(marketMetrics.change24h).toFixed(2)}%
@@ -840,7 +841,7 @@ export default function FootprintChartModule() {
                           <YAxis 
                             stroke="#9CA3AF"
                             domain={['dataMin - 10', 'dataMax + 10']}
-                            tickFormatter={(value) => `$${value.toFixed(0)}`}
+                            tickFormatter={(value) => `$${safeFixed(value, 0)}`}
                           />
                           <Tooltip
                             contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
@@ -851,7 +852,7 @@ export default function FootprintChartModule() {
                                 low: '저가',
                                 close: '종가'
                               }
-                              return [`$${value.toFixed(2)}`, labels[name] || name]
+                              return [`$${safeFixed(value, 2)}`, labels[name] || name]
                             }}
                             labelFormatter={(label) => `시간: ${label}`}
                           />
@@ -922,7 +923,7 @@ export default function FootprintChartModule() {
                               borderRadius: '8px'
                             }}
                             labelStyle={{ color: '#9CA3AF' }}
-                            formatter={(value: number) => [`${value.toFixed(0)}`, '델타']}
+                            formatter={(value: number) => [`${safeFixed(value, 0)}`, '델타']}
                             labelFormatter={(label) => `시간: ${label}`}
                           />
                           <Line 
@@ -1025,7 +1026,7 @@ export default function FootprintChartModule() {
                         </span>
                       </div>
                       <div className={`text-xl font-bold ${(deltaData[deltaData.length - 1]?.cumulativeDelta || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {deltaData[deltaData.length - 1]?.cumulativeDelta.toFixed(2) || '0'}
+                        {deltaData[deltaData.length - 1]?.safeFixed(cumulativeDelta, 2) || '0'}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
                         {(deltaData[deltaData.length - 1]?.cumulativeDelta || 0) >= 0 ? '매수 압력' : '매도 압력'}
@@ -1051,7 +1052,7 @@ export default function FootprintChartModule() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-400">POC (가격 중심)</span>
                         <span className="text-sm font-bold text-purple-400">
-                          ${marketProfile.find(p => p.poc)?.price.toFixed(2) || marketMetrics.price.toFixed(2)}
+                          ${marketProfile.find(p => p.poc)?.safePrice(price, 2) || safePrice(marketMetrics.price, 2)}
                         </span>
                       </div>
                     </div>

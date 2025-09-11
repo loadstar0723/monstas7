@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, Legend } from 'recharts'
 
 interface Coin {
@@ -277,15 +278,15 @@ export default function AIRecommendation({ coin, marketData }: AIRecommendationP
           <div className="bg-white/20 rounded-lg px-3 py-2">
             <div className="text-xs text-white/70">목표가</div>
             <div className="text-white font-bold">
-              ${recommendation.targetPrice.toFixed(2)}
-              <span className="text-xs ml-1">({recommendation.expectedReturn > 0 ? '+' : ''}{recommendation.expectedReturn.toFixed(1)}%)</span>
+              ${safeFixed(recommendation.targetPrice, 2)}
+              <span className="text-xs ml-1">({recommendation.expectedReturn > 0 ? '+' : ''}{safeFixed(recommendation.expectedReturn, 1)}%)</span>
             </div>
           </div>
           <div className="bg-white/20 rounded-lg px-3 py-2">
             <div className="text-xs text-white/70">손절선</div>
             <div className="text-white font-bold">
-              ${recommendation.stopLoss.toFixed(2)}
-              <span className="text-xs ml-1">(-{recommendation.risk.toFixed(1)}%)</span>
+              ${safeFixed(recommendation.stopLoss, 2)}
+              <span className="text-xs ml-1">(-{safeFixed(recommendation.risk, 1)}%)</span>
             </div>
           </div>
         </div>
@@ -321,20 +322,20 @@ export default function AIRecommendation({ coin, marketData }: AIRecommendationP
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 rounded-lg p-2 border border-blue-700/30">
             <div className="text-blue-400 text-xs mb-1">현재가</div>
-            <div className="text-white font-bold text-sm">${marketData.price.toFixed(2)}</div>
+            <div className="text-white font-bold text-sm">${safePrice(marketData.price, 2)}</div>
           </div>
           <div className="bg-gradient-to-r from-purple-900/20 to-purple-800/20 rounded-lg p-2 border border-purple-700/30">
             <div className="text-purple-400 text-xs mb-1">Z-Score</div>
-            <div className="text-white font-bold text-sm">{marketData.zScore.toFixed(2)}</div>
+            <div className="text-white font-bold text-sm">{safeFixed(marketData.zScore, 2)}</div>
           </div>
           <div className="bg-gradient-to-r from-orange-900/20 to-orange-800/20 rounded-lg p-2 border border-orange-700/30">
             <div className="text-orange-400 text-xs mb-1">RSI</div>
-            <div className="text-white font-bold text-sm">{marketData.rsi.toFixed(0)}</div>
+            <div className="text-white font-bold text-sm">{safeFixed(marketData.rsi, 0)}</div>
           </div>
           <div className="bg-gradient-to-r from-green-900/20 to-green-800/20 rounded-lg p-2 border border-green-700/30">
             <div className="text-green-400 text-xs mb-1">24h 변동</div>
             <div className="text-white font-bold text-sm">
-              {marketData.change24h > 0 ? '+' : ''}{marketData.change24h.toFixed(2)}%
+              {marketData.change24h > 0 ? '+' : ''}{safePercent(marketData.change24h)}%
             </div>
           </div>
         </div>

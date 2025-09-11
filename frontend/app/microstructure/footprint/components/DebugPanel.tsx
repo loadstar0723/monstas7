@@ -3,6 +3,7 @@
 import { FootprintCell, MarketProfile } from '../types'
 import { FaBug } from 'react-icons/fa'
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface DebugPanelProps {
   footprintData: FootprintCell[]
@@ -53,7 +54,7 @@ export default function DebugPanel({ footprintData, marketProfile, selectedSymbo
               <div>프로파일 레벨: {dataStats.profileLevels}개</div>
               <div>고유 가격: {dataStats.uniquePrices}개</div>
               <div>고유 시간: {dataStats.uniqueTimes}개</div>
-              <div>총 거래량: {dataStats.totalVolume.toFixed(2)}</div>
+              <div>총 거래량: {safeFixed(dataStats.totalVolume, 2)}</div>
               <div>POC: ${dataStats.poc}</div>
               <div>밸류 에어리어 레벨: {dataStats.valueAreaCount}개</div>
             </div>
@@ -66,8 +67,8 @@ export default function DebugPanel({ footprintData, marketProfile, selectedSymbo
               {sampleData.map((cell, i) => (
                 <div key={i} className="bg-gray-800 p-2 rounded">
                   <div>시간: {cell.time} | 가격: ${cell.price}</div>
-                  <div>매수: {cell.buyVolume.toFixed(2)} | 매도: {cell.sellVolume.toFixed(2)}</div>
-                  <div>델타: {cell.delta.toFixed(2)} | POC: {cell.poc ? 'Yes' : 'No'}</div>
+                  <div>매수: {safeFixed(cell.buyVolume, 2)} | 매도: {safeFixed(cell.sellVolume, 2)}</div>
+                  <div>델타: {safeFixed(cell.delta, 2)} | POC: {cell.poc ? 'Yes' : 'No'}</div>
                 </div>
               ))}
               {footprintData.length === 0 && (
@@ -82,7 +83,7 @@ export default function DebugPanel({ footprintData, marketProfile, selectedSymbo
             <div className="space-y-2 text-xs">
               {sampleProfile.map((level, i) => (
                 <div key={i} className="bg-gray-800 p-2 rounded">
-                  <div>가격: ${level.price} | 거래량: {level.volume.toFixed(2)}</div>
+                  <div>가격: ${level.price} | 거래량: {safeFixed(level.volume, 2)}</div>
                   <div>TPO: {level.tpo}% | POC: {level.poc ? 'Yes' : 'No'} | VA: {level.valueArea ? 'Yes' : 'No'}</div>
                 </div>
               ))}

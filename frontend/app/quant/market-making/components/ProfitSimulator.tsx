@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaHistory, FaPlay, FaCog, FaChartLine, FaDollarSign } from 'react-icons/fa'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -132,11 +133,11 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
   const formatValue = (value: number, type: string) => {
     switch (type) {
       case 'currency':
-        return `$${value.toFixed(2)}`
+        return `$${safeFixed(value, 2)}`
       case 'percentage':
-        return `${value.toFixed(1)}%`
+        return `${safeFixed(value, 1)}%`
       case 'number':
-        return value.toFixed(2)
+        return safeFixed(value, 2)
       default:
         return value.toString()
     }
@@ -245,7 +246,7 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
           <p className={`text-lg sm:text-2xl font-bold ${
             summary.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            ${summary.totalProfit.toFixed(0)}
+            ${safeFixed(summary.totalProfit, 0)}
           </p>
         </div>
         
@@ -259,21 +260,21 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
         <div className="bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700">
           <p className="text-xs sm:text-sm text-gray-400 mb-1">승률</p>
           <p className="text-lg sm:text-2xl font-bold text-blue-400">
-            {summary.avgWinRate.toFixed(1)}%
+            {safeFixed(summary.avgWinRate, 1)}%
           </p>
         </div>
         
         <div className="bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700">
           <p className="text-xs sm:text-sm text-gray-400 mb-1">샤프 비율</p>
           <p className="text-lg sm:text-2xl font-bold text-purple-400">
-            {summary.sharpeRatio.toFixed(2)}
+            {safeFixed(summary.sharpeRatio, 2)}
           </p>
         </div>
         
         <div className="bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700 col-span-2 sm:col-span-1">
           <p className="text-xs sm:text-sm text-gray-400 mb-1">최대 손실</p>
           <p className="text-lg sm:text-2xl font-bold text-orange-400">
-            -{summary.maxDrawdown.toFixed(1)}%
+            -{safeFixed(summary.maxDrawdown, 1)}%
           </p>
         </div>
       </div>
@@ -297,7 +298,7 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
               <YAxis 
                 stroke="#9CA3AF"
                 tick={{ fontSize: 10 }}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
+                tickFormatter={(value) => `$${safeFixed(value, 0)}`}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -341,12 +342,12 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
                   <td className="text-right py-2 px-2 sm:px-3 text-gray-300">{result.trades}</td>
                   <td className="text-right py-2 px-2 sm:px-3">
                     <span className={result.winRate > 50 ? 'text-green-400' : 'text-red-400'}>
-                      {result.winRate.toFixed(1)}%
+                      {safeFixed(result.winRate, 1)}%
                     </span>
                   </td>
                   <td className="text-right py-2 px-2 sm:px-3">
                     <span className={result.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}>
-                      ${result.totalPnL.toFixed(2)}
+                      ${safeFixed(result.totalPnL, 2)}
                     </span>
                   </td>
                 </tr>
@@ -364,13 +365,13 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
         </h3>
         <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
           <p className="text-gray-300">
-            • 현재 설정으로 {params.period} 동안 <span className="text-green-400 font-semibold">${summary.totalProfit.toFixed(2)}</span>의 수익 예상
+            • 현재 설정으로 {params.period} 동안 <span className="text-green-400 font-semibold">${safeFixed(summary.totalProfit, 2)}</span>의 수익 예상
           </p>
           <p className="text-gray-300">
             • 권장 스프레드: {summary.avgWinRate > 60 ? '현재 유지' : '0.05% 증가'} ({params.spread}% → {summary.avgWinRate > 60 ? params.spread : params.spread + 0.05}%)
           </p>
           <p className="text-gray-300">
-            • 리스크 관리: 최대 손실 {summary.maxDrawdown.toFixed(1)}%를 고려하여 자본의 {Math.min(20, 100 / summary.maxDrawdown).toFixed(0)}% 이내 운용
+            • 리스크 관리: 최대 손실 {safeFixed(summary.maxDrawdown, 1)}%를 고려하여 자본의 {Math.min(20, 100 / summary.maxDrawdown).toFixed(0)}% 이내 운용
           </p>
           <p className="text-gray-300">
             • 최적 거래 시간: 변동성이 높은 시간대에 집중 (거래량 상위 20% 시간)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 interface TradingSignalsProps {
@@ -147,17 +148,17 @@ export default function TradingSignals({ pair, strategy, timeframe }: TradingSig
         type = 'SHORT'
         strength = Math.min(100, Math.abs(zScore) * 30)
         confidence = correlation > 0.7 ? 80 : 60
-        reason = `Z-Score ${zScore.toFixed(2)} > 2 (과매수 상태)`
+        reason = `Z-Score ${safeFixed(zScore, 2)} > 2 (과매수 상태)`
       } else if (zScore < -2) {
         type = 'LONG'
         strength = Math.min(100, Math.abs(zScore) * 30)
         confidence = correlation > 0.7 ? 80 : 60
-        reason = `Z-Score ${zScore.toFixed(2)} < -2 (과매도 상태)`
+        reason = `Z-Score ${safeFixed(zScore, 2)} < -2 (과매도 상태)`
       } else if (Math.abs(zScore) < 0.5) {
         type = 'CLOSE'
         strength = 50
         confidence = 70
-        reason = `Z-Score ${zScore.toFixed(2)} 중립 구간 진입`
+        reason = `Z-Score ${safeFixed(zScore, 2)} 중립 구간 진입`
       } else {
         type = 'HOLD'
         strength = 20
@@ -214,7 +215,7 @@ export default function TradingSignals({ pair, strategy, timeframe }: TradingSig
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="text-green-400">실시간</span>
               <span className="text-gray-400">
-                {pair.coin1}: ${realtimePrice1.toFixed(2)} | {pair.coin2}: ${realtimePrice2.toFixed(2)}
+                {pair.coin1}: ${safeFixed(realtimePrice1, 2)} | {pair.coin2}: ${safeFixed(realtimePrice2, 2)}
               </span>
             </motion.div>
           )}
@@ -277,12 +278,12 @@ export default function TradingSignals({ pair, strategy, timeframe }: TradingSig
                 Math.abs(metrics.zScore) > 3 ? 'text-red-400' :
                 'text-green-400'
               }`}>
-                {metrics.zScore.toFixed(3)}
+                {safeFixed(metrics.zScore, 3)}
               </div>
             </div>
             <div className="bg-gray-800/50 rounded-lg p-3">
               <div className="text-xs text-gray-400 mb-1">스프레드</div>
-              <div className="text-lg font-bold text-white">{metrics.spread.toFixed(4)}</div>
+              <div className="text-lg font-bold text-white">{safeFixed(metrics.spread, 4)}</div>
             </div>
             <div className="bg-gray-800/50 rounded-lg p-3">
               <div className="text-xs text-gray-400 mb-1">상관관계</div>
@@ -291,7 +292,7 @@ export default function TradingSignals({ pair, strategy, timeframe }: TradingSig
                 metrics.correlation > 0.4 ? 'text-yellow-400' :
                 'text-red-400'
               }`}>
-                {metrics.correlation.toFixed(3)}
+                {safeFixed(metrics.correlation, 3)}
               </div>
             </div>
             <div className="bg-gray-800/50 rounded-lg p-3">

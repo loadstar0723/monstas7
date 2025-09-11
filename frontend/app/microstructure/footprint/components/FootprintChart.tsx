@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FootprintCell } from '../types'
 import { groupByTimeframe, calculatePOC, calculateValueArea } from '../utils/calculations'
 import { FOOTPRINT_CONFIG } from '../config/constants'
@@ -146,10 +147,10 @@ export default function FootprintChart({ data, symbol, timeframe }: FootprintCha
                               <div className="text-xs">
                                 <div className="text-gray-400">시간: {time}</div>
                                 <div className="text-gray-400">가격: ${price}</div>
-                                <div className="text-green-400">매수: {cell.buyVolume.toFixed(2)}</div>
-                                <div className="text-red-400">매도: {cell.sellVolume.toFixed(2)}</div>
+                                <div className="text-green-400">매수: {safeFixed(cell.buyVolume, 2)}</div>
+                                <div className="text-red-400">매도: {safeFixed(cell.sellVolume, 2)}</div>
                                 <div className={`${cell.delta > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                  델타: {cell.delta.toFixed(2)}
+                                  델타: {safeFixed(cell.delta, 2)}
                                 </div>
                               </div>
                             </div>

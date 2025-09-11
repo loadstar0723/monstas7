@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface TradeData {
   price: number
@@ -166,8 +167,8 @@ export default function AlgoActivityHeatmap({ trades, patterns, selectedCoin }: 
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                   <div className="bg-gray-900 rounded-lg p-2 text-xs text-white min-w-[120px]">
                     <p>거래: {slot.tradeCount}건</p>
-                    <p>거래량: {slot.volume.toFixed(2)}</p>
-                    <p>매수 비율: {slot.buyRatio.toFixed(1)}%</p>
+                    <p>거래량: {safeFixed(slot.volume, 2)}</p>
+                    <p>매수 비율: {safeFixed(slot.buyRatio, 1)}%</p>
                     {slot.dominantPattern && (
                       <p className={getPatternColor(slot.dominantPattern)}>
                         패턴: {slot.dominantPattern}
@@ -201,8 +202,8 @@ export default function AlgoActivityHeatmap({ trades, patterns, selectedCoin }: 
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                   <div className="bg-gray-900 rounded-lg p-2 text-xs text-white min-w-[120px]">
                     <p>거래: {slot.tradeCount}건</p>
-                    <p>거래량: {slot.volume.toFixed(2)}</p>
-                    <p>매수 비율: {slot.buyRatio.toFixed(1)}%</p>
+                    <p>거래량: {safeFixed(slot.volume, 2)}</p>
+                    <p>매수 비율: {safeFixed(slot.buyRatio, 1)}%</p>
                     {slot.dominantPattern && (
                       <p className={getPatternColor(slot.dominantPattern)}>
                         패턴: {slot.dominantPattern}
@@ -223,7 +224,7 @@ export default function AlgoActivityHeatmap({ trades, patterns, selectedCoin }: 
           {priceLevels.slice(0, 10).map((level, i) => (
             <div key={i} className="flex items-center gap-3">
               <span className="text-xs text-gray-400 w-20 text-right">
-                ${level.price.toFixed(2)}
+                ${safePrice(level.price, 2)}
               </span>
               <div className="flex-1 h-8 bg-gray-700 rounded overflow-hidden relative">
                 <div
@@ -237,7 +238,7 @@ export default function AlgoActivityHeatmap({ trades, patterns, selectedCoin }: 
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className={`${level.buyRatio > 50 ? 'text-green-400' : 'text-red-400'}`}>
-                  {level.buyRatio > 50 ? '↑' : '↓'} {level.buyRatio.toFixed(0)}%
+                  {level.buyRatio > 50 ? '↑' : '↓'} {safeFixed(level.buyRatio, 0)}%
                 </span>
               </div>
             </div>

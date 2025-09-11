@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface SimpleLineChartProps {
   data: any[]
@@ -109,7 +110,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({ data, entryPrice, exi
                 fontSize="11" 
                 textAnchor="end"
               >
-                ${tick.price.toFixed(0)}
+                ${safePrice(tick.price, 0)}
               </text>
             </g>
           ))}
@@ -137,7 +138,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({ data, entryPrice, exi
               />
               <rect x={width - padding.right + 5} y={currentY - 10} width={70} height="20" fill="#6366F1" rx="3"/>
               <text x={width - padding.right + 40} y={currentY + 4} fill="white" fontSize="11" textAnchor="middle" fontWeight="bold">
-                ${currentPrice.toFixed(0)}
+                ${safePrice(currentPrice, 0)}
               </text>
             </g>
           )}
@@ -157,7 +158,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({ data, entryPrice, exi
               />
               <rect x={width - padding.right + 5} y={entryY - 10} width={70} height="20" fill="#10B981" rx="3"/>
               <text x={width - padding.right + 40} y={entryY + 4} fill="white" fontSize="11" textAnchor="middle" fontWeight="bold">
-                진입 ${entryPrice.toFixed(0)}
+                진입 ${safeFixed(entryPrice, 0)}
               </text>
             </g>
           )}
@@ -177,7 +178,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({ data, entryPrice, exi
               />
               <rect x={width - padding.right + 5} y={exitY - 10} width={70} height="20" fill="#F59E0B" rx="3"/>
               <text x={width - padding.right + 40} y={exitY + 4} fill="white" fontSize="11" textAnchor="middle" fontWeight="bold">
-                목표 ${exitPrice.toFixed(0)}
+                목표 ${safeFixed(exitPrice, 0)}
               </text>
             </g>
           )}
@@ -207,7 +208,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({ data, entryPrice, exi
                 <g>
                   <circle cx={point.x} cy={point.y} r="5" fill="#8B5CF6" stroke="white" strokeWidth="2"/>
                   <text x={point.x} y={point.y - 10} fill="white" fontSize="12" textAnchor="middle" fontWeight="bold">
-                    ${point.price.toFixed(0)}
+                    ${safePrice(point.price, 0)}
                   </text>
                 </g>
               )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
@@ -206,7 +207,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
           <div className="text-sm">
             <span className="text-gray-400">Z-Score: </span>
             <span className={`font-bold ${getZScoreColor(zScore)}`}>
-              {zScore.toFixed(3)}
+              {safeFixed(zScore, 3)}
             </span>
           </div>
           <div className={`px-3 py-1 rounded-full text-sm font-bold ${signal.color} bg-gray-800`}>
@@ -282,7 +283,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
               className="bg-gray-800/50 rounded-lg p-3"
             >
               <div className="text-xs text-gray-400 mb-1">평균 (μ)</div>
-              <div className="text-lg font-bold text-white">{mean.toFixed(4)}</div>
+              <div className="text-lg font-bold text-white">{safeFixed(mean, 4)}</div>
             </motion.div>
 
             <motion.div 
@@ -292,7 +293,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
               className="bg-gray-800/50 rounded-lg p-3"
             >
               <div className="text-xs text-gray-400 mb-1">표준편차 (σ)</div>
-              <div className="text-lg font-bold text-white">{stdDev.toFixed(4)}</div>
+              <div className="text-lg font-bold text-white">{safeFixed(stdDev, 4)}</div>
             </motion.div>
 
             <motion.div 
@@ -303,7 +304,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
             >
               <div className="text-xs text-gray-400 mb-1">현재 스프레드</div>
               <div className="text-lg font-bold text-white">
-                {spreadData.length > 0 ? spreadData[spreadData.length - 1].spread.toFixed(4) : '0.0000'}
+                {spreadData.length > 0 ? spreadData[spreadData.length - 1].safeFixed(spread, 4) : '0.0000'}
               </div>
             </motion.div>
 
@@ -332,7 +333,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">중립 구간 (-1 {'<'} Z {'<'} 1)</span>
-                <span className="text-green-500 font-bold">{mean.toFixed(4)}</span>
+                <span className="text-green-500 font-bold">{safeFixed(mean, 4)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">매수 진입 구간 (Z {'<'} -2)</span>

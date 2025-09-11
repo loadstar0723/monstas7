@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface SweepData {
   timestamp: number
@@ -181,7 +182,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
               <div className="bg-gray-800/50 p-6 rounded-lg">
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-white text-2xl font-bold">{strategyAnalysis.confidence.toFixed(0)}%</span>
+                    <span className="text-white text-2xl font-bold">{safeFixed(strategyAnalysis.confidence, 0)}%</span>
                     <span className={`text-sm font-medium ${
                       strategyAnalysis.confidence > 70 ? 'text-green-400' :
                       strategyAnalysis.confidence > 40 ? 'text-yellow-400' : 'text-red-400'
@@ -207,7 +208,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">평균 영향도</span>
-                    <span className="text-white">{strategyAnalysis.avgImpact.toFixed(2)}%</span>
+                    <span className="text-white">{safeFixed(strategyAnalysis.avgImpact, 2)}%</span>
                   </div>
                 </div>
               </div>
@@ -255,7 +256,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
                       strategyAnalysis.riskReward > 1 ? 'text-yellow-400' :
                       'text-red-400'
                     }`}>
-                      1:{strategyAnalysis.riskReward.toFixed(1)}
+                      1:{safeFixed(strategyAnalysis.riskReward, 1)}
                     </span>
                   </div>
                 </div>
@@ -267,7 +268,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 p-4 rounded-lg border border-blue-800/30">
               <p className="text-blue-400 text-sm mb-1">진입가</p>
-              <p className="text-white text-xl font-bold">${strategyAnalysis.entry.toFixed(2)}</p>
+              <p className="text-white text-xl font-bold">${safeFixed(strategyAnalysis.entry, 2)}</p>
               <p className="text-gray-500 text-xs mt-1">
                 현재가 대비 {((strategyAnalysis.entry - currentPrice) / currentPrice * 100).toFixed(2)}%
               </p>
@@ -275,7 +276,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
             
             <div className="bg-gradient-to-br from-red-900/20 to-red-800/10 p-4 rounded-lg border border-red-800/30">
               <p className="text-red-400 text-sm mb-1">손절가</p>
-              <p className="text-white text-xl font-bold">${strategyAnalysis.stopLoss.toFixed(2)}</p>
+              <p className="text-white text-xl font-bold">${safeFixed(strategyAnalysis.stopLoss, 2)}</p>
               <p className="text-gray-500 text-xs mt-1">
                 리스크: {Math.abs((strategyAnalysis.stopLoss - strategyAnalysis.entry) / strategyAnalysis.entry * 100).toFixed(2)}%
               </p>
@@ -283,7 +284,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
             
             <div className="bg-gradient-to-br from-green-900/20 to-green-800/10 p-4 rounded-lg border border-green-800/30">
               <p className="text-green-400 text-sm mb-1">목표가</p>
-              <p className="text-white text-xl font-bold">${strategyAnalysis.takeProfit.toFixed(2)}</p>
+              <p className="text-white text-xl font-bold">${safeFixed(strategyAnalysis.takeProfit, 2)}</p>
               <p className="text-gray-500 text-xs mt-1">
                 수익: {Math.abs((strategyAnalysis.takeProfit - strategyAnalysis.entry) / strategyAnalysis.entry * 100).toFixed(2)}%
               </p>
@@ -349,7 +350,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
               현재 <span className={getSignalColor(strategyAnalysis.signal)}>
                 {strategyAnalysis.signal === 'bullish' ? '매수' :
                  strategyAnalysis.signal === 'bearish' ? '매도' : '중립'}
-              </span> 신호 발생 중 (신뢰도: {strategyAnalysis.confidence.toFixed(0)}%)
+              </span> 신호 발생 중 (신뢰도: {safeFixed(strategyAnalysis.confidence, 0)}%)
             </p>
           </div>
           
@@ -366,7 +367,7 @@ export default function TradingStrategy({ sweeps, currentPrice, symbol }: Tradin
             <div className="flex items-start gap-2">
               <span className="text-red-400">🚨</span>
               <p className="text-gray-300">
-                높은 가격 임팩트 주의 (평균: {strategyAnalysis.avgImpact.toFixed(2)}%)
+                높은 가격 임팩트 주의 (평균: {safeFixed(strategyAnalysis.avgImpact, 2)}%)
               </p>
             </div>
           )}

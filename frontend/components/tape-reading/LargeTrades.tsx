@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaFish, FaExclamationTriangle } from 'react-icons/fa'
 
 interface LargeTradesProps {
@@ -176,7 +177,7 @@ export default function LargeTrades({ symbol }: LargeTradesProps) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">
-                    {trade.quantity.toFixed(4)} @ ${trade.price.toFixed(2)}
+                    {safeAmount(trade.quantity)} @ ${safePrice(trade.price, 2)}
                   </span>
                   <span className={`font-medium ${
                     trade.side === 'buy' ? 'text-green-400' : 'text-red-400'

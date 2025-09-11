@@ -73,27 +73,27 @@ export default function PinBarStrategy({ symbol, currentPrice }: PinBarStrategyP
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">진입가</p>
-              <p className="text-white font-bold">${strategy.bullish.entry.toFixed(2)}</p>
+              <p className="text-white font-bold">${safeFixed(strategy.bullish.entry, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">손절가</p>
-              <p className="text-red-400 font-bold">${strategy.bullish.stop.toFixed(2)}</p>
+              <p className="text-red-400 font-bold">${safeFixed(strategy.bullish.stop, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">목표가 1</p>
-              <p className="text-green-400 font-bold">${strategy.bullish.target1.toFixed(2)}</p>
+              <p className="text-green-400 font-bold">${safeFixed(strategy.bullish.target1, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">목표가 2</p>
-              <p className="text-green-400 font-bold">${strategy.bullish.target2.toFixed(2)}</p>
+              <p className="text-green-400 font-bold">${safeFixed(strategy.bullish.target2, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">리스크</p>
-              <p className="text-yellow-400 font-bold">${strategy.bullish.risk.toFixed(2)}</p>
+              <p className="text-yellow-400 font-bold">${safeFixed(strategy.bullish.risk, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">포지션 크기</p>
-              <p className="text-purple-400 font-bold">{strategy.bullish.positionSize.toFixed(2)}개</p>
+              <p className="text-purple-400 font-bold">{safeFixed(strategy.bullish.positionSize, 2)}개</p>
             </div>
           </div>
         </div>
@@ -106,27 +106,27 @@ export default function PinBarStrategy({ symbol, currentPrice }: PinBarStrategyP
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">진입가</p>
-              <p className="text-white font-bold">${strategy.bearish.entry.toFixed(2)}</p>
+              <p className="text-white font-bold">${safeFixed(strategy.bearish.entry, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">손절가</p>
-              <p className="text-red-400 font-bold">${strategy.bearish.stop.toFixed(2)}</p>
+              <p className="text-red-400 font-bold">${safeFixed(strategy.bearish.stop, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">목표가 1</p>
-              <p className="text-green-400 font-bold">${strategy.bearish.target1.toFixed(2)}</p>
+              <p className="text-green-400 font-bold">${safeFixed(strategy.bearish.target1, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">목표가 2</p>
-              <p className="text-green-400 font-bold">${strategy.bearish.target2.toFixed(2)}</p>
+              <p className="text-green-400 font-bold">${safeFixed(strategy.bearish.target2, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">리스크</p>
-              <p className="text-yellow-400 font-bold">${strategy.bearish.risk.toFixed(2)}</p>
+              <p className="text-yellow-400 font-bold">${safeFixed(strategy.bearish.risk, 2)}</p>
             </div>
             <div className="bg-gray-900/50 rounded-lg p-2">
               <p className="text-gray-400 text-xs mb-1">포지션 크기</p>
-              <p className="text-purple-400 font-bold">{strategy.bearish.positionSize.toFixed(2)}개</p>
+              <p className="text-purple-400 font-bold">{safeFixed(strategy.bearish.positionSize, 2)}개</p>
             </div>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function PinBarStrategy({ symbol, currentPrice }: PinBarStrategyP
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">거래당 최대 손실</span>
-              <span className="text-red-400 font-medium">${strategy.riskAmount.toFixed(2)}</span>
+              <span className="text-red-400 font-medium">${safeFixed(strategy.riskAmount, 2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">권장 레버리지</span>

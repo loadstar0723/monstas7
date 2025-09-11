@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ShieldExclamationIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
 
 interface WallDetectorProps {
@@ -113,7 +114,7 @@ export default function WallDetector({ orderbook, currentPrice }: WallDetectorPr
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <span className="text-white font-mono">
-                        ${wall.price.toFixed(2)}
+                        ${safePrice(wall.price, 2)}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded ${strength.color} bg-gray-800`}>
                         {strength.text}
@@ -123,12 +124,12 @@ export default function WallDetector({ orderbook, currentPrice }: WallDetectorPr
                       </span>
                     </div>
                     <span className="text-gray-400 text-sm">
-                      -{wall.distance.toFixed(2)}%
+                      -{safeFixed(wall.distance, 2)}%
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">
-                      수량: {wall.amount.toFixed(4)} BTC
+                      수량: {safeAmount(wall.amount)} BTC
                     </span>
                     <span className="text-green-400">
                       ${(wall.total / 1000000).toFixed(2)}M
@@ -164,7 +165,7 @@ export default function WallDetector({ orderbook, currentPrice }: WallDetectorPr
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <span className="text-white font-mono">
-                        ${wall.price.toFixed(2)}
+                        ${safePrice(wall.price, 2)}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded ${strength.color} bg-gray-800`}>
                         {strength.text}
@@ -174,12 +175,12 @@ export default function WallDetector({ orderbook, currentPrice }: WallDetectorPr
                       </span>
                     </div>
                     <span className="text-gray-400 text-sm">
-                      +{wall.distance.toFixed(2)}%
+                      +{safeFixed(wall.distance, 2)}%
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">
-                      수량: {wall.amount.toFixed(4)} BTC
+                      수량: {safeAmount(wall.amount)} BTC
                     </span>
                     <span className="text-red-400">
                       ${(wall.total / 1000000).toFixed(2)}M

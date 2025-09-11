@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { DeltaData, FootprintCell } from '../types'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
 import { detectDeltaDivergence } from '../utils/calculations'
@@ -75,14 +76,14 @@ export default function DeltaAnalysis({ data, footprintData, symbol }: DeltaAnal
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className={`text-2xl font-bold ${stats.cumulativeDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.cumulativeDelta.toFixed(2)}
+              {safeFixed(stats.cumulativeDelta, 2)}
             </div>
             <div className="text-sm text-gray-400">누적 델타</div>
           </div>
           
           <div className="text-center">
             <div className={`text-2xl font-bold ${stats.currentDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.currentDelta.toFixed(2)}
+              {safeFixed(stats.currentDelta, 2)}
             </div>
             <div className="text-sm text-gray-400">현재 델타</div>
           </div>

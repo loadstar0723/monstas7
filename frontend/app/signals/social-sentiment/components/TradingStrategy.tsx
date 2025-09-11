@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaClock, FaExclamationTriangle, FaCheckCircle, FaArrowUp, FaArrowDown, FaBalanceScale } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'
 import { getTradingConfig } from '@/lib/tradingConfig'
@@ -81,7 +82,7 @@ export default function TradingStrategy({ coin }: TradingStrategyProps) {
           shortTermAction = 'BUY'
           shortTermConfidence = 80
           shortTermReasons.push('소셜 감성 매우 긍정적 (70% 이상)')
-          shortTermReasons.push(`멘션 급증 (+${mentionGrowth.toFixed(1)}%)`)
+          shortTermReasons.push(`멘션 급증 (+${safeFixed(mentionGrowth, 1)}%)`)
           shortTermReasons.push('FOMO 심리 형성 중')
         } else if (sentiment < 30 && mentionGrowth < -20) {
           shortTermAction = 'SELL'
@@ -319,11 +320,11 @@ export default function TradingStrategy({ coin }: TradingStrategyProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <div className="bg-gray-700/50 rounded p-3">
               <p className="text-xs text-gray-400 mb-1">진입가</p>
-              <p className="text-sm font-medium text-white">${strategy.entry.toFixed(2)}</p>
+              <p className="text-sm font-medium text-white">${safeFixed(strategy.entry, 2)}</p>
             </div>
             <div className="bg-gray-700/50 rounded p-3">
               <p className="text-xs text-gray-400 mb-1">손절가</p>
-              <p className="text-sm font-medium text-red-400">${strategy.stopLoss.toFixed(2)}</p>
+              <p className="text-sm font-medium text-red-400">${safeFixed(strategy.stopLoss, 2)}</p>
               <p className="text-xs text-gray-500">
                 -{((1 - strategy.stopLoss / strategy.entry) * 100).toFixed(1)}%
               </p>

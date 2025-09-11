@@ -29,9 +29,9 @@ export default function WhaleDetector({ orderbook, stats, symbol }: WhaleDetecto
               <div className="space-y-2">
                 {stats.wallsDetected.bidWalls.slice(0, 3).map((wall: any, i: number) => (
                   <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-400">${wall.price.toFixed(2)}</span>
-                    <span className="text-white">{wall.amount.toFixed(4)} {symbol.replace('USDT', '')}</span>
-                    <span className="text-green-400">${wall.total.toFixed(0)}</span>
+                    <span className="text-gray-400">${safePrice(wall.price, 2)}</span>
+                    <span className="text-white">{safeAmount(wall.amount)} {symbol.replace('USDT', '')}</span>
+                    <span className="text-green-400">${safeFixed(wall.total, 0)}</span>
                   </div>
                 ))}
               </div>
@@ -44,9 +44,9 @@ export default function WhaleDetector({ orderbook, stats, symbol }: WhaleDetecto
               <div className="space-y-2">
                 {stats.wallsDetected.askWalls.slice(0, 3).map((wall: any, i: number) => (
                   <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-400">${wall.price.toFixed(2)}</span>
-                    <span className="text-white">{wall.amount.toFixed(4)} {symbol.replace('USDT', '')}</span>
-                    <span className="text-red-400">${wall.total.toFixed(0)}</span>
+                    <span className="text-gray-400">${safePrice(wall.price, 2)}</span>
+                    <span className="text-white">{safeAmount(wall.amount)} {symbol.replace('USDT', '')}</span>
+                    <span className="text-red-400">${safeFixed(wall.total, 0)}</span>
                   </div>
                 ))}
               </div>

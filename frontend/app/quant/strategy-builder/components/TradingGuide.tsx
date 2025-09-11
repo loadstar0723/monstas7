@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FiBook, FiPlay, FiCheckCircle, FiCircle, FiStar, FiTrendingUp, FiShield, FiTarget, FiInfo, FiArrowRight, FiAward } from 'react-icons/fi'
 
@@ -690,7 +691,7 @@ const TradingGuide: React.FC<TradingGuideProps> = ({
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-400">진도</span>
-                  <span className="text-sm font-medium text-purple-400">{course.progress.toFixed(0)}%</span>
+                  <span className="text-sm font-medium text-purple-400">{safeFixed(course.progress, 0)}%</span>
                 </div>
                 
                 <div className="w-full bg-gray-700 rounded-full h-2">

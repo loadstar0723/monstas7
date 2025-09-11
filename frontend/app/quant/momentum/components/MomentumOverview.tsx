@@ -60,7 +60,7 @@ export default function MomentumOverview({ coinData, momentumData }: MomentumOve
           <p className="text-gray-400 text-sm mb-2">모멘텀 스코어</p>
           <div className="flex items-end gap-2">
             <span className="text-3xl font-bold text-white">
-              {momentumData?.momentumScore.toFixed(0) || '0'}
+              {momentumData?.safeFixed(momentumScore, 0) || '0'}
             </span>
             <span className="text-gray-500 text-lg mb-1">/100</span>
           </div>
@@ -97,7 +97,7 @@ export default function MomentumOverview({ coinData, momentumData }: MomentumOve
                 momentumData?.rsi > 70 ? 'text-red-400' : 
                 momentumData?.rsi < 30 ? 'text-green-400' : 'text-gray-300'
               }`}>
-                {momentumData?.rsi.toFixed(1) || '-'}
+                {momentumData?.safeFixed(rsi, 1) || '-'}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -111,7 +111,7 @@ export default function MomentumOverview({ coinData, momentumData }: MomentumOve
             <div className="flex justify-between items-center">
               <span className="text-gray-500 text-sm">Stochastic</span>
               <span className="text-sm font-medium text-gray-300">
-                {momentumData?.stochastic.k.toFixed(1) || '-'}
+                {momentumData?.safeFixed(stochastic.k, 1) || '-'}
               </span>
             </div>
           </div>

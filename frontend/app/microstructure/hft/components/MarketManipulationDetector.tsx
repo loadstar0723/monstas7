@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ExclamationTriangleIcon, ShieldCheckIcon, BellAlertIcon } from '@heroicons/react/24/outline'
 
 interface TradeData {
@@ -69,7 +70,7 @@ export default function MarketManipulationDetector({ trades, orderbook, patterns
     const recentTrades = trades.slice(0, 50)
     const priceFrequency: Record<string, number> = {}
     recentTrades.forEach(t => {
-      const priceKey = t.price.toFixed(2)
+      const priceKey = safePrice(t.price, 2)
       priceFrequency[priceKey] = (priceFrequency[priceKey] || 0) + 1
     })
     
@@ -96,7 +97,7 @@ export default function MarketManipulationDetector({ trades, orderbook, patterns
         type: 'pump_dump',
         severity: 'HIGH',
         confidence: 70,
-        description: `급격한 가격 변동 (${priceChange.toFixed(2)}%) 과 거래량 급증`,
+        description: `급격한 가격 변동 (${safePrice(priceChange, 2)}%) 과 거래량 급증`,
         action: 'FOMO 주의, 신중한 진입 필요',
         timestamp: now
       })

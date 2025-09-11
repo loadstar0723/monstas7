@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaCog } from 'react-icons/fa'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
@@ -145,7 +146,7 @@ export default function SimpleTradingChart({ symbol }: TradingChartProps) {
         <div className="bg-gray-800 p-2 rounded border border-gray-600">
           <p className="text-gray-400 text-sm">{label}</p>
           <p className="text-white font-semibold">
-            ${payload[0].value.toFixed(2)}
+            ${payload[0].safeFixed(value, 2)}
           </p>
         </div>
       )
@@ -161,10 +162,10 @@ export default function SimpleTradingChart({ symbol }: TradingChartProps) {
           <h2 className="text-2xl font-bold text-white">{symbol}</h2>
           <div className="flex items-center gap-2">
             <span className="text-3xl font-bold text-white">
-              ${currentPrice.toFixed(2)}
+              ${safePrice(currentPrice, 2)}
             </span>
             <span className={`text-lg font-semibold ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+              {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
             </span>
           </div>
         </div>

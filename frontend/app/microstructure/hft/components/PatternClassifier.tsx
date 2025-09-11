@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 interface HFTPattern {
@@ -170,7 +171,7 @@ export default function PatternClassifier({ patterns, trades }: PatternClassifie
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">평균 신뢰도</span>
-                <span className="text-purple-400 font-medium">{stat.avgConfidence.toFixed(1)}%</span>
+                <span className="text-purple-400 font-medium">{safeFixed(stat.avgConfidence, 1)}%</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">거래량</span>
@@ -208,7 +209,7 @@ export default function PatternClassifier({ patterns, trades }: PatternClassifie
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-purple-400 text-sm font-medium">{pattern.confidence.toFixed(1)}%</p>
+                <p className="text-purple-400 text-sm font-medium">{safeFixed(pattern.confidence, 1)}%</p>
                 <p className={`text-xs ${getImpactColor(pattern.impact)}`}>
                   {pattern.impact.toUpperCase()}
                 </p>

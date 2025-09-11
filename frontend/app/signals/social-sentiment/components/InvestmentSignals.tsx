@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBullhorn, FaExclamationCircle, FaCheckCircle, FaTimesCircle, FaBalanceScale, FaRocket, FaBomb, FaShieldAlt } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'
 
@@ -282,7 +283,7 @@ export default function InvestmentSignals({ coin }: InvestmentSignalsProps) {
               ${currentPrice.toLocaleString()}
             </p>
             <p className={`text-xs ${priceChange24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {priceChange24h > 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+              {priceChange24h > 0 ? '+' : ''}{safePrice(priceChange24h, 2)}%
             </p>
           </div>
           <div className="bg-gray-700/50 rounded p-3">

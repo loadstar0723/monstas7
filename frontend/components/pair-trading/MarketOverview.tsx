@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 export default function MarketOverview() {
@@ -129,7 +130,7 @@ export default function MarketOverview() {
           >
             <div className="text-xs text-gray-400 mb-1">BTC 도미넌스</div>
             <div className="text-lg font-bold text-orange-400">
-              {marketData.btcDominance.toFixed(1)}%
+              {safeFixed(marketData.btcDominance, 1)}%
             </div>
             <div className="text-xs text-gray-500 mt-1">
               <span className="inline-block w-full bg-gray-700 rounded-full h-1">
@@ -169,7 +170,7 @@ export default function MarketOverview() {
             <div className="text-xs text-gray-400 mb-1">최고 상승</div>
             <div className="text-sm font-bold text-white">{marketData.topGainer.symbol}</div>
             <div className="text-lg font-bold text-green-400">
-              +{marketData.topGainer.change.toFixed(2)}%
+              +{safePercent(marketData.topGainer.change)}%
             </div>
           </motion.div>
 
@@ -183,7 +184,7 @@ export default function MarketOverview() {
             <div className="text-xs text-gray-400 mb-1">최고 하락</div>
             <div className="text-sm font-bold text-white">{marketData.topLoser.symbol}</div>
             <div className="text-lg font-bold text-red-400">
-              {marketData.topLoser.change.toFixed(2)}%
+              {safePercent(marketData.topLoser.change)}%
             </div>
           </motion.div>
         </div>

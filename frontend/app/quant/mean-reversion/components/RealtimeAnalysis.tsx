@@ -110,7 +110,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
             Math.abs(marketData.zScore) > 2 ? 'text-red-400' : 
             Math.abs(marketData.zScore) > 1 ? 'text-yellow-400' : 'text-green-400'
           }`}>
-            {marketData.zScore.toFixed(2)}
+            {safeFixed(marketData.zScore, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {Math.abs(marketData.zScore) > 2 ? '극단 구간' : 
@@ -127,7 +127,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
             marketData.rsi > 70 ? 'text-red-400' : 
             marketData.rsi < 30 ? 'text-green-400' : 'text-yellow-400'
           }`}>
-            {marketData.rsi.toFixed(0)}
+            {safeFixed(marketData.rsi, 0)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {marketData.rsi > 70 ? '과매수' : 
@@ -144,10 +144,10 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
             Math.abs(priceFromSMA20) > 5 ? 'text-red-400' : 
             Math.abs(priceFromSMA20) > 2 ? 'text-yellow-400' : 'text-green-400'
           }`}>
-            {priceFromSMA20 >= 0 ? '+' : ''}{priceFromSMA20.toFixed(2)}%
+            {priceFromSMA20 >= 0 ? '+' : ''}{safePrice(priceFromSMA20, 2)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            SMA: ${marketData.sma20.toFixed(2)}
+            SMA: ${safeFixed(marketData.sma20, 2)}
           </div>
         </motion.div>
       </div>
@@ -157,7 +157,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
         <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 rounded-lg p-4 border border-blue-700/30">
           <div className="flex items-center justify-between mb-2">
             <span className="text-blue-400 font-medium">20일 이동평균</span>
-            <span className="text-white font-bold">${marketData.sma20.toFixed(2)}</span>
+            <span className="text-white font-bold">${safeFixed(marketData.sma20, 2)}</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
@@ -170,7 +170,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
         <div className="bg-gradient-to-r from-purple-900/20 to-purple-800/20 rounded-lg p-4 border border-purple-700/30">
           <div className="flex items-center justify-between mb-2">
             <span className="text-purple-400 font-medium">50일 이동평균</span>
-            <span className="text-white font-bold">${marketData.sma50.toFixed(2)}</span>
+            <span className="text-white font-bold">${safeFixed(marketData.sma50, 2)}</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
@@ -183,7 +183,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
         <div className="bg-gradient-to-r from-orange-900/20 to-orange-800/20 rounded-lg p-4 border border-orange-700/30">
           <div className="flex items-center justify-between mb-2">
             <span className="text-orange-400 font-medium">200일 이동평균</span>
-            <span className="text-white font-bold">${marketData.sma200.toFixed(2)}</span>
+            <span className="text-white font-bold">${safeFixed(marketData.sma200, 2)}</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
@@ -200,8 +200,8 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-400">상단 밴드</span>
-            <span className="text-red-300">${marketData.upperBand.toFixed(2)}</span>
-            <span className="text-red-400">+{priceFromUpperBand.toFixed(2)}%</span>
+            <span className="text-red-300">${safeFixed(marketData.upperBand, 2)}</span>
+            <span className="text-red-400">+{safePrice(priceFromUpperBand, 2)}%</span>
           </div>
           <div className="relative h-8 bg-gray-700 rounded-full overflow-hidden">
             <div className="absolute top-0 left-0 h-full w-1 bg-red-400" style={{ left: '90%' }} />
@@ -218,8 +218,8 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-400">하단 밴드</span>
-            <span className="text-green-300">${marketData.lowerBand.toFixed(2)}</span>
-            <span className="text-green-400">-{priceFromLowerBand.toFixed(2)}%</span>
+            <span className="text-green-300">${safeFixed(marketData.lowerBand, 2)}</span>
+            <span className="text-green-400">-{safePrice(priceFromLowerBand, 2)}%</span>
           </div>
         </div>
       </div>

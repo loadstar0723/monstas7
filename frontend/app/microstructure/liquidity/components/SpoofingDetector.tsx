@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 interface SpoofingDetectorProps {
@@ -183,7 +184,7 @@ export default function SpoofingDetector({ orderbook, history }: SpoofingDetecto
                   </div>
                   <div>
                     <span className="text-gray-400">평균 수량: </span>
-                    <span className="text-white">{alert.avgAmount.toFixed(4)}</span>
+                    <span className="text-white">{safeFixed(alert.avgAmount, 4)}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-gray-400">총 가치: </span>
@@ -224,16 +225,16 @@ export default function SpoofingDetector({ orderbook, history }: SpoofingDetecto
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className="text-gray-400">가격: </span>
-                    <span className="text-white font-mono">${order.price.toFixed(2)}</span>
+                    <span className="text-white font-mono">${safePrice(order.price, 2)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">수량: </span>
-                    <span className="text-white">{order.amount.toFixed(4)}</span>
+                    <span className="text-white">{safeAmount(order.amount)}</span>
                   </div>
                   {order.distance && (
                     <div>
                       <span className="text-gray-400">거리: </span>
-                      <span className="text-yellow-400">{order.distance.toFixed(2)}%</span>
+                      <span className="text-yellow-400">{safeFixed(order.distance, 2)}%</span>
                     </div>
                   )}
                   <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaDollarSign, FaUniversity, FaChartLine, FaBrain, FaShieldAlt,
@@ -1432,7 +1433,7 @@ export default function SmartMoneyUltimate() {
                     } else if (Math.abs(netFlow) > 1000) {
                       return `${netFlow > 0 ? '+' : ''}$${(netFlow / 1000).toFixed(1)}K`
                     } else {
-                      return `${netFlow > 0 ? '+' : ''}$${netFlow.toFixed(0)}`
+                      return `${netFlow > 0 ? '+' : ''}$${safeFixed(netFlow, 0)}`
                     }
                   })()}
                 </p>
@@ -1479,7 +1480,7 @@ export default function SmartMoneyUltimate() {
                   {volume24h > 1000000000 ? `$${(volume24h / 1000000000).toFixed(2)}B` :
                    volume24h > 1000000 ? `$${(volume24h / 1000000).toFixed(1)}M` :
                    volume24h > 1000 ? `$${(volume24h / 1000).toFixed(1)}K` :
-                   volume24h > 0 ? `$${volume24h.toFixed(0)}` : '계산중...'}
+                   volume24h > 0 ? `$${safeFixed(volume24h, 0)}` : '계산중...'}
                 </p>
                 <p className="text-gray-300 text-sm mt-2">
                   {(() => {
@@ -1645,7 +1646,7 @@ export default function SmartMoneyUltimate() {
                             const value = flow.amount * currentPrice
                             if (value > 1000000) return `${(value / 1000000).toFixed(2)}M`
                             if (value > 1000) return `${(value / 1000).toFixed(1)}K`
-                            return value.toFixed(0)
+                            return safeFixed(value, 0)
                           })()}
                         </td>
                         <td className="px-6 py-4">
@@ -1727,7 +1728,7 @@ export default function SmartMoneyUltimate() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">스프레드</span>
-                      <span className="text-white font-bold">{maker.spread.toFixed(2)}%</span>
+                      <span className="text-white font-bold">{safeFixed(maker.spread, 2)}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">시장 깊이</span>
@@ -1828,7 +1829,7 @@ export default function SmartMoneyUltimate() {
                           `$${(portfolio.totalValue / 1000000).toFixed(1)}M` :
                           portfolio.totalValue > 1000 ?
                           `$${(portfolio.totalValue / 1000).toFixed(1)}K` :
-                          `$${portfolio.totalValue.toFixed(0)}`
+                          `$${safeFixed(portfolio.totalValue, 0)}`
                         }
                       </p>
                       <p className={`text-sm font-bold ${
@@ -1850,17 +1851,17 @@ export default function SmartMoneyUltimate() {
                             holding.pnlPercent > 0 ? 'text-green-400' : 
                             holding.pnlPercent < 0 ? 'text-red-400' : 'text-gray-400'
                           }`}>
-                            {holding.pnlPercent > 0 ? '+' : ''}{holding.pnlPercent.toFixed(1)}%
+                            {holding.pnlPercent > 0 ? '+' : ''}{safeFixed(holding.pnlPercent, 1)}%
                           </span>
                         </div>
                         <div className="space-y-1 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-400">보유량</span>
-                            <span className="text-white">{holding.amount.toFixed(2)}</span>
+                            <span className="text-white">{safeAmount(holding.amount)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">평균가</span>
-                            <span className="text-white">${holding.avgPrice.toFixed(2)}</span>
+                            <span className="text-white">${safeFixed(holding.avgPrice, 2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">현재가치</span>
@@ -2200,7 +2201,7 @@ export default function SmartMoneyUltimate() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-400">신뢰도</p>
-                      <p className="text-xl font-bold text-white">{zone.confidence.toFixed(0)}%</p>
+                      <p className="text-xl font-bold text-white">{safeFixed(zone.confidence, 0)}%</p>
                     </div>
                   </div>
                   
@@ -2208,7 +2209,7 @@ export default function SmartMoneyUltimate() {
                     <div>
                       <p className="text-xs text-gray-400 mb-1">가격 범위</p>
                       <p className="text-sm font-bold text-white">
-                        ${zone.priceRange.min.toFixed(0)} - ${zone.priceRange.max.toFixed(0)}
+                        ${safePrice(zone.priceRange.min, 0)} - ${safePrice(zone.priceRange.max, 0)}
                       </p>
                     </div>
                     <div>

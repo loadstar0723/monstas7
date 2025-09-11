@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
@@ -243,7 +244,7 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
             >
               <div className="text-xs text-gray-400 mb-1">총 수익률</div>
               <div className={`text-xl font-bold ${getMetricColor('return', performance.totalReturn)}`}>
-                {performance.totalReturn >= 0 ? '+' : ''}{performance.totalReturn.toFixed(2)}%
+                {performance.totalReturn >= 0 ? '+' : ''}{safeFixed(performance.totalReturn, 2)}%
               </div>
             </motion.div>
 
@@ -255,7 +256,7 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
             >
               <div className="text-xs text-gray-400 mb-1">승률</div>
               <div className={`text-xl font-bold ${getMetricColor('winRate', performance.winRate)}`}>
-                {performance.winRate.toFixed(1)}%
+                {safeFixed(performance.winRate, 1)}%
               </div>
             </motion.div>
 
@@ -267,7 +268,7 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
             >
               <div className="text-xs text-gray-400 mb-1">샤프 비율</div>
               <div className={`text-xl font-bold ${getMetricColor('sharpe', performance.sharpeRatio)}`}>
-                {performance.sharpeRatio.toFixed(2)}
+                {safeFixed(performance.sharpeRatio, 2)}
               </div>
             </motion.div>
 
@@ -279,7 +280,7 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
             >
               <div className="text-xs text-gray-400 mb-1">최대 낙폭</div>
               <div className={`text-xl font-bold ${getMetricColor('drawdown', performance.maxDrawdown)}`}>
-                -{performance.maxDrawdown.toFixed(2)}%
+                -{safeFixed(performance.maxDrawdown, 2)}%
               </div>
             </motion.div>
           </div>
@@ -367,25 +368,25 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">평균 수익</span>
                   <span className="text-sm font-bold text-green-400">
-                    +{performance.avgWin.toFixed(2)}%
+                    +{safeFixed(performance.avgWin, 2)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">평균 손실</span>
                   <span className="text-sm font-bold text-red-400">
-                    {performance.avgLoss.toFixed(2)}%
+                    {safeFixed(performance.avgLoss, 2)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">손익비</span>
                   <span className="text-sm font-bold text-blue-400">
-                    {performance.profitFactor.toFixed(2)}
+                    {safeFixed(performance.profitFactor, 2)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">칼마 비율</span>
                   <span className="text-sm font-bold text-purple-400">
-                    {performance.calmarRatio.toFixed(2)}
+                    {safeFixed(performance.calmarRatio, 2)}
                   </span>
                 </div>
               </div>

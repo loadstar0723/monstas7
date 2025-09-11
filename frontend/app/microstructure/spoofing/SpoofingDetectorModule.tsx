@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChartBar, FaBell, FaFireAlt, FaWater, FaBalanceScale, 
@@ -224,7 +225,7 @@ export default function SpoofingDetectorModule() {
         addAlert({
           type: 'spoofing',
           severity: analysis.riskLevel === 'critical' ? 'critical' : 'warning',
-          message: `${selectedSymbol}: 스푸핑 감지 (점수: ${analysis.spoofingScore.toFixed(0)})`,
+          message: `${selectedSymbol}: 스푸핑 감지 (점수: ${safeFixed(analysis.spoofingScore, 0)})`,
           data: analysis
         })
       }
@@ -512,7 +513,7 @@ const MetricCard = ({ title, value, unit, icon, color }: any) => (
     </div>
     <div className="flex items-baseline gap-1">
       <span className="text-2xl font-bold text-white">
-        {typeof value === 'number' ? value.toFixed(1) : value}
+        {typeof value === 'number' ? safeFixed(value, 1) : value}
       </span>
       {unit && <span className="text-gray-400 text-sm">{unit}</span>}
     </div>

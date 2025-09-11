@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 interface TradeData {
@@ -37,7 +38,7 @@ export default function VolumeProfile({ trades, currentPrice }: VolumeProfilePro
       
       return {
         price: (levelMin + levelMax) / 2,
-        priceRange: `$${levelMin.toFixed(2)}-${levelMax.toFixed(2)}`,
+        priceRange: `$${safeFixed(levelMin, 2)}-${safeFixed(levelMax, 2)}`,
         buyVolume,
         sellVolume,
         totalVolume,
@@ -116,7 +117,7 @@ export default function VolumeProfile({ trades, currentPrice }: VolumeProfilePro
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">VWAP</p>
-          <p className="text-lg font-bold text-white">${vwap.toFixed(2)}</p>
+          <p className="text-lg font-bold text-white">${safeFixed(vwap, 2)}</p>
           <p className="text-xs text-gray-500">
             {vwap > currentPrice ? (
               <span className="text-red-400">현재가 -${(vwap - currentPrice).toFixed(2)}</span>
@@ -137,7 +138,7 @@ export default function VolumeProfile({ trades, currentPrice }: VolumeProfilePro
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">매수/매도 비율</p>
           <p className={`text-lg font-bold ${volumeStats.buyRatio > 50 ? 'text-green-400' : 'text-red-400'}`}>
-            {volumeStats.buyRatio.toFixed(1)}%
+            {safeFixed(volumeStats.buyRatio, 1)}%
           </p>
           <p className="text-xs text-gray-500">
             {volumeStats.buyRatio > 50 ? '매수 우세' : '매도 우세'}
@@ -161,7 +162,7 @@ export default function VolumeProfile({ trades, currentPrice }: VolumeProfilePro
             {volumeProfile.slice(0, 20).map((level, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 w-24 text-right">
-                  ${level.price.toFixed(2)}
+                  ${safePrice(level.price, 2)}
                 </span>
                 <div className="flex-1 h-6 bg-gray-700 rounded overflow-hidden relative">
                   <div className="absolute inset-0 flex">
@@ -248,10 +249,10 @@ export default function VolumeProfile({ trades, currentPrice }: VolumeProfilePro
             • VWAP {vwap > currentPrice ? '위' : '아래'}에서 거래 중 ({vwap > currentPrice ? '약세' : '강세'} 신호)
           </div>
           <div>
-            • 매수/매도 비율: {volumeStats.buyRatio.toFixed(1)}% ({volumeStats.buyRatio > 50 ? '매수 우세' : '매도 우세'})
+            • 매수/매도 비율: {safeFixed(volumeStats.buyRatio, 1)}% ({volumeStats.buyRatio > 50 ? '매수 우세' : '매도 우세'})
           </div>
           <div>
-            • 평균 거래 크기: {volumeStats.avgTradeSize.toFixed(3)} 단위
+            • 평균 거래 크기: {safeFixed(volumeStats.avgTradeSize, 3)} 단위
           </div>
           <div>
             • 대량 거래 비중: {((volumeStats.largeTradesVolume / volumeStats.totalVolume) * 100).toFixed(1)}%

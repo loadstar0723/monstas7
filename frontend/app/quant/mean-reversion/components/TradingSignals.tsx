@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Coin {
   symbol: string
@@ -170,13 +171,13 @@ export default function TradingSignals({ coin, marketData }: TradingSignalsProps
           <div className="bg-black/30 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">진입가</div>
             <div className="text-white font-bold">
-              ${signal.entry.toFixed(2)}
+              ${safeFixed(signal.entry, 2)}
             </div>
           </div>
           <div className="bg-black/30 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">목표가</div>
             <div className="text-green-400 font-bold">
-              ${signal.target.toFixed(2)}
+              ${safeFixed(signal.target, 2)}
             </div>
             <div className="text-xs text-gray-500">
               {((signal.target - signal.entry) / signal.entry * 100).toFixed(2)}%
@@ -185,7 +186,7 @@ export default function TradingSignals({ coin, marketData }: TradingSignalsProps
           <div className="bg-black/30 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">손절가</div>
             <div className="text-red-400 font-bold">
-              ${signal.stopLoss.toFixed(2)}
+              ${safeFixed(signal.stopLoss, 2)}
             </div>
             <div className="text-xs text-gray-500">
               {((signal.stopLoss - signal.entry) / signal.entry * 100).toFixed(2)}%
@@ -197,7 +198,7 @@ export default function TradingSignals({ coin, marketData }: TradingSignalsProps
               signal.riskReward >= 2 ? 'text-green-400' :
               signal.riskReward >= 1 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              1:{signal.riskReward.toFixed(1)}
+              1:{safeFixed(signal.riskReward, 1)}
             </div>
           </div>
         </div>

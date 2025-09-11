@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaCalendarAlt, FaLock, FaUnlock, FaChartLine, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa'
 
 interface TokenUnlockEvent {
@@ -63,14 +64,14 @@ export default function TokenUnlockSchedule() {
     if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`
     if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`
     if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`
-    return `$${value.toFixed(2)}`
+    return `$${safeFixed(value, 2)}`
   }
 
   const formatAmount = (amount: number) => {
     if (amount >= 1e9) return `${(amount / 1e9).toFixed(2)}B`
     if (amount >= 1e6) return `${(amount / 1e6).toFixed(2)}M`
     if (amount >= 1e3) return `${(amount / 1e3).toFixed(2)}K`
-    return amount.toFixed(0)
+    return safeAmount(amount)
   }
 
   const formatDate = (dateStr: string) => {
@@ -179,7 +180,7 @@ export default function TokenUnlockSchedule() {
                 <div className="text-sm font-bold text-red-400">⚠️ 주의: 대규모 언락 임박</div>
                 <div className="text-xs text-gray-300 mt-1">
                   {stats.nextUnlock.tokenName} ({stats.nextUnlock.tokenSymbol}) - {' '}
-                  {formatAmount(stats.nextUnlock.unlockAmount)} 토큰 ({stats.nextUnlock.percentOfSupply.toFixed(2)}% 공급량)이 {' '}
+                  {formatAmount(stats.nextUnlock.unlockAmount)} 토큰 ({safePercent(stats.nextUnlock.percentOfSupply)}% 공급량)이 {' '}
                   {formatDate(stats.nextUnlock.date).split(' (')[1].replace(')', '')} 언락 예정
                 </div>
               </div>
@@ -233,7 +234,7 @@ export default function TokenUnlockSchedule() {
                     </div>
                     <div className="text-right">
                       <div className={`text-sm font-bold ${getImpactColor(event.percentOfSupply)}`}>
-                        {event.percentOfSupply.toFixed(2)}% 공급량
+                        {safePercent(event.percentOfSupply)}% 공급량
                       </div>
                       <div className={`text-xs px-2 py-1 rounded ${impact.color} bg-opacity-20 text-white mt-1`}>
                         영향도: {impact.text}

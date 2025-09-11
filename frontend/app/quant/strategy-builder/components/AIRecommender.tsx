@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FiZap, FiTrendingUp, FiTarget, FiAlertCircle, FiRefreshCw, FiStar } from 'react-icons/fi'
 import { FaBrain, FaChartBar } from 'react-icons/fa'
@@ -487,7 +488,7 @@ const AIRecommender: React.FC<AIRecommenderProps> = ({
               </div>
               <div className="text-center">
                 <div className="text-lg font-semibold text-green-400">
-                  {rec.backtestResults.sharpeRatio.toFixed(2)}
+                  {safeFixed(rec.backtestResults.sharpeRatio, 2)}
                 </div>
                 <div className="text-xs text-gray-500">샤프비율</div>
               </div>

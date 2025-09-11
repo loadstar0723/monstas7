@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaExpand, FaCompress, FaSync } from 'react-icons/fa'
 
 interface PinBarChartProps {
@@ -145,7 +146,7 @@ export default function PinBarChart({ symbol, timeframe, currentPrice }: PinBarC
       ctx.fillStyle = '#9CA3AF'
       ctx.font = '10px sans-serif'
       ctx.textAlign = 'right'
-      ctx.fillText(price.toFixed(2), padding - 5, y + 3)
+      ctx.fillText(safePrice(price, 2), padding - 5, y + 3)
     }
     
     ctx.setLineDash([])
@@ -213,7 +214,7 @@ export default function PinBarChart({ symbol, timeframe, currentPrice }: PinBarC
       ctx.fillStyle = '#FFFFFF'
       ctx.font = 'bold 11px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(currentPrice.toFixed(2), rect.width - padding / 2, currentY + 3)
+      ctx.fillText(safePrice(currentPrice, 2), rect.width - padding / 2, currentY + 3)
     }
     
     // 범례

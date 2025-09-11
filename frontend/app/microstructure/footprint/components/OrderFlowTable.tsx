@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { OrderFlowData, WhaleOrder } from '../types'
 import { FOOTPRINT_CONFIG } from '../config/constants'
 import { FaArrowUp, FaArrowDown, FaFish, FaFilter, FaDownload } from 'react-icons/fa'
@@ -106,14 +107,14 @@ export default function OrderFlowTable({ data, symbol }: OrderFlowTableProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-400">
-              {stats.buyVolume.toFixed(2)}
+              {safeFixed(stats.buyVolume, 2)}
             </div>
             <div className="text-sm text-gray-400">매수량</div>
           </div>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-red-400">
-              {stats.sellVolume.toFixed(2)}
+              {safeFixed(stats.sellVolume, 2)}
             </div>
             <div className="text-sm text-gray-400">매도량</div>
           </div>
@@ -127,7 +128,7 @@ export default function OrderFlowTable({ data, symbol }: OrderFlowTableProps) {
           
           <div className="text-center">
             <div className="text-2xl font-bold text-white">
-              {stats.avgSize.toFixed(4)}
+              {safeFixed(stats.avgSize, 4)}
             </div>
             <div className="text-sm text-gray-400">평균 크기</div>
           </div>
@@ -163,7 +164,7 @@ export default function OrderFlowTable({ data, symbol }: OrderFlowTableProps) {
                     )}
                     <div>
                       <div className="font-medium">
-                        {whale.quantity.toFixed(4)} {symbol.replace('USDT', '')}
+                        {safeAmount(whale.quantity)} {symbol.replace('USDT', '')}
                       </div>
                       <div className="text-sm text-gray-400">
                         ${whale.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
@@ -268,7 +269,7 @@ export default function OrderFlowTable({ data, symbol }: OrderFlowTableProps) {
                       ${order.price.toLocaleString('ko-KR')}
                     </td>
                     <td className="text-right py-2 px-2 font-mono">
-                      {order.size.toFixed(4)}
+                      {safeFixed(order.size, 4)}
                     </td>
                     <td className="text-center py-2 px-2">
                       <span className={`inline-flex items-center gap-1 ${

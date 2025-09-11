@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartBar, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
@@ -160,17 +161,17 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
 
   const formatPrice = (price: string) => {
     const p = parseFloat(price)
-    if (p >= 10000) return p.toFixed(0)
-    if (p >= 100) return p.toFixed(2)
-    if (p >= 1) return p.toFixed(3)
-    return p.toFixed(6)
+    if (p >= 10000) return safeFixed(p, 0)
+    if (p >= 100) return safeFixed(p, 2)
+    if (p >= 1) return safeFixed(p, 3)
+    return safeFixed(p, 6)
   }
 
   const formatQuantity = (quantity: string) => {
     const q = parseFloat(quantity)
     if (q >= 1000) return `${(q / 1000).toFixed(2)}K`
-    if (q >= 1) return q.toFixed(3)
-    return q.toFixed(6)
+    if (q >= 1) return safeFixed(q, 3)
+    return safeFixed(q, 6)
   }
 
   const getBarWidth = (total: number, maxTotal: number) => {
@@ -230,10 +231,10 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">스프레드</p>
           <p className="text-xl font-bold text-white">
-            ${spread?.value.toFixed(2) || '0'}
+            ${spread?.safeFixed(value, 2) || '0'}
           </p>
           <p className="text-sm text-gray-400">
-            {spread?.percentage.toFixed(3) || '0'}%
+            {spread?.safePercent(percentage) || '0'}%
           </p>
         </div>
         
@@ -251,7 +252,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
               imbalance > 10 ? 'text-green-400' : 
               imbalance < -10 ? 'text-red-400' : 'text-white'
             }`}>
-              {imbalance.toFixed(1)}%
+              {safeFixed(imbalance, 1)}%
             </p>
             {imbalance > 10 && <FaArrowUp className="text-green-400" />}
             {imbalance < -10 && <FaArrowDown className="text-red-400" />}
@@ -331,7 +332,7 @@ export default function OrderBookAnalyzer({ selectedCoin }: Props) {
           <div>
             <h4 className="text-purple-400 font-semibold mb-2">현재 상황</h4>
             <ul className="space-y-1 text-gray-300">
-              <li>• 스프레드가 {spread?.percentage.toFixed(3)}%로 {spread && spread.percentage < 0.1 ? '타이트' : '넓은'} 상태</li>
+              <li>• 스프레드가 {spread?.safePercent(percentage)}%로 {spread && spread.percentage < 0.1 ? '타이트' : '넓은'} 상태</li>
               <li>• {Math.abs(imbalance) < 10 ? '균형잡힌' : imbalance > 0 ? '매수 우세' : '매도 우세'} 오더북</li>
               <li>• 중간가 기준 변동성 {orderBook ? '측정 중' : '대기'}</li>
             </ul>

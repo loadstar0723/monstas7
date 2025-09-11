@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FiShield, FiAlertTriangle, FiTrendingDown, FiSettings, FiTarget, FiRefreshCw } from 'react-icons/fi'
 import { FaChartBar } from 'react-icons/fa'
@@ -350,17 +351,17 @@ const RiskManager: React.FC<RiskManagerProps> = ({
           </div>
           
           <div className="bg-gray-800/50 rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400">{riskMetrics.sharpeRatio.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-blue-400">{safeFixed(riskMetrics.sharpeRatio, 2)}</div>
             <div className="text-sm text-gray-400 mt-1">샤프 비율</div>
           </div>
           
           <div className="bg-gray-800/50 rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-400">{riskMetrics.volatility.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-yellow-400">{safeFixed(riskMetrics.volatility, 1)}%</div>
             <div className="text-sm text-gray-400 mt-1">변동성</div>
           </div>
           
           <div className="bg-gray-800/50 rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-red-400">-{riskMetrics.currentDrawdown.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-red-400">-{safeFixed(riskMetrics.currentDrawdown, 1)}%</div>
             <div className="text-sm text-gray-400 mt-1">현재 드로다운</div>
           </div>
         </div>
@@ -495,11 +496,11 @@ const RiskManager: React.FC<RiskManagerProps> = ({
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-400">베타:</span>
-                <span className="text-blue-400 font-semibold">{riskMetrics.beta.toFixed(2)}</span>
+                <span className="text-blue-400 font-semibold">{safeFixed(riskMetrics.beta, 2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">상관계수:</span>
-                <span className="text-blue-400 font-semibold">{riskMetrics.correlation.toFixed(2)}</span>
+                <span className="text-blue-400 font-semibold">{safeFixed(riskMetrics.correlation, 2)}</span>
               </div>
             </div>
           </div>

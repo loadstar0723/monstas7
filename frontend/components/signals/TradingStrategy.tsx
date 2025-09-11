@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaChartLine, FaShieldAlt, FaRocket, FaExclamationTriangle } from 'react-icons/fa'
 
@@ -387,11 +388,11 @@ export default function TradingStrategy({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">진입가</span>
-                  <span className="text-white font-mono">${strategy.entry.toFixed(2)}</span>
+                  <span className="text-white font-mono">${safeFixed(strategy.entry, 2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">손절가</span>
-                  <span className="text-red-400 font-mono">${strategy.stopLoss.toFixed(2)}</span>
+                  <span className="text-red-400 font-mono">${safeFixed(strategy.stopLoss, 2)}</span>
                 </div>
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function TradingStrategy({
                 {strategy.targets.map((target, idx) => (
                   <div key={idx} className="flex justify-between text-sm">
                     <span className="text-gray-500">{idx + 1}차 목표</span>
-                    <span className="text-green-400 font-mono">${target.toFixed(2)}</span>
+                    <span className="text-green-400 font-mono">${safeFixed(target, 2)}</span>
                   </div>
                 ))}
               </div>
@@ -439,7 +440,7 @@ export default function TradingStrategy({
               <div>
                 <span className="text-gray-500">가격:</span>
                 <span className={`ml-1 ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                  {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
                 </span>
               </div>
             </div>

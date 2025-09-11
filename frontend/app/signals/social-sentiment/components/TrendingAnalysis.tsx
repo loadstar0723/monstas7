@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { FaFire, FaHashtag, FaUserCheck, FaChartLine, FaClock } from 'react-icons/fa'
 import { FiTrendingUp } from 'react-icons/fi'
@@ -79,7 +80,7 @@ export default function TrendingAnalysis({ coin }: TrendingAnalysisProps) {
             <div>
               <p className="text-orange-300 font-bold">🔥 핫 트렌딩 감지!</p>
               <p className="text-sm text-gray-300">
-                거래량이 평균 대비 {volumeSpike.toFixed(0)}% 증가했습니다. 
+                거래량이 평균 대비 {safeFixed(volumeSpike, 0)}% 증가했습니다. 
                 소셜 미디어에서 큰 관심을 받고 있습니다.
               </p>
             </div>

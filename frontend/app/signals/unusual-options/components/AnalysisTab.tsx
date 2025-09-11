@@ -82,7 +82,7 @@ export default function AnalysisTab({ gammaExposure, currentPrice, stats, select
                       style={{ width: `${confidence}%` }}
                     />
                   </div>
-                  <span className="text-sm">{confidence.toFixed(0)}%</span>
+                  <span className="text-sm">{safeFixed(confidence, 0)}%</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -162,7 +162,7 @@ export default function AnalysisTab({ gammaExposure, currentPrice, stats, select
             <div className="text-3xl mb-2">🐂</div>
             <div className="text-lg font-bold text-green-400">기관 매수</div>
             <div className="text-2xl font-mono mt-2">
-              ${(marketFlow.buyVolume || 0).toFixed(1)}M
+              ${safeFixed(marketFlow.buyVolume, 1)}M
             </div>
             <div className="text-xs text-gray-400 mt-1">24시간 누적</div>
           </div>
@@ -170,7 +170,7 @@ export default function AnalysisTab({ gammaExposure, currentPrice, stats, select
             <div className="text-3xl mb-2">🐻</div>
             <div className="text-lg font-bold text-red-400">기관 매도</div>
             <div className="text-2xl font-mono mt-2">
-              ${(marketFlow.sellVolume || 0).toFixed(1)}M
+              ${safeFixed(marketFlow.sellVolume, 1)}M
             </div>
             <div className="text-xs text-gray-400 mt-1">24시간 누적</div>
           </div>
@@ -178,7 +178,7 @@ export default function AnalysisTab({ gammaExposure, currentPrice, stats, select
             <div className="text-3xl mb-2">🎯</div>
             <div className="text-lg font-bold text-purple-400">넷 플로우</div>
             <div className={`text-2xl font-mono mt-2 ${(marketFlow.netFlow || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {(marketFlow.netFlow || 0) > 0 ? '+' : ''}${(marketFlow.netFlow || 0).toFixed(1)}M
+              {(marketFlow.netFlow || 0) > 0 ? '+' : ''}${safeFixed(marketFlow.netFlow, 1)}M
             </div>
             <div className="text-xs text-gray-400 mt-1">순 매수</div>
           </div>

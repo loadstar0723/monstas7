@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 interface Coin {
@@ -40,7 +41,7 @@ export default function CoinSelector({
           <p className="text-xs text-gray-400">
             ${currentPrice.toLocaleString()}
             <span className={`ml-2 ${priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+              {priceChange24h >= 0 ? '+' : ''}{safePrice(priceChange24h, 2)}%
             </span>
           </p>
         </div>

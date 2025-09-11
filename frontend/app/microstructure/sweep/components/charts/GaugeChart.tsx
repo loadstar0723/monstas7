@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface GaugeChartProps {
   value: number
@@ -55,7 +56,7 @@ export function GaugeChart({
           textAnchor="middle"
           className="fill-white text-3xl font-bold"
         >
-          {value.toFixed(0)}%
+          {safeFixed(value, 0)}%
         </text>
         
         <text

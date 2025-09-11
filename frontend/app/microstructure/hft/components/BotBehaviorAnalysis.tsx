@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 interface HFTPattern {
@@ -209,22 +210,22 @@ export default function BotBehaviorAnalysis({ patterns, trades, orderbook }: Bot
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">평균 크기</p>
-          <p className="text-lg font-bold text-white">{botMetrics.avgSize.toFixed(3)}</p>
+          <p className="text-lg font-bold text-white">{safeFixed(botMetrics.avgSize, 3)}</p>
           <p className="text-xs text-gray-500">단위</p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">홀딩 시간</p>
-          <p className="text-lg font-bold text-white">{botMetrics.holdingTime.toFixed(1)}</p>
+          <p className="text-lg font-bold text-white">{safeFixed(botMetrics.holdingTime, 1)}</p>
           <p className="text-xs text-gray-500">초</p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">양방향성</p>
-          <p className="text-lg font-bold text-white">{botMetrics.bidirectional.toFixed(0)}%</p>
+          <p className="text-lg font-bold text-white">{safeFixed(botMetrics.bidirectional, 0)}%</p>
           <p className="text-xs text-gray-500">비율</p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">가격 영향</p>
-          <p className="text-lg font-bold text-white">{botMetrics.priceImpact.toFixed(3)}%</p>
+          <p className="text-lg font-bold text-white">{safePrice(botMetrics.priceImpact, 3)}%</p>
           <p className="text-xs text-gray-500">변동</p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3">
@@ -258,7 +259,7 @@ export default function BotBehaviorAnalysis({ patterns, trades, orderbook }: Bot
                       style={{ width: `${bot.confidence}%` }}
                     />
                   </div>
-                  <span className="text-xs text-purple-400">{bot.confidence.toFixed(0)}%</span>
+                  <span className="text-xs text-purple-400">{safeFixed(bot.confidence, 0)}%</span>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts'
 import { FaChartBar, FaMapMarkerAlt, FaNetworkWired, FaGlobe } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'
@@ -343,8 +344,8 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
               labelStyle={{ color: '#9CA3AF' }}
               formatter={(value: any, name: string) => {
-                if (name === 'sentiment') return [`${value.toFixed(0)}%`, '감성']
-                if (name === 'priceChange') return [`${value.toFixed(2)}%`, '가격 변화']
+                if (name === 'sentiment') return [`${safeFixed(value, 0)}%`, '감성']
+                if (name === 'priceChange') return [`${safeFixed(value, 2)}%`, '가격 변화']
                 return [value, name]
               }}
             />

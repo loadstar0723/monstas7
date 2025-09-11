@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface FootprintChartProps {
   symbol: string
@@ -187,7 +188,7 @@ export default function FootprintChart({ symbol }: FootprintChartProps) {
             <div key={i} className="flex items-center gap-1 mb-1">
               {/* 가격 라벨 */}
               <div className="w-20 text-xs text-gray-400 text-right pr-2">
-                ${level.price.toFixed(2)}
+                ${safePrice(level.price, 2)}
               </div>
               
               {/* 셀 */}
@@ -201,13 +202,13 @@ export default function FootprintChart({ symbol }: FootprintChartProps) {
                       key={j}
                       className="relative h-10 rounded flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all"
                       style={{ backgroundColor: bgColor }}
-                      title={`매수: ${cell.buyVolume.toFixed(2)} / 매도: ${cell.sellVolume.toFixed(2)}`}
+                      title={`매수: ${safeFixed(cell.buyVolume, 2)} / 매도: ${safeFixed(cell.sellVolume, 2)}`}
                     >
                       {cell.totalVolume > 0 && (
                         <span className={`${intensity > 50 ? 'text-white' : 'text-gray-300'}`}>
                           {cell.totalVolume > 100 
                             ? Math.round(cell.totalVolume / 100) + 'K'
-                            : cell.totalVolume.toFixed(0)
+                            : safeFixed(cell.totalVolume, 0)
                           }
                         </span>
                       )}

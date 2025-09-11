@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBrain, FaRocket, FaCog, FaChartLine, FaLightbulb, FaCheckCircle, FaSyncAlt } from 'react-icons/fa'
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -360,7 +361,7 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-gray-400">변동성</span>
-                <span className="text-sm font-medium text-white">{marketFeatures.volatility.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-white">{safeFixed(marketFeatures.volatility, 0)}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
@@ -373,7 +374,7 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-gray-400">유동성</span>
-                <span className="text-sm font-medium text-white">{marketFeatures.liquidity.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-white">{safeFixed(marketFeatures.liquidity, 0)}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
@@ -386,7 +387,7 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-gray-400">경쟁도</span>
-                <span className="text-sm font-medium text-white">{marketFeatures.competitionLevel.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-white">{safeFixed(marketFeatures.competitionLevel, 0)}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
@@ -399,7 +400,7 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-gray-400">예상 수익성</span>
-                <span className="text-sm font-medium text-white">{marketFeatures.profitability.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-white">{safeFixed(marketFeatures.profitability, 0)}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 

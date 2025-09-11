@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaArrowUp, FaArrowDown, FaCircle, FaClock } from 'react-icons/fa'
 
 interface PinBarDashboardProps {
@@ -302,13 +303,13 @@ export default function PinBarDashboard({ coins, selectedTimeframe }: PinBarDash
               <div className="mb-3">
                 <p className="text-lg font-bold text-white">
                   ${coin.price > 100 
-                    ? coin.price.toFixed(2) 
+                    ? safePrice(coin.price, 2) 
                     : coin.price > 1 
-                    ? coin.price.toFixed(4)
-                    : coin.price.toFixed(6)}
+                    ? safePrice(coin.price, 4)
+                    : safePrice(coin.price, 6)}
                 </p>
                 <p className={`text-sm ${coin.priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {coin.priceChange >= 0 ? '+' : ''}{coin.priceChange.toFixed(2)}%
+                  {coin.priceChange >= 0 ? '+' : ''}{safePrice(coin.priceChange, 2)}%
                 </p>
               </div>
               

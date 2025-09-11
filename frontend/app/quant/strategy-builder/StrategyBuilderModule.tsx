@@ -2,6 +2,7 @@
 
 import '@/lib/debugFetch' // JSON 파싱 에러 디버깅
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaRobot, FaChartLine, FaCode, FaPlay, FaHistory, 

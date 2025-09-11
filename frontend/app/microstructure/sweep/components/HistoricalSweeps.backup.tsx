@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Brush } from 'recharts'
 
 interface SweepData {
@@ -231,7 +232,7 @@ export default function HistoricalSweeps({ sweeps, currentPrice }: HistoricalSwe
           
           <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4">
             <p className="text-gray-400 text-sm mb-1">일평균 스윕</p>
-            <p className="text-2xl font-bold text-purple-400">{stats.avgDailySweeps.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-purple-400">{safeFixed(stats.avgDailySweeps, 1)}</p>
             <p className="text-xs text-gray-500 mt-1">회/일</p>
           </div>
           
@@ -243,7 +244,7 @@ export default function HistoricalSweeps({ sweeps, currentPrice }: HistoricalSwe
           
           <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4">
             <p className="text-gray-400 text-sm mb-1">평균 임팩트</p>
-            <p className="text-2xl font-bold text-yellow-400">{stats.avgImpact.toFixed(2)}%</p>
+            <p className="text-2xl font-bold text-yellow-400">{safeFixed(stats.avgImpact, 2)}%</p>
             <p className="text-xs text-gray-500 mt-1">가격 변동</p>
           </div>
         </div>

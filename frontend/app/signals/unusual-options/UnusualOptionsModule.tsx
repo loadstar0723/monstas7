@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, lazy, Suspense } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import dynamic from 'next/dynamic'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { useOptionsData } from './hooks/useOptionsData'

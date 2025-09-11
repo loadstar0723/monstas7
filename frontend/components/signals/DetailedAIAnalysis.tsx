@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaBrain, FaChartLine, FaExclamationTriangle, FaLightbulb, FaRobot } from 'react-icons/fa'
 import { MdAutoAwesome, MdInsights, MdTrendingUp } from 'react-icons/md'

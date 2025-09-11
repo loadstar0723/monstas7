@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaWallet, FaChartPie, FaUserShield, FaRocket, FaGraduationCap, FaChessKing, FaCrown, FaExclamationCircle } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
@@ -352,7 +353,7 @@ export default function InvestmentStrategy({
                   ${calculatedStrategy.positionSize.toLocaleString()}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {symbol} {calculatedStrategy.numberOfCoins.toFixed(4)}개
+                  {symbol} {safeFixed(calculatedStrategy.numberOfCoins, 4)}개
                 </div>
               </div>
 

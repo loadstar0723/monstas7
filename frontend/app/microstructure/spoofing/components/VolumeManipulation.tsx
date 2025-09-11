@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartBar, FaExclamationTriangle, FaArrowUp, FaArrowDown, FaHistory } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -271,7 +272,7 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
           />
         </div>
         <div className="text-xs text-gray-500 mt-1 text-right">
-          {stats.manipulationScore.toFixed(1)}%
+          {safeFixed(stats.manipulationScore, 1)}%
         </div>
       </div>
 
@@ -292,19 +293,19 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
         <div className="bg-gray-700/50 rounded-lg p-2 text-center">
           <div className="text-xs text-gray-400">평균 스파이크</div>
           <div className="text-lg font-bold text-yellow-400">
-            {stats.avgVolumeSpike.toFixed(1)}x
+            {safeFixed(stats.avgVolumeSpike, 1)}x
           </div>
         </div>
         <div className="bg-gray-700/50 rounded-lg p-2 text-center">
           <div className="text-xs text-gray-400">의심 비율</div>
           <div className="text-lg font-bold text-red-400">
-            {stats.suspiciousRatio.toFixed(1)}%
+            {safeFixed(stats.suspiciousRatio, 1)}%
           </div>
         </div>
         <div className="bg-gray-700/50 rounded-lg p-2 text-center">
           <div className="text-xs text-gray-400">조작 점수</div>
           <div className={`text-lg font-bold ${getManipulationLevel(stats.manipulationScore).color}`}>
-            {stats.manipulationScore.toFixed(0)}
+            {safeFixed(stats.manipulationScore, 0)}
           </div>
         </div>
       </div>
@@ -325,7 +326,7 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
                     {pattern.description}
                   </span>
                   <span className="text-xs text-gray-500">
-                    신뢰도: {pattern.confidence.toFixed(0)}%
+                    신뢰도: {safeFixed(pattern.confidence, 0)}%
                   </span>
                 </div>
               </div>
@@ -379,7 +380,7 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
                       </span>
                       
                       <span className="text-xs text-gray-400">
-                        거래량: {anomaly.volume.toFixed(4)}
+                        거래량: {safeFixed(anomaly.volume, 4)}
                       </span>
                     </div>
                     
@@ -389,7 +390,7 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
                         anomaly.spike > 5 ? 'text-orange-400' :
                         'text-yellow-400'
                       }`}>
-                        {anomaly.spike.toFixed(1)}x
+                        {safeFixed(anomaly.spike, 1)}x
                       </span>
                       
                       {anomaly.suspicious && (
@@ -418,7 +419,7 @@ export default function VolumeManipulation({ tradeData, symbol, settings }: Volu
                 높은 조작 가능성 감지
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                거래량 조작 점수가 {stats.manipulationScore.toFixed(0)}%입니다.
+                거래량 조작 점수가 {safeFixed(stats.manipulationScore, 0)}%입니다.
                 워시 트레이딩 {stats.washTrades}건, 펌프/덤프 {stats.pumpDumps}건이 감지되었습니다.
                 거래 시 주의가 필요합니다.
               </div>

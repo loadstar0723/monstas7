@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaArrowUp, FaArrowDown, FaInfoCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 interface CoinSelectorProps {
@@ -107,18 +108,18 @@ export default function CoinSelector({ selectedSymbol, onSymbolChange }: CoinSel
   }, [])
 
   const formatPrice = (price: number) => {
-    if (price > 10000) return price.toFixed(0)
-    if (price > 100) return price.toFixed(2)
-    if (price > 1) return price.toFixed(3)
-    if (price > 0.01) return price.toFixed(4)
-    return price.toFixed(6)
+    if (price > 10000) return safePrice(price, 0)
+    if (price > 100) return safePrice(price, 2)
+    if (price > 1) return safePrice(price, 3)
+    if (price > 0.01) return safePrice(price, 4)
+    return safePrice(price, 6)
   }
 
   const formatVolume = (volume: number) => {
     if (volume > 1e9) return `${(volume / 1e9).toFixed(2)}B`
     if (volume > 1e6) return `${(volume / 1e6).toFixed(2)}M`
     if (volume > 1e3) return `${(volume / 1e3).toFixed(2)}K`
-    return volume.toFixed(0)
+    return safeFixed(volume, 0)
   }
 
   const getVolatilityColor = (volatility: number = 0) => {
@@ -272,7 +273,7 @@ export default function CoinSelector({ selectedSymbol, onSymbolChange }: CoinSel
                             {getVolatilityLabel(data.volatility)}
                           </span>
                           <span className={`${getVolatilityColor(data.volatility)} sm:hidden`}>
-                            {(data.volatility || 0).toFixed(1)}%
+                            {safeFixed(data.volatility, 1)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-1 sm:h-1.5 mt-0.5 sm:mt-1">

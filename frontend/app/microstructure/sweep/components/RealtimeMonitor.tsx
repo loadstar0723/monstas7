@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface SweepData {
   timestamp: number
@@ -115,7 +116,7 @@ export default function RealtimeMonitor({
             <p className="text-xs text-gray-400 mb-2">5분 스윕</p>
             <p className="text-2xl font-bold text-white">{realtimeStats.totalCount}</p>
             <p className="text-xs text-gray-500 mt-1">
-              {realtimeStats.sweepsPerMinute.toFixed(1)}/분
+              {safeFixed(realtimeStats.sweepsPerMinute, 1)}/분
             </p>
           </div>
           
@@ -139,10 +140,10 @@ export default function RealtimeMonitor({
           <div className="bg-gray-800/50 p-4 rounded-lg">
             <p className="text-xs text-gray-400 mb-2">5분 거래량</p>
             <p className="text-2xl font-bold text-yellow-400">
-              {realtimeStats.totalVolume.toFixed(2)}
+              {safeFixed(realtimeStats.totalVolume, 2)}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              영향도: {realtimeStats.avgImpact.toFixed(2)}%
+              영향도: {safeFixed(realtimeStats.avgImpact, 2)}%
             </p>
           </div>
           
@@ -231,7 +232,7 @@ export default function RealtimeMonitor({
                             {sweep.side === 'buy' ? '매수' : '매도'}
                           </span>
                           <span className="text-white font-medium">
-                            ${sweep.price.toFixed(2)}
+                            ${safePrice(sweep.price, 2)}
                           </span>
                           <span className={`text-xs px-2 py-1 rounded-full ${getTypeColor(sweep.type)} bg-gray-800/50`}>
                             {getTypeBadge(sweep.type)}
@@ -239,14 +240,14 @@ export default function RealtimeMonitor({
                         </div>
                         <div className="flex items-center gap-6 text-sm">
                           <span className="text-gray-400">
-                            거래량: <span className="text-white">{sweep.volume.toFixed(4)}</span>
+                            거래량: <span className="text-white">{safeFixed(sweep.volume, 4)}</span>
                           </span>
                           <span className="text-gray-400">
                             영향도: <span className={`font-medium ${
                               sweep.impact > 3 ? 'text-red-400' : 
                               sweep.impact > 1 ? 'text-yellow-400' : 
                               'text-gray-300'
-                            }`}>{sweep.impact.toFixed(2)}%</span>
+                            }`}>{safeFixed(sweep.impact, 2)}%</span>
                           </span>
                         </div>
                       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaArrowUp, FaArrowDown, FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
 
 interface PinBarDetectorProps {
@@ -257,7 +258,7 @@ export default function PinBarDetector({ symbol, timeframe }: PinBarDetectorProp
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-gray-400">가격: </span>
-                <span className="text-white">${lastDetection.price.toFixed(2)}</span>
+                <span className="text-white">${safePrice(lastDetection.price, 2)}</span>
               </div>
               <div>
                 <span className="text-gray-400">강도: </span>
@@ -279,7 +280,7 @@ export default function PinBarDetector({ symbol, timeframe }: PinBarDetectorProp
               </div>
               <div>
                 <span className="text-gray-400">거래량: </span>
-                <span className="text-white">{lastDetection.volume.toFixed(2)}</span>
+                <span className="text-white">{safeFixed(lastDetection.volume, 2)}</span>
               </div>
             </div>
           </div>
@@ -329,7 +330,7 @@ export default function PinBarDetector({ symbol, timeframe }: PinBarDetectorProp
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500">가격</span>
-                    <p className="text-white">${pattern.price.toFixed(2)}</p>
+                    <p className="text-white">${safePrice(pattern.price, 2)}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">강도</span>

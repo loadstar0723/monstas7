@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Coin {
   symbol: string
@@ -85,7 +86,7 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
 
   const formatTooltipValue = (value: any) => {
     if (value === null || value === undefined) return '-'
-    return `$${value.toFixed(2)}`
+    return `$${safeFixed(value, 2)}`
   }
 
   return (
@@ -96,7 +97,7 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
           {coin.name} 가격 차트
         </h3>
         <div className="text-sm text-gray-400">
-          현재: ${marketData?.price.toFixed(2) || '-'}
+          현재: ${marketData?.safePrice(price, 2) || '-'}
         </div>
       </div>
       
@@ -181,19 +182,19 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
       <div className="grid grid-cols-4 gap-2 mt-4 text-xs">
         <div className="bg-black/30 rounded p-2">
           <div className="text-gray-400">현재가</div>
-          <div className="text-white font-bold">${marketData?.price.toFixed(2) || '-'}</div>
+          <div className="text-white font-bold">${marketData?.safePrice(price, 2) || '-'}</div>
         </div>
         <div className="bg-black/30 rounded p-2">
           <div className="text-gray-400">SMA 20</div>
-          <div className="text-blue-400 font-bold">${marketData?.sma20.toFixed(2) || '-'}</div>
+          <div className="text-blue-400 font-bold">${marketData?.safeFixed(sma20, 2) || '-'}</div>
         </div>
         <div className="bg-black/30 rounded p-2">
           <div className="text-gray-400">SMA 50</div>
-          <div className="text-purple-400 font-bold">${marketData?.sma50.toFixed(2) || '-'}</div>
+          <div className="text-purple-400 font-bold">${marketData?.safeFixed(sma50, 2) || '-'}</div>
         </div>
         <div className="bg-black/30 rounded p-2">
           <div className="text-gray-400">SMA 200</div>
-          <div className="text-orange-400 font-bold">${marketData?.sma200.toFixed(2) || '-'}</div>
+          <div className="text-orange-400 font-bold">${marketData?.safeFixed(sma200, 2) || '-'}</div>
         </div>
       </div>
     </div>

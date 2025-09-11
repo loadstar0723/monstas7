@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 interface SweepData {
@@ -257,7 +258,7 @@ export default function SweepVolumeAnalysis({ sweeps, symbol = 'BTCUSDT' }: Swee
                     </div>
                     <div>
                       <span className="text-gray-500">평균 영향도</span>
-                      <p className="text-white font-medium mt-1">{stats.avgImpact.toFixed(2)}%</p>
+                      <p className="text-white font-medium mt-1">{safeFixed(stats.avgImpact, 2)}%</p>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface Props {
@@ -181,21 +182,21 @@ export default function PayoffDiagram({ coin, spotPrice }: Props) {
               dataKey="price" 
               stroke="#9CA3AF"
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
               domain={['dataMin', 'dataMax']}
             />
             
             <YAxis 
               stroke="#9CA3AF"
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
             />
             
             <Tooltip 
               contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
               labelStyle={{ color: '#9CA3AF' }}
-              formatter={(value: any) => [`$${value.toFixed(2)}`, '손익']}
-              labelFormatter={(value: any) => `가격: $${value.toFixed(2)}`}
+              formatter={(value: any) => [`$${safeFixed(value, 2)}`, '손익']}
+              labelFormatter={(value: any) => `가격: $${safeFixed(value, 2)}`}
             />
             
             {/* 손익분기선 */}
@@ -246,7 +247,7 @@ export default function PayoffDiagram({ coin, spotPrice }: Props) {
         <div className="bg-gray-700 rounded-lg p-3">
           <p className="text-xs text-gray-400 mb-1">최대 이익</p>
           <p className={`text-lg font-bold ${maxProfit > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-            {maxProfit === Infinity ? '무제한' : `$${maxProfit.toFixed(2)}`}
+            {maxProfit === Infinity ? '무제한' : `$${safeFixed(maxProfit, 2)}`}
           </p>
         </div>
         <div className="bg-gray-700 rounded-lg p-3">
