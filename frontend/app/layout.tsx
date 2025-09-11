@@ -11,6 +11,7 @@ import MainContent from "@/components/MainContent";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -94,6 +95,7 @@ export default function RootLayout({
               <SidebarNew />
               <MainContent>{children}</MainContent>
               <MobileBottomNav />
+              <ScrollToTopButton />
             </div>
           </SidebarProvider>
         </ThemeProvider>
