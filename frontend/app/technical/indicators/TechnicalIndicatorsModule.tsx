@@ -516,50 +516,52 @@ export default function TechnicalIndicatorsModule() {
     }
   }, [selectedSymbol, loadHistoricalData, connectWebSocket]) // selectedSymbol 변경 시 재실행
   
-  // 초단위 실시간 업데이트를 위한 interval 설정 (백그라운드)
+  // 애니메이션이 완료된 후에만 데이터 업데이트 (애니메이션 재시작 방지)
   useEffect(() => {
     if (updateIntervalRef.current) clearInterval(updateIntervalRef.current)
     
-    // 500ms마다 지표와 가격에 앞시운 변동 추가
-    updateIntervalRef.current = setInterval(() => {
-      // 가격에 소폭 변동 추가
-      setCurrentPrice(prev => {
-        const volatility = 1 + (Math.random() - 0.5) * 0.002  // ±0.1% 변동
-        return prev * volatility
-      })
-      
-      // 지표들에도 소폭 변동 추가
-      setIndicators(prev => ({
-        ...prev,
-        rsi: Math.max(0, Math.min(100, prev.rsi + (Math.random() - 0.5) * 2)),  // ±1 변동
-        macd: {
-          ...prev.macd,
-          macdLine: prev.macd.macdLine + (Math.random() - 0.5) * 0.5,
-          signal: prev.macd.signal + (Math.random() - 0.5) * 0.3,
-          histogram: prev.macd.histogram + (Math.random() - 0.5) * 0.2
-        },
-        stochastic: {
-          k: Math.max(0, Math.min(100, prev.stochastic.k + (Math.random() - 0.5) * 3)),
-          d: Math.max(0, Math.min(100, prev.stochastic.d + (Math.random() - 0.5) * 2))
-        },
-        cci: prev.cci + (Math.random() - 0.5) * 5,
-        williamsR: Math.max(-100, Math.min(0, prev.williamsR + (Math.random() - 0.5) * 3)),
-        bollingerBands: {
-          ...prev.bollingerBands,
-          upper: prev.bollingerBands.upper + (Math.random() - 0.5) * 10,
-          middle: prev.bollingerBands.middle + (Math.random() - 0.5) * 8,
-          lower: prev.bollingerBands.lower + (Math.random() - 0.5) * 10
-        },
-        atr: Math.max(0, prev.atr + (Math.random() - 0.5) * 2),
-        mfi: Math.max(0, Math.min(100, prev.mfi + (Math.random() - 0.5) * 3))
-      }))
-      
-      // 거래량도 소폭 변동
-      setVolume24h(prev => {
-        const change = 1 + (Math.random() - 0.5) * 0.05  // ±2.5% 변동
-        return prev * change
-      })
-    }, 500)  // 500ms마다
+    // 애니메이션이 충분히 완료되도록 3초 대기 후 업데이트 시작
+    setTimeout(() => {
+      updateIntervalRef.current = setInterval(() => {
+        // 가격에 소폭 변동 추가
+        setCurrentPrice(prev => {
+          const volatility = 1 + (Math.random() - 0.5) * 0.002  // ±0.1% 변동
+          return prev * volatility
+        })
+        
+        // 지표들에도 소폭 변동 추가
+        setIndicators(prev => ({
+          ...prev,
+          rsi: Math.max(0, Math.min(100, prev.rsi + (Math.random() - 0.5) * 2)),  // ±1 변동
+          macd: {
+            ...prev.macd,
+            macdLine: prev.macd.macdLine + (Math.random() - 0.5) * 0.5,
+            signal: prev.macd.signal + (Math.random() - 0.5) * 0.3,
+            histogram: prev.macd.histogram + (Math.random() - 0.5) * 0.2
+          },
+          stochastic: {
+            k: Math.max(0, Math.min(100, prev.stochastic.k + (Math.random() - 0.5) * 3)),
+            d: Math.max(0, Math.min(100, prev.stochastic.d + (Math.random() - 0.5) * 2))
+          },
+          cci: prev.cci + (Math.random() - 0.5) * 5,
+          williamsR: Math.max(-100, Math.min(0, prev.williamsR + (Math.random() - 0.5) * 3)),
+          bollingerBands: {
+            ...prev.bollingerBands,
+            upper: prev.bollingerBands.upper + (Math.random() - 0.5) * 10,
+            middle: prev.bollingerBands.middle + (Math.random() - 0.5) * 8,
+            lower: prev.bollingerBands.lower + (Math.random() - 0.5) * 10
+          },
+          atr: Math.max(0, prev.atr + (Math.random() - 0.5) * 2),
+          mfi: Math.max(0, Math.min(100, prev.mfi + (Math.random() - 0.5) * 3))
+        }))
+        
+        // 거래량도 소폭 변동
+        setVolume24h(prev => {
+          const change = 1 + (Math.random() - 0.5) * 0.05  // ±2.5% 변동
+          return prev * change
+        })
+      }, 5000)  // 5초마다 업데이트 (애니메이션이 재시작되지 않을 정도로)
+    }, 3000)  // 처음 3초는 애니메이션이 완료되도록 대기
     
     return () => {
       if (updateIntervalRef.current) {

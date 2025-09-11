@@ -69,9 +69,10 @@ export default function SupertrendChart({ data }: SupertrendChartProps) {
   return (
     <div className="space-y-4">
       {/* 차트 */}
-      <ResponsiveContainer width="100%" height={350}>
-        <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+      <div className="h-[250px] sm:h-[350px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis 
             dataKey="time" 
             stroke="#9ca3af"
@@ -136,8 +137,9 @@ export default function SupertrendChart({ data }: SupertrendChartProps) {
             name="Supertrend"
             dot={false}
           />
-        </ComposedChart>
-      </ResponsiveContainer>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* 현재 상태 인디케이터 */}
       <div className="grid grid-cols-4 gap-4">

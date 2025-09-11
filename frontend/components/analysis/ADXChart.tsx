@@ -55,9 +55,10 @@ export default function ADXChart({ data }: ADXChartProps) {
         📊 ADX (평균방향지수)
       </h3>
       
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data || []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+      <div className="h-[200px] sm:h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data || []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
           <XAxis 
             dataKey="time" 
             stroke="#666"
@@ -121,8 +122,9 @@ export default function ADXChart({ data }: ADXChartProps) {
             dot={false}
             name="-DI (하락)"
           />
-        </LineChart>
-      </ResponsiveContainer>
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
       
       <div className="mt-4 grid grid-cols-3 gap-4">
         <div className="bg-gray-800/50 rounded p-3">

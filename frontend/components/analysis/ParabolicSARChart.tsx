@@ -63,9 +63,10 @@ export default function ParabolicSARChart({ data }: ParabolicSARChartProps) {
   return (
     <div className="space-y-4">
       {/* 차트 */}
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+      <div className="h-[200px] sm:h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis 
             dataKey="time" 
             stroke="#9ca3af"
@@ -115,8 +116,9 @@ export default function ParabolicSARChart({ data }: ParabolicSARChartProps) {
             dot={<CustomSARDot />}
             legendType="circle"
           />
-        </LineChart>
-      </ResponsiveContainer>
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* 현재 상태 */}
       <div className="grid grid-cols-3 gap-4">

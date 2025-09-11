@@ -327,9 +327,9 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
       {/* 미니 차트들 */}
       <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 가격 & 볼린저밴드 */}
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-          <h4 className="text-sm font-bold text-gray-300 mb-2">가격 & 볼린저밴드</h4>
-          <ResponsiveContainer width="100%" height={150}>
+        <div className="bg-gray-900/50 rounded-lg p-2 sm:p-4 border border-gray-700">
+          <h4 className="text-xs sm:text-sm font-bold text-gray-300 mb-2">가격 & 볼린저밴드</h4>
+          <ResponsiveContainer width="100%" height={120} minHeight={100}>
             <AreaChart data={miniChartData}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
@@ -355,17 +355,27 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
                 labelStyle={{ color: '#9ca3af' }}
                 formatter={(value: any) => `$${Number(value).toFixed(2)}`}
               />
-              <Area type="monotone" dataKey="price" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2} />
-              <Line type="monotone" dataKey="upper" stroke="#ef4444" strokeWidth={1} dot={false} strokeDasharray="3 3" />
-              <Line type="monotone" dataKey="lower" stroke="#10b981" strokeWidth={1} dot={false} strokeDasharray="3 3" />
+              <Area type="monotone" dataKey="price" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2}
+                isAnimationActive={false}
+              />
+              <Line type="monotone" dataKey="upper" stroke="#ef4444" strokeWidth={1} dot={false} strokeDasharray="3 3"
+                isAnimationActive={false}
+                animationDuration={1500}
+                animationBegin={100}
+              />
+              <Line type="monotone" dataKey="lower" stroke="#10b981" strokeWidth={1} dot={false} strokeDasharray="3 3"
+                isAnimationActive={false}
+                animationDuration={1500}
+                animationBegin={200}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* RSI */}
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-          <h4 className="text-sm font-bold text-gray-300 mb-2">RSI</h4>
-          <ResponsiveContainer width="100%" height={150}>
+        <div className="bg-gray-900/50 rounded-lg p-2 sm:p-4 border border-gray-700">
+          <h4 className="text-xs sm:text-sm font-bold text-gray-300 mb-2">RSI</h4>
+          <ResponsiveContainer width="100%" height={120} minHeight={100}>
             <LineChart data={miniChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="index" hide />
@@ -382,15 +392,17 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
               <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" />
               <ReferenceLine y={30} stroke="#10b981" strokeDasharray="3 3" />
               <ReferenceLine y={50} stroke="#6b7280" strokeDasharray="3 3" />
-              <Line type="monotone" dataKey="rsi" stroke="#f59e0b" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="rsi" stroke="#f59e0b" strokeWidth={2} dot={false}
+                isAnimationActive={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* MACD */}
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-          <h4 className="text-sm font-bold text-gray-300 mb-2">MACD Histogram</h4>
-          <ResponsiveContainer width="100%" height={150}>
+        <div className="bg-gray-900/50 rounded-lg p-2 sm:p-4 border border-gray-700">
+          <h4 className="text-xs sm:text-sm font-bold text-gray-300 mb-2">MACD Histogram</h4>
+          <ResponsiveContainer width="100%" height={120} minHeight={100}>
             <BarChart data={miniChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="index" hide />
@@ -404,7 +416,9 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
                 labelStyle={{ color: '#9ca3af' }}
               />
               <ReferenceLine y={0} stroke="#6b7280" />
-              <Bar dataKey="macd" fill="#8b5cf6">
+              <Bar dataKey="macd" fill="#8b5cf6"
+                isAnimationActive={false}
+              >
                 {miniChartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.macd > 0 ? '#10b981' : '#ef4444'} />
                 ))}
@@ -414,9 +428,9 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
         </div>
 
         {/* 볼륨 */}
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-          <h4 className="text-sm font-bold text-gray-300 mb-2">거래량</h4>
-          <ResponsiveContainer width="100%" height={150}>
+        <div className="bg-gray-900/50 rounded-lg p-2 sm:p-4 border border-gray-700">
+          <h4 className="text-xs sm:text-sm font-bold text-gray-300 mb-2">거래량</h4>
+          <ResponsiveContainer width="100%" height={120} minHeight={100}>
             <BarChart data={miniChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="index" hide />
@@ -433,7 +447,9 @@ export function ComprehensiveTab({ indicators, historicalData, currentPrice, pri
                 contentStyle={{ backgroundColor: '#1f2937', border: 'none' }}
                 labelStyle={{ color: '#9ca3af' }}
               />
-              <Bar dataKey="volume" fill="#3b82f6" opacity={0.6} />
+              <Bar dataKey="volume" fill="#3b82f6" opacity={0.6}
+                isAnimationActive={false}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -655,7 +671,8 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
           </select>
         </div>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={maChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -679,8 +696,9 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
               name="현재가" 
               dot={{ r: 3, strokeWidth: 2 }}
               activeDot={{ r: 5, strokeWidth: 2 }}
-              animationDuration={300}
+              animationDuration={1500}
               animationBegin={0}
+              isAnimationActive={false}
             />
             
             {(selectedMA === 'all' || selectedMA === 'short') && (
@@ -693,8 +711,9 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
                   dot={{ r: 1 }}
                   activeDot={{ r: 3 }}
                   name="MA5"
-                  animationDuration={400}
-                  animationBegin={50}
+                  animationDuration={1500}
+                  animationBegin={100}
+                  isAnimationActive={false}
                 />
                 <Line 
                   type="monotone" 
@@ -704,8 +723,9 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
                   dot={{ r: 1 }}
                   activeDot={{ r: 3 }}
                   name="MA10"
-                  animationDuration={400}
-                  animationBegin={100}
+                  animationDuration={1500}
+                  animationBegin={200}
+                  isAnimationActive={false}
                 />
                 <Line 
                   type="monotone" 
@@ -715,27 +735,45 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
                   dot={{ r: 1 }}
                   activeDot={{ r: 3 }}
                   name="MA20"
-                  animationDuration={400}
-                  animationBegin={150}
+                  animationDuration={1500}
+                  animationBegin={300}
+                  isAnimationActive={false}
                 />
               </>
             )}
             
             {(selectedMA === 'all' || selectedMA === 'medium') && (
               <>
-                <Line type="monotone" dataKey="ma20" stroke="#10b981" strokeWidth={1} dot={false} name="MA20" />
-                <Line type="monotone" dataKey="ma50" stroke="#3b82f6" strokeWidth={1} dot={false} name="MA50" />
+                <Line type="monotone" dataKey="ma20" stroke="#10b981" strokeWidth={1} dot={false} name="MA20"
+                  isAnimationActive={false}
+                  animationDuration={1500}
+                  animationBegin={400}
+                />
+                <Line type="monotone" dataKey="ma50" stroke="#3b82f6" strokeWidth={1} dot={false} name="MA50"
+                  isAnimationActive={false}
+                  animationDuration={1500}
+                  animationBegin={500}
+                />
               </>
             )}
             
             {(selectedMA === 'all' || selectedMA === 'long') && (
               <>
-                <Line type="monotone" dataKey="ma100" stroke="#6366f1" strokeWidth={1} dot={false} name="MA100" />
-                <Line type="monotone" dataKey="ma200" stroke="#ec4899" strokeWidth={1} dot={false} name="MA200" />
+                <Line type="monotone" dataKey="ma100" stroke="#6366f1" strokeWidth={1} dot={false} name="MA100"
+                  isAnimationActive={false}
+                  animationDuration={1500}
+                  animationBegin={600}
+                />
+                <Line type="monotone" dataKey="ma200" stroke="#ec4899" strokeWidth={1} dot={false} name="MA200"
+                  isAnimationActive={false}
+                  animationDuration={1500}
+                  animationBegin={700}
+                />
               </>
             )}
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         {/* 현재 MA 값들 - 실시간 계산 */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-4">
@@ -810,7 +848,8 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
           VWAP (거래량 가중 평균가)
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={vwapData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -822,13 +861,23 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
             />
             <Legend />
             
-            <Bar yAxisId="volume" dataKey="volume" fill="#3b82f6" opacity={0.3} name="거래량" />
-            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가" />
-            <Line yAxisId="price" type="monotone" dataKey="vwap" stroke="#10b981" strokeWidth={2} name="VWAP" />
+            <Bar yAxisId="volume" dataKey="volume" fill="#3b82f6" opacity={0.3} name="거래량"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line yAxisId="price" type="monotone" dataKey="vwap" stroke="#10b981" strokeWidth={2} name="VWAP"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
             <Line yAxisId="price" type="monotone" dataKey="upperBand" stroke="#ef4444" strokeWidth={1} strokeDasharray="3 3" dot={false} name="상단밴드" />
             <Line yAxisId="price" type="monotone" dataKey="lowerBand" stroke="#ef4444" strokeWidth={1} strokeDasharray="3 3" dot={false} name="하단밴드" />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <VWAPDynamicAnalysis 
           vwap={{
@@ -851,7 +900,8 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
           MA Ribbon
         </h3>
         
-        <ResponsiveContainer width="100%" height={250}>
+        <div className="h-[180px] sm:h-[250px]">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={maRibbonData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -862,22 +912,49 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
             />
             <Legend />
             
-            <Line type="monotone" dataKey="price" stroke="#ffffff" strokeWidth={2} dot={false} name="현재가" />
-            <Line type="monotone" dataKey="ma5" stroke="#ef4444" strokeWidth={2} dot={false} name="MA5" />
-            <Line type="monotone" dataKey="ma10" stroke="#f59e0b" strokeWidth={2} dot={false} name="MA10" />
-            <Line type="monotone" dataKey="ma20" stroke="#10b981" strokeWidth={2} dot={false} name="MA20" />
-            <Line type="monotone" dataKey="ma30" stroke="#3b82f6" strokeWidth={2} dot={false} name="MA30" />
-            <Line type="monotone" dataKey="ma40" stroke="#6366f1" strokeWidth={2} dot={false} name="MA40" />
-            <Line type="monotone" dataKey="ma50" stroke="#8b5cf6" strokeWidth={2} dot={false} name="MA50" />
+            <Line type="monotone" dataKey="price" stroke="#ffffff" strokeWidth={2} dot={false} name="현재가"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Line type="monotone" dataKey="ma5" stroke="#ef4444" strokeWidth={2} dot={false} name="MA5"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line type="monotone" dataKey="ma10" stroke="#f59e0b" strokeWidth={2} dot={false} name="MA10"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
+            <Line type="monotone" dataKey="ma20" stroke="#10b981" strokeWidth={2} dot={false} name="MA20"
+              isAnimationActive={false}
+              animationBegin={300}
+            />
+            <Line type="monotone" dataKey="ma30" stroke="#3b82f6" strokeWidth={2} dot={false} name="MA30"
+              isAnimationActive={false}
+              animationBegin={400}
+            />
+            <Line type="monotone" dataKey="ma40" stroke="#6366f1" strokeWidth={2} dot={false} name="MA40"
+              isAnimationActive={false}
+              animationBegin={500}
+            />
+            <Line type="monotone" dataKey="ma50" stroke="#8b5cf6" strokeWidth={2} dot={false} name="MA50"
+              isAnimationActive={false}
+              animationBegin={600}
+            />
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <MARibbonDynamicAnalysis 
-          shortMA={maChartData.length > 0 ? maChartData[maChartData.length - 1].ma5 : currentPrice}
-          mediumMA={maChartData.length > 0 ? maChartData[maChartData.length - 1].ma20 : currentPrice}
-          longMA={maChartData.length > 0 ? maChartData[maChartData.length - 1].ma50 : currentPrice}
+          ma={{
+            ma5: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma5 : currentPrice,
+            ma10: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma10 : currentPrice,
+            ma20: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma20 : currentPrice,
+            ma50: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma50 : currentPrice,
+            ma100: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma100 : currentPrice,
+            ma200: maChartData.length > 0 ? maChartData[maChartData.length - 1].ma200 : currentPrice
+          }}
           currentPrice={currentPrice}
-          historicalData={historicalData}
+          priceHistory={historicalData.map(d => d.close)}
         />
         
         {/* MA Ribbon 설명 추가 */}
@@ -891,7 +968,8 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
           Ichimoku Cloud (일목균형표)
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={ichimokuData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -902,14 +980,33 @@ export function TrendTab({ indicators, historicalData, currentPrice, priceHistor
             />
             <Legend />
             
-            <Area type="monotone" dataKey="senkouA" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="선행스팬A" />
-            <Area type="monotone" dataKey="senkouB" stroke="#ef4444" fill="#ef4444" fillOpacity={0.2} name="선행스팬B" />
-            <Line type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가" />
-            <Line type="monotone" dataKey="tenkan" stroke="#3b82f6" strokeWidth={1} name="전환선" />
-            <Line type="monotone" dataKey="kijun" stroke="#f59e0b" strokeWidth={1} name="기준선" />
-            <Line type="monotone" dataKey="chikou" stroke="#6366f1" strokeWidth={1} strokeDasharray="3 3" name="후행스팬" />
+            <Area type="monotone" dataKey="senkouA" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="선행스팬A"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Area type="monotone" dataKey="senkouB" stroke="#ef4444" fill="#ef4444" fillOpacity={0.2} name="선행스팬B"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
+            <Line type="monotone" dataKey="tenkan" stroke="#3b82f6" strokeWidth={1} name="전환선"
+              isAnimationActive={false}
+              animationBegin={300}
+            />
+            <Line type="monotone" dataKey="kijun" stroke="#f59e0b" strokeWidth={1} name="기준선"
+              isAnimationActive={false}
+              animationBegin={400}
+            />
+            <Line type="monotone" dataKey="chikou" stroke="#6366f1" strokeWidth={1} strokeDasharray="3 3" name="후행스팬"
+              isAnimationActive={false}
+              animationBegin={500}
+            />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <IchimokuDynamicAnalysis 
           ichimoku={{
@@ -1118,7 +1215,8 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
           RSI (상대강도지수)
         </h3>
         
-        <ResponsiveContainer width="100%" height={200}>
+        <div className="h-[150px] sm:h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rsiData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -1133,9 +1231,13 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
             <ReferenceLine y={30} stroke="#10b981" strokeDasharray="5 5" />
             <ReferenceLine y={50} stroke="#6b7280" strokeDasharray="3 3" />
             
-            <Line type="monotone" dataKey="rsi" stroke="#f59e0b" strokeWidth={2} name="RSI" />
+            <Line type="monotone" dataKey="rsi" stroke="#f59e0b" strokeWidth={2} name="RSI"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <RSIDynamicAnalysis 
           rsi={indicators.rsi}
@@ -1156,7 +1258,8 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
           Stochastic (Fast & Slow)
         </h3>
         
-        <ResponsiveContainer width="100%" height={200}>
+        <div className="h-[150px] sm:h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={stochasticData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -1170,20 +1273,17 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
             <ReferenceLine y={80} stroke="#ef4444" strokeDasharray="5 5" />
             <ReferenceLine y={20} stroke="#10b981" strokeDasharray="5 5" />
             
-            <Line type="monotone" dataKey="k" stroke="#3b82f6" strokeWidth={2} name="%K (Fast)" />
-            <Line type="monotone" dataKey="d" stroke="#8b5cf6" strokeWidth={2} name="%D (Slow)" />
+            <Line type="monotone" dataKey="k" stroke="#3b82f6" strokeWidth={2} name="%K (Fast)"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Line type="monotone" dataKey="d" stroke="#8b5cf6" strokeWidth={2} name="%D (Slow)"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
           </LineChart>
-        </ResponsiveContainer>
-        
-        <StochasticChart 
-          data={stochasticData.slice(-50).map((item, i) => ({
-            time: `${i}`,
-            k: item.k,
-            d: item.d,
-            slowK: item.k,  // 이미 Slow %K
-            slowD: item.d   // 이미 Slow %D
-          }))}
-        />
+          </ResponsiveContainer>
+        </div>
         
         {/* Stochastic 설명 - 하단으로 이동 */}
         <ChartDescription {...chartDescriptions.stochastic} currentValue={indicators.stochastic.k} />
@@ -1196,7 +1296,8 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
           MACD
         </h3>
         
-        <ResponsiveContainer width="100%" height={200}>
+        <div className="h-[150px] sm:h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={macdData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -1209,15 +1310,25 @@ export function MomentumTab({ indicators, historicalData, currentPrice, priceHis
             
             <ReferenceLine y={0} stroke="#6b7280" />
             
-            <Bar dataKey="histogram" name="Histogram">
+            <Bar dataKey="histogram" name="Histogram"
+              isAnimationActive={false}
+              animationBegin={0}
+            >
               {macdData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.histogram > 0 ? '#10b981' : '#ef4444'} />
               ))}
             </Bar>
-            <Line type="monotone" dataKey="macdLine" stroke="#3b82f6" strokeWidth={2} name="MACD" />
-            <Line type="monotone" dataKey="signal" stroke="#f59e0b" strokeWidth={2} name="Signal" />
+            <Line type="monotone" dataKey="macdLine" stroke="#3b82f6" strokeWidth={2} name="MACD"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line type="monotone" dataKey="signal" stroke="#f59e0b" strokeWidth={2} name="Signal"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <MACDDynamicAnalysis 
           macd={macdData.length > 0 ? {
@@ -1418,7 +1529,8 @@ export function VolatilityTab({ indicators, historicalData, currentPrice, volume
           볼린저밴드
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={bollingerData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -1430,13 +1542,29 @@ export function VolatilityTab({ indicators, historicalData, currentPrice, volume
             />
             <Legend />
             
-            <Area yAxisId="price" type="monotone" dataKey="upper" stroke="#ef4444" fill="#ef4444" fillOpacity={0.1} />
-            <Area yAxisId="price" type="monotone" dataKey="lower" stroke="#10b981" fill="#10b981" fillOpacity={0.1} />
-            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가" />
-            <Line yAxisId="price" type="monotone" dataKey="middle" stroke="#f59e0b" strokeWidth={1} strokeDasharray="3 3" name="중심선" />
-            <Bar yAxisId="bandwidth" dataKey="bandwidth" fill="#3b82f6" opacity={0.3} name="밴드폭" />
+            <Area yAxisId="price" type="monotone" dataKey="upper" stroke="#ef4444" fill="#ef4444" fillOpacity={0.1}
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Area yAxisId="price" type="monotone" dataKey="lower" stroke="#10b981" fill="#10b981" fillOpacity={0.1}
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="현재가"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
+            <Line yAxisId="price" type="monotone" dataKey="middle" stroke="#f59e0b" strokeWidth={1} strokeDasharray="3 3" name="중심선"
+              isAnimationActive={false}
+              animationBegin={300}
+            />
+            <Bar yAxisId="bandwidth" dataKey="bandwidth" fill="#3b82f6" opacity={0.3} name="밴드폭"
+              isAnimationActive={false}
+              animationBegin={400}
+            />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <BollingerDynamicAnalysis 
           bollingerBands={{
@@ -1467,7 +1595,8 @@ export function VolatilityTab({ indicators, historicalData, currentPrice, volume
           ATR (평균진폭)
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={atrData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
@@ -1529,7 +1658,8 @@ export function VolatilityTab({ indicators, historicalData, currentPrice, volume
               dot={false}
             />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <div className="grid grid-cols-3 gap-4 mt-4">
           <div className="bg-gray-800/50 rounded p-3">
@@ -1759,7 +1889,8 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
           거래량 분석
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={volumeData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -1771,11 +1902,21 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
             />
             <Legend />
             
-            <Bar yAxisId="volume" dataKey="volume" fill="#3b82f6" opacity={0.6} name="거래량" />
-            <Line yAxisId="volume" type="monotone" dataKey="volumeMA" stroke="#f59e0b" strokeWidth={2} name="거래량 MA" />
-            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="가격" />
+            <Bar yAxisId="volume" dataKey="volume" fill="#3b82f6" opacity={0.6} name="거래량"
+              isAnimationActive={false}
+              animationBegin={0}
+            />
+            <Line yAxisId="volume" type="monotone" dataKey="volumeMA" stroke="#f59e0b" strokeWidth={2} name="거래량 MA"
+              isAnimationActive={false}
+              animationBegin={100}
+            />
+            <Line yAxisId="price" type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} name="가격"
+              isAnimationActive={false}
+              animationBegin={200}
+            />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <VolumeDynamicAnalysis 
           volume={volumeHistory[volumeHistory.length - 1] || 0}
@@ -1798,7 +1939,8 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
         
         {volumeProfileData && volumeProfileData.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={400}>
+            <div className="h-[250px] sm:h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={volumeProfileData}
                 margin={{ top: 10, right: 30, left: 60, bottom: 60 }}
@@ -1930,7 +2072,8 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
                   }}
                 />
               </BarChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
             
             {/* 디버그 정보 - 실제 데이터 확인용 */}
             <div className="mt-2 text-xs text-gray-500 grid grid-cols-3 gap-2">
@@ -1978,7 +2121,8 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
           OBV (온밸런스 볼륨)
         </h3>
         
-        <ResponsiveContainer width="100%" height={200}>
+        <div className="h-[150px] sm:h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={volumeData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="index" stroke="#9ca3af" />
@@ -2011,7 +2155,8 @@ export function VolumeTab({ indicators, historicalData, currentPrice, volumeHist
               dot={false}
             />
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
         
         <div className="mt-4 p-3 bg-gray-800/50 rounded">
           <div className="flex justify-between items-center">
@@ -2121,7 +2266,8 @@ export function OscillatorTab({ indicators, historicalData, currentPrice }: TabC
           오실레이터 레이더
         </h3>
         
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="h-[200px] sm:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={radarData}>
             <PolarGrid stroke="#374151" />
             <PolarAngleAxis dataKey="indicator" stroke="#9ca3af" />
@@ -2138,7 +2284,8 @@ export function OscillatorTab({ indicators, historicalData, currentPrice }: TabC
               labelStyle={{ color: '#9ca3af' }}
             />
           </RadarChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* 오실레이터 히스토리 */}
@@ -2195,7 +2342,7 @@ export function OscillatorTab({ indicators, historicalData, currentPrice }: TabC
                 
                 {/* 오실레이터 차트 추가 */}
                 <div className="mt-2">
-                  <ResponsiveContainer width="100%" height={60}>
+                  <ResponsiveContainer width="100%" height={60} minHeight={50}>
                     <LineChart data={recent.map((candle, idx) => ({
                       index: idx,
                       value: candle[osc.name.toLowerCase().replace(' ', '')] || osc.value
@@ -2523,7 +2670,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
         </h3>
         
         {predictionData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={400}>
+          <div className="h-[250px] sm:h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
             <ComposedChart 
               data={predictionData}
               margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
@@ -2574,7 +2722,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
               fill="#10b981" 
               fillOpacity={0.1}
               connectNulls
-              isAnimationActive={false} // 애니메이션 비활성화
+              isAnimationActive={false}
+              animationBegin={0}
             />
             <Area 
               type="monotone" 
@@ -2583,7 +2732,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
               fill="#ef4444" 
               fillOpacity={0.1}
               connectNulls
-              isAnimationActive={false} // 애니메이션 비활성화
+              isAnimationActive={false}
+              animationBegin={0}
             />
             
             {/* 실제 가격 라인 */}
@@ -2595,7 +2745,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
               dot={false}
               name="실제 가격"
               connectNulls={false}
-              isAnimationActive={false} // 애니메이션 비활성화
+              isAnimationActive={false}
+              animationBegin={0}
             />
             
             {/* 예측 가격 라인 */}
@@ -2609,7 +2760,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
               activeDot={{ r: 4 }}
               name="AI 예측"
               connectNulls
-              isAnimationActive={false} // 애니메이션 비활성화
+              isAnimationActive={false}
+              animationBegin={0}
             />
             
             {/* 현재 가격 표시 */}
@@ -2626,7 +2778,8 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
               }}
             />
             </ComposedChart>
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-[400px]">
             <div className="text-center">
