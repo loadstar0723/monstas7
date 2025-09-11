@@ -18,6 +18,12 @@ const nextConfig = {
   // 번들 분석 (필요시 활성화)
   // analyzeBundle: process.env.ANALYZE === 'true',
   
+  // 빌드 ID 자동 생성 (캐시 무효화)
+  generateBuildId: async () => {
+    // 현재 타임스탬프를 빌드 ID로 사용
+    return Date.now().toString()
+  },
+  
   // 실험적 기능 (클라이언트 사이드 에러 방지)
   experimental: {
     optimizeCss: false,  // CSS 최적화 비활성화
@@ -41,8 +47,9 @@ const nextConfig = {
         },
       }
       // 청크 파일명에 타임스탬프 추가하여 캐시 문제 방지
-      config.output.filename = 'static/chunks/[name].[contenthash].js'
-      config.output.chunkFilename = 'static/chunks/[name].[contenthash].js'
+      const timestamp = Date.now()
+      config.output.filename = `static/chunks/[name].${timestamp}.[contenthash].js`
+      config.output.chunkFilename = `static/chunks/[name].${timestamp}.[contenthash].js`
     }
     return config
   },
@@ -85,6 +92,25 @@ const nextConfig = {
             value: 'origin-when-cross-origin'
           }
         ]
+      },
+      // JavaScript 파일 캐시 무효화
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
       },
       {
         source: '/sw.js',

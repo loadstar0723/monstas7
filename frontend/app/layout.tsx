@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import "@/lib/numberPolyfill";
+import ClientInit from "./ClientInit";
 import SidebarNew from "@/components/SidebarNew";
 // import AuthProvider from "@/components/AuthProvider"; // next-auth 비활성화
 import { SidebarProvider } from "@/contexts/SidebarContext";
@@ -49,6 +50,7 @@ export default function RootLayout({
         {/* AuthProvider 제거 - next-auth 비활성화 */}
         <ThemeProvider>
           <SidebarProvider>
+            <ClientInit />
             <ServiceWorkerRegistration />
             <PWAInstallPrompt />
             <div className="min-h-screen">
