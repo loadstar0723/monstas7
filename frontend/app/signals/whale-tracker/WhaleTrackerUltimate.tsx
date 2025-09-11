@@ -2217,7 +2217,7 @@ export default function WhaleTrackerUltimate() {
                           patterns.rsi < 30 ? 'text-green-400' :
                           'text-yellow-400'
                         }`}>
-                          {patterns.safePercent(rsi)}
+                          {safeFixed(patterns.rsi, 1)}
                         </span>
                       </div>
                     </div>
