@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       'Access-Control-Allow-Headers': 'Content-Type',
     })
     
-    return NextResponse.json(data, { headers })
+    return NextResponse.json({ data }, { headers })
   } catch (error) {
     console.error('Binance API error:', error)
     
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       'Access-Control-Allow-Headers': 'Content-Type',
     })
     
-    return NextResponse.json(defaultKlines, { status: 200, headers })
+    return NextResponse.json({ data: defaultKlines }, { status: 200, headers })
   }
 }
 
