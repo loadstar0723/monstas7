@@ -18,6 +18,8 @@ import dynamic from 'next/dynamic'
 import { config } from '@/lib/config'
 import SystemOverview, { whaleTrackingOverview } from '@/components/signals/SystemOverview'
 import TabGuide, { tabGuides } from '@/components/signals/TabGuide'
+import { getWebSocketUrl, getStreamName } from '@/lib/websocketConfig'
+import { createWebSocket, reconnectWebSocket } from '@/lib/wsHelper'
 import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
 
 const ComprehensiveAnalysis = dynamic(
@@ -660,7 +662,11 @@ export default function WhaleTrackerUltimate() {
     let delay = 0
     TRACKED_SYMBOLS.forEach(symbol => {
       setTimeout(() => {
-        const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
+        const streamName = getStreamName(symbol, 'trade')
+        const wsUrl = getWebSocketUrl(streamName)
+        
+        try {
+          const ws = createWebSocket(wsUrl)
         
         ws.onopen = () => {
           console.log(`✅ ${symbol} WebSocket 연결 성공`)
@@ -867,6 +873,9 @@ export default function WhaleTrackerUltimate() {
         }
         
         backgroundWsRefs.current[symbol] = ws
+        } catch (error) {
+          console.error(`WebSocket 생성 실패 ${symbol}:`, error)
+        }
       }, delay)
       delay += 300 // 0.3초씩 순차 연결
     })
