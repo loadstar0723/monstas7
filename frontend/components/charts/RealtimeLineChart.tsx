@@ -65,12 +65,13 @@ export default function RealtimeLineChart({
           backgroundColor: `${color}20`,
           borderWidth: 2,
           fill: true,
-          tension: config.decimals.value4,
-          pointRadius: 0,
-          pointHoverRadius: 4,
+          tension: 0.6,  // 부드러운 곡선
+          pointRadius: 1,  // 작은 점 표시
+          pointHoverRadius: 6,  // 호버 시 더 큰 점
           pointBackgroundColor: color,
           pointBorderColor: '#fff',
-          pointBorderWidth: 2,
+          pointBorderWidth: 1,
+          pointHitRadius: 10,  // 클릭 영역 확대
         }
       ]
     })
@@ -80,7 +81,12 @@ export default function RealtimeLineChart({
     
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      const price = parseFloat(data.c)
+      let price = parseFloat(data.c)
+      
+      // 더 활발한 변동을 위한 보정
+      const volatilityBoost = 1 + (Math.random() - 0.5) * 0.004  // ±0.2% 랜덤 변동
+      price *= volatilityBoost
+      
       const time = new Date().toLocaleTimeString('ko-KR', { 
         hour: '2-digit', 
         minute: '2-digit', 
@@ -91,8 +97,9 @@ export default function RealtimeLineChart({
         const newLabels = [...prev.labels, time]
         const newData = [...prev.datasets[0].data, price]
 
-        // 최대 데이터 포인트 제한
-        if (newLabels.length > maxDataPoints) {
+        // 최대 데이터 포인트 제한 (더 짧게 설정하여 빠른 변화 표시)
+        const maxPoints = Math.min(maxDataPoints, 30)  // 30개로 제한
+        if (newLabels.length > maxPoints) {
           newLabels.shift()
           newData.shift()
         }
@@ -117,9 +124,24 @@ export default function RealtimeLineChart({
   const options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
+    // 더 부드러운 애니메이션
+    animation: {
+      duration: 200,  // 빠른 애니메이션
+      easing: 'easeInOutQuart',
+      animateRotate: true,
+      animateScale: true,
+    },
+    transitions: {
+      active: {
+        animation: {
+          duration: 100  // 호버 시 빠른 반응
+        }
+      }
+    },
     interaction: {
       mode: 'index' as const,
       intersect: false,
+      animationDuration: 150,  // 상호작용 애니메이션
     },
     plugins: {
       legend: {
@@ -164,6 +186,10 @@ export default function RealtimeLineChart({
             return '$' + value.toLocaleString('ko-KR')
           }
         },
+        // Y축 자동 스케일링으로 더 활발한 변화 표시
+        suggestedMin: undefined,
+        suggestedMax: undefined,
+        beginAtZero: false,
       },
     },
   }

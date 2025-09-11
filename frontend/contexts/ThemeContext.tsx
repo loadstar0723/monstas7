@@ -11,29 +11,43 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(true) // 기본값: 다크모드
+  const [mounted, setMounted] = useState(false)
 
   // localStorage에서 테마 설정 불러오기
   useEffect(() => {
-    const savedTheme = localStorage.getItem('monsta_theme')
-    if (savedTheme) {
-      setIsDarkMode(savedTheme === 'dark')
-    } else {
-      // 시스템 설정 확인
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDarkMode(prefersDark)
+    setMounted(true)
+    if (typeof window !== 'undefined') {
+      try {
+        const savedTheme = localStorage.getItem('monsta_theme')
+        if (savedTheme) {
+          setIsDarkMode(savedTheme === 'dark')
+        } else {
+          // 시스템 설정 확인
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          setIsDarkMode(prefersDark)
+        }
+      } catch (error) {
+        console.error('Theme initialization error:', error)
+      }
     }
   }, [])
 
   // 테마 변경 시 DOM과 localStorage 업데이트
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('monsta_theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('monsta_theme', 'light')
+    if (mounted && typeof window !== 'undefined') {
+      try {
+        if (isDarkMode) {
+          document.documentElement.classList.add('dark')
+          localStorage.setItem('monsta_theme', 'dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+          localStorage.setItem('monsta_theme', 'light')
+        }
+      } catch (error) {
+        console.error('Theme update error:', error)
+      }
     }
-  }, [isDarkMode])
+  }, [isDarkMode, mounted])
 
   const toggleTheme = () => {
     setIsDarkMode(prev => !prev)
