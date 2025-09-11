@@ -2249,16 +2249,16 @@ export default function WhaleTrackerUltimate() {
                         <span className={`text-sm font-bold ${
                           patterns.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {patterns.macd.safePrice(histogram)}
+                          {safeFixed(patterns.macd.histogram, 2)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">볼린저 상단</span>
-                        <span className="text-sm font-bold text-white">${patterns.safeFixed(bollingerBands.upper, 0)}</span>
+                        <span className="text-sm font-bold text-white">${safeFixed(patterns.bollingerBands.upper, 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">볼린저 하단</span>
-                        <span className="text-sm font-bold text-white">${patterns.safeFixed(bollingerBands.lower, 0)}</span>
+                        <span className="text-sm font-bold text-white">${safeFixed(patterns.bollingerBands.lower, 0)}</span>
                       </div>
                     </div>
                   </div>
