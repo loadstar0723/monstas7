@@ -100,7 +100,7 @@ export default function PerformanceMetrics({ metrics, coin, strategy }: Performa
             <span className="text-xs text-gray-400">승률</span>
           </div>
           <div className={`text-2xl font-bold ${getMetricColor('winRate', metrics.winRate)}`}>
-            {metrics.winRate.toFixed(1)}%
+            {safeFixed(metrics.winRate, 1)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">
             승: {Math.round(metrics.totalTrades * metrics.winRate / 100)} / 
@@ -119,7 +119,7 @@ export default function PerformanceMetrics({ metrics, coin, strategy }: Performa
             <span className="text-xs text-gray-400">평균 수익률</span>
           </div>
           <div className={`text-2xl font-bold ${getMetricColor('profit', metrics.avgProfit)}`}>
-            {metrics.avgProfit >= 0 ? '+' : ''}{metrics.avgProfit.toFixed(2)}%
+            {metrics.avgProfit >= 0 ? '+' : ''}{safeFixed(metrics.avgProfit, 2)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">
             거래당 평균
@@ -137,7 +137,7 @@ export default function PerformanceMetrics({ metrics, coin, strategy }: Performa
             <span className="text-xs text-gray-400">샤프 비율</span>
           </div>
           <div className={`text-2xl font-bold ${getMetricColor('sharpe', metrics.sharpeRatio)}`}>
-            {metrics.sharpeRatio.toFixed(2)}
+            {safeFixed(metrics.sharpeRatio, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             위험 대비 수익
@@ -153,13 +153,13 @@ export default function PerformanceMetrics({ metrics, coin, strategy }: Performa
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">최대 수익</span>
               <span className="text-sm font-bold text-green-400">
-                +{metrics.maxProfit.toFixed(2)}%
+                +{safeFixed(metrics.maxProfit, 2)}%
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">최대 손실</span>
               <span className="text-sm font-bold text-red-400">
-                {metrics.maxLoss.toFixed(2)}%
+                {safeFixed(metrics.maxLoss, 2)}%
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -171,7 +171,7 @@ export default function PerformanceMetrics({ metrics, coin, strategy }: Performa
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">최대 낙폭 (MDD)</span>
               <span className={`text-sm font-bold ${getMetricColor('drawdown', metrics.maxDrawdown)}`}>
-                -{metrics.maxDrawdown.toFixed(2)}%
+                -{safeFixed(metrics.maxDrawdown, 2)}%
               </span>
             </div>
           </div>

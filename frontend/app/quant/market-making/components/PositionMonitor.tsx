@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaWallet, FaArrowUp, FaArrowDown, FaCheckCircle, FaClock, FaExclamationTriangle } from 'react-icons/fa'
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
@@ -165,7 +166,7 @@ export default function PositionMonitor({ selectedCoin }: Props) {
   }
 
   const formatPrice = (price: number) => {
-    return price >= 10000 ? price.toFixed(0) : price.toFixed(2)
+    return price >= 10000 ? safePrice(price, 0) : safePrice(price, 2)
   }
 
   const pieData = [
@@ -196,7 +197,7 @@ export default function PositionMonitor({ selectedCoin }: Props) {
               position.quantity > 0 ? 'text-green-400' : 
               position.quantity < 0 ? 'text-red-400' : 'text-white'
             }`}>
-              {position.quantity > 0 && '+'}{position.quantity.toFixed(4)} {selectedCoin.symbol}
+              {position.quantity > 0 && '+'}{safeAmount(position.quantity)} {selectedCoin.symbol}
             </p>
           </div>
           
@@ -224,7 +225,7 @@ export default function PositionMonitor({ selectedCoin }: Props) {
             <p className={`text-lg sm:text-2xl font-bold ${
               position.pnlPercentage >= 0 ? 'text-green-400' : 'text-red-400'
             }`}>
-              {position.pnlPercentage >= 0 ? '+' : ''}{position.pnlPercentage.toFixed(2)}%
+              {position.pnlPercentage >= 0 ? '+' : ''}{safeFixed(position.pnlPercentage, 2)}%
             </p>
           </div>
         </div>
@@ -268,9 +269,9 @@ export default function PositionMonitor({ selectedCoin }: Props) {
                     </span>
                   </td>
                   <td className="text-right py-2 px-2 sm:px-3 text-gray-300">${formatPrice(order.price)}</td>
-                  <td className="text-right py-2 px-2 sm:px-3 text-gray-300">{order.quantity.toFixed(3)}</td>
+                  <td className="text-right py-2 px-2 sm:px-3 text-gray-300">{safeAmount(order.quantity)}</td>
                   <td className="text-right py-2 px-2 sm:px-3 text-gray-300">
-                    {order.filled.toFixed(3)}
+                    {safeFixed(order.filled, 3)}
                     <div className="w-full bg-gray-700 rounded-full h-1 mt-1">
                       <div 
                         className="bg-purple-500 h-1 rounded-full transition-all"
@@ -371,7 +372,7 @@ export default function PositionMonitor({ selectedCoin }: Props) {
       <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-4 sm:p-6 border border-purple-600/30">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3">포지션 관리 전략</h3>
         <div className="space-y-2 text-xs sm:text-sm text-gray-300">
-          <p>• 현재 체결률: <span className="text-green-400 font-semibold">{orderStats.fillRate.toFixed(1)}%</span></p>
+          <p>• 현재 체결률: <span className="text-green-400 font-semibold">{safeFixed(orderStats.fillRate, 1)}%</span></p>
           <p>• 호가 조정 권장: {position.quantity > 0.1 ? '매도 호가를 낮춰 재고 균형 맞추기' : position.quantity < -0.1 ? '매수 호가를 높여 재고 균형 맞추기' : '현재 전략 유지'}</p>
           <p>• 리스크 경고: 재고 편향도 {(Math.abs(position.quantity) / 0.5 * 100).toFixed(0)}%</p>
           <p>• 추천 주문 크기: 현재 포지션의 {position.quantity > 0.2 ? '50%' : '100%'} 수준</p>

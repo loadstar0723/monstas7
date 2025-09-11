@@ -9,6 +9,8 @@ import {
   FaClock, FaGlobe, FaFilter, FaDownload, FaSync, FaCheckCircle,
   FaExclamationTriangle, FaInfoCircle, FaPlay, FaPause, FaStop, FaLightbulb
 } from 'react-icons/fa'
+import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
@@ -16,6 +18,8 @@ import dynamic from 'next/dynamic'
 import { config } from '@/lib/config'
 import SystemOverview, { whaleTrackingOverview } from '@/components/signals/SystemOverview'
 import TabGuide, { tabGuides } from '@/components/signals/TabGuide'
+import { getWebSocketUrl, getStreamName } from '@/lib/websocketConfig'
+import { createWebSocket, reconnectWebSocket } from '@/lib/wsHelper'
 import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
 
 const ComprehensiveAnalysis = dynamic(
@@ -658,22 +662,32 @@ export default function WhaleTrackerUltimate() {
     let delay = 0
     TRACKED_SYMBOLS.forEach(symbol => {
       setTimeout(() => {
-        const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
+        const streamName = getStreamName(symbol, 'trade')
+        const wsUrl = getWebSocketUrl(streamName)
         
-        ws.onopen = () => {
-          console.log(`✅ ${symbol} WebSocket 연결 성공`)
-        }
-        
-        ws.onerror = (error) => {
-          console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
-          // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
-        }
-        
-        ws.onclose = (event) => {
-          console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
-        }
-        
-        ws.onmessage = (event) => {
+        try {
+          const ws = new WebSocket(wsUrl)
+          
+          ws.onopen = () => {
+            console.log(`✅ ${symbol} WebSocket 연결 성공`)
+            if (symbol === selectedSymbol) {
+              setIsConnected(true)
+            }
+          }
+          
+          ws.onerror = (error) => {
+            console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
+            // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
+          }
+          
+          ws.onclose = (event) => {
+            console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
+            if (symbol === selectedSymbol) {
+              setIsConnected(false)
+            }
+          }
+          
+          ws.onmessage = (event) => {
           const data = JSON.parse(event.data)
           const price = parseFloat(data.p)
           const quantity = parseFloat(data.q)
@@ -842,7 +856,7 @@ export default function WhaleTrackerUltimate() {
               setSelectedSymbol(currentSymbol => {
                 if (currentSymbol === symbol) {
                   if (trade.impact === 'high') {
-                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol.replace('USDT', '')}`)
+                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${safeToFixed(trade.amount, 2)} ${trade.symbol.replace('USDT', '')}`)
                     // 소리 알림 재생
                     if (alerts.whaleAlert && alerts.sound) {
                       audioService.playNotification('whale')
@@ -851,7 +865,7 @@ export default function WhaleTrackerUltimate() {
                     if (alerts.whaleAlert) {
                       audioService.showBrowserNotification(
                         `🐋 고래 거래 감지!`,
-                        `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
+                        `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${safeToFixed(trade.amount, 2)}`,
                       )
                     }
                   } else if (alerts.whaleAlert && alerts.sound) {
@@ -865,6 +879,9 @@ export default function WhaleTrackerUltimate() {
         }
         
         backgroundWsRefs.current[symbol] = ws
+        } catch (error) {
+          console.error(`WebSocket 생성 실패 ${symbol}:`, error)
+        }
       }, delay)
       delay += 300 // 0.3초씩 순차 연결
     })
@@ -872,9 +889,19 @@ export default function WhaleTrackerUltimate() {
     // 클린업
     return () => {
       clearTimeout(candleTimer)
-      Object.values(backgroundWsRefs.current).forEach(ws => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.close()
+      Object.entries(backgroundWsRefs.current).forEach(([symbol, ws]) => {
+        if (ws) {
+          try {
+            ws.onmessage = null
+            ws.onerror = null
+            ws.onclose = null
+            ws.onopen = null
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+              ws.close(1000, 'Component unmount')
+            }
+          } catch (error) {
+            console.error(`WebSocket cleanup error for ${symbol}:`, error)
+          }
         }
       })
       backgroundWsRefs.current = {}
@@ -1014,7 +1041,7 @@ export default function WhaleTrackerUltimate() {
   // 알림 추가
   const addNotification = (type: 'info' | 'warning' | 'success' | 'error', message: string) => {
     const notification = {
-      id: `${Date.now()}-${data.E || Date.now()}`,
+      id: `${Date.now()}-${Math.random()}`,
       type,
       message,
       time: new Date().toLocaleTimeString()
@@ -1307,16 +1334,16 @@ export default function WhaleTrackerUltimate() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-3xl font-bold text-white">
-                        ${currentPrice.toFixed(2)}
+                        ${safeToFixed(currentPrice, 2)}
                       </p>
                       <p className={`text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+                        {priceChange >= 0 ? '▲' : '▼'} {safeToFixed(Math.abs(priceChange), 2)}%
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-400">24h 고래 거래량</p>
                       <p className="text-xl font-bold text-purple-400">
-                        ${stats.totalVolume > 0 ? (stats.totalVolume / 1000000).toFixed(1) : '0.0'}M
+                        ${formatVolume(stats.totalVolume)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         고래 거래 {stats.totalWhales || 0}건
@@ -1348,7 +1375,7 @@ export default function WhaleTrackerUltimate() {
                           stroke="#9CA3AF"
                           tick={{ fontSize: 10 }}
                           domain={['dataMin - 100', 'dataMax + 100']}
-                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                          tickFormatter={(value) => `$${safeToFixed(value / 1000, 0)}k`}
                         />
                         <Tooltip 
                           contentStyle={{ 
@@ -1358,11 +1385,11 @@ export default function WhaleTrackerUltimate() {
                           }}
                           labelStyle={{ color: '#9CA3AF' }}
                           formatter={(value: number, name: string) => {
-                            if (name === 'close') return [`$${value.toFixed(2)}`, '종가']
-                            if (name === 'high') return [`$${value.toFixed(2)}`, '고가']
-                            if (name === 'low') return [`$${value.toFixed(2)}`, '저가']
-                            if (name === 'price') return [`$${value.toFixed(2)}`, '가격']
-                            return [`$${value.toFixed(2)}`, name]
+                            if (name === 'close') return [`$${safeToFixed(value, 2)}`, '종가']
+                            if (name === 'high') return [`$${safeToFixed(value, 2)}`, '고가']
+                            if (name === 'low') return [`$${safeToFixed(value, 2)}`, '저가']
+                            if (name === 'price') return [`$${safeToFixed(value, 2)}`, '가격']
+                            return [`$${safeToFixed(value, 2)}`, name]
                           }}
                         />
                         {candleData.length > 0 ? (
@@ -1515,11 +1542,11 @@ export default function WhaleTrackerUltimate() {
                 { icon: <FaFish />, label: '고래 거래', value: stats.totalWhales || 0, color: 'purple' },
                 { icon: <FaArrowUp />, label: '매수', value: stats.buyCount || 0, color: 'green' },
                 { icon: <FaArrowDown />, label: '매도', value: stats.sellCount || 0, color: 'red' },
-                { icon: <FaExchangeAlt />, label: '순 유입', value: stats.netFlow !== 0 ? `$${(Math.abs(stats.netFlow) / 1000000).toFixed(1)}M` : '$0.0M', color: stats.netFlow >= 0 ? 'green' : 'red' },
-                { icon: <FaChartLine />, label: '최대 거래', value: stats.largestTrade > 0 ? `$${(stats.largestTrade / 1000000).toFixed(2)}M` : '$0.00M', color: 'yellow' },
-                { icon: <FaShieldAlt />, label: '평균 규모', value: stats.avgTradeSize > 0 ? `$${(stats.avgTradeSize / 1000000).toFixed(2)}M` : '$0.00M', color: 'cyan' },
-                { icon: <FaFireAlt />, label: '매수량', value: stats.buyVolume > 0 ? `$${(stats.buyVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'orange' },
-                { icon: <FaDatabase />, label: '매도량', value: stats.sellVolume > 0 ? `$${(stats.sellVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'pink' }
+                { icon: <FaExchangeAlt />, label: '순 유입', value: stats.netFlow !== 0 ? `$${formatVolume(Math.abs(stats.netFlow))}` : '$0.0M', color: stats.netFlow >= 0 ? 'green' : 'red' },
+                { icon: <FaChartLine />, label: '최대 거래', value: stats.largestTrade > 0 ? `$${formatVolume(stats.largestTrade)}` : '$0.00M', color: 'yellow' },
+                { icon: <FaShieldAlt />, label: '평균 규모', value: stats.avgTradeSize > 0 ? `$${formatVolume(stats.avgTradeSize)}` : '$0.00M', color: 'cyan' },
+                { icon: <FaFireAlt />, label: '매수량', value: stats.buyVolume > 0 ? `$${formatVolume(stats.buyVolume)}` : '$0.0M', color: 'orange' },
+                { icon: <FaDatabase />, label: '매도량', value: stats.sellVolume > 0 ? `$${formatVolume(stats.sellVolume)}` : '$0.0M', color: 'pink' }
               ].map((stat, idx) => (
                 <motion.div
                   key={idx}
@@ -1606,10 +1633,10 @@ export default function WhaleTrackerUltimate() {
                                   {tx.type === 'buy' ? '매수' : '매도'}
                                 </span>
                                 <span className="text-white font-medium">
-                                  {tx.amount ? tx.amount.toFixed(4) : '0.0000'} {tx.symbol?.replace('USDT', '') || ''}
+                                  {safeAmount(tx.amount)} {tx.symbol?.replace('USDT', '') || ''}
                                 </span>
                                 <span className="text-gray-400 text-sm">
-                                  @ ${tx.price ? tx.price.toFixed(2) : '0.00'}
+                                  @ ${safePrice(tx.price)}
                                 </span>
                                 {tx.impact === 'high' && (
                                   <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">
@@ -1629,7 +1656,7 @@ export default function WhaleTrackerUltimate() {
                           </div>
                           <div className="text-right">
                             <p className="text-xl font-bold text-white">
-                              ${((tx.value || 0) / 1000000).toFixed(2)}M
+                              ${safeMillion((tx.value || 0), 2)}M
                             </p>
                             <p className={`text-xs ${
                               tx.impact === 'high' ? 'text-yellow-400' :
@@ -1738,7 +1765,7 @@ export default function WhaleTrackerUltimate() {
                         <div key={wallet} className="flex justify-between items-center">
                           <span className="text-gray-300 font-mono text-sm">{wallet}</span>
                           <span className="text-green-400 font-bold">
-                            ${(value / 1000).toFixed(1)}K
+                            ${safeThousand(value)}K
                           </span>
                         </div>
                       ));
@@ -1772,7 +1799,7 @@ export default function WhaleTrackerUltimate() {
                         <div key={wallet} className="flex justify-between items-center">
                           <span className="text-gray-300 font-mono text-sm">{wallet}</span>
                           <span className="text-red-400 font-bold">
-                            ${(value / 1000).toFixed(1)}K
+                            ${safeThousand(value)}K
                           </span>
                         </div>
                       ));
@@ -1796,7 +1823,7 @@ export default function WhaleTrackerUltimate() {
                       ${(() => {
                         const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.value);
                         if (symbolTxs.length === 0) return '0';
-                        return (symbolTxs.reduce((sum, tx) => sum + tx.value, 0) / symbolTxs.length / 1000).toFixed(1);
+                        return safeThousand(symbolTxs.reduce((sum, tx) => sum + tx.value, 0) / symbolTxs.length);
                       })()}K
                     </div>
                   </div>
@@ -1806,7 +1833,7 @@ export default function WhaleTrackerUltimate() {
                       ${(() => {
                         const symbolTxs = transactions.filter(tx => tx?.symbol === selectedSymbol && tx?.value);
                         if (symbolTxs.length === 0) return '0';
-                        return (Math.max(...symbolTxs.map(tx => tx.value)) / 1000).toFixed(1);
+                        return safeThousand(Math.max(...symbolTxs.map(tx => tx.value)));
                       })()}K
                     </div>
                   </div>
@@ -1848,7 +1875,7 @@ export default function WhaleTrackerUltimate() {
                             </span>
                           </td>
                           <td className="py-3">
-                            <span className="text-white font-bold">{wallet.balance.toFixed(2)} {selectedSymbol.replace('USDT', '')}</span>
+                            <span className="text-white font-bold">{safeFixed(wallet.balance, 2)} {selectedSymbol.replace('USDT', '')}</span>
                           </td>
                           <td className="py-3">{wallet.totalTrades.toLocaleString()}</td>
                           <td className="py-3">
@@ -1955,7 +1982,7 @@ export default function WhaleTrackerUltimate() {
                             <span className={`font-bold ${
                               netFlow >= 0 ? 'text-green-400' : 'text-red-400'
                             }`}>
-                              {netFlow >= 0 ? '+' : ''}{(netFlow / 1000).toFixed(1)}K
+                              {netFlow >= 0 ? '+' : ''}{safeThousand(netFlow)}K
                             </span>
                           </div>
                         );
@@ -2059,13 +2086,13 @@ export default function WhaleTrackerUltimate() {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">유입</span>
                       <span className="text-sm font-bold text-green-400">
-                        +${(flow.inflow / 1000000).toFixed(1)}M
+                        +${safeMillion(flow.inflow, 1)}M
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">유출</span>
                       <span className="text-sm font-bold text-red-400">
-                        -${(flow.outflow / 1000000).toFixed(1)}M
+                        -${safeMillion(flow.outflow, 1)}M
                       </span>
                     </div>
                     <div className="pt-3 border-t border-gray-700 flex justify-between">
@@ -2073,7 +2100,7 @@ export default function WhaleTrackerUltimate() {
                       <span className={`text-lg font-bold ${
                         flow.netFlow >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        ${(Math.abs(flow.netFlow) / 1000000).toFixed(1)}M
+                        ${safeMillion(Math.abs(flow.netFlow), 1)}M
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -2081,14 +2108,14 @@ export default function WhaleTrackerUltimate() {
                       <span className={`text-sm font-bold ${
                         flow.change24h >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {flow.change24h >= 0 ? '+' : ''}{flow.change24h.toFixed(1)}%
+                        {flow.change24h >= 0 ? '+' : ''}{safePercent(flow.change24h)}%
                       </span>
                     </div>
                     {flow.reserves && (
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">총 보유량</span>
                         <span className="text-sm font-bold text-white">
-                          {flow.reserves.toFixed(2)} BTC
+                          {safeFixed(flow.reserves, 2)} BTC
                         </span>
                       </div>
                     )}
@@ -2136,7 +2163,7 @@ export default function WhaleTrackerUltimate() {
                 <div className="grid grid-cols-4 gap-4 text-sm">
                   <div>
                     <div className="text-gray-400">현재 가격</div>
-                    <div className="text-white font-bold">${currentPrice.toFixed(2)}</div>
+                    <div className="text-white font-bold">${safePrice(currentPrice)}</div>
                   </div>
                   <div>
                     <div className="text-gray-400">거래량</div>
@@ -2154,7 +2181,7 @@ export default function WhaleTrackerUltimate() {
                     <div className={`font-bold ${
                       stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      ${(stats.netFlow / 1000).toFixed(1)}K
+                      ${safeThousand(stats.netFlow)}K
                     </div>
                   </div>
                 </div>
@@ -2190,7 +2217,7 @@ export default function WhaleTrackerUltimate() {
                           patterns.rsi < 30 ? 'text-green-400' :
                           'text-yellow-400'
                         }`}>
-                          {patterns.rsi.toFixed(1)}
+                          {safeFixed(patterns.rsi, 1)}
                         </span>
                       </div>
                     </div>
@@ -2222,16 +2249,16 @@ export default function WhaleTrackerUltimate() {
                         <span className={`text-sm font-bold ${
                           patterns.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {patterns.macd.histogram.toFixed(2)}
+                          {safeFixed(patterns.macd.histogram, 2)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">볼린저 상단</span>
-                        <span className="text-sm font-bold text-white">${patterns.bollingerBands.upper.toFixed(0)}</span>
+                        <span className="text-sm font-bold text-white">${safeFixed(patterns.bollingerBands.upper, 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">볼린저 하단</span>
-                        <span className="text-sm font-bold text-white">${patterns.bollingerBands.lower.toFixed(0)}</span>
+                        <span className="text-sm font-bold text-white">${safeFixed(patterns.bollingerBands.lower, 0)}</span>
                       </div>
                     </div>
                   </div>
@@ -2392,9 +2419,9 @@ export default function WhaleTrackerUltimate() {
                             }`}>
                               {tx.type === 'buy' ? '매수' : '매도'}
                             </td>
-                            <td className="py-3">{tx.amount.toFixed(4)} {tx.symbol?.replace('USDT', '') || ''}</td>
-                            <td className="py-3">${tx.price.toFixed(2)}</td>
-                            <td className="py-3 font-medium">${((tx.value || 0) / 1000000).toFixed(2)}M</td>
+                            <td className="py-3">{safeAmount(tx.amount)} {tx.symbol?.replace('USDT', '') || ''}</td>
+                            <td className="py-3">${safePrice(tx.price)}</td>
+                            <td className="py-3 font-medium">${safeMillion((tx.value || 0), 2)}M</td>
                             <td className={`py-3 ${
                               tx.impact === 'high' ? 'text-red-400' :
                               tx.impact === 'medium' ? 'text-yellow-400' :
@@ -2425,13 +2452,13 @@ export default function WhaleTrackerUltimate() {
                     <div className="text-center">
                       <p className="text-xs text-gray-400 mb-1">평균 거래액</p>
                       <p className="text-xl font-bold text-white">
-                        ${filteredTransactions.length > 0 ? (filteredTransactions.reduce((sum, tx) => sum + tx.value, 0) / filteredTransactions.length / 1000000).toFixed(2) : '0.00'}M
+                        ${filteredTransactions.length > 0 ? safeMillion(filteredTransactions.reduce((sum, tx) => sum + tx.value, 0) / filteredTransactions.length, 2) : '0.00'}M
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-400 mb-1">최대 거래액</p>
                       <p className="text-xl font-bold text-white">
-                        ${filteredTransactions.length > 0 ? (Math.max(...filteredTransactions.map(tx => tx.value)) / 1000000).toFixed(2) : '0.00'}M
+                        ${filteredTransactions.length > 0 ? safeMillion(Math.max(...filteredTransactions.map(tx => tx.value)), 2) : '0.00'}M
                       </p>
                     </div>
                   </div>
@@ -2647,20 +2674,20 @@ export default function WhaleTrackerUltimate() {
                         <span className={`font-bold ${
                           backtestResult.totalReturn > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {backtestResult.totalReturn > 0 ? '+' : ''}{backtestResult.totalReturn.toFixed(2)}%
+                          {backtestResult.totalReturn > 0 ? '+' : ''}{backtestResult.safePrice(totalReturn)}%
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">승률</span>
-                        <span className="text-white font-bold">{backtestResult.winRate.toFixed(1)}%</span>
+                        <span className="text-white font-bold">{backtestResult.safePercent(winRate)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">최대 낙폭</span>
-                        <span className="text-red-400 font-bold">{backtestResult.maxDrawdown.toFixed(1)}%</span>
+                        <span className="text-red-400 font-bold">{backtestResult.safePercent(maxDrawdown)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">샤프 비율</span>
-                        <span className="text-white font-bold">{backtestResult.sharpeRatio.toFixed(2)}</span>
+                        <span className="text-white font-bold">{backtestResult.safePrice(sharpeRatio)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">총 거래 수</span>
@@ -2668,15 +2695,15 @@ export default function WhaleTrackerUltimate() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">평균 보유 기간</span>
-                        <span className="text-white font-bold">{backtestResult.avgHoldTime.toFixed(1)}일</span>
+                        <span className="text-white font-bold">{backtestResult.safePercent(avgHoldTime)}일</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">최고 수익 거래</span>
-                        <span className="text-green-400 font-bold">+{backtestResult.bestTrade.toFixed(1)}%</span>
+                        <span className="text-green-400 font-bold">+{backtestResult.safePercent(bestTrade)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">최대 손실 거래</span>
-                        <span className="text-red-400 font-bold">{backtestResult.worstTrade.toFixed(1)}%</span>
+                        <span className="text-red-400 font-bold">{backtestResult.safePercent(worstTrade)}%</span>
                       </div>
                     </div>
                   </div>

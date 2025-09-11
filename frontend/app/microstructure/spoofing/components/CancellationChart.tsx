@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
 
 interface CancellationChartProps {
@@ -170,7 +171,7 @@ export default function CancellationChart({ orderbook, symbol }: CancellationCha
         <div className="bg-gray-700/50 rounded-lg p-3">
           <div className="text-xs text-gray-400 mb-1">취소율</div>
           <div className={`text-sm font-semibold ${getSuspiciousColor(stats.suspiciousLevel)}`}>
-            {stats.cancellationRate.toFixed(1)}%
+            {safeFixed(stats.cancellationRate, 1)}%
           </div>
         </div>
 

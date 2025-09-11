@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaFire, FaExclamationTriangle, FaChartBar, FaDollarSign, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
@@ -398,7 +399,7 @@ export default function LiquidationModule() {
               {heatmapData.map((data, index) => (
                 <div key={index} className="flex items-center gap-4">
                   <span className="text-sm text-gray-400 w-20 text-right">
-                    ${data.price.toFixed(0)}
+                    ${safePrice(data.price, 0)}
                   </span>
                   <div className="flex-1 flex gap-2">
                     <div className="flex-1 relative h-8">

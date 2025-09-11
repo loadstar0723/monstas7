@@ -2,6 +2,7 @@
 
 import { MomentumData, CoinData } from '../MomentumModule'
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface PositionSizerProps {
   momentumData: MomentumData | null
@@ -127,7 +128,7 @@ export default function PositionSizer({ momentumData, coinData }: PositionSizerP
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">권장 포지션 크기</p>
           <p className="text-2xl font-bold text-white">
-            ${positionSize.toFixed(0)}
+            ${safeFixed(positionSize, 0)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             총 자본의 {((positionSize / capital) * 100).toFixed(1)}%
@@ -140,7 +141,7 @@ export default function PositionSizer({ momentumData, coinData }: PositionSizerP
             {calculateShares().toFixed(4)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            @ ${coinData?.price.toFixed(2)}
+            @ ${coinData?.safePrice(price, 2)}
           </p>
         </div>
 
@@ -160,7 +161,7 @@ export default function PositionSizer({ momentumData, coinData }: PositionSizerP
         <div className="bg-red-900/20 rounded-lg p-4 border border-red-800/30">
           <h3 className="text-sm font-medium text-red-400 mb-3">손절가 (Stop Loss)</h3>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl font-bold text-white">${stopLoss.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-white">${safeFixed(stopLoss, 2)}</span>
             <span className="text-red-400">
               -{((1 - stopLoss / (coinData?.price || 1)) * 100).toFixed(1)}%
             </span>
@@ -176,7 +177,7 @@ export default function PositionSizer({ momentumData, coinData }: PositionSizerP
         <div className="bg-green-900/20 rounded-lg p-4 border border-green-800/30">
           <h3 className="text-sm font-medium text-green-400 mb-3">익절가 (Take Profit)</h3>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl font-bold text-white">${takeProfit.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-white">${safeFixed(takeProfit, 2)}</span>
             <span className="text-green-400">
               +{((takeProfit / (coinData?.price || 1) - 1) * 100).toFixed(1)}%
             </span>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface MarketProfileProps {
   symbol: string
@@ -232,7 +233,7 @@ export default function MarketProfile({ symbol }: MarketProfileProps) {
       ctx.font = '11px sans-serif'
       ctx.textAlign = 'right'
       ctx.textBaseline = 'middle'
-      ctx.fillText(`$${level.price.toFixed(2)}`, priceWidth - 5, y + levelHeight / 2)
+      ctx.fillText(`$${safePrice(level.price, 2)}`, priceWidth - 5, y + levelHeight / 2)
 
       // POC 표시
       if (level.isPOC) {
@@ -303,7 +304,7 @@ export default function MarketProfile({ symbol }: MarketProfileProps) {
         </h3>
         <div className="text-right">
           <p className="text-sm text-gray-400">현재가</p>
-          <p className="text-lg font-bold text-white">${currentPrice.toFixed(2)}</p>
+          <p className="text-lg font-bold text-white">${safePrice(currentPrice, 2)}</p>
         </div>
       </div>
 
@@ -320,15 +321,15 @@ export default function MarketProfile({ symbol }: MarketProfileProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <div className="text-center">
           <p className="text-xs text-gray-400">POC</p>
-          <p className="text-lg font-bold text-pink-400">${profileData?.poc.toFixed(2)}</p>
+          <p className="text-lg font-bold text-pink-400">${profileData?.safeFixed(poc, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VAH</p>
-          <p className="text-lg font-bold text-purple-400">${profileData?.vah.toFixed(2)}</p>
+          <p className="text-lg font-bold text-purple-400">${profileData?.safeFixed(vah, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VAL</p>
-          <p className="text-lg font-bold text-purple-400">${profileData?.val.toFixed(2)}</p>
+          <p className="text-lg font-bold text-purple-400">${profileData?.safeFixed(val, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VA Range</p>

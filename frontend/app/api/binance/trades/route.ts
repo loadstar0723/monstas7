@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BINANCE_API_BASE = 'https://api.binance.com'
 
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  })
+  
+  return new NextResponse(null, { status: 200, headers })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -12,7 +22,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 10 }
+      next: { revalidate: 0 }
     })
     
     if (!response.ok) {
@@ -21,12 +31,25 @@ export async function GET(request: NextRequest) {
     
     const data = await response.json()
     
-    return NextResponse.json(data)
+    // CORS 헤더 추가
+    const headers = new Headers({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    })
+    
+    return NextResponse.json(data, { headers })
   } catch (error) {
     console.error('Binance trades proxy error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch trades data' },
-      { status: 500 }
-    )
+    
+    // CORS 헤더 추가
+    const headers = new Headers({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    })
+    
+    // 에러 시 빈 배열 반환 (200 상태로)
+    return NextResponse.json([], { status: 200, headers })
   }
 }

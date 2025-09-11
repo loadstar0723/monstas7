@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiBriefcase, FiPieChart, FiTrendingUp, FiTrendingDown, FiPlus, FiX, FiEdit3, FiRefreshCw, FiDollarSign } from 'react-icons/fi'
 import { FaChartBar } from 'react-icons/fa'
@@ -362,7 +363,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
   }
 
   const formatPercentage = (value: number) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+    return `${value >= 0 ? '+' : ''}${safeFixed(value, 2)}%`
   }
 
   const getPnLColor = (value: number) => {
@@ -437,7 +438,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
           
           <div className="bg-gray-800/50 rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-yellow-400">
-              {summary.marginLevel.toFixed(1)}%
+              {safeFixed(summary.marginLevel, 1)}%
             </div>
             <div className="text-sm text-gray-400 mt-1">마진 레벨</div>
           </div>
@@ -505,17 +506,17 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
                       <div>
                         <div className="text-sm text-gray-400">크기</div>
-                        <div className="text-white font-medium">{position.size.toFixed(4)}</div>
+                        <div className="text-white font-medium">{safeFixed(position.size, 4)}</div>
                       </div>
                       
                       <div>
                         <div className="text-sm text-gray-400">진입가</div>
-                        <div className="text-white font-medium">${position.entryPrice.toFixed(2)}</div>
+                        <div className="text-white font-medium">${safeFixed(position.entryPrice, 2)}</div>
                       </div>
                       
                       <div>
                         <div className="text-sm text-gray-400">현재가</div>
-                        <div className="text-white font-medium">${position.currentPrice.toFixed(2)}</div>
+                        <div className="text-white font-medium">${safeFixed(position.currentPrice, 2)}</div>
                       </div>
                       
                       <div>
@@ -607,8 +608,8 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
                     </div>
                     
                     <div className="flex justify-between text-sm text-gray-400 mb-1">
-                      <span>목표: {target.targetPercent.toFixed(1)}%</span>
-                      <span>현재: {target.currentPercent.toFixed(1)}%</span>
+                      <span>목표: {safeFixed(target.targetPercent, 1)}%</span>
+                      <span>현재: {safeFixed(target.currentPercent, 1)}%</span>
                     </div>
                     
                     <div className="w-full bg-gray-600 rounded-full h-2">
@@ -682,7 +683,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
               
               <div className="text-center p-4 bg-gray-700/30 rounded-lg">
                 <div className="text-2xl font-bold text-blue-400">
-                  {summary ? summary.marginLevel.toFixed(1) : '0'}%
+                  {summary ? safeFixed(summary.marginLevel, 1) : '0'}%
                 </div>
                 <div className="text-sm text-gray-400 mt-1">마진 레벨</div>
               </div>

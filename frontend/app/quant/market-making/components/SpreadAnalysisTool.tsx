@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaCalculator, FaBrain, FaExclamationTriangle } from 'react-icons/fa'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -267,19 +268,19 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">현재 스프레드</p>
-          <p className="text-2xl font-bold text-white">{currentSpread.toFixed(3)}%</p>
+          <p className="text-2xl font-bold text-white">{safeFixed(currentSpread, 3)}%</p>
         </div>
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">평균 스프레드</p>
-          <p className="text-2xl font-bold text-white">{avgSpread.toFixed(3)}%</p>
+          <p className="text-2xl font-bold text-white">{safeFixed(avgSpread, 3)}%</p>
         </div>
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">권장 스프레드</p>
-          <p className="text-2xl font-bold text-purple-400">{optimalSpread.toFixed(3)}%</p>
+          <p className="text-2xl font-bold text-purple-400">{safeFixed(optimalSpread, 3)}%</p>
         </div>
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">예상 일일 수익</p>
-          <p className="text-2xl font-bold text-green-400">${projectedProfit.toFixed(0)}</p>
+          <p className="text-2xl font-bold text-green-400">${safeFixed(projectedProfit, 0)}</p>
         </div>
       </div>
 
@@ -422,7 +423,7 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
               <div className="border-t border-gray-700 pt-2 mt-2">
                 <div className="flex justify-between text-green-400 font-semibold">
                   <span>일일 예상 수익:</span>
-                  <span>${projectedProfit.toFixed(0)}</span>
+                  <span>${safeFixed(projectedProfit, 0)}</span>
                 </div>
                 <div className="flex justify-between text-blue-400 mt-1">
                   <span>월간 예상 수익:</span>
@@ -461,7 +462,7 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
               1
             </div>
             <div>
-              <p className="text-white font-semibold">기본 스프레드: {optimalSpread.toFixed(3)}%</p>
+              <p className="text-white font-semibold">기본 스프레드: {safeFixed(optimalSpread, 3)}%</p>
               <p className="text-gray-400">현재 시장 조건에 최적화된 스프레드입니다.</p>
             </div>
           </div>

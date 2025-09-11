@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
 interface Coin {
@@ -339,7 +340,7 @@ export default function RiskManagement({ coin, marketData }: RiskManagementProps
                 className="flex-1"
               />
               <span className="text-white font-medium w-20 text-right">
-                ${positionSize.toFixed(0)}
+                ${safeFixed(positionSize, 0)}
               </span>
             </div>
           </div>
@@ -350,7 +351,7 @@ export default function RiskManagement({ coin, marketData }: RiskManagementProps
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 rounded-lg p-3 border border-blue-700/30">
           <div className="text-blue-400 text-sm mb-1">권장 포지션</div>
-          <div className="text-white font-bold">${recommendedPositionSize.toFixed(0)}</div>
+          <div className="text-white font-bold">${safeFixed(recommendedPositionSize, 0)}</div>
           <div className="text-xs text-gray-500">
             자본의 {((recommendedPositionSize / capital) * 100).toFixed(1)}%
           </div>
@@ -364,14 +365,14 @@ export default function RiskManagement({ coin, marketData }: RiskManagementProps
         </div>
         <div className="bg-gradient-to-r from-green-900/20 to-green-800/20 rounded-lg p-3 border border-green-700/30">
           <div className="text-green-400 text-sm mb-1">예상 손실 (-3%)</div>
-          <div className="text-white font-bold">-${stopLossAmount.toFixed(0)}</div>
+          <div className="text-white font-bold">-${safeFixed(stopLossAmount, 0)}</div>
           <div className="text-xs text-gray-500">
             자본의 {((stopLossAmount / capital) * 100).toFixed(2)}%
           </div>
         </div>
         <div className="bg-gradient-to-r from-red-900/20 to-red-800/20 rounded-lg p-3 border border-red-700/30">
           <div className="text-red-400 text-sm mb-1">최대 손실</div>
-          <div className="text-white font-bold">-${maxLossAmount.toFixed(0)}</div>
+          <div className="text-white font-bold">-${safeFixed(maxLossAmount, 0)}</div>
           <div className="text-xs text-gray-500">
             자본의 {((maxLossAmount / capital) * 100).toFixed(2)}%
           </div>

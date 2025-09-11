@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaHistory, FaChartBar, FaCalendar, FaExclamationTriangle } from 'react-icons/fa'
 import { binanceAPI } from '@/lib/binanceConfig'
@@ -212,13 +213,13 @@ export default function BacktestResults({ selectedCoin }: Props) {
               <div>
                 <p className="text-sm text-gray-400">총 수익</p>
                 <p className={`text-2xl font-bold ${summary.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  ${summary.totalProfit.toFixed(2)}
+                  ${safeFixed(summary.totalProfit, 2)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">ROI (수익률)</p>
                 <p className={`text-xl font-bold ${summary.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {summary.roi.toFixed(2)}%
+                  {safeFixed(summary.roi, 2)}%
                 </p>
               </div>
             </div>
@@ -236,7 +237,7 @@ export default function BacktestResults({ selectedCoin }: Props) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">평균 승률</p>
-                <p className="text-xl font-bold text-yellow-400">{summary.avgWinRate.toFixed(1)}%</p>
+                <p className="text-xl font-bold text-yellow-400">{safeFixed(summary.avgWinRate, 1)}%</p>
               </div>
             </div>
           </div>
@@ -249,11 +250,11 @@ export default function BacktestResults({ selectedCoin }: Props) {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-400">수익일 비율</p>
-                <p className="text-2xl font-bold text-green-400">{summary.profitRatio.toFixed(0)}%</p>
+                <p className="text-2xl font-bold text-green-400">{safeFixed(summary.profitRatio, 0)}%</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">최대 손실폭</p>
-                <p className="text-xl font-bold text-red-400">{summary.maxDrawdown.toFixed(2)}%</p>
+                <p className="text-xl font-bold text-red-400">{safeFixed(summary.maxDrawdown, 2)}%</p>
               </div>
             </div>
           </div>

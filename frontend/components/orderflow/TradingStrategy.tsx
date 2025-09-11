@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface TradingStrategyProps {
   symbol: string
@@ -264,12 +265,12 @@ export default function TradingStrategy({ symbol }: TradingStrategyProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div>
           <p className="text-xs text-gray-400 mb-1">진입가</p>
-          <p className="text-lg font-bold text-white">${strategy.entry.toFixed(2)}</p>
+          <p className="text-lg font-bold text-white">${safeFixed(strategy.entry, 2)}</p>
           <p className="text-xs text-gray-500">현재가 기준</p>
         </div>
         <div>
           <p className="text-xs text-gray-400 mb-1">손절가</p>
-          <p className="text-lg font-bold text-red-400">${strategy.stopLoss.toFixed(2)}</p>
+          <p className="text-lg font-bold text-red-400">${safeFixed(strategy.stopLoss, 2)}</p>
           <p className="text-xs text-gray-500">
             -{((Math.abs(strategy.entry - strategy.stopLoss) / strategy.entry) * 100).toFixed(1)}%
           </p>
@@ -279,14 +280,14 @@ export default function TradingStrategy({ symbol }: TradingStrategyProps) {
           <div className="space-y-1">
             {strategy.takeProfit.map((tp, index) => (
               <p key={index} className="text-sm font-medium text-green-400">
-                TP{index + 1}: ${tp.toFixed(2)}
+                TP{index + 1}: ${safeFixed(tp, 2)}
               </p>
             ))}
           </div>
         </div>
         <div>
           <p className="text-xs text-gray-400 mb-1">리스크/리워드</p>
-          <p className="text-lg font-bold text-purple-400">1:{strategy.riskReward.toFixed(1)}</p>
+          <p className="text-lg font-bold text-purple-400">1:{safeFixed(strategy.riskReward, 1)}</p>
           <p className="text-xs text-gray-500">권장 비율</p>
         </div>
       </div>
@@ -309,7 +310,7 @@ export default function TradingStrategy({ symbol }: TradingStrategyProps) {
           </div>
           <div>
             <p className="text-gray-400">추천 수량</p>
-            <p className="text-green-400 font-medium">{strategy.positionSize.toFixed(4)} 개</p>
+            <p className="text-green-400 font-medium">{safeFixed(strategy.positionSize, 4)} 개</p>
           </div>
         </div>
       </div>

@@ -1,12 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React Strict Mode 비활성화 (WebSocket 이중 연결 방지)
+  reactStrictMode: false,
+  
   // 서버 설정
   poweredByHeader: false,
   generateEtags: false,
+  swcMinify: true,
   
   // 이미지 최적화
   images: {
-    domains: ['localhost', '13.209.84.93'],
+    domains: ['localhost', '13.209.84.93', 'api.dicebear.com'],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -15,13 +19,50 @@ const nextConfig = {
   // 성능 최적화
   compress: true,
   
+  // 컴파일러 설정
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  
   // 번들 분석 (필요시 활성화)
   // analyzeBundle: process.env.ANALYZE === 'true',
+  
+  // 빌드 ID 자동 생성 (캐시 무효화)
+  generateBuildId: async () => {
+    // 현재 타임스탬프를 빌드 ID로 사용
+    return Date.now().toString()
+  },
   
   // 실험적 기능 (클라이언트 사이드 에러 방지)
   experimental: {
     optimizeCss: false,  // CSS 최적화 비활성화
     scrollRestoration: true,
+    optimizePackageImports: ['recharts', 'framer-motion', 'react-icons'],
+  },
+  
+  // Webpack 설정
+  webpack: (config, { dev, isServer }) => {
+    // 개발 환경에서 청크 로딩 최적화
+    if (dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        runtimeChunk: false,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+          },
+        },
+      }
+      // 청크 파일명에 타임스탬프 추가하여 캐시 문제 방지
+      const timestamp = Date.now()
+      config.output.filename = `static/chunks/[name].${timestamp}.[contenthash].js`
+      config.output.chunkFilename = `static/chunks/[name].${timestamp}.[contenthash].js`
+    }
+    return config
   },
   
   // React Strict Mode 비활성화 (프로덕션 에러 방지)
@@ -63,6 +104,25 @@ const nextConfig = {
           }
         ]
       },
+      // JavaScript 파일 캐시 무효화
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
       {
         source: '/sw.js',
         headers: [
@@ -76,6 +136,15 @@ const nextConfig = {
           },
         ],
       },
+      // API CORS 헤더
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
     ]
   },
   
@@ -84,9 +153,14 @@ const nextConfig = {
     return []
   },
   
-  // 리라이트
+  // 리라이트 (WebSocket 프록시 개발 환경용)
   async rewrites() {
-    return []
+    return process.env.NODE_ENV === 'development' ? [
+      {
+        source: '/ws/:path*',
+        destination: 'https://stream.binance.com:9443/ws/:path*',
+      },
+    ] : []
   }
 };
 

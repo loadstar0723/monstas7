@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { FaChartLine, FaBell, FaHistory, FaCalculator, FaCog, FaDownload, FaRobot, FaLightbulb } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'
@@ -180,7 +181,7 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
             <Tooltip
               cursor={{ strokeDasharray: '3 3' }}
               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-              formatter={(value: any) => `${value.toFixed(2)}`}
+              formatter={(value: any) => `${safeFixed(value, 2)}`}
             />
             <Scatter 
               name="상관관계" 
@@ -223,17 +224,17 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
           </div>
           <div className="bg-gray-700/50 rounded p-3">
             <p className="text-sm text-gray-400">승률</p>
-            <p className="text-xl font-bold text-green-400">{backtestStats.winRate.toFixed(1)}%</p>
+            <p className="text-xl font-bold text-green-400">{safeFixed(backtestStats.winRate, 1)}%</p>
           </div>
           <div className="bg-gray-700/50 rounded p-3">
             <p className="text-sm text-gray-400">누적 수익</p>
             <p className={`text-xl font-bold ${backtestStats.totalReturn > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {backtestStats.totalReturn > 0 ? '+' : ''}{backtestStats.totalReturn.toFixed(2)}%
+              {backtestStats.totalReturn > 0 ? '+' : ''}{safeFixed(backtestStats.totalReturn, 2)}%
             </p>
           </div>
           <div className="bg-gray-700/50 rounded p-3">
             <p className="text-sm text-gray-400">최대 손실</p>
-            <p className="text-xl font-bold text-red-400">{backtestStats.maxDrawdown.toFixed(2)}%</p>
+            <p className="text-xl font-bold text-red-400">{safeFixed(backtestStats.maxDrawdown, 2)}%</p>
           </div>
         </div>
         <ResponsiveContainer width="100%" height={250}>
@@ -368,7 +369,7 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
           <div className="flex items-start gap-2">
             <FaLightbulb className="text-yellow-400 mt-0.5 flex-shrink-0" />
             <p>
-              백테스트 결과 승률 {backtestStats.winRate.toFixed(0)}%로 
+              백테스트 결과 승률 {safeFixed(backtestStats.winRate, 0)}%로 
               {backtestStats.winRate > 60 ? ' 양호한 성과를 보였습니다.' :
                ' 개선이 필요합니다. 추가 필터링 조건을 고려해보세요.'}
             </p>

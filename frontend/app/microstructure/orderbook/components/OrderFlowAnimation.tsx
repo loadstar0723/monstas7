@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaExchangeAlt, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderbookLevel {
   price: number
@@ -160,7 +161,7 @@ export default function OrderFlowAnimation({ orderbook, showAnimation }: OrderFl
   }, [])
 
   const formatNumber = (num: number) => {
-    return num.toFixed(4)
+    return safeFixed(num, 4)
   }
 
   return (
@@ -255,7 +256,7 @@ export default function OrderFlowAnimation({ orderbook, showAnimation }: OrderFl
                       </div>
                       <div className="text-right">
                         <div className="text-gray-300 text-sm">
-                          ${order.price.toFixed(2)}
+                          ${safePrice(order.price, 2)}
                         </div>
                         <div className="text-gray-500 text-xs">
                           {timeAgo}초 전
@@ -297,7 +298,7 @@ export default function OrderFlowAnimation({ orderbook, showAnimation }: OrderFl
               const ratio = bidTotal / (askTotal || 1)
               return (
                 <span className={ratio > 1.2 ? 'text-green-400' : ratio < 0.8 ? 'text-red-400' : 'text-gray-300'}>
-                  {ratio.toFixed(2)}
+                  {safeFixed(ratio, 2)}
                 </span>
               )
             })()}

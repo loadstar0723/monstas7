@@ -37,16 +37,16 @@ export default function RealtimeTab({ optionsFlows, volumeHistory, currentPrice,
                 <td className="py-2">${flow.strike.toLocaleString()}</td>
                 <td className="py-2">{flow.volume.toLocaleString()}</td>
                 <td className="py-2">${flow.premium.toLocaleString()}</td>
-                <td className="py-2">{flow.iv.toFixed(1)}%</td>
-                <td className="py-2">{flow.delta.toFixed(3)}</td>
-                <td className="py-2">{flow.gamma.toFixed(4)}</td>
+                <td className="py-2">{safeFixed(flow.iv, 1)}%</td>
+                <td className="py-2">{safeFixed(flow.delta, 3)}</td>
+                <td className="py-2">{safeFixed(flow.gamma, 4)}</td>
                 <td className="py-2">
                   <span className={`px-2 py-1 rounded text-xs ${
                     flow.unusualScore > 70 ? 'bg-red-500/20 text-red-400' :
                     flow.unusualScore > 50 ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-gray-700 text-gray-400'
                   }`}>
-                    {flow.unusualScore.toFixed(0)}
+                    {safeFixed(flow.unusualScore, 0)}
                   </span>
                 </td>
               </tr>
@@ -119,7 +119,7 @@ export default function RealtimeTab({ optionsFlows, volumeHistory, currentPrice,
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-red-400">
-                      {flow.unusualScore.toFixed(0)}
+                      {safeFixed(flow.unusualScore, 0)}
                     </div>
                     <div className="text-xs text-gray-400">Score</div>
                   </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface PriceChartProps {
   symbol: string
@@ -60,7 +61,7 @@ export default function PriceChart({ symbol, priceHistory, currentPrice }: Price
       ctx.stroke()
       
       // 가격 레이블
-      ctx.fillText(price.toFixed(2), 5, y + 3)
+      ctx.fillText(safePrice(price, 2), 5, y + 3)
     }
 
     // 캤들 차트 그리기
@@ -110,7 +111,7 @@ export default function PriceChart({ symbol, priceHistory, currentPrice }: Price
     ctx.fillRect(rect.width - padding + 5, currentY - 10, 50, 20)
     ctx.fillStyle = '#ffffff'
     ctx.font = '11px monospace'
-    ctx.fillText(currentPrice.toFixed(2), rect.width - padding + 8, currentY + 3)
+    ctx.fillText(safePrice(currentPrice, 2), rect.width - padding + 8, currentY + 3)
 
   }, [priceHistory, currentPrice, chartType])
 

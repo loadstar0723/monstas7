@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  })
+  
+  return new NextResponse(null, { status: 200, headers })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -17,15 +27,29 @@ export async function GET(request: NextRequest) {
     
     const data = await response.json()
     
-    return NextResponse.json(data)
+    // CORS 헤더 추가
+    const headers = new Headers({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    })
+    
+    return NextResponse.json(data, { headers })
   } catch (error) {
     console.error('Binance depth API error:', error)
     
-    // 에러 시 빈 오더북 반환
+    // CORS 헤더 추가
+    const headers = new Headers({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    })
+    
+    // 에러 시 빈 오더북 반환 (200 상태로)
     return NextResponse.json({ 
       bids: [],
       asks: [],
-      lastUpdateId: 0
-    })
+      lastUpdateId: Date.now()
+    }, { status: 200, headers })
   }
 }

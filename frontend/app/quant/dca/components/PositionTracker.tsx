@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaCrosshairs, FaCoins, FaDollarSign, FaPercent, FaCalendarAlt } from 'react-icons/fa'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 
@@ -202,7 +203,7 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
             <p className="text-xs sm:text-sm text-gray-400">보유 수량</p>
           </div>
           <p className="text-lg sm:text-2xl font-bold text-white">
-            {metrics.totalCoins.toFixed(6)}
+            {safeFixed(metrics.totalCoins, 6)}
           </p>
           <p className="text-xs text-gray-400 mt-1">
             {selectedCoin.symbol}
@@ -215,7 +216,7 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
             <p className="text-xs sm:text-sm text-gray-400">평균 매수가</p>
           </div>
           <p className="text-lg sm:text-2xl font-bold text-white">
-            ${metrics.avgBuyPrice.toFixed(2)}
+            ${safeFixed(metrics.avgBuyPrice, 2)}
           </p>
           <p className={`text-xs mt-1 ${
             currentPrice > metrics.avgBuyPrice ? 'text-green-400' : 'text-red-400'
@@ -232,12 +233,12 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
           <p className={`text-lg sm:text-2xl font-bold ${
             metrics.profitLossPercent >= 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            {metrics.profitLossPercent >= 0 ? '+' : ''}{metrics.profitLossPercent.toFixed(2)}%
+            {metrics.profitLossPercent >= 0 ? '+' : ''}{safeFixed(metrics.profitLossPercent, 2)}%
           </p>
           <p className={`text-xs mt-1 ${
             metrics.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            ${metrics.profitLoss.toFixed(2)}
+            ${safeFixed(metrics.profitLoss, 2)}
           </p>
         </div>
       </div>
@@ -269,7 +270,7 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
                       border: '1px solid #374151',
                       borderRadius: '8px'
                     }}
-                    formatter={(value: number) => `$${value.toFixed(2)}`}
+                    formatter={(value: number) => `$${safeFixed(value, 2)}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -310,7 +311,7 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
                   labelStyle={{ color: '#E5E7EB' }}
                   formatter={(value: number, name: string) => {
                     if (name === 'count') return `${value}회`
-                    if (name === 'totalAmount') return `$${value.toFixed(2)}`
+                    if (name === 'totalAmount') return `$${safeFixed(value, 2)}`
                     return value
                   }}
                 />
@@ -346,11 +347,11 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
                   <tr key={index} className="text-xs sm:text-sm border-b border-gray-700/50">
                     <td className="py-3 text-gray-300">{position.date}</td>
                     <td className="py-3 text-white">${position.amount}</td>
-                    <td className="py-3 text-white">${position.price.toFixed(2)}</td>
-                    <td className="py-3 text-white">{position.coins.toFixed(6)}</td>
-                    <td className="py-3 text-purple-400">${position.value.toFixed(2)}</td>
+                    <td className="py-3 text-white">${safePrice(position.price, 2)}</td>
+                    <td className="py-3 text-white">{safeFixed(position.coins, 6)}</td>
+                    <td className="py-3 text-purple-400">${safeFixed(position.value, 2)}</td>
                     <td className={`py-3 ${profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)}%
+                      {profitLoss >= 0 ? '+' : ''}{safeFixed(profitLoss, 2)}%
                     </td>
                   </tr>
                 )
@@ -383,7 +384,7 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
             <ul className="space-y-1 text-xs sm:text-sm text-gray-300">
               <li>• 최고 매수가: ${Math.max(...positions.map(p => p.price)).toFixed(2)}</li>
               <li>• 최저 매수가: ${Math.min(...positions.map(p => p.price)).toFixed(2)}</li>
-              <li>• 손익분기점: ${metrics.avgBuyPrice.toFixed(2)}</li>
+              <li>• 손익분기점: ${safeFixed(metrics.avgBuyPrice, 2)}</li>
               <li>• 목표 수익률 도달: {metrics.profitLossPercent >= settings.takeProfit ? '달성' : `${(settings.takeProfit - metrics.profitLossPercent).toFixed(1)}% 남음`}</li>
             </ul>
           </div>

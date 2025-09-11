@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaChartLine, FaExclamationTriangle, FaBullseye, FaCoins, FaBell, FaRocket } from 'react-icons/fa'
 import dynamic from 'next/dynamic'

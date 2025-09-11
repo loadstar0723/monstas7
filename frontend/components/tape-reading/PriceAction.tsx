@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface PriceActionProps {
@@ -69,15 +70,15 @@ export default function PriceAction({ symbol, currentPrice }: PriceActionProps) 
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-red-900/30 rounded-lg p-2">
             <p className="text-red-400 text-xs mb-1">저항선</p>
-            <p className="text-white font-bold">${resistance.toFixed(2)}</p>
+            <p className="text-white font-bold">${safeFixed(resistance, 2)}</p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">현재가</p>
-            <p className="text-white font-bold">${currentPrice.toFixed(2)}</p>
+            <p className="text-white font-bold">${safePrice(currentPrice, 2)}</p>
           </div>
           <div className="bg-green-900/30 rounded-lg p-2">
             <p className="text-green-400 text-xs mb-1">지지선</p>
-            <p className="text-white font-bold">${support.toFixed(2)}</p>
+            <p className="text-white font-bold">${safeFixed(support, 2)}</p>
           </div>
         </div>
         

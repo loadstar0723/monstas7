@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderBookVisualizerProps {
   orderbook: any
@@ -56,7 +57,7 @@ export default function OrderBookVisualizer({ orderbook, currentPrice }: OrderBo
           <div className="bg-gray-800 rounded-lg px-3 py-1">
             <span className="text-gray-400 text-sm">스프레드: </span>
             <span className="text-yellow-400 font-semibold">
-              ${spread.toFixed(2)} ({spreadPercent.toFixed(4)}%)
+              ${safeFixed(spread, 2)} ({safeFixed(spreadPercent, 4)}%)
             </span>
           </div>
           <div className="bg-gray-800 rounded-lg px-3 py-1">
@@ -88,10 +89,10 @@ export default function OrderBookVisualizer({ orderbook, currentPrice }: OrderBo
                 />
                 <div className="relative grid grid-cols-3 text-sm py-1 px-1">
                   <span className="text-green-400 font-mono">
-                    ${bid.price.toFixed(2)}
+                    ${safePrice(bid.price, 2)}
                   </span>
                   <span className="text-gray-300 text-right font-mono">
-                    {bid.amount.toFixed(4)}
+                    {safeAmount(bid.amount)}
                   </span>
                   <span className="text-gray-400 text-right font-mono">
                     ${(bid.total / 1000).toFixed(1)}K
@@ -121,10 +122,10 @@ export default function OrderBookVisualizer({ orderbook, currentPrice }: OrderBo
                 />
                 <div className="relative grid grid-cols-3 text-sm py-1 px-1">
                   <span className="text-red-400 font-mono">
-                    ${ask.price.toFixed(2)}
+                    ${safePrice(ask.price, 2)}
                   </span>
                   <span className="text-gray-300 text-right font-mono">
-                    {ask.amount.toFixed(4)}
+                    {safeAmount(ask.amount)}
                   </span>
                   <span className="text-gray-400 text-right font-mono">
                     ${(ask.total / 1000).toFixed(1)}K

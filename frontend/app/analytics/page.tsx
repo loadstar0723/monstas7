@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 import { config } from '@/lib/config'
@@ -141,7 +142,7 @@ export default function AnalyticsPage() {
               {sentiment.text}
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              {marketAnalysis.sentiment.toFixed(1)}/100
+              {safeFixed(marketAnalysis.sentiment, 1)}/100
             </div>
           </motion.div>
 
@@ -151,7 +152,7 @@ export default function AnalyticsPage() {
           >
             <div className="text-sm text-gray-400 mb-2">공포/탐욕 지수</div>
             <div className="text-2xl font-bold text-yellow-500">
-              {marketAnalysis.fearGreedIndex.toFixed(0)}
+              {safeFixed(marketAnalysis.fearGreedIndex, 0)}
             </div>
             <div className="text-sm text-gray-500 mt-1">
               {marketAnalysis.fearGreedIndex >= 50 ? '탐욕' : '공포'}
@@ -177,7 +178,7 @@ export default function AnalyticsPage() {
           >
             <div className="text-sm text-gray-400 mb-2">BTC 지배력</div>
             <div className="text-2xl font-bold text-blue-500">
-              {marketAnalysis.dominance.toFixed(1)}%
+              {safeFixed(marketAnalysis.dominance, 1)}%
             </div>
             <div className="text-sm text-gray-500 mt-1">
               시장 점유율
@@ -215,7 +216,7 @@ export default function AnalyticsPage() {
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
                 <Tooltip 
-                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                  formatter={(value: number) => `$${safeFixed(value, 2)}`}
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                 />
                 <Line 
@@ -239,7 +240,7 @@ export default function AnalyticsPage() {
             <div className="mt-4 flex justify-between text-sm">
               <span className="text-gray-400">예측 신뢰도</span>
               <span className="text-purple-500 font-medium">
-                {predictions[0]?.confidence.toFixed(1)}%
+                {predictions[0]?.safeFixed(confidence, 1)}%
               </span>
             </div>
           </div>
@@ -284,7 +285,7 @@ export default function AnalyticsPage() {
               >
                 <div className="text-sm text-gray-400 mb-2">{indicator.name}</div>
                 <div className="text-2xl font-bold mb-2">
-                  {indicator.value.toFixed(1)}
+                  {safeFixed(indicator.value, 1)}
                 </div>
                 <div className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${
                   indicator.signal === 'buy' 
@@ -342,7 +343,7 @@ export default function AnalyticsPage() {
               <span className="text-2xl">💡</span>
               <div>
                 <p className="text-gray-300">
-                  AI 모델의 7일 가격 예측 신뢰도는 <span className="text-purple-500">{predictions[0]?.confidence.toFixed(1)}%</span>이며,
+                  AI 모델의 7일 가격 예측 신뢰도는 <span className="text-purple-500">{predictions[0]?.safeFixed(confidence, 1)}%</span>이며,
                   단기 투자보다는 중장기 관점의 접근을 권장합니다.
                 </p>
               </div>

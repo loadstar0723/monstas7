@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaFire } from 'react-icons/fa'
 import { FiTrendingUp } from 'react-icons/fi'
 import WebSocketManager from '@/lib/websocketManager'
@@ -196,7 +197,7 @@ export default function CoinSelector({ selectedCoin, onSelectCoin }: CoinSelecto
                   <FiTrendingUp className={`mr-1 ${
                     coin.priceChange < 0 ? 'rotate-180' : ''
                   }`} />
-                  {coin.priceChange > 0 ? '+' : ''}{coin.priceChange.toFixed(2)}%
+                  {coin.priceChange > 0 ? '+' : ''}{safePrice(coin.priceChange, 2)}%
                 </div>
               )}
             </div>

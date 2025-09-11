@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaCog, FaCalculator, FaBrain, FaChartLine, FaDollarSign, FaExclamationTriangle } from 'react-icons/fa'
 import { binanceAPI, BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -188,7 +189,7 @@ export default function GridSetupTool({ selectedCoin }: Props) {
       gridCount,
       investment: recommendedInvestment,
       leverage: 1,
-      reason: `${selectedCoin.name}의 24시간 변동성 ${volatility.toFixed(1)}%와 ${
+      reason: `${selectedCoin.name}의 24시간 변동성 ${safeFixed(volatility, 1)}%와 ${
         trend === 'up' ? '상승' : trend === 'down' ? '하락' : '횡보'
       } 추세를 고려한 최적 설정`
     }
@@ -263,7 +264,7 @@ export default function GridSetupTool({ selectedCoin }: Props) {
           <div>
             <p className="text-sm text-gray-400">변동성</p>
             <p className="text-xl font-bold text-yellow-400">
-              {marketStats.volatility.toFixed(1)}%
+              {safeFixed(marketStats.volatility, 1)}%
             </p>
           </div>
           <div>
@@ -427,17 +428,17 @@ export default function GridSetupTool({ selectedCoin }: Props) {
             <div className="bg-gray-900 rounded-lg p-4">
               <p className="text-sm text-gray-400 mb-2">그리드 간격</p>
               <p className="text-2xl font-bold text-white">
-                ${gridCalculation.gridInterval.toFixed(2)}
+                ${safeFixed(gridCalculation.gridInterval, 2)}
               </p>
               <p className="text-xs text-gray-500">
-                ({gridCalculation.gridProfit.toFixed(2)}%)
+                ({safeFixed(gridCalculation.gridProfit, 2)}%)
               </p>
             </div>
             
             <div className="bg-gray-900 rounded-lg p-4">
               <p className="text-sm text-gray-400 mb-2">그리드당 투자금</p>
               <p className="text-2xl font-bold text-white">
-                ${gridCalculation.perGridInvestment.toFixed(2)}
+                ${safeFixed(gridCalculation.perGridInvestment, 2)}
               </p>
               <p className="text-xs text-gray-500">
                 총 {gridCalculation.totalGrids}개 그리드

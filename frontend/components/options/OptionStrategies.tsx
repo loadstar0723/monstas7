@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { Calculator, TrendingUp, TrendingDown, Shield, Zap } from 'lucide-react'
 
 interface Strategy {
@@ -268,10 +269,10 @@ export default function OptionStrategies({ coin, spotPrice }: Props) {
             return (
               <div key={percent} className="flex items-center justify-between p-2 rounded bg-gray-700">
                 <span className="text-sm">
-                  {percent > 0 ? '+' : ''}{percent}% (${futurePrice.toFixed(2)})
+                  {percent > 0 ? '+' : ''}{percent}% (${safeFixed(futurePrice, 2)})
                 </span>
                 <span className={`font-semibold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  ${pnl.toFixed(2)} ({pnlPercent > 0 ? '+' : ''}{pnlPercent.toFixed(1)}%)
+                  ${safeFixed(pnl, 2)} ({pnlPercent > 0 ? '+' : ''}{safeFixed(pnlPercent, 1)}%)
                 </span>
               </div>
             )

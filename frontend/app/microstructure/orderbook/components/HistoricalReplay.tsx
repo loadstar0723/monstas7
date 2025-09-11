@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaHistory, FaPlay, FaPause, FaStepForward, FaStepBackward, FaRedo } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderbookSnapshot {
   timestamp: number
@@ -185,11 +186,11 @@ export default function HistoricalReplay({ historicalData, symbol }: HistoricalR
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-gray-700/50 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">현재 가격</div>
-            <div className="text-white font-bold">${currentSnapshot.price.toFixed(2)}</div>
+            <div className="text-white font-bold">${safePrice(currentSnapshot.price, 2)}</div>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">스프레드</div>
-            <div className="text-yellow-400 font-bold">${currentSnapshot.spread.toFixed(2)}</div>
+            <div className="text-yellow-400 font-bold">${safeFixed(currentSnapshot.spread, 2)}</div>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">임밸런스</div>
@@ -199,7 +200,7 @@ export default function HistoricalReplay({ historicalData, symbol }: HistoricalR
           </div>
           <div className="bg-gray-700/50 rounded-lg p-3">
             <div className="text-gray-400 text-xs mb-1">깊이 비율</div>
-            <div className="text-purple-400 font-bold">{currentSnapshot.depthRatio.toFixed(2)}</div>
+            <div className="text-purple-400 font-bold">{safeFixed(currentSnapshot.depthRatio, 2)}</div>
           </div>
         </div>
       )}

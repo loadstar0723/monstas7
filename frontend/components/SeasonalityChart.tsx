@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from 'recharts'
 import { config } from '@/lib/config'
@@ -171,7 +172,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
                 className="text-sm font-bold"
                 style={{ color: year.value > 0 ? '#10B981' : '#EF4444' }}
               >
-                {year.value > 0 ? '+' : ''}{year.value.toFixed(2)}%
+                {year.value > 0 ? '+' : ''}{safeFixed(year.value, 2)}%
               </div>
             </div>
           ))}
@@ -267,7 +268,7 @@ export default function SeasonalityChart({ symbol = 'BTCUSDT' }: SeasonalityChar
                     <span className="text-gray-300">{year.year}</span>
                   </div>
                   <div className="text-2xl font-bold" style={{ color: year.value > 0 ? '#10B981' : '#EF4444' }}>
-                    {year.value > 0 ? '+' : ''}{year.value.toFixed(2)}%
+                    {year.value > 0 ? '+' : ''}{safeFixed(year.value, 2)}%
                   </div>
                 </div>
               ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaBrain, FaChartLine, FaRobot, FaSignal } from 'react-icons/fa'
 import { config } from '@/lib/config'
@@ -137,14 +138,14 @@ export default function MarketAnalysis() {
           >
             <p className="text-xs text-gray-400 mb-1">{indicator.name}</p>
             <p className="text-lg font-bold text-white mb-1">
-              {indicator.value.toFixed(2)}
+              {safeFixed(indicator.value, 2)}
             </p>
             <div className="flex items-center justify-between">
               <span className={`text-xs font-bold ${getSignalColor(indicator.signal)}`}>
                 {getSignalText(indicator.signal)}
               </span>
               <span className="text-xs text-gray-500">
-                {indicator.confidence.toFixed(0)}%
+                {safeFixed(indicator.confidence, 0)}%
               </span>
             </div>
           </motion.div>
@@ -155,7 +156,7 @@ export default function MarketAnalysis() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-400">시장 심리 지수</span>
-          <span className="text-sm font-bold text-white">{marketSentiment.toFixed(1)}</span>
+          <span className="text-sm font-bold text-white">{safeFixed(marketSentiment, 1)}</span>
         </div>
         <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
           <motion.div

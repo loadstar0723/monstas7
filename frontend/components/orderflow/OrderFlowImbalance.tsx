@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
 
 interface OrderFlowImbalanceProps {
@@ -90,15 +91,15 @@ export default function OrderFlowImbalance({ symbol }: OrderFlowImbalanceProps) 
 
   // 가격 포맷
   const formatPrice = (price: number) => {
-    if (price > 10000) return price.toFixed(0)
-    if (price > 100) return price.toFixed(2)
-    return price.toFixed(4)
+    if (price > 10000) return safePrice(price, 0)
+    if (price > 100) return safePrice(price, 2)
+    return safePrice(price, 4)
   }
 
   // 물량 포맷
   const formatAmount = (amount: number) => {
     if (amount > 1000) return (amount / 1000).toFixed(2) + 'K'
-    return amount.toFixed(3)
+    return safeAmount(amount)
   }
 
   if (isLoading) {
@@ -147,7 +148,7 @@ export default function OrderFlowImbalance({ symbol }: OrderFlowImbalanceProps) 
           
           {/* 수치 표시 */}
           <div className="absolute inset-0 flex items-center justify-center z-20">
-            <span className="text-white font-bold text-lg">{orderbookData.imbalance.toFixed(1)}%</span>
+            <span className="text-white font-bold text-lg">{safeFixed(orderbookData.imbalance, 1)}%</span>
           </div>
         </div>
         

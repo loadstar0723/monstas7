@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { 
   FaChartLine, FaHistory, FaCog, FaPlay, FaDownload,
@@ -184,7 +185,7 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
                 <span className="text-gray-400 text-sm">총 수익률</span>
               </div>
               <div className="text-2xl font-bold text-green-400">
-                {results.totalReturn > 0 ? '+' : ''}{results.totalReturn.toFixed(2)}%
+                {results.totalReturn > 0 ? '+' : ''}{safeFixed(results.totalReturn, 2)}%
               </div>
             </div>
             
@@ -194,7 +195,7 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
                 <span className="text-gray-400 text-sm">샤프 비율</span>
               </div>
               <div className="text-2xl font-bold text-blue-400">
-                {results.sharpeRatio.toFixed(2)}
+                {safeFixed(results.sharpeRatio, 2)}
               </div>
             </div>
             
@@ -204,7 +205,7 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
                 <span className="text-gray-400 text-sm">최대 낙폭</span>
               </div>
               <div className="text-2xl font-bold text-red-400">
-                {results.maxDrawdown.toFixed(2)}%
+                {safeFixed(results.maxDrawdown, 2)}%
               </div>
             </div>
             
@@ -214,7 +215,7 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
                 <span className="text-gray-400 text-sm">승률</span>
               </div>
               <div className="text-2xl font-bold text-purple-400">
-                {results.winRate.toFixed(1)}%
+                {safeFixed(results.winRate, 1)}%
               </div>
             </div>
           </div>
@@ -317,20 +318,20 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
                         </span>
                       </td>
                       <td className="py-2 text-right text-gray-300">
-                        ${trade.price.toFixed(2)}
+                        ${safePrice(trade.price, 2)}
                       </td>
                       <td className="py-2 text-right text-gray-300">
-                        {trade.quantity.toFixed(4)}
+                        {safeAmount(trade.quantity)}
                       </td>
                       <td className={`py-2 text-right ${
                         trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
+                        {trade.pnl >= 0 ? '+' : ''}{safeFixed(trade.pnl, 2)}
                       </td>
                       <td className={`py-2 text-right ${
                         trade.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {trade.pnlPercent >= 0 ? '+' : ''}{trade.pnlPercent.toFixed(2)}%
+                        {trade.pnlPercent >= 0 ? '+' : ''}{safeFixed(trade.pnlPercent, 2)}%
                       </td>
                     </tr>
                   ))}
@@ -353,27 +354,27 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
               </div>
               <div>
                 <span className="text-gray-400 text-sm">평균 수익</span>
-                <p className="text-green-400 text-lg font-semibold">+{results.avgWin.toFixed(2)}%</p>
+                <p className="text-green-400 text-lg font-semibold">+{safeFixed(results.avgWin, 2)}%</p>
               </div>
               <div>
                 <span className="text-gray-400 text-sm">평균 손실</span>
-                <p className="text-red-400 text-lg font-semibold">{results.avgLoss.toFixed(2)}%</p>
+                <p className="text-red-400 text-lg font-semibold">{safeFixed(results.avgLoss, 2)}%</p>
               </div>
               <div>
                 <span className="text-gray-400 text-sm">수익 팩터</span>
-                <p className="text-purple-400 text-lg font-semibold">{results.profitFactor.toFixed(2)}</p>
+                <p className="text-purple-400 text-lg font-semibold">{safeFixed(results.profitFactor, 2)}</p>
               </div>
               <div>
                 <span className="text-gray-400 text-sm">승률</span>
-                <p className="text-blue-400 text-lg font-semibold">{results.winRate.toFixed(1)}%</p>
+                <p className="text-blue-400 text-lg font-semibold">{safeFixed(results.winRate, 1)}%</p>
               </div>
               <div>
                 <span className="text-gray-400 text-sm">샤프 비율</span>
-                <p className="text-yellow-400 text-lg font-semibold">{results.sharpeRatio.toFixed(2)}</p>
+                <p className="text-yellow-400 text-lg font-semibold">{safeFixed(results.sharpeRatio, 2)}</p>
               </div>
               <div>
                 <span className="text-gray-400 text-sm">최대 낙폭</span>
-                <p className="text-red-400 text-lg font-semibold">{results.maxDrawdown.toFixed(2)}%</p>
+                <p className="text-red-400 text-lg font-semibold">{safeFixed(results.maxDrawdown, 2)}%</p>
               </div>
             </div>
           </div>

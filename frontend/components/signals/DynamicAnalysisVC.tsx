@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface VCAnalysisProps {
   data: any
@@ -119,7 +120,7 @@ export function getVCAnalysis(data: any, symbol: string = 'BTC', currentPrice: n
     title: `💼 ${selectedSymbol} VC/헤지펀드 실시간 분석`,
     mainInsight: `${selectedSymbol} VC 센티먼트: ${vcSentimentScore}/100 - ${investmentPhase} 단계\n` +
       `실시간: ${vcTransactions.length}건 대규모 거래 포착, ${(vcBuyRatio * 100).toFixed(0)}% 매수\n` +
-      `현재가: $${currentPrice.toLocaleString()} (${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%)\n` +
+      `현재가: $${currentPrice.toLocaleString()} (${priceChange >= 0 ? '+' : ''}${safePrice(priceChange, 2)}%)\n` +
       `VC 거래량: $${(totalVCVolume/1000000).toFixed(1)}M (${activityLevel})`,
     
     keyPoints: [

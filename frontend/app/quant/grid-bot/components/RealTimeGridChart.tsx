@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaChartLine, FaExpand, FaCompress, FaClock } from 'react-icons/fa'
 import { binanceAPI, BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -264,13 +265,13 @@ export default function RealTimeGridChart({ selectedCoin }: Props) {
           <div>
             <p className="text-gray-400">상한가</p>
             <p className="text-white font-medium">
-              ${gridLines.length > 0 ? gridLines[gridLines.length - 1].price.toFixed(2) : '0'}
+              ${gridLines.length > 0 ? gridLines[gridLines.length - 1].safePrice(price, 2) : '0'}
             </p>
           </div>
           <div>
             <p className="text-gray-400">하한가</p>
             <p className="text-white font-medium">
-              ${gridLines.length > 0 ? gridLines[0].price.toFixed(2) : '0'}
+              ${gridLines.length > 0 ? gridLines[0].safePrice(price, 2) : '0'}
             </p>
           </div>
           <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBullseye, FaShieldAlt, FaTrophy } from 'react-icons/fa'
 
 interface TradingSignalsProps {
@@ -146,11 +147,11 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-900/50 rounded p-2">
               <p className="text-gray-400 text-xs mb-1">진입가</p>
-              <p className="text-white font-medium">${signal.entry.toFixed(2)}</p>
+              <p className="text-white font-medium">${safeFixed(signal.entry, 2)}</p>
             </div>
             <div className="bg-red-900/50 rounded p-2">
               <p className="text-gray-400 text-xs mb-1">손절가</p>
-              <p className="text-red-400 font-medium">${signal.stopLoss.toFixed(2)}</p>
+              <p className="text-red-400 font-medium">${safeFixed(signal.stopLoss, 2)}</p>
             </div>
           </div>
         </div>
@@ -162,15 +163,15 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">TP1</span>
-              <span className="text-green-400 font-medium">${signal.target1.toFixed(2)}</span>
+              <span className="text-green-400 font-medium">${safeFixed(signal.target1, 2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">TP2</span>
-              <span className="text-green-400 font-medium">${signal.target2.toFixed(2)}</span>
+              <span className="text-green-400 font-medium">${safeFixed(signal.target2, 2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">TP3</span>
-              <span className="text-green-400 font-medium">${signal.target3.toFixed(2)}</span>
+              <span className="text-green-400 font-medium">${safeFixed(signal.target3, 2)}</span>
             </div>
           </div>
         </div>
@@ -181,7 +182,7 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
               <FaTrophy className="text-purple-400 text-sm" />
               <p className="text-purple-400 text-xs">R:R 비율</p>
             </div>
-            <p className="text-white font-bold">1:{signal.riskReward.toFixed(1)}</p>
+            <p className="text-white font-bold">1:{safeFixed(signal.riskReward, 1)}</p>
           </div>
           <div className="bg-blue-900/30 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">

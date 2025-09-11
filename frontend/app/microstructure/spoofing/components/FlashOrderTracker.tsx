@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBolt, FaClock, FaHistory, FaExclamationCircle } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -232,7 +233,7 @@ export default function FlashOrderTracker({ orderbook, symbol, settings }: Flash
                         ${flash.price.toLocaleString()}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {flash.amount.toFixed(4)}
+                        {safeAmount(flash.amount)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

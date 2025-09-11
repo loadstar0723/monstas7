@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { MomentumData } from '../MomentumModule'
 
 interface LivePerformanceProps {
@@ -93,30 +94,30 @@ export default function LivePerformance({ symbol, momentumData }: LivePerformanc
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">오늘 수익</p>
           <p className={`text-2xl font-bold ${performance.todayPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.todayPnL >= 0 ? '+' : ''}${performance.todayPnL.toFixed(2)}
+            {performance.todayPnL >= 0 ? '+' : ''}${safeFixed(performance.todayPnL, 2)}
           </p>
           <p className={`text-sm ${performance.todayPnLPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.todayPnLPercent >= 0 ? '+' : ''}{performance.todayPnLPercent.toFixed(2)}%
+            {performance.todayPnLPercent >= 0 ? '+' : ''}{safeFixed(performance.todayPnLPercent, 2)}%
           </p>
         </div>
 
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">주간 수익</p>
           <p className={`text-2xl font-bold ${performance.weekPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.weekPnL >= 0 ? '+' : ''}${performance.weekPnL.toFixed(2)}
+            {performance.weekPnL >= 0 ? '+' : ''}${safeFixed(performance.weekPnL, 2)}
           </p>
           <p className={`text-sm ${performance.weekPnLPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.weekPnLPercent >= 0 ? '+' : ''}{performance.weekPnLPercent.toFixed(2)}%
+            {performance.weekPnLPercent >= 0 ? '+' : ''}{safeFixed(performance.weekPnLPercent, 2)}%
           </p>
         </div>
 
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">월간 수익</p>
           <p className={`text-2xl font-bold ${performance.monthPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.monthPnL >= 0 ? '+' : ''}${performance.monthPnL.toFixed(2)}
+            {performance.monthPnL >= 0 ? '+' : ''}${safeFixed(performance.monthPnL, 2)}
           </p>
           <p className={`text-sm ${performance.monthPnLPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {performance.monthPnLPercent >= 0 ? '+' : ''}{performance.monthPnLPercent.toFixed(2)}%
+            {performance.monthPnLPercent >= 0 ? '+' : ''}{safeFixed(performance.monthPnLPercent, 2)}%
           </p>
         </div>
       </div>
@@ -133,7 +134,7 @@ export default function LivePerformance({ symbol, momentumData }: LivePerformanc
         </div>
         <div className="bg-purple-900/20 rounded-lg p-3 text-center border border-purple-800/30">
           <p className="text-xs text-purple-400 mb-1">성공률</p>
-          <p className="text-xl font-bold text-white">{performance.successRate.toFixed(1)}%</p>
+          <p className="text-xl font-bold text-white">{safeFixed(performance.successRate, 1)}%</p>
         </div>
       </div>
 
@@ -157,7 +158,7 @@ export default function LivePerformance({ symbol, momentumData }: LivePerformanc
               <div className="text-right">
                 <p className="text-sm text-gray-300">${trade.price.toLocaleString()}</p>
                 <p className={`text-sm font-medium ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
+                  {trade.pnl >= 0 ? '+' : ''}${safeFixed(trade.pnl, 2)}
                 </p>
               </div>
             </div>

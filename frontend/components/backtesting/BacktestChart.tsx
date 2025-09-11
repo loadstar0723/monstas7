@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -125,7 +126,7 @@ export default function BacktestChart({ data, coin, strategy }: BacktestChartPro
               {entry.name}: {
                 entry.name.includes('량') || entry.name.includes('Volume')
                   ? entry.value.toLocaleString()
-                  : entry.value.toFixed(2)
+                  : safeFixed(entry.value, 2)
               }
             </p>
           ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaHistory, FaChartBar, FaTrophy, FaExclamationTriangle } from 'react-icons/fa'
 import { MdTrendingUp, MdTrendingDown } from 'react-icons/md'
@@ -152,7 +153,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">승률</span>
           </div>
           <div className={`text-2xl font-bold ${getWinRateColor(stats.winRate)}`}>
-            {stats.winRate.toFixed(1)}%
+            {safeFixed(stats.winRate, 1)}%
           </div>
           <div className="text-xs text-gray-500">
             {stats.totalTrades}회 중 {Math.round(stats.totalTrades * stats.winRate / 100)}승
@@ -170,7 +171,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">평균 수익</span>
           </div>
           <div className={`text-2xl font-bold ${stats.avgProfit > 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {stats.avgProfit > 0 ? '+' : ''}{stats.avgProfit.toFixed(2)}%
+            {stats.avgProfit > 0 ? '+' : ''}{safeFixed(stats.avgProfit, 2)}%
           </div>
           <div className="text-xs text-gray-500">
             거래당 평균
@@ -188,7 +189,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">Profit Factor</span>
           </div>
           <div className={`text-2xl font-bold ${getProfitFactorColor(stats.profitFactor)}`}>
-            {stats.profitFactor.toFixed(2)}
+            {safeFixed(stats.profitFactor, 2)}
           </div>
           <div className="text-xs text-gray-500">
             총이익/총손실
@@ -206,7 +207,7 @@ export default function BacktestResults({
             <span className="text-xs text-gray-400">최대 손실</span>
           </div>
           <div className="text-2xl font-bold text-orange-400">
-            {stats.maxDrawdown.toFixed(2)}%
+            {safeFixed(stats.maxDrawdown, 2)}%
           </div>
           <div className="text-xs text-gray-500">
             MDD
@@ -220,7 +221,7 @@ export default function BacktestResults({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">최대 수익</span>
-            <span className="text-sm font-bold text-green-400">+{stats.maxProfit.toFixed(2)}%</span>
+            <span className="text-sm font-bold text-green-400">+{safeFixed(stats.maxProfit, 2)}%</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">최대 손실</span>
@@ -232,7 +233,7 @@ export default function BacktestResults({
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">Sharpe Ratio</span>
-            <span className="text-sm font-bold text-purple-400">{stats.sharpeRatio.toFixed(2)}</span>
+            <span className="text-sm font-bold text-purple-400">{safeFixed(stats.sharpeRatio, 2)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">연속 승리</span>
@@ -272,7 +273,7 @@ export default function BacktestResults({
               </div>
               <div className="text-right">
                 <div className={`text-sm font-bold ${trade.result === 'win' ? 'text-green-400' : 'text-red-400'}`}>
-                  {trade.profit > 0 ? '+' : ''}{trade.profit.toFixed(2)}%
+                  {trade.profit > 0 ? '+' : ''}{safeFixed(trade.profit, 2)}%
                 </div>
                 <div className="text-xs text-gray-500">{trade.duration}</div>
               </div>

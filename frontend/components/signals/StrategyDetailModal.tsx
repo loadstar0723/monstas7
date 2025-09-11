@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaTimes, FaChartLine, FaExclamationTriangle, FaCheckCircle, FaClock, FaRocket } from 'react-icons/fa'
 import { MdTrendingUp, MdTimeline } from 'react-icons/md'
 import { config } from '@/lib/config'

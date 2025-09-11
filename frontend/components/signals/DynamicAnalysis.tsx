@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { 
   FaLightbulb, FaChartLine, FaExclamationTriangle, 
@@ -116,7 +117,7 @@ export default function DynamicAnalysis({
         {
           icon: 'spread',
           label: '평균 스프레드',
-          value: `$${avgSpread.toFixed(2)}`,
+          value: `$${safeFixed(avgSpread, 2)}`,
           color: avgSpread < 10 ? 'green' : avgSpread > 50 ? 'red' : 'yellow'
         },
         {
@@ -440,7 +441,7 @@ export default function DynamicAnalysis({
         {
           icon: 'priceRange',
           label: '매집 가격대',
-          value: `$${priceRange.min.toFixed(0)}-${priceRange.max.toFixed(0)}`,
+          value: `$${safePrice(priceRange.min, 0)}-${safePrice(priceRange.max, 0)}`,
           color: 'blue'
         },
         {
@@ -463,7 +464,7 @@ export default function DynamicAnalysis({
         ratio > 0.7 ? '🔥 매집 구간 근처에서 적극 진입' : ratio > 0.55 ? '✅ 분할 매수로 신중한 진입' : '⏳ 추가 매집 신호 대기',
         accumulationVolume > 10000000 ? '💎 대규모 매집 진행 중 - 중장기 보유 전략' : '📊 거래량 증가 모니터링',
         uniqueInstitutions.length > 10 ? '🏦 다수 기관 참여 - 강한 상승 모멘텀' : '🔍 추가 기관 진입 관찰',
-        `📍 주요 지지선: $${priceRange.min.toFixed(0)} / 저항선: $${priceRange.max.toFixed(0)}`,
+        `📍 주요 지지선: $${safePrice(priceRange.min, 0)} / 저항선: $${safePrice(priceRange.max, 0)}`,
         strength === 'strong' ? '🚀 매집 완료 단계 - 상승 전환 임박' : '⚠️ 매집 진행 중 - 변동성 주의'
       ]
     }
@@ -673,7 +674,7 @@ export default function DynamicAnalysis({
         aiSignal === 'BUY' ? '매수' :
         aiSignal === 'HOLD' ? '중립/관망' :
         aiSignal === 'SELL' ? '매도' : '강력 매도'
-      } 신호입니다. 권장 포지션 크기는 자본의 ${kellyPercentage.toFixed(1)}%입니다.`,
+      } 신호입니다. 권장 포지션 크기는 자본의 ${safeFixed(kellyPercentage, 1)}%입니다.`,
       
       keyPoints: [
         {
@@ -695,31 +696,31 @@ export default function DynamicAnalysis({
         {
           icon: 'position',
           label: '권장 포지션',
-          value: `${kellyPercentage.toFixed(1)}%`,
+          value: `${safeFixed(kellyPercentage, 1)}%`,
           color: kellyPercentage > 15 ? 'purple' : kellyPercentage > 10 ? 'blue' : 'gray'
         },
         {
           icon: 'leverage',
           label: '안전 레버리지',
-          value: `${safeLeverage.toFixed(1)}x`,
+          value: `${safeFixed(safeLeverage, 1)}x`,
           color: safeLeverage > 2 ? 'yellow' : 'green'
         },
         {
           icon: 'entry',
           label: '진입가',
-          value: `$${entryPrice.toFixed(0)}`,
+          value: `$${safeFixed(entryPrice, 0)}`,
           color: 'blue'
         },
         {
           icon: 'stoploss',
           label: '손절가',
-          value: `$${stopLoss.toFixed(0)} (-${stopLossPercent}%)`,
+          value: `$${safeFixed(stopLoss, 0)} (-${stopLossPercent}%)`,
           color: 'red'
         },
         {
           icon: 'target',
           label: '목표가',
-          value: `$${target1.toFixed(0)}/${target2.toFixed(0)}/${target3.toFixed(0)}`,
+          value: `$${safeFixed(target1, 0)}/${safeFixed(target2, 0)}/${safeFixed(target3, 0)}`,
           color: 'green'
         },
         {
@@ -732,18 +733,18 @@ export default function DynamicAnalysis({
       
       interpretation: `📊 종합 분석: ${symbol.replace('USDT', '')}의 시장 점수는 ${marketScore}점입니다.\n\n` +
         `💰 자금 플로우: ${netFlow > 0 ? `순매수 $${(netFlow/1000000).toFixed(2)}M` : `순매도 $${(Math.abs(netFlow)/1000000).toFixed(2)}M`} (${accumulationFlows.length}건 매수 vs ${distributionFlows.length}건 매도)\n` +
-        `📈 가격 모멘텀: 24시간 ${priceChange24h > 0 ? '+' : ''}${priceChange24h.toFixed(2)}% 변동\n` +
+        `📈 가격 모멘텀: 24시간 ${priceChange24h > 0 ? '+' : ''}${safePrice(priceChange24h, 2)}% 변동\n` +
         `📊 오더북 상태: ${orderBookImbalance > 0 ? `매수 우세 (${(orderBookImbalance * 100).toFixed(1)}%)` : `매도 우세 (${(Math.abs(orderBookImbalance) * 100).toFixed(1)}%)`}\n` +
         `😱 시장 심리: Fear & Greed ${fearGreedIndex} (${fearGreedIndex > 70 ? '극도의 탐욕' : fearGreedIndex > 50 ? '탐욕' : fearGreedIndex > 30 ? '공포' : '극도의 공포'})\n\n` +
         `🎯 트레이딩 전략:\n` +
-        `• 진입: $${entryPrice.toFixed(0)} 근처에서 분할 매수\n` +
-        `• 손절: $${stopLoss.toFixed(0)} (${stopLossPercent}% 손실 제한)\n` +
-        `• 1차 목표: $${target1.toFixed(0)} (+${(stopLossPercent * 1.5).toFixed(1)}%)\n` +
-        `• 2차 목표: $${target2.toFixed(0)} (+${(stopLossPercent * 3).toFixed(1)}%)\n` +
-        `• 3차 목표: $${target3.toFixed(0)} (+${(stopLossPercent * 5).toFixed(1)}%)\n\n` +
+        `• 진입: $${safeFixed(entryPrice, 0)} 근처에서 분할 매수\n` +
+        `• 손절: $${safeFixed(stopLoss, 0)} (${stopLossPercent}% 손실 제한)\n` +
+        `• 1차 목표: $${safeFixed(target1, 0)} (+${(stopLossPercent * 1.5).toFixed(1)}%)\n` +
+        `• 2차 목표: $${safeFixed(target2, 0)} (+${(stopLossPercent * 3).toFixed(1)}%)\n` +
+        `• 3차 목표: $${safeFixed(target3, 0)} (+${(stopLossPercent * 5).toFixed(1)}%)\n\n` +
         `⚖️ 리스크 관리:\n` +
-        `• 권장 포지션: 전체 자본의 ${kellyPercentage.toFixed(1)}%\n` +
-        `• 최대 레버리지: ${safeLeverage.toFixed(1)}x\n` +
+        `• 권장 포지션: 전체 자본의 ${safeFixed(kellyPercentage, 1)}%\n` +
+        `• 최대 레버리지: ${safeFixed(safeLeverage, 1)}x\n` +
         `• 손익비: 1:${((stopLossPercent * 3) / stopLossPercent).toFixed(1)}\n` +
         `• 시간대: ${timeframeStrategy}`,
       
@@ -754,13 +755,13 @@ export default function DynamicAnalysis({
         marketScore > 30 ? '⚠️ 매수 자제 - 약세 신호' :
         '🚨 포지션 정리 - 강한 하락 위험',
         
-        `💰 포지션 크기: 자본의 ${kellyPercentage.toFixed(1)}% (최대 ${(kellyPercentage * 1.5).toFixed(1)}%)`,
+        `💰 포지션 크기: 자본의 ${safeFixed(kellyPercentage, 1)}% (최대 ${(kellyPercentage * 1.5).toFixed(1)}%)`,
         
         `📍 진입 전략: $${(entryPrice * 0.99).toFixed(0)}-${(entryPrice * 1.01).toFixed(0)} 구간에서 3분할 매수`,
         
-        `🛡️ 리스크 관리: 손절가 $${stopLoss.toFixed(0)} 엄격 준수 (${stopLossPercent}% 손실 제한)`,
+        `🛡️ 리스크 관리: 손절가 $${safeFixed(stopLoss, 0)} 엄격 준수 (${stopLossPercent}% 손실 제한)`,
         
-        `🎯 수익 실현: 1차 ${target1.toFixed(0)} (30% 매도) → 2차 ${target2.toFixed(0)} (40% 매도) → 3차 ${target3.toFixed(0)} (30% 매도)`,
+        `🎯 수익 실현: 1차 ${safeFixed(target1, 0)} (30% 매도) → 2차 ${safeFixed(target2, 0)} (40% 매도) → 3차 ${safeFixed(target3, 0)} (30% 매도)`,
         
         orderBookImbalance > 0.1 ? '📗 오더북 매수 우세 - 상승 지지' :
         orderBookImbalance < -0.1 ? '📕 오더북 매도 우세 - 하락 압력' :

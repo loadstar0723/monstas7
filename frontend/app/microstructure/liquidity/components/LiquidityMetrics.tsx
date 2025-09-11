@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   ArrowUpIcon, 
   ArrowDownIcon, 
@@ -142,8 +143,8 @@ export default function LiquidityMetrics({ orderbook, currentPrice, symbol }: Li
             <span className="text-gray-400 text-sm">Bid-Ask 스프레드</span>
             <ArrowUpIcon className="w-4 h-4 text-gray-500" />
           </div>
-          <p className="text-xl font-bold text-white">${metrics.spread.toFixed(2)}</p>
-          <p className="text-sm text-gray-400 mt-1">{metrics.spreadPercent.toFixed(4)}%</p>
+          <p className="text-xl font-bold text-white">${safeFixed(metrics.spread, 2)}</p>
+          <p className="text-sm text-gray-400 mt-1">{safeFixed(metrics.spreadPercent, 4)}%</p>
         </div>
         
         {/* 매수 슬리피지 */}
@@ -152,8 +153,8 @@ export default function LiquidityMetrics({ orderbook, currentPrice, symbol }: Li
             <span className="text-gray-400 text-sm">매수 슬리피지 (0.1 BTC)</span>
             <ArrowUpIcon className="w-4 h-4 text-green-400" />
           </div>
-          <p className="text-xl font-bold text-green-400">{metrics.buySlippage.slippage.toFixed(3)}%</p>
-          <p className="text-sm text-gray-400 mt-1">평균가: ${metrics.buySlippage.avgPrice.toFixed(2)}</p>
+          <p className="text-xl font-bold text-green-400">{safeFixed(metrics.buySlippage.slippage, 3)}%</p>
+          <p className="text-sm text-gray-400 mt-1">평균가: ${safeFixed(metrics.buySlippage.avgPrice, 2)}</p>
         </div>
         
         {/* 매도 슬리피지 */}
@@ -162,8 +163,8 @@ export default function LiquidityMetrics({ orderbook, currentPrice, symbol }: Li
             <span className="text-gray-400 text-sm">매도 슬리피지 (0.1 BTC)</span>
             <ArrowDownIcon className="w-4 h-4 text-red-400" />
           </div>
-          <p className="text-xl font-bold text-red-400">{metrics.sellSlippage.slippage.toFixed(3)}%</p>
-          <p className="text-sm text-gray-400 mt-1">평균가: ${metrics.sellSlippage.avgPrice.toFixed(2)}</p>
+          <p className="text-xl font-bold text-red-400">{safeFixed(metrics.sellSlippage.slippage, 3)}%</p>
+          <p className="text-sm text-gray-400 mt-1">평균가: ${safeFixed(metrics.sellSlippage.avgPrice, 2)}</p>
         </div>
         
         {/* 매수 깊이 */}
@@ -211,15 +212,15 @@ export default function LiquidityMetrics({ orderbook, currentPrice, symbol }: Li
           <div className="bg-gray-900/50 rounded-lg p-3">
             <p className="text-gray-400 text-sm mb-2">1 BTC 거래 시</p>
             <div className="flex justify-between">
-              <span className="text-green-400">매수: {metrics.impact1BTC.buy.toFixed(3)}%</span>
-              <span className="text-red-400">매도: {metrics.impact1BTC.sell.toFixed(3)}%</span>
+              <span className="text-green-400">매수: {safeFixed(metrics.impact1BTC.buy, 3)}%</span>
+              <span className="text-red-400">매도: {safeFixed(metrics.impact1BTC.sell, 3)}%</span>
             </div>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-3">
             <p className="text-gray-400 text-sm mb-2">10 BTC 거래 시</p>
             <div className="flex justify-between">
-              <span className="text-green-400">매수: {metrics.impact10BTC.buy.toFixed(3)}%</span>
-              <span className="text-red-400">매도: {metrics.impact10BTC.sell.toFixed(3)}%</span>
+              <span className="text-green-400">매수: {safeFixed(metrics.impact10BTC.buy, 3)}%</span>
+              <span className="text-red-400">매도: {safeFixed(metrics.impact10BTC.sell, 3)}%</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ErrorBoundary } from 'react-error-boundary'
 import dynamic from 'next/dynamic'
 
@@ -257,7 +258,7 @@ export default function TapeReadingModule() {
               <div className="bg-gray-900/50 rounded-lg p-3">
                 <p className="text-gray-400 text-sm mb-1">24시간 변동</p>
                 <p className={`text-2xl font-bold ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                  {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
                 </p>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-3">
@@ -267,7 +268,7 @@ export default function TapeReadingModule() {
                     ? `${(volume24h / 1000000).toFixed(2)}M`
                     : volume24h > 1000 
                     ? `${(volume24h / 1000).toFixed(2)}K`
-                    : volume24h.toFixed(2)}
+                    : safeFixed(volume24h, 2)}
                 </p>
               </div>
             </div>

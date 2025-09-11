@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 export default function ExecutionTab({ currentPrice, stats }: any) {
   const [checklist, setChecklist] = useState({

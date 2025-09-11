@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import type { BotConfig } from '../ArbitrageBotModule'
 
 interface StatisticalArbitrageProps {
@@ -203,7 +204,7 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
             indicators.rsi > 70 ? 'text-red-400' :
             'text-yellow-400'
           }`}>
-            {indicators.rsi.toFixed(1)}
+            {safeFixed(indicators.rsi, 1)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {indicators.rsi < 30 ? '과매도' :
@@ -219,7 +220,7 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
             Math.abs(indicators.zscore) > 1 ? 'text-yellow-400' :
             'text-green-400'
           }`}>
-            {indicators.zscore.toFixed(2)}
+            {safeFixed(indicators.zscore, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {Math.abs(indicators.zscore) > 2 ? '극단적' :
@@ -231,7 +232,7 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
         <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
           <div className="text-xs text-gray-400 mb-1">상관계수</div>
           <div className="text-2xl font-bold text-blue-400">
-            {indicators.correlation.toFixed(3)}
+            {safeFixed(indicators.correlation, 3)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             BTC 상관성
@@ -241,7 +242,7 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
         <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
           <div className="text-xs text-gray-400 mb-1">Sharpe Ratio</div>
           <div className="text-2xl font-bold text-purple-400">
-            {backtestResults.sharpeRatio.toFixed(2)}
+            {safeFixed(backtestResults.sharpeRatio, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             위험조정수익률
@@ -256,17 +257,17 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
         <div className="relative h-32 bg-gray-900/50 rounded-lg p-4">
           <div className="absolute inset-x-4 top-4 h-px bg-red-500/50" style={{top: '20%'}}>
             <span className="absolute -top-5 left-0 text-xs text-red-400">
-              Upper: ${indicators.bollingerUpper.toFixed(0)}
+              Upper: ${safeFixed(indicators.bollingerUpper, 0)}
             </span>
           </div>
           <div className="absolute inset-x-4 top-1/2 h-px bg-yellow-500/50">
             <span className="absolute -top-5 left-0 text-xs text-yellow-400">
-              Middle: ${indicators.bollingerMiddle.toFixed(0)}
+              Middle: ${safeFixed(indicators.bollingerMiddle, 0)}
             </span>
           </div>
           <div className="absolute inset-x-4 bottom-4 h-px bg-green-500/50" style={{bottom: '20%'}}>
             <span className="absolute -bottom-5 left-0 text-xs text-green-400">
-              Lower: ${indicators.bollingerLower.toFixed(0)}
+              Lower: ${safeFixed(indicators.bollingerLower, 0)}
             </span>
           </div>
           
@@ -328,31 +329,31 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
                       <div>
                         <span className="text-gray-500">진입가</span>
                         <div className="font-mono text-white">
-                          ${signal.price.toFixed(0)}
+                          ${safePrice(signal.price, 0)}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">목표가</span>
                         <div className="font-mono text-green-400">
-                          ${signal.targetPrice.toFixed(0)}
+                          ${safeFixed(signal.targetPrice, 0)}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">손절가</span>
                         <div className="font-mono text-red-400">
-                          ${signal.stopLoss.toFixed(0)}
+                          ${safeFixed(signal.stopLoss, 0)}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">신호강도</span>
                         <div className="font-mono text-yellow-400">
-                          {signal.strength.toFixed(0)}%
+                          {safeFixed(signal.strength, 0)}%
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">신뢰도</span>
                         <div className="font-mono text-purple-400">
-                          {signal.confidence.toFixed(0)}%
+                          {safeFixed(signal.confidence, 0)}%
                         </div>
                       </div>
                     </div>
@@ -378,25 +379,25 @@ export default function StatisticalArbitrage({ selectedCoin, botConfig }: Statis
           <div>
             <span className="text-sm text-gray-400">승률</span>
             <div className="text-2xl font-bold text-green-400">
-              {backtestResults.winRate.toFixed(1)}%
+              {safeFixed(backtestResults.winRate, 1)}%
             </div>
           </div>
           <div>
             <span className="text-sm text-gray-400">평균 수익</span>
             <div className="text-2xl font-bold text-yellow-400">
-              {backtestResults.avgProfit.toFixed(2)}%
+              {safeFixed(backtestResults.avgProfit, 2)}%
             </div>
           </div>
           <div>
             <span className="text-sm text-gray-400">최대 낙폭</span>
             <div className="text-2xl font-bold text-red-400">
-              -{backtestResults.maxDrawdown.toFixed(1)}%
+              -{safeFixed(backtestResults.maxDrawdown, 1)}%
             </div>
           </div>
           <div>
             <span className="text-sm text-gray-400">샤프 비율</span>
             <div className="text-2xl font-bold text-purple-400">
-              {backtestResults.sharpeRatio.toFixed(2)}
+              {safeFixed(backtestResults.sharpeRatio, 2)}
             </div>
           </div>
         </div>

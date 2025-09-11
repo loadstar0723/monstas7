@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import type { BotConfig } from '../ArbitrageBotModule'
 
 interface LiveBotMonitorProps {
@@ -246,10 +247,10 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
         <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
           <div className="text-xs text-gray-400 mb-1">총 수익</div>
           <div className="text-2xl font-bold text-green-400">
-            ${stats.totalProfit.toFixed(2)}
+            ${safeFixed(stats.totalProfit, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            평균: ${stats.avgProfit.toFixed(2)}
+            평균: ${safeFixed(stats.avgProfit, 2)}
           </div>
         </div>
         
@@ -335,25 +336,25 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
                       <div>
                         <span className="text-gray-500">매수가</span>
                         <div className="font-mono text-white">
-                          ${opp.buyPrice.toFixed(2)}
+                          ${safeFixed(opp.buyPrice, 2)}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">매도가</span>
                         <div className="font-mono text-white">
-                          ${opp.sellPrice.toFixed(2)}
+                          ${safeFixed(opp.sellPrice, 2)}
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">스프레드</span>
                         <div className="font-mono text-green-400">
-                          {opp.spread.toFixed(2)}%
+                          {safeFixed(opp.spread, 2)}%
                         </div>
                       </div>
                       <div>
                         <span className="text-gray-500">예상 수익</span>
                         <div className="font-mono text-green-400">
-                          ${opp.profit.toFixed(2)}
+                          ${safeFixed(opp.profit, 2)}
                         </div>
                       </div>
                     </div>
@@ -382,14 +383,14 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
           <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
             <div className="text-sm text-green-400 mb-1">베스트 거래</div>
             <div className="text-2xl font-bold text-white">
-              +${stats.bestTrade.toFixed(2)}
+              +${safeFixed(stats.bestTrade, 2)}
             </div>
           </div>
           
           <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
             <div className="text-sm text-red-400 mb-1">워스트 거래</div>
             <div className="text-2xl font-bold text-white">
-              ${stats.worstTrade.toFixed(2)}
+              ${safeFixed(stats.worstTrade, 2)}
             </div>
           </div>
         </div>

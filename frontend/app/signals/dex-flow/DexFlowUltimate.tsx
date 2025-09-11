@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaEthereum, FaExchangeAlt, FaDollarSign, FaChartArea, 
@@ -280,7 +281,7 @@ export default function DexFlowUltimate() {
             <p className="text-gray-400 text-sm">현재 가격</p>
             <p className="text-2xl font-bold">${currentPrice.toLocaleString()}</p>
             <p className={`text-sm ${priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+              {priceChange24h >= 0 ? '+' : ''}{safePrice(priceChange24h, 2)}%
             </p>
           </div>
           <div>
@@ -366,14 +367,14 @@ export default function DexFlowUltimate() {
                     <div className="flex justify-between text-xs">
                       <span>가격 변동</span>
                       <span className="text-yellow-400">
-                        {priceChange24h > 0 ? `+${priceChange24h.toFixed(2)}%` : `${priceChange24h.toFixed(2)}%`}
+                        {priceChange24h > 0 ? `+${safePrice(priceChange24h, 2)}%` : `${safePrice(priceChange24h, 2)}%`}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>IL 리스크</span>
                       <span className="text-orange-400">
                         {liquidityPools.length > 0 && liquidityPools[0].ilRisk 
-                          ? `-${liquidityPools[0].ilRisk.toFixed(2)}%`
+                          ? `-${liquidityPools[0].safeFixed(ilRisk, 2)}%`
                           : '계산중'}
                       </span>
                     </div>
@@ -459,13 +460,13 @@ export default function DexFlowUltimate() {
                         <div className="flex justify-between">
                           <span>TVL</span>
                           <span className="text-gray-300">
-                            ${tvl > 0 ? tvl.toFixed(1) : '0'}M
+                            ${tvl > 0 ? safeFixed(tvl, 1) : '0'}M
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Vol 24h</span>
                           <span className="text-gray-300">
-                            ${volume > 0 ? volume.toFixed(1) : '0'}M
+                            ${volume > 0 ? safeFixed(volume, 1) : '0'}M
                           </span>
                         </div>
                       </div>
@@ -622,12 +623,12 @@ export default function DexFlowUltimate() {
                         </td>
                         <td className="py-2 text-right">
                           <span className={tx.slippage > 1 ? 'text-yellow-400' : 'text-gray-400'}>
-                            {tx.slippage.toFixed(2)}%
+                            {safeFixed(tx.slippage, 2)}%
                           </span>
                         </td>
                         <td className="py-2 text-right">
                           <span className={tx.priceImpact > 1 ? 'text-red-400' : 'text-gray-400'}>
-                            {tx.priceImpact.toFixed(2)}%
+                            {safePrice(tx.priceImpact, 2)}%
                           </span>
                         </td>
                         <td className="py-2 text-purple-400">{tx.dex}</td>
@@ -674,7 +675,7 @@ export default function DexFlowUltimate() {
                       : '0x0000...0000'}
                   </p>
                   <p className="text-lg font-bold mt-1 text-green-400">
-                    +{priceChange24h > 0 ? priceChange24h.toFixed(1) : '0'}%
+                    +{priceChange24h > 0 ? safePrice(priceChange24h, 1) : '0'}%
                   </p>
                 </div>
               </div>
@@ -756,7 +757,7 @@ export default function DexFlowUltimate() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-400">APY</p>
-                        <p className="text-lg font-bold text-green-400">{pool.apy.toFixed(2)}%</p>
+                        <p className="text-lg font-bold text-green-400">{safeFixed(pool.apy, 2)}%</p>
                       </div>
                     </div>
                     
@@ -771,7 +772,7 @@ export default function DexFlowUltimate() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">1% 임팩트</p>
-                        <p className="font-medium text-yellow-400">{pool.priceImpact1.toFixed(3)}%</p>
+                        <p className="font-medium text-yellow-400">{safePrice(pool.priceImpact1, 3)}%</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">IL 리스크</p>
@@ -779,7 +780,7 @@ export default function DexFlowUltimate() {
                           pool.ilRisk > 10 ? 'text-red-400' : 
                           pool.ilRisk > 5 ? 'text-yellow-400' : 'text-green-400'
                         }`}>
-                          {pool.ilRisk.toFixed(1)}%
+                          {safeFixed(pool.ilRisk, 1)}%
                         </p>
                       </div>
                     </div>
@@ -833,7 +834,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">IL 손실</span>
                       <span className="font-bold text-red-400">
                         {liquidityPools.length > 0 && liquidityPools[0].ilRisk
-                          ? `-${liquidityPools[0].ilRisk.toFixed(2)}%`
+                          ? `-${liquidityPools[0].safeFixed(ilRisk, 2)}%`
                           : '-'}
                       </span>
                     </div>
@@ -943,13 +944,13 @@ export default function DexFlowUltimate() {
                       <div>
                         <span className="text-lg font-bold">{arb.pair}</span>
                         <span className="ml-2 text-sm text-green-400">
-                          +{arb.spread.toFixed(2)}%
+                          +{safeFixed(arb.spread, 2)}%
                         </span>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-400">예상 수익</p>
                         <p className="text-lg font-bold text-green-400">
-                          ${arb.netProfit.toFixed(2)}
+                          ${safeFixed(arb.netProfit, 2)}
                         </p>
                       </div>
                     </div>
@@ -957,17 +958,17 @@ export default function DexFlowUltimate() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-gray-800/50 rounded p-2">
                         <p className="text-xs text-gray-400">{arb.dexA}</p>
-                        <p className="font-medium">${arb.priceA.toFixed(2)}</p>
+                        <p className="font-medium">${safePrice(arb.priceA, 2)}</p>
                       </div>
                       <div className="bg-gray-800/50 rounded p-2">
                         <p className="text-xs text-gray-400">{arb.dexB}</p>
-                        <p className="font-medium">${arb.priceB.toFixed(2)}</p>
+                        <p className="font-medium">${safePrice(arb.priceB, 2)}</p>
                       </div>
                     </div>
                     
                     <div className="mt-2 flex items-center justify-between text-sm">
                       <span className="text-gray-400">
-                        Gas: ${arb.gasEstimate.toFixed(2)}
+                        Gas: ${safeFixed(arb.gasEstimate, 2)}
                       </span>
                       <span className={`font-medium ${
                         arb.confidence > 80 ? 'text-green-400' :
@@ -994,7 +995,7 @@ export default function DexFlowUltimate() {
                     <span>USDT</span>
                     <span className="text-green-400">
                       {arbitrageOps.length > 0 && arbitrageOps[0].spread > 0 
-                        ? `+${arbitrageOps[0].spread.toFixed(2)}%`
+                        ? `+${arbitrageOps[0].safeFixed(spread, 2)}%`
                         : '+0.00%'}
                     </span>
                   </div>
@@ -1002,7 +1003,7 @@ export default function DexFlowUltimate() {
                     <span>USDC</span>
                     <span className="text-green-400">
                       {arbitrageOps.length > 1 && arbitrageOps[1].spread > 0 
-                        ? `+${arbitrageOps[1].spread.toFixed(2)}%`
+                        ? `+${arbitrageOps[1].safeFixed(spread, 2)}%`
                         : '+0.00%'}
                     </span>
                   </div>
@@ -1109,11 +1110,11 @@ export default function DexFlowUltimate() {
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-400">MEV 수익</p>
-                        <p className="font-bold text-green-400">${mev.profitUSD.toFixed(2)}</p>
+                        <p className="font-bold text-green-400">${safeFixed(mev.profitUSD, 2)}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">피해자 손실</p>
-                        <p className="font-bold text-red-400">-${mev.victimLoss.toFixed(2)}</p>
+                        <p className="font-bold text-red-400">-${safeFixed(mev.victimLoss, 2)}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Gas 사용</p>
@@ -1192,7 +1193,7 @@ export default function DexFlowUltimate() {
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">평균 슬리피지</p>
-                  <p className="text-xl font-bold">{stats.avgSlippage.toFixed(2)}%</p>
+                  <p className="text-xl font-bold">{safeFixed(stats.avgSlippage, 2)}%</p>
                   <p className="text-xs text-gray-500">
                     {stats.avgSlippage > 1 ? '높음' : stats.avgSlippage > 0.5 ? '보통' : '낮음'}
                   </p>
@@ -1287,7 +1288,7 @@ export default function DexFlowUltimate() {
                       <span>{selectedCoin}/USDT</span>
                       <span className="text-yellow-400">
                         {liquidityPools.length > 0 && liquidityPools[0].apy
-                          ? `+${liquidityPools[0].apy.toFixed(0)}%`
+                          ? `+${liquidityPools[0].safeFixed(apy, 0)}%`
                           : '계산중'}
                       </span>
                     </div>
@@ -1376,7 +1377,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">예상 APY</span>
                       <span className="text-green-400">
                         {liquidityPools.length > 0 && liquidityPools[0].apy 
-                          ? `${liquidityPools[0].apy.toFixed(1)}%`
+                          ? `${liquidityPools[0].safeFixed(apy, 1)}%`
                           : '0.0%'}
                       </span>
                     </div>
@@ -1392,7 +1393,7 @@ export default function DexFlowUltimate() {
                   </div>
                   <p className="text-sm text-gray-300 mb-2">
                     DEX-CEX 스프레드가 {arbitrageOps.length > 0 && arbitrageOps[0].spread
-                      ? arbitrageOps[0].spread.toFixed(1)
+                      ? arbitrageOps[0].safeFixed(spread, 1)
                       : '0.0'}% 감지되었습니다.
                   </p>
                   <div className="bg-gray-900/50 rounded p-2 text-xs">
@@ -1400,7 +1401,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">예상 수익</span>
                       <span className="text-green-400">
                         ${arbitrageOps.length > 0 && arbitrageOps[0].netProfit
-                          ? arbitrageOps[0].netProfit.toFixed(0)
+                          ? arbitrageOps[0].safeFixed(netProfit, 0)
                           : '0'}
                       </span>
                     </div>
@@ -1430,7 +1431,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">권장 슬리피지</span>
                       <span className="text-yellow-400">
                         {stats.avgSlippage > 0 
-                          ? `${stats.avgSlippage.toFixed(1)}%`
+                          ? `${safeFixed(stats.avgSlippage, 1)}%`
                           : '0.1%'}
                       </span>
                     </div>

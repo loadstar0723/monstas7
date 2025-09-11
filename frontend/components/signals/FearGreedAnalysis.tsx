@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaBrain, FaChartLine, FaHistory, FaLightbulb, FaExclamationTriangle, FaDollarSign } from 'react-icons/fa'
 import SignalIndicator from './SignalIndicator'
@@ -245,7 +246,7 @@ export default function FearGreedAnalysis() {
           >
             <div className="text-sm text-gray-400 mb-1">반전 확률</div>
             <div className="text-2xl font-bold text-purple-400">
-              {fearGreedData.reversalProbability.toFixed(0)}%
+              {safeFixed(fearGreedData.reversalProbability, 0)}%
             </div>
             <div className="text-xs text-gray-500 mt-1">
               {fearGreedData.reversalProbability > 70 ? '반전 임박' : '추세 지속'}

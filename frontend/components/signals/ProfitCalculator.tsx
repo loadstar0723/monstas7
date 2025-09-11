@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaCalculator, FaDollarSign, FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
 import { apiClient } from '../../lib/api'
@@ -191,7 +192,7 @@ export default function ProfitCalculator({
             </div>
             <div className="text-right">
               <div className="text-xl font-bold text-red-400">
-                -${potentialLoss.toFixed(2)}
+                -${safeFixed(potentialLoss, 2)}
               </div>
               <div className="text-sm text-gray-400">
                 -{((potentialLoss / capital) * 100).toFixed(2)}% of capital
@@ -240,14 +241,14 @@ export default function ProfitCalculator({
               riskRewardRatio >= 2 ? 'text-green-400' : 
               riskRewardRatio >= 1.5 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              1:{riskRewardRatio.toFixed(2)}
+              1:{safeFixed(riskRewardRatio, 2)}
             </span>
           </div>
           
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-400">손익분기 승률</span>
             <span className="text-sm font-bold text-blue-400">
-              {breakEvenWinRate.toFixed(1)}%
+              {safeFixed(breakEvenWinRate, 1)}%
             </span>
           </div>
           

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { MarketProfile as MarketProfileType } from '../types'
 import { FOOTPRINT_CONFIG } from '../config/constants'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
@@ -120,7 +121,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
           
           <div className="text-center">
             <div className="text-2xl font-bold text-white">
-              {valueAreaBounds?.percentage.toFixed(1) || '0'}%
+              {valueAreaBounds?.safePercent(percentage) || '0'}%
             </div>
             <div className="text-sm text-gray-400">밸류 비율</div>
           </div>
@@ -146,7 +147,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
               <Tooltip
                 contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
                 labelStyle={{ color: '#9CA3AF' }}
-                formatter={(value: number) => [`${value.toFixed(2)}`, '거래량']}
+                formatter={(value: number) => [`${safeFixed(value, 2)}`, '거래량']}
                 labelFormatter={(label) => `가격: $${label}`}
               />
               <Bar dataKey="volume" fill="#4B5563">
@@ -183,7 +184,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
               supportResistance.support.map((level, index) => (
                 <div key={index} className="flex justify-between items-center p-2 bg-gray-700/30 rounded">
                   <span className="text-sm font-medium">${level.price.toLocaleString('ko-KR')}</span>
-                  <span className="text-xs text-gray-400">거래량: {level.volume.toFixed(2)}</span>
+                  <span className="text-xs text-gray-400">거래량: {safeFixed(level.volume, 2)}</span>
                 </div>
               ))
             ) : (
@@ -203,7 +204,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
               supportResistance.resistance.map((level, index) => (
                 <div key={index} className="flex justify-between items-center p-2 bg-gray-700/30 rounded">
                   <span className="text-sm font-medium">${level.price.toLocaleString('ko-KR')}</span>
-                  <span className="text-xs text-gray-400">거래량: {level.volume.toFixed(2)}</span>
+                  <span className="text-xs text-gray-400">거래량: {safeFixed(level.volume, 2)}</span>
                 </div>
               ))
             ) : (
@@ -233,7 +234,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
               <p>
                 밸류 에어리어는 ${valueAreaBounds.low.toLocaleString('ko-KR')} - 
                 ${valueAreaBounds.high.toLocaleString('ko-KR')} 구간입니다. 
-                전체 거래량의 {valueAreaBounds.percentage.toFixed(1)}%가 이 구간에서 발생했습니다.
+                전체 거래량의 {safePercent(valueAreaBounds.percentage)}%가 이 구간에서 발생했습니다.
               </p>
             </div>
           )}

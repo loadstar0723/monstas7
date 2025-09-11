@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Coin {
   symbol: string
@@ -132,7 +133,7 @@ export default function RSIDivergence({ coin, marketData, historicalData }: RSID
               marketData.rsi > 70 ? 'text-red-400' : 
               marketData.rsi < 30 ? 'text-green-400' : 'text-yellow-400'
             }`}>
-              {marketData.rsi.toFixed(1)}
+              {safeFixed(marketData.rsi, 1)}
             </div>
           </div>
           <div className="bg-black/30 rounded-lg p-3">

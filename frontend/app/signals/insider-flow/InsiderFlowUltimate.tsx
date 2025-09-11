@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   FaUserSecret, FaWallet, FaLock, FaUnlock, FaExchangeAlt, 
   FaChartLine, FaExclamationTriangle, FaCheckCircle, FaArrowUp, 
@@ -511,7 +512,7 @@ export default function InsiderFlowUltimate() {
             </span>
             <span className="text-xl text-gray-400">{selectedCoin}</span>
             <span className={`text-lg font-medium ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+              {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
             </span>
           </div>
         </div>
@@ -636,7 +637,7 @@ export default function InsiderFlowUltimate() {
               <div className="bg-gray-900/50 rounded-lg p-4">
                 <p className="text-sm text-gray-400 mb-1">순 플로우</p>
                 <p className={`text-2xl font-bold ${exchangeFlow.netflow > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {exchangeFlow.netflow > 0 ? '+' : ''}{exchangeFlow.netflow.toFixed(0)}
+                  {exchangeFlow.netflow > 0 ? '+' : ''}{safePercent(exchangeFlow.netflow)}
                 </p>
                 <p className="text-sm text-gray-500">매수 - 매도</p>
               </div>
@@ -897,7 +898,7 @@ export default function InsiderFlowUltimate() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>언락 수량: {event.amount.toLocaleString()} {selectedCoin}</span>
-                        <span className="text-gray-400">전체의 {event.percentage.toFixed(1)}%</span>
+                        <span className="text-gray-400">전체의 {safePercent(event.percentage)}%</span>
                       </div>
                     </div>
                   </div>

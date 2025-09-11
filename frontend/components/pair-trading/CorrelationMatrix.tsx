@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 interface Coin {
@@ -197,7 +198,7 @@ export default function CorrelationMatrix({ coins, selectedPair, timeframe }: Co
                           }}
                           whileHover={{ scale: 1.1 }}
                         >
-                          {value.toFixed(2)}
+                          {safeFixed(value, 2)}
                         </motion.div>
                       </td>
                     )

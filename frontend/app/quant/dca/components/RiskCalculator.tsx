@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaCalculator, FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
@@ -274,7 +275,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
           <div className="flex-1">
             <p className="text-gray-300 mb-2">리스크 점수</p>
             <p className={`text-3xl sm:text-5xl font-bold ${overallRiskLevel.color}`}>
-              {riskMetrics.overallRisk.toFixed(0)}
+              {safeFixed(riskMetrics.overallRisk, 0)}
             </p>
             <p className={`text-lg sm:text-xl font-medium ${overallRiskLevel.color} mt-1`}>
               {overallRiskLevel.level}
@@ -343,7 +344,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
               <span className="text-sm text-gray-300">변동성 리스크</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-medium ${getRiskLevel(riskMetrics.volatilityRisk).color}`}>
-                  {riskMetrics.volatilityRisk.toFixed(0)}%
+                  {safeFixed(riskMetrics.volatilityRisk, 0)}%
                 </span>
                 {riskMetrics.volatilityRisk < 50 ? 
                   <FaCheckCircle className="text-green-400" /> : 
@@ -356,7 +357,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
               <span className="text-sm text-gray-300">유동성 리스크</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-medium ${getRiskLevel(riskMetrics.liquidityRisk).color}`}>
-                  {riskMetrics.liquidityRisk.toFixed(0)}%
+                  {safeFixed(riskMetrics.liquidityRisk, 0)}%
                 </span>
                 {riskMetrics.liquidityRisk < 50 ? 
                   <FaCheckCircle className="text-green-400" /> : 
@@ -369,7 +370,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
               <span className="text-sm text-gray-300">최대낙폭 리스크</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-medium ${getRiskLevel(riskMetrics.drawdownRisk).color}`}>
-                  {riskMetrics.drawdownRisk.toFixed(0)}%
+                  {safeFixed(riskMetrics.drawdownRisk, 0)}%
                 </span>
                 {riskMetrics.drawdownRisk < 50 ? 
                   <FaCheckCircle className="text-green-400" /> : 
@@ -382,7 +383,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
               <span className="text-sm text-gray-300">전략 리스크</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-medium ${getRiskLevel(riskMetrics.strategyRisk).color}`}>
-                  {riskMetrics.strategyRisk.toFixed(0)}%
+                  {safeFixed(riskMetrics.strategyRisk, 0)}%
                 </span>
                 {riskMetrics.strategyRisk < 50 ? 
                   <FaCheckCircle className="text-green-400" /> : 
@@ -395,7 +396,7 @@ export default function RiskCalculator({ selectedCoin, settings }: Props) {
               <span className="text-sm text-gray-300">투자기간 리스크</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-medium ${getRiskLevel(riskMetrics.durationRisk).color}`}>
-                  {riskMetrics.durationRisk.toFixed(0)}%
+                  {safeFixed(riskMetrics.durationRisk, 0)}%
                 </span>
                 {riskMetrics.durationRisk < 50 ? 
                   <FaCheckCircle className="text-green-400" /> : 

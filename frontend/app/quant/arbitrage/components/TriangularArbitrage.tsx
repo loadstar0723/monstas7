@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import type { BotConfig } from '../ArbitrageBotModule'
 
 interface TriangularArbitrageProps {

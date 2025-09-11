@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FootprintCell } from '../types'
 import { FOOTPRINT_CONFIG } from '../config/constants'
 import { FaFireAlt, FaThermometerHalf, FaSnowflake, FaChartBar } from 'react-icons/fa'
@@ -115,9 +116,9 @@ export default function VolumeHeatmap({ data, symbol }: VolumeHeatmapProps) {
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 p-2 bg-gray-900 rounded shadow-xl hidden group-hover:block z-10 whitespace-nowrap">
                   <div className="text-xs">
                     <div className="font-medium text-white">{volume.hour}:00</div>
-                    <div className="text-green-400">매수: {volume.buyVolume.toFixed(2)}</div>
-                    <div className="text-red-400">매도: {volume.sellVolume.toFixed(2)}</div>
-                    <div className="text-gray-300">총: {volume.totalVolume.toFixed(2)}</div>
+                    <div className="text-green-400">매수: {safeFixed(volume.buyVolume, 2)}</div>
+                    <div className="text-red-400">매도: {safeFixed(volume.sellVolume, 2)}</div>
+                    <div className="text-gray-300">총: {safeFixed(volume.totalVolume, 2)}</div>
                   </div>
                 </div>
               </div>
@@ -169,20 +170,20 @@ export default function VolumeHeatmap({ data, symbol }: VolumeHeatmapProps) {
               <div key={pv.price} className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">${pv.price.toLocaleString('ko-KR')}</span>
-                  <span className="text-gray-400">{pv.totalVolume.toFixed(2)}</span>
+                  <span className="text-gray-400">{safeFixed(pv.totalVolume, 2)}</span>
                 </div>
                 <div className="flex h-6 rounded overflow-hidden bg-gray-700">
                   <div 
                     className="bg-green-500 flex items-center justify-center text-xs font-medium text-black"
                     style={{ width: `${buyRatio}%` }}
                   >
-                    {buyRatio > 20 && `${buyRatio.toFixed(0)}%`}
+                    {buyRatio > 20 && `${safeFixed(buyRatio, 0)}%`}
                   </div>
                   <div 
                     className="bg-red-500 flex items-center justify-center text-xs font-medium text-black"
                     style={{ width: `${sellRatio}%` }}
                   >
-                    {sellRatio > 20 && `${sellRatio.toFixed(0)}%`}
+                    {sellRatio > 20 && `${safeFixed(sellRatio, 0)}%`}
                   </div>
                 </div>
               </div>
@@ -212,7 +213,7 @@ export default function VolumeHeatmap({ data, symbol }: VolumeHeatmapProps) {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400">총 거래량</span>
-                  <span className="text-white">{zone.totalVolume.toFixed(2)}</span>
+                  <span className="text-white">{safeFixed(zone.totalVolume, 2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">매수/매도 비율</span>

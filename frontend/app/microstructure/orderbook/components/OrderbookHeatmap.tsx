@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaInfoCircle } from 'react-icons/fa'
 import { config } from '@/lib/config'
@@ -104,10 +105,10 @@ export default function OrderbookHeatmap({
         ctx.fillStyle = 'white'
         ctx.font = '10px Inter'
         ctx.textAlign = 'left'
-        ctx.fillText(`$${ask.price.toFixed(2)}`, x + 5, y + levelHeight / 2 + 3)
+        ctx.fillText(`$${safePrice(ask.price, 2)}`, x + 5, y + levelHeight / 2 + 3)
         
         ctx.textAlign = 'right'
-        ctx.fillText(`${ask.amount.toFixed(4)}`, x + width - 5, y + levelHeight / 2 + 3)
+        ctx.fillText(`${safeAmount(ask.amount)}`, x + width - 5, y + levelHeight / 2 + 3)
       })
 
       // 중간 가격선
@@ -124,7 +125,7 @@ export default function OrderbookHeatmap({
       ctx.fillStyle = 'white'
       ctx.font = 'bold 14px Inter'
       ctx.textAlign = 'center'
-      ctx.fillText(`$${currentPrice.toFixed(2)}`, canvas.width / 2, midY + 5)
+      ctx.fillText(`$${safePrice(currentPrice, 2)}`, canvas.width / 2, midY + 5)
 
       // 매수 주문 렌더링 (아래쪽)
       orderbook.bids.slice(0, 20).forEach((bid, index) => {
@@ -147,17 +148,17 @@ export default function OrderbookHeatmap({
         ctx.fillStyle = 'white'
         ctx.font = '10px Inter'
         ctx.textAlign = 'left'
-        ctx.fillText(`$${bid.price.toFixed(2)}`, x + 5, y + levelHeight / 2 + 3)
+        ctx.fillText(`$${safePrice(bid.price, 2)}`, x + 5, y + levelHeight / 2 + 3)
         
         ctx.textAlign = 'right'
-        ctx.fillText(`${bid.amount.toFixed(4)}`, x + width - 5, y + levelHeight / 2 + 3)
+        ctx.fillText(`${safeAmount(bid.amount)}`, x + width - 5, y + levelHeight / 2 + 3)
       })
 
       // 스프레드 표시
       ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
       ctx.font = '11px Inter'
       ctx.textAlign = 'center'
-      ctx.fillText(`Spread: $${orderbook.spread.toFixed(2)} (${orderbook.spreadPercent.toFixed(3)}%)`, 
+      ctx.fillText(`Spread: $${safeFixed(orderbook.spread, 2)} (${safeFixed(orderbook.spreadPercent, 3)}%)`, 
                    canvas.width / 2, canvas.height - 10)
     }
   }, [currentPrice])
@@ -273,11 +274,11 @@ export default function OrderbookHeatmap({
           </div>
           <div>
             <span className="text-gray-400">최고 매수가</span>
-            <p className="text-white font-semibold">${orderbook.bestBid.toFixed(2)}</p>
+            <p className="text-white font-semibold">${safeFixed(orderbook.bestBid, 2)}</p>
           </div>
           <div>
             <span className="text-gray-400">최저 매도가</span>
-            <p className="text-white font-semibold">${orderbook.bestAsk.toFixed(2)}</p>
+            <p className="text-white font-semibold">${safeFixed(orderbook.bestAsk, 2)}</p>
           </div>
         </div>
       </div>

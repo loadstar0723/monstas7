@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface CumulativeDeltaProps {
   symbol: string
@@ -235,7 +236,7 @@ export default function CumulativeDelta({ symbol }: CumulativeDeltaProps) {
         <div className="text-right">
           <p className="text-sm text-gray-400">현재 누적 델타</p>
           <p className={`text-2xl font-bold ${currentDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {currentDelta > 0 ? '+' : ''}{currentDelta.toFixed(2)}
+            {currentDelta > 0 ? '+' : ''}{safeFixed(currentDelta, 2)}
           </p>
           <p className={`text-sm ${status.color}`}>{status.text}</p>
         </div>

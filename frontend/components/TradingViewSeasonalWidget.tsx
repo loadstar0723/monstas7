@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from 'recharts'
 import { config } from '@/lib/config'
@@ -463,7 +464,7 @@ export default function TradingViewSeasonalWidget({
                 textAnchor="middle"
                 className="animate-pulse"
               >
-                {value > 0 ? '+' : ''}{value.toFixed(1)}%
+                {value > 0 ? '+' : ''}{safeFixed(value, 1)}%
               </text>
               <text 
                 x="40" 
@@ -637,7 +638,7 @@ export default function TradingViewSeasonalWidget({
               stroke="#9CA3AF"
               style={{ fontSize: '11px' }}
               tick={{ fill: '#9CA3AF' }}
-              tickFormatter={(value) => `${value.toFixed(0)}%`}
+              tickFormatter={(value) => `${safeFixed(value, 0)}%`}
               domain={['dataMin - 5', 'dataMax + 5']}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -711,7 +712,7 @@ export default function TradingViewSeasonalWidget({
                 className="text-xs font-bold"
                 style={{ color: year.value > 0 ? '#10B981' : '#EF4444' }}
               >
-                {year.value > 0 ? '+' : ''}{year.value.toFixed(1)}%
+                {year.value > 0 ? '+' : ''}{safeFixed(year.value, 1)}%
               </span>
             </motion.div>
           ))}

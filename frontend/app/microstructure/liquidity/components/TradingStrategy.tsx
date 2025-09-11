@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   ArrowUpIcon as ArrowTrendingUpIcon, 
   ArrowDownIcon as ArrowTrendingDownIcon,
@@ -141,7 +142,7 @@ export default function TradingStrategy({
           </div>
           <div className="text-right">
             <p className="text-gray-400 text-sm">신뢰도</p>
-            <p className="text-2xl font-bold text-white">{strategy.confidence.toFixed(0)}%</p>
+            <p className="text-2xl font-bold text-white">{safeFixed(strategy.confidence, 0)}%</p>
           </div>
         </div>
         
@@ -167,23 +168,23 @@ export default function TradingStrategy({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">진입가:</span>
-              <span className="text-white font-mono">${strategy.entryStrategy.long.entry.toFixed(2)}</span>
+              <span className="text-white font-mono">${safeFixed(strategy.entryStrategy.long.entry, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">손절가:</span>
-              <span className="text-red-400 font-mono">${strategy.entryStrategy.long.stopLoss.toFixed(2)}</span>
+              <span className="text-red-400 font-mono">${safeFixed(strategy.entryStrategy.long.stopLoss, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 1:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.long.takeProfit1.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.long.takeProfit1, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 2:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.long.takeProfit2.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.long.takeProfit2, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 3:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.long.takeProfit3.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.long.takeProfit3, 2)}</span>
             </div>
           </div>
         </div>
@@ -197,23 +198,23 @@ export default function TradingStrategy({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">진입가:</span>
-              <span className="text-white font-mono">${strategy.entryStrategy.short.entry.toFixed(2)}</span>
+              <span className="text-white font-mono">${safeFixed(strategy.entryStrategy.short.entry, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">손절가:</span>
-              <span className="text-red-400 font-mono">${strategy.entryStrategy.short.stopLoss.toFixed(2)}</span>
+              <span className="text-red-400 font-mono">${safeFixed(strategy.entryStrategy.short.stopLoss, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 1:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.short.takeProfit1.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.short.takeProfit1, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 2:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.short.takeProfit2.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.short.takeProfit2, 2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">익절 3:</span>
-              <span className="text-green-400 font-mono">${strategy.entryStrategy.short.takeProfit3.toFixed(2)}</span>
+              <span className="text-green-400 font-mono">${safeFixed(strategy.entryStrategy.short.takeProfit3, 2)}</span>
             </div>
           </div>
         </div>
@@ -238,7 +239,7 @@ export default function TradingStrategy({
             <CurrencyDollarIcon className="w-5 h-5 text-yellow-400" />
             <span className="text-gray-400 text-sm">포지션 크기</span>
           </div>
-          <p className="text-2xl font-bold text-white">{strategy.positionSizePercent.toFixed(1)}%</p>
+          <p className="text-2xl font-bold text-white">{safeFixed(strategy.positionSizePercent, 1)}%</p>
           <p className="text-xs text-gray-500 mt-1">총 자본 대비</p>
         </div>
         
@@ -265,7 +266,7 @@ export default function TradingStrategy({
               strategy.liquidityRatio > 1.2 ? 'text-green-400' :
               strategy.liquidityRatio < 0.8 ? 'text-red-400' : 'text-yellow-400'
             }`}>
-              {strategy.liquidityRatio.toFixed(2)}
+              {safeFixed(strategy.liquidityRatio, 2)}
             </p>
           </div>
           <div>
@@ -274,7 +275,7 @@ export default function TradingStrategy({
               strategy.spreadPercent < 0.05 ? 'text-green-400' :
               strategy.spreadPercent < 0.1 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              {strategy.spreadPercent.toFixed(3)}%
+              {safeFixed(strategy.spreadPercent, 3)}%
             </p>
           </div>
           <div>
@@ -301,17 +302,17 @@ export default function TradingStrategy({
         <div className="space-y-2 text-sm text-gray-300">
           {strategy.direction === 'bullish' && (
             <>
-              <p>✅ 롱 포지션 우선 고려 (신뢰도 {strategy.confidence.toFixed(0)}%)</p>
+              <p>✅ 롱 포지션 우선 고려 (신뢰도 {safeFixed(strategy.confidence, 0)}%)</p>
               <p>📊 레버리지 {strategy.recommendedLeverage}x로 제한</p>
-              <p>💰 총 자본의 {strategy.positionSizePercent.toFixed(1)}%만 투입</p>
+              <p>💰 총 자본의 {safeFixed(strategy.positionSizePercent, 1)}%만 투입</p>
               <p>⏱️ {strategy.spreadPercent < 0.05 ? '단기 스캘핑' : '중단기 스윙'} 전략 추천</p>
             </>
           )}
           {strategy.direction === 'bearish' && (
             <>
-              <p>⚠️ 숏 포지션 우선 고려 (신뢰도 {strategy.confidence.toFixed(0)}%)</p>
+              <p>⚠️ 숏 포지션 우선 고려 (신뢰도 {safeFixed(strategy.confidence, 0)}%)</p>
               <p>📊 레버리지 {strategy.recommendedLeverage}x로 제한</p>
-              <p>💰 총 자본의 {strategy.positionSizePercent.toFixed(1)}%만 투입</p>
+              <p>💰 총 자본의 {safeFixed(strategy.positionSizePercent, 1)}%만 투입</p>
               <p>🛡️ 타이트한 손절 설정 필수</p>
             </>
           )}

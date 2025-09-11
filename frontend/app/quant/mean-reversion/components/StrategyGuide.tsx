@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Coin {
@@ -218,12 +219,12 @@ export default function StrategyGuide({ coin, marketData }: StrategyGuideProps) 
           <h4 className="text-purple-400 font-medium mb-2">🎯 현재 {coin.name} 적용 전략</h4>
           <p className="text-sm text-gray-300">
             {marketData.zScore < -2 
-              ? `Z-Score가 ${marketData.zScore.toFixed(2)}로 강한 과매도 상태입니다. 자본의 10%까지 매수 가능한 시점입니다.`
+              ? `Z-Score가 ${safeFixed(marketData.zScore, 2)}로 강한 과매도 상태입니다. 자본의 10%까지 매수 가능한 시점입니다.`
               : marketData.zScore < -1
-              ? `Z-Score가 ${marketData.zScore.toFixed(2)}로 약한 과매도 상태입니다. 자본의 5% 정도로 소량 매수를 고려해볼 수 있습니다.`
+              ? `Z-Score가 ${safeFixed(marketData.zScore, 2)}로 약한 과매도 상태입니다. 자본의 5% 정도로 소량 매수를 고려해볼 수 있습니다.`
               : marketData.zScore > 2
-              ? `Z-Score가 ${marketData.zScore.toFixed(2)}로 과매수 상태입니다. 보유 포지션이 있다면 일부 또는 전량 청산을 고려하세요.`
-              : `현재 Z-Score가 ${marketData.zScore.toFixed(2)}로 중립 구간입니다. 평균회귀 신호를 기다리며 관망하세요.`
+              ? `Z-Score가 ${safeFixed(marketData.zScore, 2)}로 과매수 상태입니다. 보유 포지션이 있다면 일부 또는 전량 청산을 고려하세요.`
+              : `현재 Z-Score가 ${safeFixed(marketData.zScore, 2)}로 중립 구간입니다. 평균회귀 신호를 기다리며 관망하세요.`
             }
           </p>
         </div>

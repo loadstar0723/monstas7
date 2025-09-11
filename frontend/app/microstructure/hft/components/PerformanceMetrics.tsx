@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { ResponsiveContainer, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 interface HFTPattern {
@@ -133,13 +134,13 @@ export default function PerformanceMetrics({ patterns, trades }: PerformanceMetr
                 style={{ width: `${detectionMetrics.detectionRate}%` }}
               />
             </div>
-            <span className="text-xs text-purple-400">{detectionMetrics.detectionRate.toFixed(0)}%</span>
+            <span className="text-xs text-purple-400">{safeFixed(detectionMetrics.detectionRate, 0)}%</span>
           </div>
         </div>
         
         <div className="bg-gray-900/50 rounded-lg p-4">
           <p className="text-xs text-gray-400 mb-2">평균 신뢰도</p>
-          <p className="text-2xl font-bold text-white">{detectionMetrics.avgConfidence.toFixed(1)}%</p>
+          <p className="text-2xl font-bold text-white">{safeFixed(detectionMetrics.avgConfidence, 1)}%</p>
           <p className="text-xs text-gray-500">정확도</p>
           <div className="mt-2 flex items-center gap-2">
             <span className={`text-xs ${detectionMetrics.avgConfidence > 70 ? 'text-green-400' : detectionMetrics.avgConfidence > 50 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -220,7 +221,7 @@ export default function PerformanceMetrics({ patterns, trades }: PerformanceMetr
                   />
                   <div className="absolute inset-0 flex items-center px-2">
                     <span className="text-xs text-white/80">
-                      {pattern.accuracy.toFixed(0)}% ({pattern.count}건)
+                      {safeFixed(pattern.accuracy, 0)}% ({pattern.count}건)
                     </span>
                   </div>
                 </div>
@@ -241,7 +242,7 @@ export default function PerformanceMetrics({ patterns, trades }: PerformanceMetr
         <div className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
           <span className="text-xs text-gray-400">CPU 사용률</span>
           <span className={`text-sm font-medium ${systemStatus.cpuUsage > 80 ? 'text-red-400' : systemStatus.cpuUsage > 50 ? 'text-yellow-400' : 'text-green-400'}`}>
-            {systemStatus.cpuUsage.toFixed(0)}%
+            {safeFixed(systemStatus.cpuUsage, 0)}%
           </span>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
@@ -262,7 +263,7 @@ export default function PerformanceMetrics({ patterns, trades }: PerformanceMetr
       <div className="mt-6 p-4 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/20">
         <h3 className="text-purple-400 font-semibold mb-2">📊 성능 요약</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-300">
-          <div>• 총 {detectionMetrics.totalPatterns}개 패턴 감지 (신뢰도 {detectionMetrics.avgConfidence.toFixed(1)}%)</div>
+          <div>• 총 {detectionMetrics.totalPatterns}개 패턴 감지 (신뢰도 {safeFixed(detectionMetrics.avgConfidence, 1)}%)</div>
           <div>• 분당 {systemStatus.processingSpeed}건 거래 처리</div>
           <div>• 고영향 패턴 {detectionMetrics.highImpactPatterns}개 감지</div>
           <div>• 시스템 응답 시간 {systemStatus.responseTime}ms</div>

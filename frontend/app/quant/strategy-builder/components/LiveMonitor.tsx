@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaPlay, FaPause, FaStop, FaCircle, FaExclamationTriangle,
@@ -73,7 +74,7 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
           executedTrades: Math.random() > 0.3 ? prev.executedTrades + 1 : prev.executedTrades
         }))
         
-        addLog('SUCCESS', `${newDataPoint.signal} 신호 발생 @ $${newDataPoint.price.toFixed(2)}`)
+        addLog('SUCCESS', `${newDataPoint.signal} 신호 발생 @ $${safePrice(newDataPoint.price, 2)}`)
         
         if (Math.random() > 0.7) {
           addLog('INFO', '거래 실행됨')
@@ -252,7 +253,7 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
               <span className={`font-semibold ${
                 stats.unrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                ${stats.unrealizedPnL.toFixed(2)}
+                ${safeFixed(stats.unrealizedPnL, 2)}
               </span>
             </div>
             <div className="flex justify-between">
@@ -260,7 +261,7 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
               <span className={`font-semibold ${
                 stats.realizedPnL >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                ${stats.realizedPnL.toFixed(2)}
+                ${safeFixed(stats.realizedPnL, 2)}
               </span>
             </div>
           </div>

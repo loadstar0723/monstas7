@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 
 interface Coin {
@@ -73,10 +74,10 @@ export default function PairSelector({ coins, selectedPair, onPairChange }: Pair
   }
 
   const formatPrice = (price: number) => {
-    if (price >= 1000) return price.toFixed(0)
-    if (price >= 10) return price.toFixed(2)
-    if (price >= 1) return price.toFixed(3)
-    return price.toFixed(6)
+    if (price >= 1000) return safePrice(price, 0)
+    if (price >= 10) return safePrice(price, 2)
+    if (price >= 1) return safePrice(price, 3)
+    return safePrice(price, 6)
   }
 
   return (

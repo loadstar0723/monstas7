@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface LiquidityRadarProps {
   orderbook: any
@@ -181,7 +182,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
       const valueY = centerY + Math.sin(angle) * (radius + 35)
       ctx.fillStyle = '#9ca3af'
       ctx.font = '10px sans-serif'
-      ctx.fillText(cat.value.toFixed(0), valueX, valueY)
+      ctx.fillText(safeFixed(cat.value, 0), valueX, valueY)
       ctx.fillStyle = '#ffffff'
       ctx.font = '12px sans-serif'
     })
@@ -210,7 +211,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">스프레드</span>
-              <span className="text-white font-semibold">{radarData?.spread.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(spread, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
@@ -223,7 +224,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">균형성</span>
-              <span className="text-white font-semibold">{radarData?.balance.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(balance, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
@@ -236,7 +237,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">유동성</span>
-              <span className="text-white font-semibold">{radarData?.liquidity.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(liquidity, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
@@ -249,7 +250,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">밀도</span>
-              <span className="text-white font-semibold">{radarData?.density.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(density, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
@@ -262,7 +263,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">안정성</span>
-              <span className="text-white font-semibold">{radarData?.stability.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(stability, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
@@ -275,7 +276,7 @@ export default function LiquidityRadar({ orderbook, history }: LiquidityRadarPro
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-400 text-sm">실행력</span>
-              <span className="text-white font-semibold">{radarData?.executability.toFixed(0)}</span>
+              <span className="text-white font-semibold">{radarData?.safeFixed(executability, 0)}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 

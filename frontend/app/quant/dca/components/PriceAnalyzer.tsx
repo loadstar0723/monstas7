@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartBar, FaArrowUp, FaArrowDown, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
@@ -268,7 +269,7 @@ export default function PriceAnalyzer({ selectedCoin }: Props) {
               priceStats.rsi < 30 ? 'text-green-400' :
               priceStats.rsi > 70 ? 'text-red-400' : 'text-white'
             }`}>
-              {priceStats.rsi.toFixed(1)}
+              {safePrice(priceStats.rsi, 1)}
             </p>
             <p className="text-xs text-gray-400">
               {priceStats.rsi < 30 ? '과매도' :
@@ -282,7 +283,7 @@ export default function PriceAnalyzer({ selectedCoin }: Props) {
               priceStats.volatility > 5 ? 'text-yellow-400' :
               priceStats.volatility > 10 ? 'text-red-400' : 'text-green-400'
             }`}>
-              {priceStats.volatility.toFixed(1)}%
+              {safePrice(priceStats.volatility, 1)}%
             </p>
             <p className="text-xs text-gray-400">
               {priceStats.volatility > 10 ? '매우 높음' :
@@ -318,7 +319,7 @@ export default function PriceAnalyzer({ selectedCoin }: Props) {
               <div className="mt-3 grid grid-cols-2 gap-4 text-xs sm:text-sm">
                 <div>
                   <span className="text-gray-400">20일 이동평균:</span>
-                  <span className="text-white ml-2">${priceStats.movingAvg20.toFixed(2)}</span>
+                  <span className="text-white ml-2">${safePrice(priceStats.movingAvg20, 2)}</span>
                 </div>
                 <div>
                   <span className="text-gray-400">현재가 대비:</span>
@@ -359,7 +360,7 @@ export default function PriceAnalyzer({ selectedCoin }: Props) {
                     borderRadius: '8px'
                   }}
                   labelStyle={{ color: '#E5E7EB' }}
-                  formatter={(value: number) => `$${value.toFixed(4)}`}
+                  formatter={(value: number) => `$${safeFixed(value, 4)}`}
                 />
                 <Area
                   type="monotone"

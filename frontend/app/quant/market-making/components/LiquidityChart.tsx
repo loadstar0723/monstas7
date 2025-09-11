@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaWater, FaChartArea, FaExchangeAlt } from 'react-icons/fa'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
@@ -124,14 +125,14 @@ export default function LiquidityChart({ selectedCoin }: Props) {
   }
 
   const formatPrice = (price: number) => {
-    if (price >= 10000) return price.toFixed(0)
-    if (price >= 100) return price.toFixed(2)
-    return price.toFixed(4)
+    if (price >= 10000) return safePrice(price, 0)
+    if (price >= 100) return safePrice(price, 2)
+    return safePrice(price, 4)
   }
 
   const formatVolume = (volume: number) => {
     if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`
-    return volume.toFixed(2)
+    return safeFixed(volume, 2)
   }
 
   if (loading) {
@@ -170,13 +171,13 @@ export default function LiquidityChart({ selectedCoin }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">매수 유동성</p>
-          <p className="text-2xl font-bold text-green-400">{totalLiquidity.bid.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-green-400">{safeFixed(totalLiquidity.bid, 2)}</p>
           <p className="text-xs text-gray-400">{selectedCoin.symbol}</p>
         </div>
         
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <p className="text-gray-400 text-sm mb-1">매도 유동성</p>
-          <p className="text-2xl font-bold text-red-400">{totalLiquidity.ask.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-red-400">{safeFixed(totalLiquidity.ask, 2)}</p>
           <p className="text-xs text-gray-400">{selectedCoin.symbol}</p>
         </div>
         
@@ -186,7 +187,7 @@ export default function LiquidityChart({ selectedCoin }: Props) {
             liquidityRatio > 1.1 ? 'text-green-400' : 
             liquidityRatio < 0.9 ? 'text-red-400' : 'text-white'
           }`}>
-            {liquidityRatio.toFixed(3)}
+            {safeFixed(liquidityRatio, 3)}
           </p>
           <p className="text-xs text-gray-400">
             {liquidityRatio > 1.1 ? '매수 우세' : 

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface AnalysisData {
   bestEntry: number
@@ -177,7 +178,7 @@ export default function HistoricalAnalysis({ analysis, coin, period }: Historica
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">평균 변동성</span>
                   <span className="text-sm font-bold text-white">
-                    {marketStats.avgVolatility.toFixed(2)}%
+                    {safeFixed(marketStats.avgVolatility, 2)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -190,7 +191,7 @@ export default function HistoricalAnalysis({ analysis, coin, period }: Historica
                       />
                     </div>
                     <span className="text-sm font-bold text-white">
-                      {marketStats.trendStrength.toFixed(0)}%
+                      {safeFixed(marketStats.trendStrength, 0)}%
                     </span>
                   </div>
                 </div>

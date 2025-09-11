@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaFire, FaExclamationTriangle, FaChartBar, FaDollarSign, 
@@ -1024,7 +1025,7 @@ export default function LiquidationUltimate() {
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">24시간 변동</span>
                       <span className={`font-bold ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                        {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
                       </span>
                     </div>
                     
@@ -1070,7 +1071,7 @@ export default function LiquidationUltimate() {
                           currentStats.cascadeRisk > 40 ? 'text-orange-400' :
                           currentStats.cascadeRisk > 20 ? 'text-yellow-400' : 'text-green-400'
                         }`}>
-                          {currentStats.cascadeRisk.toFixed(0)}%
+                          {safeFixed(currentStats.cascadeRisk, 0)}%
                         </span>
                       </div>
                     </div>
@@ -1377,7 +1378,7 @@ export default function LiquidationUltimate() {
                   currentStats.cascadeRisk > 40 ? 'text-orange-400' :
                   currentStats.cascadeRisk > 20 ? 'text-yellow-400' : 'text-green-400'
                 }`}>
-                  {currentStats.cascadeRisk.toFixed(0)}%
+                  {safeFixed(currentStats.cascadeRisk, 0)}%
                 </p>
                 <p className={`text-xs mt-1 ${
                   currentStats.riskLevel === 'extreme' ? 'text-red-400' :
@@ -1407,7 +1408,7 @@ export default function LiquidationUltimate() {
                   {liquidationClusters?.downside && (
                     <>
                       <p className="text-xs text-gray-500 mt-1">
-                        현재가 대비: {liquidationClusters.downside.distance.toFixed(1)}%
+                        현재가 대비: {safeFixed(liquidationClusters.downside.distance, 1)}%
                       </p>
                       <p className="text-xs text-gray-500">
                         예상 볼륨: ${(liquidationClusters.downside.volume / 1000000).toFixed(2)}M
@@ -1433,7 +1434,7 @@ export default function LiquidationUltimate() {
                   {liquidationClusters?.upside && (
                     <>
                       <p className="text-xs text-gray-500 mt-1">
-                        현재가 대비: +{liquidationClusters.upside.distance.toFixed(1)}%
+                        현재가 대비: +{safeFixed(liquidationClusters.upside.distance, 1)}%
                       </p>
                       <p className="text-xs text-gray-500">
                         예상 볼륨: ${(liquidationClusters.upside.volume / 1000000).toFixed(2)}M
@@ -1553,7 +1554,7 @@ export default function LiquidationUltimate() {
                   </div>
                   <div className="mt-2 text-xs text-gray-400 text-center">
                     {futuresStats && futuresStats.liquidation && (
-                      <span>변동성: {(futuresStats.liquidation.volatility || 0).toFixed(1)}%</span>
+                      <span>변동성: {safeFixed(futuresStats.liquidation.volatility, 1)}%</span>
                     )}
                   </div>
                 </div>
@@ -1610,10 +1611,10 @@ export default function LiquidationUltimate() {
                               ? `${(liq.value / 1000000).toFixed(2)}M`
                               : liq.value != null && liq.value >= 1000
                               ? `${(liq.value / 1000).toFixed(1)}K`
-                              : liq.value != null ? liq.value.toFixed(0) : '0'}
+                              : liq.value != null ? safeFixed(liq.value, 0) : '0'}
                           </p>
                           <p className="text-xs text-gray-400">
-                            @ ${liq.price != null ? liq.price.toFixed(2) : '0'}
+                            @ ${liq.price != null ? safePrice(liq.price, 2) : '0'}
                           </p>
                         </div>
                         {liq.impact === 'extreme' && (
@@ -1716,7 +1717,7 @@ export default function LiquidationUltimate() {
                             ${(liq.value / 1000000).toFixed(3)}M
                           </p>
                           <p className="text-xs text-gray-400">
-                            @ ${liq.price.toFixed(2)}
+                            @ ${safePrice(liq.price, 2)}
                           </p>
                         </div>
                       </div>
@@ -1755,7 +1756,7 @@ export default function LiquidationUltimate() {
               
               <div className="mb-4">
                 <p className="text-sm text-gray-400 mb-2">
-                  현재가: ${currentPrice.toFixed(2)} ({priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%)
+                  현재가: ${safePrice(currentPrice, 2)} ({priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%)
                 </p>
               </div>
 
@@ -1775,7 +1776,7 @@ export default function LiquidationUltimate() {
                         }`}
                       >
                         <div className="w-20 text-xs text-gray-400">
-                          ${level.price.toFixed(2)}
+                          ${safePrice(level.price, 2)}
                         </div>
                         <div className="flex-1 flex gap-1">
                           {/* 롱 청산 바 */}
@@ -1810,7 +1811,7 @@ export default function LiquidationUltimate() {
                           </div>
                         </div>
                         <div className="w-16 text-xs text-gray-500 text-right">
-                          {level.leverage.toFixed(0)}x
+                          {safeFixed(level.leverage, 0)}x
                         </div>
                       </div>
                     )
@@ -1866,7 +1867,7 @@ export default function LiquidationUltimate() {
                     />
                   </div>
                   <p className="text-sm mt-2 text-gray-300">
-                    {currentStats.cascadeRisk.toFixed(0)}% 위험
+                    {safeFixed(currentStats.cascadeRisk, 0)}% 위험
                   </p>
                 </div>
 
@@ -1911,7 +1912,7 @@ export default function LiquidationUltimate() {
                     </div>
                     {alert.affectedLevels.length > 0 && (
                       <p className="text-xs text-gray-400 mt-1">
-                        영향 가격대: {alert.affectedLevels.map(l => `$${l.toFixed(0)}`).join(', ')}
+                        영향 가격대: {alert.affectedLevels.map(l => `$${safeFixed(l, 0)}`).join(', ')}
                       </p>
                     )}
                   </div>
@@ -1952,13 +1953,13 @@ export default function LiquidationUltimate() {
                           return (
                             <div key={leverage} className="flex justify-between items-center p-2 bg-gray-800/50 rounded">
                               <span className="text-xs text-gray-400">{leverage}x</span>
-                              <span className="text-xs text-white">${liquidationPrice.toFixed(2)}</span>
+                              <span className="text-xs text-white">${safeFixed(liquidationPrice, 2)}</span>
                               <span className={`text-xs font-bold ${
                                 distance < 2 ? 'text-red-400' :
                                 distance < 5 ? 'text-orange-400' :
                                 distance < 10 ? 'text-yellow-400' : 'text-green-400'
                               }`}>
-                                -{distance.toFixed(1)}%
+                                -{safeFixed(distance, 1)}%
                               </span>
                             </div>
                           )
@@ -2103,7 +2104,7 @@ export default function LiquidationUltimate() {
                       return (
                         <div key={percent} className="flex items-center gap-2">
                           <span className="text-xs text-gray-400 w-16">+{percent}%</span>
-                          <span className="text-xs text-gray-300 w-20">${targetPrice.toFixed(0)}</span>
+                          <span className="text-xs text-gray-300 w-20">${safeFixed(targetPrice, 0)}</span>
                           <div className="flex-1 bg-gray-700 h-4 rounded overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-red-600 to-red-400 flex items-center justify-end pr-1"
@@ -2132,7 +2133,7 @@ export default function LiquidationUltimate() {
                       return (
                         <div key={percent} className="flex items-center gap-2">
                           <span className="text-xs text-gray-400 w-16">-{percent}%</span>
-                          <span className="text-xs text-gray-300 w-20">${targetPrice.toFixed(0)}</span>
+                          <span className="text-xs text-gray-300 w-20">${safeFixed(targetPrice, 0)}</span>
                           <div className="flex-1 bg-gray-700 h-4 rounded overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-end pr-1"
@@ -2164,7 +2165,7 @@ export default function LiquidationUltimate() {
                   <div className="text-center">
                     <p className="text-xs text-gray-400">현재가</p>
                     <p className="text-lg font-bold text-white">
-                      ${currentPrice.toFixed(0)}
+                      ${safePrice(currentPrice, 0)}
                     </p>
                     <p className="text-xs text-gray-500">기준점</p>
                   </div>
@@ -2301,7 +2302,7 @@ export default function LiquidationUltimate() {
                         </div>
                         <div className="text-right">
                           <p className="text-white font-bold">${(liq.value / 1000000).toFixed(2)}M</p>
-                          <p className="text-xs text-gray-400">${liq.price.toFixed(0)}</p>
+                          <p className="text-xs text-gray-400">${safePrice(liq.price, 0)}</p>
                         </div>
                       </div>
                     ))
@@ -2521,10 +2522,10 @@ export default function LiquidationUltimate() {
                           </span>
                         </td>
                         <td className="py-2 px-2 text-right text-gray-300">
-                          ${liq.price.toFixed(2)}
+                          ${safePrice(liq.price, 2)}
                         </td>
                         <td className="py-2 px-2 text-right text-gray-300">
-                          {liq.quantity.toFixed(4)}
+                          {safeAmount(liq.quantity)}
                         </td>
                         <td className="py-2 px-2 text-right font-bold text-white">
                           ${(liq.value / 1000000).toFixed(2)}M

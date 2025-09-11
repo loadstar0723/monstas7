@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useMemo, memo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
 
@@ -282,9 +283,9 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500 mb-1">24H 최고</p>
-          <p className="text-sm font-semibold text-green-400">${maxPrice.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-green-400">${safeFixed(maxPrice, 2)}</p>
           <p className="text-xs text-gray-500 mt-2 mb-1">24H 최저</p>
-          <p className="text-sm font-semibold text-red-400">${minPrice.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-red-400">${safeFixed(minPrice, 2)}</p>
         </div>
       </div>
 
@@ -339,9 +340,9 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
         
         {/* Y축 가격 라벨 */}
         <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-gray-500 -ml-12 w-10">
-          <span>${maxPrice.toFixed(0)}</span>
+          <span>${safeFixed(maxPrice, 0)}</span>
           <span>${((maxPrice + minPrice) / 2).toFixed(0)}</span>
-          <span>${minPrice.toFixed(0)}</span>
+          <span>${safeFixed(minPrice, 0)}</span>
         </div>
         
         {/* X축 시간 라벨 - React.memo로 최적화 */}

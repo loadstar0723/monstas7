@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaFire, FaClock, FaDollarSign, FaExchangeAlt, FaChartLine, FaShieldAlt, FaBell } from 'react-icons/fa'
 import { binanceAPI } from '@/lib/binanceConfig'
@@ -313,7 +314,7 @@ export default function RealTimeOpportunities({ selectedCoin }: Props) {
                     opp.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-red-500/20 text-red-400'
                   }`}>
-                    {opp.spreadPercent.toFixed(2)}%
+                    {safeFixed(opp.spreadPercent, 2)}%
                   </span>
                 </div>
                 
@@ -322,13 +323,13 @@ export default function RealTimeOpportunities({ selectedCoin }: Props) {
                   <div className="bg-gray-900 rounded-lg p-3">
                     <p className="text-xs text-gray-400">매수가</p>
                     <p className="text-lg font-bold text-green-400">
-                      ${opp.buyPrice.toFixed(2)}
+                      ${safeFixed(opp.buyPrice, 2)}
                     </p>
                   </div>
                   <div className="bg-gray-900 rounded-lg p-3">
                     <p className="text-xs text-gray-400">매도가</p>
                     <p className="text-lg font-bold text-red-400">
-                      ${opp.sellPrice.toFixed(2)}
+                      ${safeFixed(opp.sellPrice, 2)}
                     </p>
                   </div>
                 </div>
@@ -338,19 +339,19 @@ export default function RealTimeOpportunities({ selectedCoin }: Props) {
                   <div className="flex justify-between">
                     <span className="text-gray-400">예상 수익</span>
                     <span className="text-green-400 font-bold">
-                      +${opp.potentialProfit.toFixed(2)}
+                      +${safeFixed(opp.potentialProfit, 2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">수수료</span>
                     <span className="text-red-400">
-                      -${opp.fees.toFixed(2)}
+                      -${safeFixed(opp.fees, 2)}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-700">
                     <span className="text-gray-400">순수익</span>
                     <span className="text-xl font-bold text-white">
-                      ${opp.netProfit.toFixed(2)}
+                      ${safeFixed(opp.netProfit, 2)}
                     </span>
                   </div>
                 </div>
@@ -387,7 +388,7 @@ export default function RealTimeOpportunities({ selectedCoin }: Props) {
             <p className="text-sm text-gray-400">최고 수익</p>
           </div>
           <p className="text-2xl font-bold text-green-400">
-            ${filteredOpportunities[0]?.netProfit.toFixed(2) || '0'}
+            ${filteredOpportunities[0]?.safeFixed(netProfit, 2) || '0'}
           </p>
         </div>
         

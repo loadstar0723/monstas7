@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { CalculatorIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 
 interface ExecutableLiquidityProps {
@@ -110,7 +111,7 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
             <ChartBarIcon className="w-5 h-5 text-green-400" />
           </div>
           <p className="text-2xl font-bold text-white">
-            {executableLiquidity.maxBuySize.toFixed(4)} BTC
+            {safeFixed(executableLiquidity.maxBuySize, 4)} BTC
           </p>
           <p className="text-sm text-gray-400 mt-1">
             ≈ ${(executableLiquidity.maxBuySize * currentPrice / 1000000).toFixed(2)}M
@@ -123,7 +124,7 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
             <ChartBarIcon className="w-5 h-5 text-red-400" />
           </div>
           <p className="text-2xl font-bold text-white">
-            {executableLiquidity.maxSellSize.toFixed(4)} BTC
+            {safeFixed(executableLiquidity.maxSellSize, 4)} BTC
           </p>
           <p className="text-sm text-gray-400 mt-1">
             ≈ ${(executableLiquidity.maxSellSize * currentPrice / 1000000).toFixed(2)}M
@@ -158,7 +159,7 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
                   </td>
                   <td className="text-center py-2">
                     <span className={result.buy.slippage > 0.1 ? 'text-yellow-400' : 'text-gray-300'}>
-                      {result.buy.slippage.toFixed(3)}%
+                      {safeFixed(result.buy.slippage, 3)}%
                     </span>
                   </td>
                   <td className="text-center py-2">
@@ -170,7 +171,7 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
                   </td>
                   <td className="text-center py-2">
                     <span className={result.sell.slippage > 0.1 ? 'text-yellow-400' : 'text-gray-300'}>
-                      {result.sell.slippage.toFixed(3)}%
+                      {safeFixed(result.sell.slippage, 3)}%
                     </span>
                   </td>
                 </tr>
@@ -213,11 +214,11 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">평균가:</span>
-                  <span className="text-white">${executableLiquidity.customResult.buy.avgPrice.toFixed(2)}</span>
+                  <span className="text-white">${safeFixed(executableLiquidity.customResult.buy.avgPrice, 2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">슬리피지:</span>
-                  <span className="text-yellow-400">{executableLiquidity.customResult.buy.slippage.toFixed(3)}%</span>
+                  <span className="text-yellow-400">{safeFixed(executableLiquidity.customResult.buy.slippage, 3)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">필요 레벨:</span>
@@ -241,11 +242,11 @@ export default function ExecutableLiquidity({ orderbook, currentPrice }: Executa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">평균가:</span>
-                  <span className="text-white">${executableLiquidity.customResult.sell.avgPrice.toFixed(2)}</span>
+                  <span className="text-white">${safeFixed(executableLiquidity.customResult.sell.avgPrice, 2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">슬리피지:</span>
-                  <span className="text-yellow-400">{executableLiquidity.customResult.sell.slippage.toFixed(3)}%</span>
+                  <span className="text-yellow-400">{safeFixed(executableLiquidity.customResult.sell.slippage, 3)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">필요 레벨:</span>

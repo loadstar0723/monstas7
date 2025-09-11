@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiAlertCircle, FiInfo } from 'react-icons/fi'
 import { FaCalculator } from 'react-icons/fa'
@@ -322,7 +323,7 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
   }
 
   const formatPercentage = (value: number) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+    return `${value >= 0 ? '+' : ''}${safeFixed(value, 2)}%`
   }
 
   return (
@@ -503,14 +504,14 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
                 <div className="flex justify-between">
                   <span className="text-gray-400">손익분기점:</span>
                   <span className="text-blue-400">
-                    ${result.breakeven.toFixed(2)}
+                    ${safeFixed(result.breakeven, 2)}
                   </span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span className="text-gray-400">청산가:</span>
                   <span className="text-red-400">
-                    ${result.liquidation.toFixed(2)}
+                    ${safeFixed(result.liquidation, 2)}
                   </span>
                 </div>
               </div>
@@ -632,13 +633,13 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
                       {params.entryPrice > 0 && (
                         <div>
                           <p className="text-xs text-gray-400">진입가</p>
-                          <p className="text-lg font-bold text-green-400">${params.entryPrice.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-green-400">${safeFixed(params.entryPrice, 2)}</p>
                         </div>
                       )}
                       {params.exitPrice > 0 && (
                         <div>
                           <p className="text-xs text-gray-400">목표가</p>
-                          <p className="text-lg font-bold text-yellow-400">${params.exitPrice.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-yellow-400">${safeFixed(params.exitPrice, 2)}</p>
                         </div>
                       )}
                     </div>
@@ -654,7 +655,7 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
                           }}
                         >
                           <span className="absolute right-0 -top-3 text-xs text-green-400 bg-gray-900 px-1">
-                            진입 ${params.entryPrice.toFixed(0)}
+                            진입 ${safeFixed(params.entryPrice, 0)}
                           </span>
                         </div>
                       )}
@@ -668,7 +669,7 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
                           }}
                         >
                           <span className="absolute right-0 -top-3 text-xs text-yellow-400 bg-gray-900 px-1">
-                            목표 ${params.exitPrice.toFixed(0)}
+                            목표 ${safeFixed(params.exitPrice, 0)}
                           </span>
                         </div>
                       )}
@@ -690,7 +691,7 @@ const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
                                 minHeight: '2px',
                                 maxWidth: '20px'
                               }}
-                              title={`$${item.price.toFixed(2)}`}
+                              title={`$${safePrice(item.price, 2)}`}
                             />
                           )
                         })}

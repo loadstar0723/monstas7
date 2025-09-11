@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface Coin {
   symbol: string
@@ -99,7 +100,7 @@ export default function ZScoreAnalysis({ coin, marketData, historicalData }: ZSc
               Math.abs(marketData.zScore) > 2 ? 'text-red-400' : 
               Math.abs(marketData.zScore) > 1 ? 'text-yellow-400' : 'text-green-400'
             }`}>
-              {marketData.zScore.toFixed(3)}
+              {safeFixed(marketData.zScore, 3)}
             </div>
           </div>
           <div className="bg-black/30 rounded-lg p-3">

@@ -1,55 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server"
+
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  })
+  
+  return new NextResponse(null, { status: 200, headers })
+}
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const symbol = searchParams.get('symbol')
-
   try {
-    let url = 'https://api.binance.com/api/v3/ticker/24hr'
+    const { searchParams } = new URL(request.url)
+    const symbol = searchParams.get("symbol") || "BTCUSDT"
     
-    // 특정 심볼이 지정된 경우
-    if (symbol) {
-      url += `?symbol=${symbol}`
-    }
-    // symbol이 없으면 모든 티커 반환
-
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store'
-    })
-
+    const response = await fetch(
+      `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 0 }
+      }
+    )
+    
     if (!response.ok) {
       throw new Error(`Binance API error: ${response.status}`)
     }
-
+    
     const data = await response.json()
     
-    // 단일 심볼 요청시 객체 그대로 반환
-    // (배열로 반환하면 클라이언트에서 파싱 에러 발생)
-    
-    // CORS 헤더 추가
     const headers = new Headers({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     })
     
     return NextResponse.json(data, { headers })
   } catch (error) {
-    console.error('Binance API error:', error)
+    console.error("Binance ticker API error:", error)
     
-    // 에러 발생 시 Binance API와 동일한 형식으로 반환
-    const defaultData = {
-      symbol: symbol || 'BTCUSDT',
-      price: '98000.00',
-      lastPrice: '98000.00',
-      priceChangePercent: '2.5',
-      volume: '15000',
-      quoteVolume: '1500000000'
-    }
+    const headers = new Headers({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    })
     
-    return NextResponse.json(defaultData, { status: 200 })
+    return NextResponse.json({ 
+      symbol: request.nextUrl.searchParams.get("symbol") || "BTCUSDT",
+      price: "0"
+    }, { status: 200, headers })
   }
 }

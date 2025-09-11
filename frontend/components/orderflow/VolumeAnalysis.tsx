@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface VolumeAnalysisProps {
   symbol: string
@@ -96,7 +97,7 @@ export default function VolumeAnalysis({ symbol }: VolumeAnalysisProps) {
     if (volume > 1e9) return `${(volume / 1e9).toFixed(2)}B`
     if (volume > 1e6) return `${(volume / 1e6).toFixed(2)}M`
     if (volume > 1e3) return `${(volume / 1e3).toFixed(2)}K`
-    return volume.toFixed(2)
+    return safeFixed(volume, 2)
   }
 
   if (isLoading) {
@@ -191,12 +192,12 @@ export default function VolumeAnalysis({ symbol }: VolumeAnalysisProps) {
                 {/* 거래량 비율 표시 */}
                 {data.volumeRatio > 2 && (
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-white font-bold">
-                    {data.volumeRatio.toFixed(1)}x
+                    {safeFixed(data.volumeRatio, 1)}x
                   </span>
                 )}
               </div>
               <span className={`text-xs w-12 text-right ${data.priceChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {data.priceChange > 0 ? '+' : ''}{data.priceChange.toFixed(1)}%
+                {data.priceChange > 0 ? '+' : ''}{safePrice(data.priceChange, 1)}%
               </span>
             </div>
           )

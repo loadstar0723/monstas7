@@ -5,6 +5,7 @@ import { FaBitcoin } from 'react-icons/fa';
 import { SiEthereum, SiBinance } from 'react-icons/si';
 import { useBinanceWebSocket } from '@/hooks/useBinanceWebSocket';
 import { useEffect, useState } from 'react';
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { config } from '@/lib/config'
 
 const cryptoIcons: Record<string, any> = {
@@ -44,7 +45,7 @@ export default function CryptoTicker() {
     } else if (volume >= 1e3) {
       return `${(volume / 1e3).toFixed(2)}K`;
     }
-    return volume.toFixed(0);
+    return safeFixed(volume, 0);
   };
 
   const getPriceAnimation = (symbol: string, currentPrice: number) => {
@@ -97,7 +98,7 @@ export default function CryptoTicker() {
                   <div className={`text-xs px-2 py-1 rounded-full ${
                     isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                   }`}>
-                    {isPositive ? '+' : ''}{crypto.change.toFixed(2)}%
+                    {isPositive ? '+' : ''}{safePercent(crypto.change)}%
                   </div>
                 </div>
 

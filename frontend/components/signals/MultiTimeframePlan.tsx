@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaClock, FaCalendarDay, FaCalendarWeek, FaCalendarAlt } from 'react-icons/fa'
 import { apiClient } from '../../lib/api'
 import WebSocketManager from '../../lib/websocketManager'

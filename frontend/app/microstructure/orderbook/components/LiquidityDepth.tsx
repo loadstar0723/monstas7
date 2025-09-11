@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { FaWater, FaChartLine, FaExclamationTriangle, FaCoins, FaArrowsAltV } from 'react-icons/fa'
 import { useState, useMemo, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface OrderbookLevel {
   price: number
@@ -135,7 +136,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`
     if (value >= 1000) return `$${(value / 1000).toFixed(2)}K`
-    return `$${value.toFixed(2)}`
+    return `$${safeFixed(value, 2)}`
   }
 
   const getLiquidityStatus = (imbalance: number) => {
@@ -166,14 +167,14 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
           <div className="bg-gray-700/50 rounded-lg p-4">
             <div className="text-gray-400 text-sm mb-1">스프레드</div>
             <div className="text-2xl font-bold text-yellow-400">
-              {metrics.spreadBps.toFixed(1)}
+              {safeFixed(metrics.spreadBps, 1)}
               <span className="text-sm text-gray-400 ml-1">bps</span>
             </div>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-4">
             <div className="text-gray-400 text-sm mb-1">유동성 비율</div>
             <div className="text-2xl font-bold text-white">
-              {metrics.depthRatio.toFixed(2)}
+              {safeFixed(metrics.depthRatio, 2)}
             </div>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-4">
@@ -267,7 +268,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
                       level.slippage < 1 ? 'text-yellow-400' :
                       'text-red-400'
                     }`}>
-                      {level.slippage.toFixed(2)}%
+                      {safeFixed(level.slippage, 2)}%
                     </span>
                   </td>
                 </motion.tr>
@@ -283,13 +284,13 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
             <div>
               <span className="text-gray-400">예상 체결 가격 (매도)</span>
               <p className="text-white font-medium">
-                ${depthLevels.find(l => l.percentage === selectedPercentage)?.bidPrice.toFixed(2)}
+                ${depthLevels.find(l => l.percentage === selectedPercentage)?.safeFixed(bidPrice, 2)}
               </p>
             </div>
             <div>
               <span className="text-gray-400">예상 체결 가격 (매수)</span>
               <p className="text-white font-medium">
-                ${depthLevels.find(l => l.percentage === selectedPercentage)?.askPrice.toFixed(2)}
+                ${depthLevels.find(l => l.percentage === selectedPercentage)?.safeFixed(askPrice, 2)}
               </p>
             </div>
           </div>
@@ -319,7 +320,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              스프레드가 {metrics.spreadBps.toFixed(1)}bps로 
+              스프레드가 {safeFixed(metrics.spreadBps, 1)}bps로 
               {metrics.spreadBps < 10 ? ' 매우 좁아 시장가 주문에 유리' : 
                metrics.spreadBps < 30 ? ' 적절한 수준' : 
                ' 넓어 지정가 주문을 권장'}합니다.
@@ -328,7 +329,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              현재 유동성 비율이 {metrics.depthRatio.toFixed(2)}로 
+              현재 유동성 비율이 {safeFixed(metrics.depthRatio, 2)}로 
               {metrics.depthRatio > 1.2 ? ' 매수 압력이 우세' :
                metrics.depthRatio < 0.8 ? ' 매도 압력이 우세' :
                ' 균형잡힌 상태'}입니다.
@@ -337,7 +338,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              대량 주문 시 ±1% 범위에서 약 {depthLevels[2]?.slippage.toFixed(2)}%의 슬리피지가 예상됩니다.
+              대량 주문 시 ±1% 범위에서 약 {depthLevels[2]?.safeFixed(slippage, 2)}%의 슬리피지가 예상됩니다.
             </p>
           </div>
         </div>

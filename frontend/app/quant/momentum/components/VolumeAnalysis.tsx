@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface VolumeAnalysisProps {
   symbol: string
@@ -101,7 +102,7 @@ export default function VolumeAnalysis({ symbol, volumeData }: VolumeAnalysisPro
         <div className="bg-gray-800/50 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-400 mb-2">거래량 비율</h3>
           <p className="text-2xl font-bold text-white">
-            {volumeRatio.toFixed(2)}x
+            {safeFixed(volumeRatio, 2)}x
           </p>
           <p className="text-xs text-gray-500 mt-1">20일 평균 대비</p>
           <div className="mt-3">
@@ -115,7 +116,7 @@ export default function VolumeAnalysis({ symbol, volumeData }: VolumeAnalysisPro
         <div className="bg-gray-800/50 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-400 mb-2">MFI</h3>
           <p className="text-2xl font-bold text-white">
-            {mfi.toFixed(1)}
+            {safeFixed(mfi, 1)}
           </p>
           <p className="text-xs text-gray-500 mt-1">Money Flow Index</p>
           <div className="mt-3 h-1 bg-gray-700 rounded-full overflow-hidden">

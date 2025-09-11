@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaRobot } from 'react-icons/fa'
 import { binanceAPI } from '@/lib/binanceConfig'
@@ -116,7 +117,7 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
     if (volume >= 1e9) return `$${(volume / 1e9).toFixed(2)}B`
     if (volume >= 1e6) return `$${(volume / 1e6).toFixed(2)}M`
     if (volume >= 1e3) return `$${(volume / 1e3).toFixed(2)}K`
-    return `$${volume.toFixed(2)}`
+    return `$${safeFixed(volume, 2)}`
   }
 
   return (
@@ -212,7 +213,7 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
                         <div>
                           <p className="text-gray-400 text-sm">24시간 변동률</p>
                           <p className={`text-xl font-bold ${priceInfo.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(2)}%
+                            {priceInfo.change >= 0 ? '+' : ''}{safePrice(priceInfo.change, 2)}%
                           </p>
                         </div>
                         <div>
@@ -270,7 +271,7 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
                   <div className={`text-xs mt-1 ${
                     priceInfo.change >= 0 ? 'text-green-400' : 'text-red-400'
                   }`}>
-                    {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(1)}%
+                    {priceInfo.change >= 0 ? '+' : ''}{safePrice(priceInfo.change, 1)}%
                   </div>
                 )}
               </button>

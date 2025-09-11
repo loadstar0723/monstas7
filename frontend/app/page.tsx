@@ -6,6 +6,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
 import { config } from '@/lib/config'
+import { formatVolume } from '@/lib/formatters'
 
 // 동적 import로 초기 로딩 속도 개선
 const SimplePriceChart = dynamic(() => import('@/components/SimplePriceChart'), { 
@@ -60,7 +61,7 @@ export default function Home() {
           symbol: data.symbol,
           price: data.price,
           change: data.change,
-          volume: (data.volume / 1000000).toFixed(1) + 'M',
+          volume: formatVolume(data.volume || 0),
           high: data.high,
           low: data.low
         })
@@ -72,7 +73,7 @@ export default function Home() {
           symbol: data.symbol,
           price: data.price,
           change: data.change,
-          volume: (data.volume / 1000000).toFixed(1) + 'M',
+          volume: formatVolume(data.volume || 0),
           high: data.high,
           low: data.low
         })
@@ -166,7 +167,7 @@ export default function Home() {
             symbol: 'BTCUSDT',
             price: parseFloat(btcPrice.lastPrice),
             change: parseFloat(btcPrice.priceChangePercent),
-            volume: (parseFloat(btcPrice.quoteVolume) / 1000000).toFixed(1) + 'M',
+            volume: formatVolume(btcPrice.quoteVolume || 0),
             high: parseFloat(btcPrice.highPrice),
             low: parseFloat(btcPrice.lowPrice)
           })
@@ -179,7 +180,7 @@ export default function Home() {
             symbol: 'ETHUSDT',
             price: parseFloat(ethPrice.lastPrice),
             change: parseFloat(ethPrice.priceChangePercent),
-            volume: (parseFloat(ethPrice.quoteVolume) / 1000000).toFixed(1) + 'M',
+            volume: formatVolume(ethPrice.quoteVolume || 0),
             high: parseFloat(ethPrice.highPrice),
             low: parseFloat(ethPrice.lowPrice)
           })

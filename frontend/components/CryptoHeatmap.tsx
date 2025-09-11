@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
 
@@ -75,9 +76,9 @@ export default function CryptoHeatmap() {
 
   const formatPrice = (price: number) => {
     if (price < config.decimals.value00001) return price.toExponential(2)
-    if (price < config.decimals.value01) return price.toFixed(6)
-    if (price < 1) return price.toFixed(4)
-    if (price < 100) return price.toFixed(2)
+    if (price < config.decimals.value01) return safePrice(price, 6)
+    if (price < 1) return safePrice(price, 4)
+    if (price < 100) return safePrice(price, 2)
     return price.toLocaleString('en-US', { maximumFractionDigits: 0 })
   }
 
@@ -85,7 +86,7 @@ export default function CryptoHeatmap() {
     if (volume >= 1e9) return `$${(volume / 1e9).toFixed(1)}B`
     if (volume >= 1e6) return `$${(volume / 1e6).toFixed(1)}M`
     if (volume >= 1e3) return `$${(volume / 1e3).toFixed(1)}K`
-    return `$${volume.toFixed(0)}`
+    return `$${safeFixed(volume, 0)}`
   }
 
   if (loading) {
@@ -141,7 +142,7 @@ export default function CryptoHeatmap() {
                   min-h-[60px] shadow-xl border border-white/10
                   backdrop-blur-sm relative overflow-hidden group
                 `}
-                title={`${coin.name}: $${formatPrice(coin.price)} (${coin.change > 0 ? '+' : ''}${coin.change.toFixed(2)}%)`}
+                title={`${coin.name}: $${formatPrice(coin.price)} (${coin.change > 0 ? '+' : ''}${safePercent(coin.change)}%)`}
               >
                 <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative z-10">

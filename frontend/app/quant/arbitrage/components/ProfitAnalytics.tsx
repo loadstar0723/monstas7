@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface ProfitAnalyticsProps {
   selectedCoin: {
@@ -140,7 +141,7 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
           <div className={`text-2xl font-bold ${
             stats.totalProfit > 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            ${stats.totalProfit.toFixed(2)}
+            ${safeFixed(stats.totalProfit, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {timeRange === 'today' ? '오늘' :
@@ -155,7 +156,7 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
           <div className={`text-2xl font-bold ${
             stats.avgDailyProfit > 0 ? 'text-green-400' : 'text-red-400'
           }`}>
-            ${stats.avgDailyProfit.toFixed(2)}
+            ${safeFixed(stats.avgDailyProfit, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             일평균
@@ -217,7 +218,7 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
                 <div className={`font-mono text-sm ${
                   day.profit > 0 ? 'text-green-400' : 'text-red-400'
                 }`}>
-                  ${day.profit.toFixed(2)}
+                  ${safeFixed(day.profit, 2)}
                 </div>
                 <div className="text-xs text-gray-500">
                   {day.trades}거래
@@ -233,7 +234,7 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
         <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
           <div className="text-sm text-green-400 mb-1">최고 수익일</div>
           <div className="text-2xl font-bold text-white">
-            +${stats.bestDay.toFixed(2)}
+            +${safeFixed(stats.bestDay, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             일일 최고 기록
@@ -243,7 +244,7 @@ export default function ProfitAnalytics({ selectedCoin }: ProfitAnalyticsProps) 
         <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
           <div className="text-sm text-red-400 mb-1">최대 손실일</div>
           <div className="text-2xl font-bold text-white">
-            ${stats.worstDay.toFixed(2)}
+            ${safeFixed(stats.worstDay, 2)}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             일일 최대 손실

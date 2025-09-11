@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import WebSocketManager from '@/lib/websocketManager'
 import LiquidityDepthHeatmap from './components/LiquidityDepthHeatmap'
 import OrderBookVisualizer from './components/OrderBookVisualizer'
@@ -220,7 +221,7 @@ export default function LiquidityPoolModule() {
               <div className="text-right">
                 <p className="text-gray-400 text-xs">24h 변동</p>
                 <p className={`text-lg font-bold ${priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+                  {priceChange24h >= 0 ? '+' : ''}{safePrice(priceChange24h, 2)}%
                 </p>
               </div>
               <div className="text-right">

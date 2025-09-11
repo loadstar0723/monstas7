@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
 import { 
@@ -145,7 +146,7 @@ export default function ComprehensiveAnalysis({
       recommended: recommendedLeverage,
       maximum: maxLeverage,
       risk: safeRiskScore > 3 ? 'high' : safeRiskScore > 1.5 ? 'medium' : 'low',
-      reasoning: `위험 점수 ${safeRiskScore.toFixed(1)}, 변동성 ${(volatility * 100).toFixed(2)}%`
+      reasoning: `위험 점수 ${safeFixed(safeRiskScore, 1)}, 변동성 ${(volatility * 100).toFixed(2)}%`
     }
 
     // 자본금 대비 전략 (켓리 방식 기반 + 시장 상황 조정)
@@ -164,7 +165,7 @@ export default function ComprehensiveAnalysis({
       position: Math.round(Math.max(2, Math.min(15, finalKelly / 2))), // 보수적 켈리 (50%), 2-15% 범위
       split: Math.max(2, Math.min(5, Math.ceil(volatility * 100))),
       reserve: Math.max(40, Math.min(80, 100 - finalKelly)),
-      reasoning: `켈리 ${kellyPercent.toFixed(1)}% → 조정 ${finalKelly.toFixed(1)}% (시장 ${marketAdjustment.toFixed(1)}x, 변동성 ${volatilityAdjustment.toFixed(1)}x)`
+      reasoning: `켈리 ${safeFixed(kellyPercent, 1)}% → 조정 ${safeFixed(finalKelly, 1)}% (시장 ${safeFixed(marketAdjustment, 1)}x, 변동성 ${safeFixed(volatilityAdjustment, 1)}x)`
     }
 
     // 시간대별 전략 (실제 시장 지표 기반)
@@ -377,7 +378,7 @@ export default function ComprehensiveAnalysis({
                     value < -30 ? 'text-red-400' :
                     'text-yellow-400'
                   }`}>
-                    {value > 0 ? '+' : ''}{value.toFixed(0)}
+                    {value > 0 ? '+' : ''}{safeFixed(value, 0)}
                   </div>
                 </div>
                 <svg viewBox="0 0 80 80" className="absolute inset-0 w-full h-full -rotate-90">

@@ -31,7 +31,7 @@ export default function TradingStrategy({ orderbook, stats, symbol, currentPrice
             진입 전략
           </h3>
           <div className="space-y-3 text-sm text-gray-300">
-            <p>• 현재 가격: ${currentPrice.toFixed(2)}</p>
+            <p>• 현재 가격: ${safePrice(currentPrice, 2)}</p>
             <p>• 권장 진입가: ${(currentPrice * 0.995).toFixed(2)}</p>
             <p>• 목표가: ${(currentPrice * 1.02).toFixed(2)}</p>
             <p>• 손절가: ${(currentPrice * 0.98).toFixed(2)}</p>

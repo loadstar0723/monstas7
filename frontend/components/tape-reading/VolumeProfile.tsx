@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface VolumeProfileProps {
@@ -198,15 +199,15 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="bg-purple-900/30 rounded-lg p-2">
             <p className="text-purple-400 text-xs mb-1">POC</p>
-            <p className="text-white font-bold">${poc.toFixed(2)}</p>
+            <p className="text-white font-bold">${safeFixed(poc, 2)}</p>
           </div>
           <div className="bg-blue-900/30 rounded-lg p-2">
             <p className="text-blue-400 text-xs mb-1">VA High</p>
-            <p className="text-white font-bold">${valueAreaHigh.toFixed(2)}</p>
+            <p className="text-white font-bold">${safeFixed(valueAreaHigh, 2)}</p>
           </div>
           <div className="bg-blue-900/30 rounded-lg p-2">
             <p className="text-blue-400 text-xs mb-1">VA Low</p>
-            <p className="text-white font-bold">${valueAreaLow.toFixed(2)}</p>
+            <p className="text-white font-bold">${safeFixed(valueAreaLow, 2)}</p>
           </div>
         </div>
       </div>
@@ -235,7 +236,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
+                tickFormatter={(value) => `$${safeFixed(value, 0)}`}
               />
               <Tooltip 
                 contentStyle={{ 

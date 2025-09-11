@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6'
 
@@ -100,19 +101,19 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">현재 델타</p>
             <p className={`font-bold ${currentDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {currentDelta >= 0 ? '+' : ''}{isNaN(currentDelta) ? '0.00' : currentDelta.toFixed(2)}
+              {currentDelta >= 0 ? '+' : ''}{isNaN(currentDelta) ? '0.00' : safeFixed(currentDelta, 2)}
             </p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">누적 델타</p>
             <p className={`font-bold ${cumDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {cumDelta >= 0 ? '+' : ''}{isNaN(cumDelta) ? '0.00' : cumDelta.toFixed(2)}
+              {cumDelta >= 0 ? '+' : ''}{isNaN(cumDelta) ? '0.00' : safeFixed(cumDelta, 2)}
             </p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">
             <p className="text-gray-400 text-xs mb-1">임밸런스</p>
             <p className={`font-bold ${imbalance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {imbalance >= 0 ? '+' : ''}{isNaN(imbalance) ? '0.0' : imbalance.toFixed(1)}%
+              {imbalance >= 0 ? '+' : ''}{isNaN(imbalance) ? '0.0' : safeFixed(imbalance, 1)}%
             </p>
           </div>
           <div className="bg-gray-900/50 rounded-lg p-2">

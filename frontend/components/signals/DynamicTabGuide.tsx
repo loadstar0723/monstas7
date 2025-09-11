@@ -2,6 +2,7 @@
 
 import { FaLightbulb, FaChartLine, FaExclamationTriangle, FaCheckCircle, FaArrowUp, FaArrowDown } from 'react-icons/fa'
 import { useMemo } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface DynamicTabGuideProps {
   tabType: 'wallets' | 'flows' | 'patterns' | 'history' | 'alerts' | 'backtest'
@@ -84,18 +85,18 @@ export default function DynamicTabGuide({
             {
               icon: dynamicAnalysis.netFlow > 0 ? 'success' : 'warning',
               title: `🎯 즉시 실행 전략: ${dynamicAnalysis.netFlow > 0 ? '매수' : '매도'} 포지션`,
-              content: `진입가: $${entryPrice.toFixed(2)} | 손절: $${stopLoss.toFixed(2)} (-${dynamicAnalysis.netFlow > 0 ? '3%' : '2%'}) | 목표가: $${takeProfit1.toFixed(2)} (+${dynamicAnalysis.netFlow > 0 ? '3%' : '2%'})`,
+              content: `진입가: $${safeFixed(entryPrice, 2)} | 손절: $${safeFixed(stopLoss, 2)} (-${dynamicAnalysis.netFlow > 0 ? '3%' : '2%'}) | 목표가: $${safeFixed(takeProfit1, 2)} (+${dynamicAnalysis.netFlow > 0 ? '3%' : '2%'})`,
               trend: dynamicAnalysis.netFlow > 0 ? 'up' : 'down'
             },
             {
               icon: 'tip',
               title: `📈 포지션 관리 전략`,
-              content: `추천 크기: ${positionSize} | 분할 진입: 3회 | 분할 청산: TP1(50%) $${takeProfit1.toFixed(2)}, TP2(50%) $${takeProfit2.toFixed(2)}`,
+              content: `추천 크기: ${positionSize} | 분할 진입: 3회 | 분할 청산: TP1(50%) $${safeFixed(takeProfit1, 2)}, TP2(50%) $${safeFixed(takeProfit2, 2)}`,
               trend: 'neutral'
             },
             {
               icon: dynamicAnalysis.largestTrade > 10 ? 'warning' : 'info',
-              title: `⚡ 고래 시그널: $${dynamicAnalysis.largestTrade.toFixed(2)}M 거래 감지`,
+              title: `⚡ 고래 시그널: $${safeFixed(dynamicAnalysis.largestTrade, 2)}M 거래 감지`,
               content: dynamicAnalysis.largestTrade > 10 
                 ? `초대형 고래 출현! 즉시 같은 방향 진입, 트레일링 스탑 설정`
                 : `중형 고래 활동, 분할 진입으로 리스크 관리`,
@@ -117,7 +118,7 @@ export default function DynamicTabGuide({
             }
           ],
           tradingTips: [
-            `🎯 진입: 고래 거래 > $${dynamicAnalysis.avgTradeSize.toFixed(2)}M 시 즉시 진입`,
+            `🎯 진입: 고래 거래 > $${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M 시 즉시 진입`,
             `💹 손절: -${dynamicAnalysis.netFlow > 0 ? '3%' : '2%'} 철저히 지킬 것 (예외 없음)`,
             `💰 익절: 1차 ${dynamicAnalysis.netFlow > 0 ? '+3%' : '+2%'}에서 50%, 2차 ${dynamicAnalysis.netFlow > 0 ? '+5%' : '+3%'}에서 50%`,
             `⏰ 홀딩: ${dynamicAnalysis.netFlow > 0 ? '4-8시간' : '2-4시간'} (${dynamicAnalysis.dominantSide} 우세 지속 시)`,
@@ -237,8 +238,8 @@ export default function DynamicTabGuide({
             },
             {
               icon: 'info',
-              title: `평균 거래액 $${dynamicAnalysis.avgTradeSize.toFixed(2)}M`,
-              content: `최대 $${dynamicAnalysis.largestTrade.toFixed(2)}M`,
+              title: `평균 거래액 $${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M`,
+              content: `최대 $${safeFixed(dynamicAnalysis.largestTrade, 2)}M`,
               trend: 'neutral'
             },
             {
@@ -253,7 +254,7 @@ export default function DynamicTabGuide({
           tradingTips: [
             `최근 추세: ${recentBuyCount > recentSellCount ? '매수' : '매도'} 우세`,
             `대형 거래 빈도: ${largeTradeCount > 10 ? '높음' : '보통'}`,
-            `평균 거래 규모: $${dynamicAnalysis.avgTradeSize.toFixed(2)}M`,
+            `평균 거래 규모: $${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M`,
             "과거 패턴 반복 여부 확인"
           ]
         }
@@ -266,7 +267,7 @@ export default function DynamicTabGuide({
             {
               icon: 'tip',
               title: "추천 임계값",
-              content: `현재 평균 거래액($${dynamicAnalysis.avgTradeSize.toFixed(2)}M) 기준 ${(dynamicAnalysis.avgTradeSize * 2).toFixed(2)}M 이상`,
+              content: `현재 평균 거래액($${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M) 기준 ${(dynamicAnalysis.avgTradeSize * 2).toFixed(2)}M 이상`,
               trend: 'neutral'
             },
             {
@@ -306,7 +307,7 @@ export default function DynamicTabGuide({
             {
               icon: 'success',
               title: "추천 진입 조건",
-              content: `고래 매수 > $${dynamicAnalysis.avgTradeSize.toFixed(2)}M 시 진입`,
+              content: `고래 매수 > $${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M 시 진입`,
               trend: 'up'
             },
             {
@@ -331,7 +332,7 @@ export default function DynamicTabGuide({
             }
           ],
           tradingTips: [
-            `진입 신호: 고래 ${dynamicAnalysis.dominantSide} > $${dynamicAnalysis.avgTradeSize.toFixed(2)}M`,
+            `진입 신호: 고래 ${dynamicAnalysis.dominantSide} > $${safeFixed(dynamicAnalysis.avgTradeSize, 2)}M`,
             `포지션 크기: 자본의 ${dynamicAnalysis.lastHourTrades > 20 ? '5%' : '10%'}`,
             `리스크 관리: 최대 낙폭 20% 이내`,
             "승률 목표: 60% 이상"

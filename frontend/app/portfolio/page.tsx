@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { config } from '@/lib/config'
@@ -157,7 +158,7 @@ export default function PortfolioPage() {
               {totalChange >= 0 ? '+' : ''}{formatValue(totalValue * totalChange / 100)}
             </div>
             <div className="text-sm text-gray-500 mt-2">
-              수익률: {totalChange.toFixed(2)}%
+              수익률: {safeFixed(totalChange, 2)}%
             </div>
           </motion.div>
 
@@ -189,7 +190,7 @@ export default function PortfolioPage() {
                   cx="${config.percentage.value50}"
                   cy="${config.percentage.value50}"
                   outerRadius={100}
-                  label={({ symbol, allocation }) => `${symbol} ${allocation.toFixed(1)}%`}
+                  label={({ symbol, allocation }) => `${symbol} ${safeFixed(allocation, 1)}%`}
                   labelLine={false}
                 >
                   {portfolio.map((_, index) => (
@@ -197,7 +198,7 @@ export default function PortfolioPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => `${value.toFixed(2)}%`}
+                  formatter={(value: number) => `${safeFixed(value, 2)}%`}
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                 />
               </PieChart>
@@ -281,7 +282,7 @@ export default function PortfolioPage() {
                           ? 'bg-green-500/20 text-green-400' 
                           : 'bg-red-500/20 text-red-400'
                       }`}>
-                        {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(2)}%
+                        {asset.change24h >= 0 ? '+' : ''}{safePercent(asset.change24h)}%
                       </span>
                     </td>
                     <td className="py-3">
@@ -295,7 +296,7 @@ export default function PortfolioPage() {
                             }}
                           />
                         </div>
-                        <span className="text-sm">{asset.allocation.toFixed(1)}%</span>
+                        <span className="text-sm">{safeFixed(asset.allocation, 1)}%</span>
                       </div>
                     </td>
                   </motion.tr>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaCog, FaRocket, FaChartBar, FaLightbulb, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, Legend } from 'recharts'
 
@@ -448,8 +449,8 @@ export default function OptimizationTool({ selectedCoin, settings, onOptimize }:
                       labelStyle={{ color: '#E5E7EB' }}
                       labelFormatter={getStrategyName}
                       formatter={(value: number, name: string) => {
-                        if (name === '기대수익률' || name === '위험도') return `${value.toFixed(2)}%`
-                        return value.toFixed(2)
+                        if (name === '기대수익률' || name === '위험도') return `${safeFixed(value, 2)}%`
+                        return safeFixed(value, 2)
                       }}
                     />
                     <Legend />
@@ -490,16 +491,16 @@ export default function OptimizationTool({ selectedCoin, settings, onOptimize }:
                       <td className={`py-3 text-right ${
                         strategy.expectedReturn > 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {strategy.expectedReturn.toFixed(2)}%
+                        {safeFixed(strategy.expectedReturn, 2)}%
                       </td>
                       <td className="py-3 text-right text-yellow-400">
-                        {strategy.risk.toFixed(2)}%
+                        {safeFixed(strategy.risk, 2)}%
                       </td>
                       <td className="py-3 text-right text-blue-400">
-                        {strategy.sharpeRatio.toFixed(2)}
+                        {safeFixed(strategy.sharpeRatio, 2)}
                       </td>
                       <td className="py-3 text-right text-orange-400">
-                        -{strategy.maxDrawdown.toFixed(2)}%
+                        -{safeFixed(strategy.maxDrawdown, 2)}%
                       </td>
                       <td className="py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -510,7 +511,7 @@ export default function OptimizationTool({ selectedCoin, settings, onOptimize }:
                             />
                           </div>
                           <span className="text-white font-medium">
-                            {strategy.score.toFixed(0)}
+                            {safeFixed(strategy.score, 0)}
                           </span>
                         </div>
                       </td>
