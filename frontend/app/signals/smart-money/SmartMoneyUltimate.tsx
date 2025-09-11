@@ -10,6 +10,7 @@ import {
   FaBell, FaWallet, FaDatabase, FaArrowUp, FaArrowDown,
   FaChartBar, FaChartPie, FaUserTie, FaBuilding, FaTrophy
 } from 'react-icons/fa'
+import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
 import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
 import dynamic from 'next/dynamic'

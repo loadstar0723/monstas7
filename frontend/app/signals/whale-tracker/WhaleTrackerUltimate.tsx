@@ -9,6 +9,7 @@ import {
   FaClock, FaGlobe, FaFilter, FaDownload, FaSync, FaCheckCircle,
   FaExclamationTriangle, FaInfoCircle, FaPlay, FaPause, FaStop, FaLightbulb
 } from 'react-icons/fa'
+import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
@@ -842,7 +843,7 @@ export default function WhaleTrackerUltimate() {
               setSelectedSymbol(currentSymbol => {
                 if (currentSymbol === symbol) {
                   if (trade.impact === 'high') {
-                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)} ${trade.symbol.replace('USDT', '')}`)
+                    addNotification('warning', `🐋 초대형 고래 ${trade.type === 'buy' ? '매수' : '매도'}: ${safeToFixed(trade.amount, 2)} ${trade.symbol.replace('USDT', '')}`)
                     // 소리 알림 재생
                     if (alerts.whaleAlert && alerts.sound) {
                       audioService.playNotification('whale')
@@ -851,7 +852,7 @@ export default function WhaleTrackerUltimate() {
                     if (alerts.whaleAlert) {
                       audioService.showBrowserNotification(
                         `🐋 고래 거래 감지!`,
-                        `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${trade.amount.toFixed(2)}`,
+                        `${trade.symbol.replace('USDT', '')} ${trade.type === 'buy' ? '매수' : '매도'}: ${safeToFixed(trade.amount, 2)}`,
                       )
                     }
                   } else if (alerts.whaleAlert && alerts.sound) {
@@ -1307,16 +1308,16 @@ export default function WhaleTrackerUltimate() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-3xl font-bold text-white">
-                        ${currentPrice.toFixed(2)}
+                        ${safeToFixed(currentPrice, 2)}
                       </p>
                       <p className={`text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+                        {priceChange >= 0 ? '▲' : '▼'} {safeToFixed(Math.abs(priceChange), 2)}%
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-400">24h 고래 거래량</p>
                       <p className="text-xl font-bold text-purple-400">
-                        ${stats.totalVolume > 0 ? (stats.totalVolume / 1000000).toFixed(1) : '0.0'}M
+                        ${formatVolume(stats.totalVolume)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         고래 거래 {stats.totalWhales || 0}건
@@ -1348,7 +1349,7 @@ export default function WhaleTrackerUltimate() {
                           stroke="#9CA3AF"
                           tick={{ fontSize: 10 }}
                           domain={['dataMin - 100', 'dataMax + 100']}
-                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                          tickFormatter={(value) => `$${safeToFixed(value / 1000, 0)}k`}
                         />
                         <Tooltip 
                           contentStyle={{ 
@@ -1358,11 +1359,11 @@ export default function WhaleTrackerUltimate() {
                           }}
                           labelStyle={{ color: '#9CA3AF' }}
                           formatter={(value: number, name: string) => {
-                            if (name === 'close') return [`$${value.toFixed(2)}`, '종가']
-                            if (name === 'high') return [`$${value.toFixed(2)}`, '고가']
-                            if (name === 'low') return [`$${value.toFixed(2)}`, '저가']
-                            if (name === 'price') return [`$${value.toFixed(2)}`, '가격']
-                            return [`$${value.toFixed(2)}`, name]
+                            if (name === 'close') return [`$${safeToFixed(value, 2)}`, '종가']
+                            if (name === 'high') return [`$${safeToFixed(value, 2)}`, '고가']
+                            if (name === 'low') return [`$${safeToFixed(value, 2)}`, '저가']
+                            if (name === 'price') return [`$${safeToFixed(value, 2)}`, '가격']
+                            return [`$${safeToFixed(value, 2)}`, name]
                           }}
                         />
                         {candleData.length > 0 ? (
@@ -1515,11 +1516,11 @@ export default function WhaleTrackerUltimate() {
                 { icon: <FaFish />, label: '고래 거래', value: stats.totalWhales || 0, color: 'purple' },
                 { icon: <FaArrowUp />, label: '매수', value: stats.buyCount || 0, color: 'green' },
                 { icon: <FaArrowDown />, label: '매도', value: stats.sellCount || 0, color: 'red' },
-                { icon: <FaExchangeAlt />, label: '순 유입', value: stats.netFlow !== 0 ? `$${(Math.abs(stats.netFlow) / 1000000).toFixed(1)}M` : '$0.0M', color: stats.netFlow >= 0 ? 'green' : 'red' },
-                { icon: <FaChartLine />, label: '최대 거래', value: stats.largestTrade > 0 ? `$${(stats.largestTrade / 1000000).toFixed(2)}M` : '$0.00M', color: 'yellow' },
-                { icon: <FaShieldAlt />, label: '평균 규모', value: stats.avgTradeSize > 0 ? `$${(stats.avgTradeSize / 1000000).toFixed(2)}M` : '$0.00M', color: 'cyan' },
-                { icon: <FaFireAlt />, label: '매수량', value: stats.buyVolume > 0 ? `$${(stats.buyVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'orange' },
-                { icon: <FaDatabase />, label: '매도량', value: stats.sellVolume > 0 ? `$${(stats.sellVolume / 1000000).toFixed(1)}M` : '$0.0M', color: 'pink' }
+                { icon: <FaExchangeAlt />, label: '순 유입', value: stats.netFlow !== 0 ? `$${formatVolume(Math.abs(stats.netFlow))}` : '$0.0M', color: stats.netFlow >= 0 ? 'green' : 'red' },
+                { icon: <FaChartLine />, label: '최대 거래', value: stats.largestTrade > 0 ? `$${formatVolume(stats.largestTrade)}` : '$0.00M', color: 'yellow' },
+                { icon: <FaShieldAlt />, label: '평균 규모', value: stats.avgTradeSize > 0 ? `$${formatVolume(stats.avgTradeSize)}` : '$0.00M', color: 'cyan' },
+                { icon: <FaFireAlt />, label: '매수량', value: stats.buyVolume > 0 ? `$${formatVolume(stats.buyVolume)}` : '$0.0M', color: 'orange' },
+                { icon: <FaDatabase />, label: '매도량', value: stats.sellVolume > 0 ? `$${formatVolume(stats.sellVolume)}` : '$0.0M', color: 'pink' }
               ].map((stat, idx) => (
                 <motion.div
                   key={idx}
