@@ -31,10 +31,12 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
         const response = await fetch('/api/binance/prices')
         
         if (!response.ok) {
-          throw new Error('API 호출 실패')
+          console.error('API response not ok:', response.status, response.statusText)
+          throw new Error(`API 호출 실패: ${response.status}`)
         }
         
         const data = await response.json()
+        console.log('API response data:', data)
         
         const newPrices: Record<string, number> = {}
         const newChanges: Record<string, number> = {}
@@ -42,9 +44,18 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
         // API 데이터 파싱
         data.forEach((ticker: any) => {
           const symbol = ticker.symbol.replace('USDT', '')
-          newPrices[symbol] = parseFloat(ticker.lastPrice)
-          newChanges[symbol] = parseFloat(ticker.priceChangePercent)
+          // lastPrice 또는 price 필드 체크
+          const price = ticker.lastPrice || ticker.price
+          const change = ticker.priceChangePercent || 0
+          
+          if (price) {
+            newPrices[symbol] = parseFloat(price)
+            newChanges[symbol] = parseFloat(change)
+          }
         })
+        
+        console.log('Parsed prices:', newPrices)
+        console.log('Parsed changes:', newChanges)
         
         // 데이터가 있는 경우에만 업데이트
         if (Object.keys(newPrices).length > 0) {
