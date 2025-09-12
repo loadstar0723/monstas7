@@ -127,7 +127,13 @@ export default function OptionsStrategyModule() {
         } else {
           throw new Error(`Binance API 오류: ${priceResponse.status}`)
         }
-      } catch (priceError) {
+      } catch (priceError: any) {
+        // AbortError는 정상적인 취소이므로 무시
+        if (priceError?.name === 'AbortError' || priceError?.message?.includes('aborted')) {
+          console.log('현물 가격 로드 취소됨 (코인 변경 또는 컴포넌트 언마운트)')
+          return
+        }
+        
         console.error('현물 가격 로드 실패:', priceError)
         
         // 에러 시 기본가격 맵 사용
@@ -142,20 +148,24 @@ export default function OptionsStrategyModule() {
       }
       
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        console.error('옵션 데이터 로드 실패:', error)
-        
-        // 완전 실패 시 기본가격 맵 사용
-        const priceMap: Record<string, number> = {
-          'BTC': 98000, 'ETH': 3500, 'BNB': 700, 'SOL': 240,
-          'XRP': 2.5, 'ADA': 1.0, 'DOGE': 0.4, 'AVAX': 45,
-          'MATIC': 1.5, 'DOT': 10
-        }
-        
-        const defaultPrice = priceMap[currency] || 100
-        setSpotPrice(defaultPrice)
-        setError('일부 데이터를 불러오는데 실패했습니다. 기본값을 사용합니다.')
+      // AbortError는 정상적인 취소이므로 무시
+      if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
+        console.log('옵션 데이터 로드 취소됨 (코인 변경 또는 컴포넌트 언마운트)')
+        return
       }
+      
+      console.error('옵션 데이터 로드 실패:', error)
+      
+      // 완전 실패 시 기본가격 맵 사용
+      const priceMap: Record<string, number> = {
+        'BTC': 98000, 'ETH': 3500, 'BNB': 700, 'SOL': 240,
+        'XRP': 2.5, 'ADA': 1.0, 'DOGE': 0.4, 'AVAX': 45,
+        'MATIC': 1.5, 'DOT': 10
+      }
+      
+      const defaultPrice = priceMap[currency] || 100
+      setSpotPrice(defaultPrice)
+      setError('일부 데이터를 불러오는데 실패했습니다. 기본값을 사용합니다.')
     } finally {
       setLoading(false)
     }
