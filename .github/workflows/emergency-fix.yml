@@ -1,0 +1,39 @@
+name: Emergency Fix Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/emergency-fix.yml'
+
+jobs:
+  emergency-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Emergency Deploy
+        run: |
+          echo "🚨 Emergency deployment started"
+          echo "This workflow will attempt to deploy using basic SSH"
+          
+      - name: Deploy via curl
+        run: |
+          # Try to trigger deployment via webhook or API
+          curl -X POST http://13.209.84.93:3000/api/deploy || true
+          
+          # If server has webhook endpoint
+          curl -X POST http://13.209.84.93:8080/deploy || true
+          
+          echo "📍 Manual deployment instructions:"
+          echo "1. SSH to server: ssh ubuntu@13.209.84.93"
+          echo "2. Run: cd ~/monstas7 && git pull"
+          echo "3. Run: cd frontend && npm install && npm run build"
+          echo "4. Run: pm2 restart monsta-prod"
+          
+      - name: Status Check
+        run: |
+          echo "🔍 Checking server status..."
+          curl -I http://13.209.84.93:3000 || echo "Server may be down"
+          echo "✅ Deployment attempt completed"
+          echo "📌 Please check: http://13.209.84.93:3000"
