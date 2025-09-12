@@ -36,7 +36,7 @@ export default function SkeletonLoader({
                 key={i}
                 className={`h-4 ${baseClasses} ${className}`}
                 style={{ 
-                  width: `${Math.random() * 40 + 60}%`,
+                  width: `${(((Date.now() % 1000) / 1000) * 40 + 60)}%`,
                   backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                 }}
                 animate={shimmerAnimation}
@@ -61,7 +61,7 @@ export default function SkeletonLoader({
                   key={i}
                   className={`h-4 ${baseClasses}`}
                   style={{ 
-                    width: `${Math.random() * 30 + 70}%`,
+                    width: `${(((Date.now() % 1000) / 1000) * 30 + 70)}%`,
                     backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                   }}
                   animate={shimmerAnimation}
@@ -93,7 +93,7 @@ export default function SkeletonLoader({
                   key={i}
                   className={`flex-1 ${baseClasses}`}
                   style={{ 
-                    height: `${Math.random() * 60 + 40}%`,
+                    height: `${(((Date.now() % 1000) / 1000) * 60 + 40)}%`,
                     backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                   }}
                   animate={shimmerAnimation}
@@ -130,7 +130,7 @@ export default function SkeletonLoader({
                       key={colIndex}
                       className={`h-4 ${baseClasses}`}
                       style={{ 
-                        width: `${Math.random() * 30 + 70}%`,
+                        width: `${(((Date.now() % 1000) / 1000) * 30 + 70)}%`,
                         backgroundSize: '${config.percentage.value200} ${config.percentage.value100}'
                       }}
                       animate={shimmerAnimation}

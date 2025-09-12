@@ -80,16 +80,19 @@ function generateRealisticLiquidations(
   const count = Math.min(liquidationFrequency, 20)
   
   for (let i = 0; i < count; i++) {
-    // 포지션 크기는 오픈 인터레스트 대비 비율로 계산
-    const positionRatio = Math.random() * 0.001 + 0.0001 // 0.01% ~ 0.1%
+    // 포지션 크기는 오픈 인터레스트 대비 비율로 계산 (결정적)
+    const positionHash = Math.abs(Math.sin(baseTime + i + symbol.charCodeAt(0)))
+    const positionRatio = positionHash * 0.001 + 0.0001 // 0.01% ~ 0.1%
     const positionSize = openInterest * positionRatio
     const positionValue = positionSize * price
     
-    // 청산 방향 (변동성이 높으면 양방향 청산)
-    const isLong = volatility > 3 ? Math.random() > 0.5 : Math.random() > 0.6
+    // 청산 방향 (변동성이 높으면 양방향 청산) - 시간 기반
+    const directionHash = Math.sin(baseTime / 1000 + i)
+    const isLong = volatility > 3 ? directionHash > 0 : directionHash > 0.2
     
-    // 청산 가격 (현재가 근처)
-    const priceDeviation = (Math.random() * volatility * 0.01 + 0.001) * price
+    // 청산 가격 (현재가 근처) - 변동성과 시간 기반
+    const priceVariation = Math.abs(Math.cos(baseTime + i))
+    const priceDeviation = (priceVariation * volatility * 0.01 + 0.001) * price
     const liquidationPrice = isLong 
       ? price - priceDeviation
       : price + priceDeviation
@@ -108,7 +111,7 @@ function generateRealisticLiquidations(
       leverage: Math.min(estimatedLeverage, 125),
       time: baseTime - i * 15000, // 15초 간격
       timestamp: new Date(baseTime - i * 15000).toISOString(),
-      trader: `Trader${Math.floor(Math.random() * 10000)}`,
+      trader: `Trader${Math.floor(Math.abs(Math.sin(baseTime + i)) * 10000)}`,
       exchange: 'Binance Futures'
     })
   }

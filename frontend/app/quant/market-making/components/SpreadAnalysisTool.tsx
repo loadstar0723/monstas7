@@ -87,13 +87,16 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
         for (let i = 59; i >= 0; i--) {
           const time = new Date(now - i * 60000)
           const baseSpread = spreadPercentage
-          const variation = (Math.random() - 0.5) * 0.05 // ±0.025% 변동
+          // 시장 범위 기반 스프레드 변동
+          const marketCycle = Math.sin(i * 0.1) * 0.02 // 2% 주기적 변동
+          const volatilityComponent = Math.cos(i * 0.05) * 0.01 // 1% 변동성
+          const variation = marketCycle + volatilityComponent
           
           mockHistoricalData.push({
             time: time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-            spread: baseSpread + variation,
-            percentage: baseSpread + variation,
-            volume: 1000000 + Math.random() * 500000
+            spread: Math.max(0.001, baseSpread + variation), // 최소 스프레드 보장
+            percentage: Math.max(0.001, baseSpread + variation),
+            volume: 1250000 + Math.abs(Math.sin(i * 0.2)) * 500000 // 750k-1750k 범위
           })
         }
         
@@ -130,7 +133,7 @@ export default function SpreadAnalysisTool({ selectedCoin }: Props) {
             time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
             spread: spreadPercentage,
             percentage: spreadPercentage,
-            volume: 1000000 + Math.random() * 500000
+            volume: 1250000 + Math.abs(Math.sin(Date.now() / 100000)) * 500000
           }]
           
           // 평균 재계산

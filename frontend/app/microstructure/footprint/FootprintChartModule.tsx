@@ -284,3 +284,62 @@ export default function FootprintChartModule() {
       const symbol = selectedSymbol.toLowerCase()
       const wsUrl = `wss://stream.binance.com:9443/ws/${symbol}@aggTrade`
       console.log(`[WebSocket] 연결 시도: ${wsUrl}`)
+      
+      wsRef.current = new WebSocket(wsUrl)
+      
+      wsRef.current.onopen = () => {
+        console.log('[WebSocket] 연결 성공')
+        setIsConnected(true)
+        reconnectAttemptsRef.current = 0
+      }
+      
+      wsRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          processTradeData(data)
+        } catch (error) {
+          console.error('[WebSocket] 메시지 처리 오류:', error)
+        }
+      }
+      
+      wsRef.current.onerror = (error) => {
+        console.error('[WebSocket] 오류:', error)
+        setIsConnected(false)
+      }
+      
+      wsRef.current.onclose = () => {
+        console.log('[WebSocket] 연결 종료')
+        setIsConnected(false)
+        
+        // 재연결 시도
+        if (reconnectAttemptsRef.current < 5) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectAttemptsRef.current++
+            connectWebSocket()
+          }, 5000)
+        } else {
+          // 재연결 실패 시 시뮬레이션 모드
+          startSimulationMode()
+        }
+      }
+    } catch (error) {
+      console.error('[WebSocket] 연결 생성 실패:', error)
+      setIsConnected(false)
+      startSimulationMode()
+    }
+  }, [selectedSymbol, processTradeData, startSimulationMode])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 py-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          📊 풋프린트 차트 분석
+        </h1>
+        
+        <div className="text-center py-12">
+          <p className="text-gray-400">풋프린트 차트 모듈 준비 중...</p>
+        </div>
+      </div>
+    </div>
+  )
+}

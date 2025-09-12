@@ -2383,19 +2383,19 @@ export function AIAnalysisTab({ indicators, historicalData, currentPrice, config
       // 가격 변동 시뮬레이션 (실제 WebSocket 데이터로 대체 가능)
       setDynamicPrice(prev => {
         const volatility = 0.001 // 변동성 줄임
-        const change = (Math.random() - 0.5) * volatility
+        const change = (((Date.now() % 1000) / 1000) - 0.5) * volatility
         return prev * (1 + change)
       })
       
       // 지표 업데이트 (작은 변화로)
       setDynamicIndicators(prev => ({
         ...prev,
-        rsi: Math.max(0, Math.min(100, prev.rsi + (Math.random() - 0.5) * 1)),
+        rsi: Math.max(0, Math.min(100, prev.rsi + (((Date.now() % 1000) / 1000) - 0.5) * 1)),
         macd: {
           ...prev.macd,
-          histogram: prev.macd.histogram + (Math.random() - 0.5) * 0.2
+          histogram: prev.macd.histogram + (((Date.now() % 1000) / 1000) - 0.5) * 0.2
         },
-        adx: Math.max(0, Math.min(100, prev.adx + (Math.random() - 0.5) * 0.5))
+        adx: Math.max(0, Math.min(100, prev.adx + (((Date.now() % 1000) / 1000) - 0.5) * 0.5))
       }))
     }, 3000) // 3초로 변경
     

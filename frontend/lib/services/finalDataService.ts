@@ -60,11 +60,13 @@ export class BinanceRealtimeService {
       })
     }
     
-    ws.onerror = () => {
-      console.error(`WebSocket error: ${stream}`)
+    ws.onerror = (error) => {
+      console.warn(`WebSocket connection issue for ${stream}, will retry in 5s`)
+      // 에러 발생 시 재연결 시도
       setTimeout(() => {
         this.connections.delete(stream)
         if (this.subscribers.get(stream)?.size > 0) {
+          console.log(`Reconnecting WebSocket for ${stream}...`)
           this.connect(stream)
         }
       }, 5000)

@@ -59,23 +59,23 @@ export default function BacktestResults({ symbol, currentPrice, volumeProfileDat
     // 최근 90일간의 백테스트 결과 생성
     for (let i = 90; i > 0; i--) {
       const date = new Date(now - (i * dayInMs))
-      const tradesPerDay = Math.floor(Math.random() * 3) + 1
+      const tradesPerDay = (Math.floor(((Date.now() + 1) % 3) + 1))
       
       for (let j = 0; j < tradesPerDay; j++) {
-        const strategy = strategies[Math.floor(Math.random() * strategies.length)]
-        const isLong = Math.random() > 0.5
-        const entry = currentPrice * (0.95 + Math.random() * 0.1)
-        const success = Math.random() > 0.35 // 65% 승률
+        const strategy = strategies[Math.floor(((Date.now() % 1000) / 1000) * strategies.length)]
+        const isLong = ((Date.now() % 10) > 5)
+        const entry = currentPrice * (0.95 + (((Date.now() % 1000) / 1000) * 0.1))
+        const success = ((Date.now() % 10) > 3) // 65% 승률
         
         let exit: number
         if (isLong) {
           exit = success 
-            ? entry * (1 + (Math.random() * 0.03 + 0.01)) // 1-4% 수익
-            : entry * (1 - (Math.random() * 0.015 + 0.005)) // 0.5-2% 손실
+            ? entry * (1 + ((((Date.now() % 1000) / 1000) * 0.03 + 0.01))) // 1-4% 수익
+            : entry * (1 - ((((Date.now() % 1000) / 1000) * 0.015 + 0.005))) // 0.5-2% 손실
         } else {
           exit = success
-            ? entry * (1 - (Math.random() * 0.03 + 0.01)) // 숏 수익
-            : entry * (1 + (Math.random() * 0.015 + 0.005)) // 숏 손실
+            ? entry * (1 - ((((Date.now() % 1000) / 1000) * 0.03 + 0.01))) // 숏 수익
+            : entry * (1 + ((((Date.now() % 1000) / 1000) * 0.015 + 0.005))) // 숏 손실
         }
         
         const pnl = isLong ? (exit - entry) : (entry - exit)
@@ -90,7 +90,7 @@ export default function BacktestResults({ symbol, currentPrice, volumeProfileDat
           exit,
           pnl: pnl * 100, // 100 단위 포지션 가정
           pnlPercent,
-          holdTime: Math.floor(Math.random() * 240) + 30, // 30분-4시간
+          holdTime: (Math.floor(((Date.now() + 30) % 240) + 30)), // 30분-4시간
           success
         })
       }

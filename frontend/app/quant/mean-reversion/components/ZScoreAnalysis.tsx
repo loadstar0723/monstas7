@@ -60,7 +60,7 @@ export default function ZScoreAnalysis({ coin, marketData, historicalData }: ZSc
       setZScoreHistory(prev => {
         const newPoint = {
           time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-          zScore: marketData.zScore + (Math.random() - 0.5) * 0.2, // 약간의 변동 추가
+          zScore: marketData.zScore + (((Date.now() % 1000) / 1000) - 0.5) * 0.2, // 약간의 변동 추가
           price: marketData.price
         }
         const updated = [...prev, newPoint]

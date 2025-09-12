@@ -43,40 +43,105 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        // 실제 API 호출 (현재는 시뮬레이션)
-        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT')
-        const ticker = await response.json()
+        // 실제 API 호출
+        const [binanceResponse, fearGreedResponse, dominanceResponse] = await Promise.all([
+          fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'),
+          fetch('/api/fear-greed'),
+          fetch('/api/market-dominance')
+        ])
         
-        // 시장 분석 데이터 (실제로는 AI 모델에서)
+        const ticker = await binanceResponse.json()
+        const fearGreedData = fearGreedResponse.ok ? await fearGreedResponse.json() : { value: 50 }
+        const dominanceData = dominanceResponse.ok ? await dominanceResponse.json() : { btc: 45 }
+        
+        // 실제 시장 분석 데이터
+        const volatility = parseFloat(ticker.priceChangePercent)
+        const volume = parseFloat(ticker.volume) / 1000000
+        
+        // 센티먼트 계산 (가격 변화, 거래량, Fear & Greed 기반)
+        const priceChange = parseFloat(ticker.priceChangePercent)
+        const volumeChange = parseFloat(ticker.count) / 100000
+        const sentiment = Math.min(100, Math.max(0, 
+          50 + priceChange * 2 + volumeChange * 0.1 + (fearGreedData.value - 50) * 0.5
+        ))
+        
         setMarketAnalysis({
-          sentiment: 65 + Math.random() * 20,
-          fearGreedIndex: 50 + Math.random() * 30,
-          volatility: parseFloat(ticker.priceChangePercent),
-          volume: parseFloat(ticker.volume) / 1000000,
-          dominance: 45 + Math.random() * 10
+          sentiment: sentiment,
+          fearGreedIndex: fearGreedData.value || 50,
+          volatility: volatility,
+          volume: volume,
+          dominance: dominanceData.btc || 45
         })
 
-        // 가격 예측 데이터 (실제로는 ML 모델에서)
+        // 가격 예측 데이터 (기술적 분석 기반)
         const currentPrice = parseFloat(ticker.lastPrice)
+        const priceChangePercent = parseFloat(ticker.priceChangePercent) / 100
+        const weightedAvgPrice = parseFloat(ticker.weightedAvgPrice)
+        const highPrice = parseFloat(ticker.highPrice)
+        const lowPrice = parseFloat(ticker.lowPrice)
+        
+        // 기술적 지표 기반 예측
+        const trend = priceChange > 0 ? 1.002 : 0.998 // 0.2% 일일 트렌드
+        const volatilityFactor = (highPrice - lowPrice) / currentPrice
+        
         const predictionData = Array.from({ length: 7 }, (_, i) => {
           const date = new Date()
           date.setDate(date.getDate() + i)
+          
+          // 트렌드 기반 예측 (지수 이동 평균 개념)
+          const trendPrediction = currentPrice * Math.pow(trend, i + 1)
+          const range = currentPrice * volatilityFactor * (i + 1) * 0.3
+          const predicted = trendPrediction + (weightedAvgPrice - currentPrice) * Math.exp(-i * 0.3)
+          
+          // 신뢰도는 시간이 지날수록 감소
+          const confidence = Math.max(40, 95 - i * 8)
+          
           return {
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-            predicted: currentPrice * (1 + (Math.random() - config.decimals.value5) * config.decimals.value05),
+            predicted: predicted,
             actual: i === 0 ? currentPrice : undefined,
-            confidence: 70 + Math.random() * 20
+            confidence: confidence
           }
         })
         setPredictions(predictionData)
 
-        // 기술 지표 분석
+        // 기술 지표 분석 (실제 계산)
+        const priceChangePercent2 = parseFloat(ticker.priceChangePercent)
+        const currentPriceNum = parseFloat(ticker.lastPrice)
+        const volumeNum = parseFloat(ticker.volume)
+        const highPriceNum = parseFloat(ticker.highPrice)
+        const lowPriceNum = parseFloat(ticker.lowPrice)
+        const closePrice = currentPriceNum
+        const openPrice = parseFloat(ticker.openPrice)
+        
+        // RSI 계산 (간단한 버전)
+        const gain = Math.max(0, priceChangePercent)
+        const loss = Math.abs(Math.min(0, priceChangePercent))
+        const rs = gain / (loss || 1)
+        const rsi = 100 - (100 / (1 + rs))
+        
+        // Stochastic 계산
+        const stochastic = ((closePrice - lowPriceNum) / (highPriceNum - lowPriceNum || 1)) * 100
+        
+        // MACD 신호 (가격 변화 기반)
+        const macdValue = Math.abs(priceChangePercent) * 10
+        const macdSignal = priceChangePercent > 0 ? 'buy' : priceChangePercent < -2 ? 'sell' : 'neutral'
+        
+        // Bollinger Band 위치
+        const middle = (highPriceNum + lowPriceNum) / 2
+        const bollingerPosition = ((closePrice - middle) / (highPriceNum - middle || 1)) * 50 + 50
+        const bollingerSignal = bollingerPosition > 80 ? 'sell' : bollingerPosition < 20 ? 'buy' : 'neutral'
+        
+        // MA 신호
+        const maPosition = ((closePrice - weightedAvgPrice) / weightedAvgPrice) * 100 + 50
+        const maSignal = closePrice > weightedAvgPrice ? 'buy' : 'sell'
+        
         const indicatorData = [
-          { name: 'RSI', value: 50 + Math.random() * 30, signal: 'neutral' as const },
-          { name: 'MACD', value: Math.random() * 100, signal: 'buy' as const },
-          { name: 'Bollinger', value: 60 + Math.random() * 20, signal: 'sell' as const },
-          { name: 'MA(20)', value: 45 + Math.random() * 30, signal: 'buy' as const },
-          { name: 'Stochastic', value: 40 + Math.random() * 40, signal: 'neutral' as const }
+          { name: 'RSI', value: rsi, signal: rsi > 70 ? 'sell' as const : rsi < 30 ? 'buy' as const : 'neutral' as const },
+          { name: 'MACD', value: macdValue, signal: macdSignal as 'buy' | 'sell' | 'neutral' },
+          { name: 'Bollinger', value: bollingerPosition, signal: bollingerSignal as 'buy' | 'sell' | 'neutral' },
+          { name: 'MA(20)', value: maPosition, signal: maSignal as 'buy' | 'sell' | 'neutral' },
+          { name: 'Stochastic', value: stochastic, signal: stochastic > 80 ? 'sell' as const : stochastic < 20 ? 'buy' as const : 'neutral' as const }
         ]
         setIndicators(indicatorData)
         
@@ -240,7 +305,7 @@ export default function AnalyticsPage() {
             <div className="mt-4 flex justify-between text-sm">
               <span className="text-gray-400">예측 신뢰도</span>
               <span className="text-purple-500 font-medium">
-                {predictions[0]?.safeFixed(confidence, 1)}%
+                {safeFixed(predictions[0]?.confidence, 1)}%
               </span>
             </div>
           </div>
@@ -343,7 +408,7 @@ export default function AnalyticsPage() {
               <span className="text-2xl">💡</span>
               <div>
                 <p className="text-gray-300">
-                  AI 모델의 7일 가격 예측 신뢰도는 <span className="text-purple-500">{predictions[0]?.safeFixed(confidence, 1)}%</span>이며,
+                  AI 모델의 7일 가격 예측 신뢰도는 <span className="text-purple-500">{safeFixed(predictions[0]?.confidence, 1)}%</span>이며,
                   단기 투자보다는 중장기 관점의 접근을 권장합니다.
                 </p>
               </div>

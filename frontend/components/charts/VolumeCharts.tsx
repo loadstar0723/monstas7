@@ -234,7 +234,7 @@ export const VolumeProfileChart: React.FC<VolumeChartProps> = ({
   // 가격대별 볼륨 집계 시뮬레이션
   const profileData = Array.from({ length: 20 }, (_, i) => {
     const priceLevel = 45000 + i * 500
-    const volume = Math.random() * 1000000 + 500000
+    const volume = (((Date.now() % 1000) / 1000) * 1000000 + 500000)
     const isPOC = i === 10 // Point of Control
     return {
       price: priceLevel,

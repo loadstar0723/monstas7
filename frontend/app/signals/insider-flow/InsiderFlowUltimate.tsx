@@ -202,7 +202,214 @@ export default function InsiderFlowUltimate() {
       
       console.log('Attempting WebSocket connection:', wsUrl)
       
-      try {$100K)</span>
+      const ws = new WebSocket(wsUrl)
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected for:', coin)
+        setWsRetryCount(0)
+      }
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          const price = parseFloat(data.c || data.p || '0')
+          if (price > 0) {
+            setCurrentPrice(price)
+            setPriceChange(parseFloat(data.P || '0'))
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket data:', error)
+        }
+      }
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error)
+      }
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected')
+        if (wsRetryCount < maxRetries) {
+          setWsRetryCount(prev => prev + 1)
+          setTimeout(() => {
+            connectWebSocket(coin)
+          }, 5000)
+        } else {
+          console.log('Max retries reached, falling back to polling')
+          startPricePolling(coin)
+        }
+      }
+      
+      wsRef.current = ws
+      
+    } catch (error) {
+      console.error('WebSocket connection error:', error)
+      startPricePolling(coin)
+    }
+  }, [wsRetryCount, maxRetries, startPricePolling])
+
+  // 인사이더 데이터 로드
+  const loadInsiderData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // 초기 가격 설정
+      updatePriceViaAPI(selectedCoin)
+      
+      // 인사이더 거래 생성
+      const transactions: InsiderTransaction[] = []
+      for (let i = 0; i < 20; i++) {
+        transactions.push(generateInsiderTransaction(selectedCoin, currentPrice || 50000, i))
+      }
+      setInsiderTransactions(transactions)
+      
+      // 지갑 정보 생성
+      const walletData: WalletInfo[] = COINS.slice(0, 5).map((coin, idx) => ({
+        address: `0x${coin.symbol.toLowerCase()}${idx.toString(16).padStart(4, '0')}...`,
+        label: `${coin.name} ${idx === 0 ? 'Team' : idx === 1 ? 'VC' : 'Whale'}`,
+        type: idx === 0 ? 'team' : idx === 1 ? 'vc' : 'whale',
+        balance: 1000000 * (idx + 1),
+        value: 1000000 * (idx + 1) * (currentPrice || 50000),
+        lastActivity: new Date(Date.now() - idx * 86400000),
+        riskLevel: 30 + idx * 10,
+        isLocked: idx % 2 === 0,
+        unlockDate: idx % 2 === 0 ? new Date(Date.now() + (idx + 1) * 30 * 86400000) : undefined
+      }))
+      setWallets(walletData)
+      
+      // 언락 스케줄 생성
+      const unlocks: UnlockEvent[] = []
+      for (let i = 1; i <= 6; i++) {
+        const date = new Date()
+        date.setMonth(date.getMonth() + i)
+        unlocks.push({
+          date: date.toLocaleDateString('ko-KR'),
+          amount: 1000000 * i,
+          type: i % 3 === 0 ? 'team' : i % 2 === 0 ? 'vc' : 'investor',
+          impact: i <= 2 ? 'low' : i <= 4 ? 'medium' : 'high',
+          percentage: 5 + i * 2
+        })
+      }
+      setUnlockSchedule(unlocks)
+      
+      // 거래소 플로우 데이터
+      setExchangeFlow({
+        inflow: 5000000 + (Date.now() % 1000000),
+        outflow: 4500000 + (Date.now() % 1000000),
+        netflow: 500000 - (Date.now() % 200000)
+      })
+      
+      // 리스크 점수 계산
+      setRiskScore(45 + (Date.now() % 30))
+      
+      // 온체인 메트릭스
+      setOnchainMetrics({
+        activeAddresses: 50000 + (Date.now() % 10000),
+        transactionCount: 100000 + (Date.now() % 20000),
+        largeHolders: 1000 + (Date.now() % 200),
+        networkActivity: 70 + (Date.now() % 20),
+        holderDistribution: {
+          top10: 45 + (Date.now() % 5),
+          top11to50: 25 - (Date.now() % 3),
+          top51to100: 15 + (Date.now() % 2),
+          others: 15 - (Date.now() % 4)
+        }
+      })
+      
+      setLoading(false)
+    } catch (error) {
+      console.error('Error loading insider data:', error)
+      setError('데이터 로드 실패')
+      setLoading(false)
+    }
+  }, [selectedCoin, currentPrice, updatePriceViaAPI])
+
+  // useEffect들
+  useEffect(() => {
+    if (selectedCoin) {
+      connectWebSocket(selectedCoin)
+    }
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+      }
+    }
+  }, [selectedCoin, connectWebSocket, pollingInterval])
+
+  useEffect(() => {
+    loadInsiderData()
+  }, [selectedCoin])
+
+  // JSX 렌더링
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 p-4">
+      {loading ? (
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-white">로딩 중...</div>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-red-500">{error}</div>
+        </div>
+      ) : (
+        <>
+          {/* 헤더 */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">🕵️ 인사이더 플로우 분석</h1>
+            <p className="text-gray-400">팀, VC, 고래 지갑의 움직임을 실시간으로 추적합니다</p>
+          </div>
+
+          {/* 코인 선택 */}
+          <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
+            {COINS.map(coin => (
+              <button
+                key={coin.symbol}
+                onClick={() => setSelectedCoin(coin.symbol)}
+                className={`p-3 rounded-lg border transition-all ${
+                  selectedCoin === coin.symbol
+                    ? 'bg-purple-600 border-purple-400'
+                    : 'bg-gray-800 border-gray-700 hover:bg-gray-700'
+                }`}
+              >
+                <div className="text-lg font-bold">{coin.symbol}</div>
+                <div className="text-xs text-gray-400">{coin.name}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* 현재 가격 정보 */}
+          <div className="bg-gray-800/50 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  {selectedCoin}/USDT
+                </h2>
+                <div className="text-3xl font-bold text-white mt-2">
+                  ${currentPrice ? currentPrice.toLocaleString() : '0'}
+                </div>
+              </div>
+              <div className={`text-2xl font-bold ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          {/* 아래는 원본 HTML이 이어짐 (추후 페이지 내용) */}
+          <div className="space-y-6">
+            <div className="bg-gray-800/50 rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-4">알림 설정</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-3">알림 조건</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm">대량 거래 (&gt;$100K)</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" defaultChecked className="w-4 h-4 text-purple-500" />
@@ -330,8 +537,9 @@ export default function InsiderFlowUltimate() {
               </ul>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </>
+    )}
     </div>
   )
 }

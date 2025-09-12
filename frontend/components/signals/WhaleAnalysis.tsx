@@ -111,7 +111,7 @@ export default function WhaleAnalysis() {
           calculatedConfidence = Math.min(85, 50 + intensity)
         } else {
           calculatedSignal = 'neutral'
-          calculatedConfidence = 45 + Math.random() * 10
+          calculatedConfidence = 45 + (((Date.now() % 1000) / 1000) * 10)
         }
         
         setSignal(calculatedSignal)

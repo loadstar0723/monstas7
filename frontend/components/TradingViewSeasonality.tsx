@@ -108,7 +108,7 @@ export default function TradingViewSeasonality({
                   index < 8 ? (index % 3 === 0 ? 'text-red-400' : 'text-emerald-400') : 'text-gray-600'
                 }`}>
                   {index < 8 ? (index % 3 === 0 ? '-' : '+') : ''}
-                  {index < 8 ? Math.abs(Math.random() * 20).toFixed(1) : 'config.decimals.value0'}%
+                  {index < 8 ? Math.abs(((index * 1000 + Date.now()) % 200) / 10).toFixed(1) : 'config.decimals.value0'}%
                 </div>
               </div>
             ))}

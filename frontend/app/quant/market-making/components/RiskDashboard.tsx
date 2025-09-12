@@ -45,37 +45,37 @@ export default function RiskDashboard({ selectedCoin }: Props) {
     const metrics: RiskMetric[] = [
       {
         name: '재고 리스크',
-        value: 35 + Math.random() * 30,
+        value: 35 + ((Date.now() % 1000) / 1000) * 30,
         status: 'safe',
         description: '포지션 편향도와 가격 변동 노출도'
       },
       {
         name: '가격 변동성',
-        value: 45 + Math.random() * 25,
+        value: 45 + ((Date.now() % 1000) / 1000) * 25,
         status: 'warning',
         description: '최근 24시간 가격 변동성'
       },
       {
         name: '유동성 리스크',
-        value: 20 + Math.random() * 20,
+        value: 20 + ((Date.now() % 1000) / 1000) * 20,
         status: 'safe',
         description: '시장 유동성 부족 리스크'
       },
       {
         name: '경쟁 리스크',
-        value: 55 + Math.random() * 20,
+        value: 55 + ((Date.now() % 1000) / 1000) * 20,
         status: 'warning',
         description: '다른 마켓 메이커와의 경쟁'
       },
       {
         name: '시스템 리스크',
-        value: 15 + Math.random() * 15,
+        value: 15 + ((Date.now() % 1000) / 1000) * 15,
         status: 'safe',
         description: '기술적 오류 및 연결 문제'
       },
       {
         name: '규제 리스크',
-        value: 25 + Math.random() * 25,
+        value: 25 + ((Date.now() % 1000) / 1000) * 25,
         status: 'safe',
         description: '규제 변경 및 제한 가능성'
       }
@@ -114,7 +114,7 @@ export default function RiskDashboard({ selectedCoin }: Props) {
       const time = new Date(Date.now() - i * 3600000)
       history.push({
         time: time.getHours() + '시',
-        risk: 30 + Math.random() * 40 + (i < 12 ? 0 : 10)
+        risk: 30 + ((Date.now() % 1000) / 1000) * 40 + (i < 12 ? 0 : 10)
       })
     }
     setRiskHistory(history)
@@ -141,7 +141,7 @@ export default function RiskDashboard({ selectedCoin }: Props) {
   const updateRiskMetrics = () => {
     setRiskMetrics(prev => prev.map(metric => ({
       ...metric,
-      value: Math.max(0, Math.min(100, metric.value + (Math.random() - 0.5) * 10))
+      value: Math.max(0, Math.min(100, metric.value + (((Date.now() % 1000) / 1000) - 0.5) * 10))
     })))
   }
 

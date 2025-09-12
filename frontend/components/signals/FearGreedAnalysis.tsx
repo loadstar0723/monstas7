@@ -44,11 +44,11 @@ export default function FearGreedAnalysis() {
         
         // 가격 변동과 거래량 기반 공포/탐욕 계산
         let fearGreedIndex = 50
-        if (priceChange < -5) fearGreedIndex = 10 + Math.random() * 15 // 극단적 공포
-        else if (priceChange < -2) fearGreedIndex = 25 + Math.random() * 15 // 공포
-        else if (priceChange > 5) fearGreedIndex = 75 + Math.random() * 20 // 극단적 탐욕
-        else if (priceChange > 2) fearGreedIndex = 60 + Math.random() * 15 // 탐욕
-        else fearGreedIndex = 40 + Math.random() * 20 // 중립
+        if (priceChange < -5) fearGreedIndex = 10 + (((Date.now() % 1000) / 1000) * 15) // 극단적 공포
+        else if (priceChange < -2) fearGreedIndex = 25 + (((Date.now() % 1000) / 1000) * 15) // 공포
+        else if (priceChange > 5) fearGreedIndex = 75 + (((Date.now() % 1000) / 1000) * 20) // 극단적 탐욕
+        else if (priceChange > 2) fearGreedIndex = 60 + (((Date.now() % 1000) / 1000) * 15) // 탐욕
+        else fearGreedIndex = 40 + (((Date.now() % 1000) / 1000) * 20) // 중립
         
         let sentiment: FearGreedData['sentiment'] = 'Neutral'
         if (fearGreedIndex < 20) sentiment = 'Extreme Fear'
@@ -62,7 +62,7 @@ export default function FearGreedAnalysis() {
           sentiment: sentiment,
           historicalAvg: 47,
           momentum: priceChange > 1 ? 'increasing' : priceChange < -1 ? 'decreasing' : 'stable',
-          reversalProbability: fearGreedIndex < 20 || fearGreedIndex > 80 ? 75 + Math.random() * 20 : 30 + Math.random() * 20
+          reversalProbability: fearGreedIndex < 20 || fearGreedIndex > 80 ? 75 + (((Date.now() % 1000) / 1000) * 20) : 30 + (((Date.now() % 1000) / 1000) * 20)
         }
         
         setFearGreedData(data)
@@ -74,23 +74,23 @@ export default function FearGreedAnalysis() {
         if (fearGreedIndex < 20) {
           // 극단적 공포 = 강력 매수 기회
           calculatedSignal = 'strong_buy'
-          calculatedConfidence = 85 + Math.random() * 10
+          calculatedConfidence = 85 + (((Date.now() % 1000) / 1000) * 10)
         } else if (fearGreedIndex < 35) {
           // 공포 = 매수 기회
           calculatedSignal = 'buy'
-          calculatedConfidence = 70 + Math.random() * 10
+          calculatedConfidence = 70 + (((Date.now() % 1000) / 1000) * 10)
         } else if (fearGreedIndex > 80) {
           // 극단적 탐욕 = 강력 매도 신호
           calculatedSignal = 'strong_sell'
-          calculatedConfidence = 85 + Math.random() * 10
+          calculatedConfidence = 85 + (((Date.now() % 1000) / 1000) * 10)
         } else if (fearGreedIndex > 65) {
           // 탐욕 = 매도 고려
           calculatedSignal = 'sell'
-          calculatedConfidence = 70 + Math.random() * 10
+          calculatedConfidence = 70 + (((Date.now() % 1000) / 1000) * 10)
         } else {
           // 중립
           calculatedSignal = 'neutral'
-          calculatedConfidence = 45 + Math.random() * 10
+          calculatedConfidence = 45 + (((Date.now() % 1000) / 1000) * 10)
         }
         
         setSignal(calculatedSignal)

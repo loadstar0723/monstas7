@@ -37,11 +37,11 @@ export default function PairPerformance({ pair, strategy, timeframe }: PairPerfo
       const curve = []
       let equity = 10000
       for (let i = 0; i < 100; i++) {
-        equity = equity * (1 + (Math.sin(i / 10) * 0.02 + Math.random() * 0.01 - 0.003))
+        equity = equity * (1 + (Math.sin(i / 10) * 0.02 + (((Date.now() % 1000) / 1000) * 0.01 - 0.003)))
         curve.push({
           index: i,
           equity: equity,
-          drawdown: Math.random() * 5
+          drawdown: (((Date.now() % 1000) / 1000) * 5)
         })
       }
       return curve

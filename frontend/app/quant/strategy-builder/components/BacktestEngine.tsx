@@ -70,10 +70,10 @@ export default function BacktestEngine({ symbol }: BacktestEngineProps) {
           id: i + 1,
           date: new Date(Date.now() - i * 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
           type: i % 3 === 0 ? 'SELL' : 'BUY',
-          price: 40000 + Math.random() * 10000,
-          quantity: 0.1 + Math.random() * 0.5,
-          pnl: (Math.random() - 0.4) * 500,
-          pnlPercent: (Math.random() - 0.4) * 10
+          price: 40000 + ((Date.now() % 1000) / 1000) * 10000,
+          quantity: 0.1 + ((Date.now() % 1000) / 1000) * 0.5,
+          pnl: (((Date.now() % 1000) / 1000) - 0.4) * 500,
+          pnlPercent: (((Date.now() % 1000) / 1000) - 0.4) * 10
         }))
         
         // 드로우다운 데이터 생성

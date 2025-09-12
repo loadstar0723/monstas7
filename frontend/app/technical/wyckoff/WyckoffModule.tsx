@@ -93,39 +93,58 @@ export default function WyckoffModule() {
     for (let i = 499; i >= 0; i--) {
       const time = now - (i * 60 * 60 * 1000) // 1시간 간격
       
-      // 와이코프 사이클을 시뮬레이션하는 가격 패턴
+      // 와이코프 사이클을 시뮬레이션하는 가격 패턴 - 피보나치 비율 적용
       let priceMultiplier = 1
       const cyclePosition = (500 - i) / 500 // 0 ~ 1
+      const fibRatio = 0.618 // 황금비율
       
-      if (cyclePosition < 0.3) {
-        // 축적 단계: 횡보
-        priceMultiplier = 0.95 + Math.sin(i * 0.2) * 0.02
-      } else if (cyclePosition < 0.5) {
-        // 마크업 단계: 상승
-        priceMultiplier = 0.95 + (cyclePosition - 0.3) * 0.8
-      } else if (cyclePosition < 0.8) {
-        // 분산 단계: 고점 횡보
-        priceMultiplier = 1.1 + Math.sin(i * 0.15) * 0.03
+      if (cyclePosition < 0.236) { // 피보나치 23.6%
+        // 축적 단계: 횡보 - 지지선에서 저항선까지 패턴
+        const accumPhase = cyclePosition / 0.236
+        priceMultiplier = 0.95 + Math.sin(i * fibRatio) * 0.015 * (1 - accumPhase)
+      } else if (cyclePosition < 0.382) { // 피보나치 38.2%
+        // 마크업 시작: 초기 상승
+        const markupPhase = (cyclePosition - 0.236) / (0.382 - 0.236)
+        priceMultiplier = 0.965 + markupPhase * 0.12
+      } else if (cyclePosition < 0.618) { // 피보나치 61.8%
+        // 마크업 가속: 강한 상승
+        const accelPhase = (cyclePosition - 0.382) / (0.618 - 0.382)
+        priceMultiplier = 1.085 + accelPhase * 0.055
+      } else if (cyclePosition < 0.786) { // 피보나치 78.6%
+        // 분산 단계: 고점 횡보 - 저항선 형성
+        const distPhase = (cyclePosition - 0.618) / (0.786 - 0.618)
+        priceMultiplier = 1.14 + Math.sin((i * fibRatio) + Math.PI) * 0.025 * distPhase
       } else {
-        // 마크다운 단계: 하락
-        priceMultiplier = 1.1 - (cyclePosition - 0.8) * 0.5
+        // 마크다운 단계: 하락 - 지지선 붕괴
+        const downPhase = (cyclePosition - 0.786) / (1 - 0.786)
+        priceMultiplier = 1.165 - downPhase * 0.12
       }
       
-      // 사인 함수를 이용한 가격 노이즈 생성 (Math.random 대체)
-      const noise1 = Math.sin(i * 0.1) * 0.005
-      const noise2 = Math.sin(i * 0.15) * 0.005
+      // 기술적 분석 기반 가격 노이즈 (엘리엇 파동 패턴)
+      const waveNoise1 = Math.sin(i * 0.314159) * 0.003 // π/10 주기
+      const waveNoise2 = Math.cos(i * 0.157079) * 0.004 // π/20 주기
       
-      const open = basePrice * priceMultiplier * (1 + noise1)
-      const close = basePrice * priceMultiplier * (1 + noise2)
-      const high = Math.max(open, close) * 1.005
-      const low = Math.min(open, close) * 0.995
+      const open = basePrice * priceMultiplier * (1 + waveNoise1)
+      const close = basePrice * priceMultiplier * (1 + waveNoise2)
+      // 기술적 분석: 일일 변동폭(ATR) 고려 - 약 1%
+      const atrFactor = 0.01
+      const high = Math.max(open, close) * (1 + atrFactor * 0.5)
+      const low = Math.min(open, close) * (1 - atrFactor * 0.5)
       
-      // 볼륨도 사이클에 따라 변화 - 사인 함수 기반
+      // 볼륨 분석: 와이코프 원리 적용 - VSA(Volume Spread Analysis)
       let volumeBase = 1000
-      if (cyclePosition < 0.3 || (cyclePosition > 0.5 && cyclePosition < 0.8)) {
-        volumeBase = 1000 + Math.sin(i * 0.05) * 200 // 축적/분산: 낮은 볼륨
+      if (cyclePosition < 0.236 || (cyclePosition > 0.618 && cyclePosition < 0.786)) {
+        // 축적/분산 단계: 스마트머니 은밀한 활동 - 낮은 볼륨
+        const smartMoneyFactor = Math.sin(i * 0.0628) + 1 // 10π 주기
+        volumeBase = 800 + smartMoneyFactor * 150
+      } else if (cyclePosition >= 0.382 && cyclePosition <= 0.618) {
+        // 마크업 단계: 대중 참여 - 높은 볼륨
+        const publicFactor = Math.cos(i * 0.0314) + 1.5 // 20π 주기
+        volumeBase = 1200 + publicFactor * 250
       } else {
-        volumeBase = 1500 + Math.sin(i * 0.05) * 300 // 마크업/마크다운: 높은 볼륨
+        // 마크다운 단계: 패닉 매도 - 최고 볼륨
+        const panicFactor = Math.sin(i * 0.1257) + 1.8 // 5π 주기
+        volumeBase = 1400 + panicFactor * 300
       }
       
       data.push({

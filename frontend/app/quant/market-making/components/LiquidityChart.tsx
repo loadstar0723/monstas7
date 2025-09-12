@@ -104,8 +104,12 @@ export default function LiquidityChart({ selectedCoin }: Props) {
       
       for (let i = 29; i >= 0; i--) {
         const time = new Date(now - i * 60000)
-        const buyVolume = 100 + Math.random() * 50
-        const sellVolume = 100 + Math.random() * 50
+        // 시장 패턴 기반 거래량 생성
+        const marketCycle = Math.sin(i * 0.15) * 25 + 125 // 100-150 범위
+        const volatilityBuy = Math.abs(Math.cos(i * 0.1)) * 25
+        const volatilitySell = Math.abs(Math.sin(i * 0.12)) * 25
+        const buyVolume = Math.max(50, marketCycle + volatilityBuy)
+        const sellVolume = Math.max(50, marketCycle + volatilitySell)
         
         flowData.push({
           time: time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),

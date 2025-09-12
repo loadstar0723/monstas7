@@ -17,7 +17,7 @@ export default function TestCharts() {
           hour: '2-digit',
           hour12: true 
         }),
-        score: Math.floor(Math.random() * 30 + 40) // 40-70 범위
+        score: Math.floor(((Date.now() % 1000) / 1000) * 30 + 40) // 40-70 범위
       }
     })
     setLineData(testLineData)

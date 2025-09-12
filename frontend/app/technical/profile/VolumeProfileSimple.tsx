@@ -87,8 +87,8 @@ export default function VolumeProfileSimple() {
       const distanceFromCenter = Math.abs(i - levelCount / 2) / (levelCount / 2)
       const volumeMultiplier = 1 - (distanceFromCenter * 0.8)
       
-      const baseVolume = Math.random() * 1000000 * volumeMultiplier
-      const buyRatio = 0.4 + Math.random() * 0.2
+      const baseVolume = (((Date.now() % 1000) / 1000) * 1000000) * volumeMultiplier
+      const buyRatio = 0.4 + (((Date.now() % 1000) / 1000) * 0.2)
       const buyVolume = baseVolume * buyRatio
       const sellVolume = baseVolume * (1 - buyRatio)
       const totalVolume = buyVolume + sellVolume
@@ -111,7 +111,7 @@ export default function VolumeProfileSimple() {
       level.percentage = (level.totalVolume / totalVolumeSum) * 100
     })
     
-    const pocIndex = Math.floor(levelCount / 2) + Math.floor(Math.random() * 5) - 2
+    const pocIndex = Math.floor(levelCount / 2) + Math.floor((((Date.now() % 1000) / 1000) * 5)) - 2
     const poc = levels[pocIndex].price
     const vah = poc * 1.01
     const val = poc * 0.99

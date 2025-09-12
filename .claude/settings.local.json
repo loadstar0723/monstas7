@@ -212,7 +212,14 @@
       "Bash(true)",
       "WebFetch(domain:developers.coindesk.com)",
       "Bash(start http://localhost:3100/signals/whale-tracker)",
-      "Bash(start http://localhost:3100/signals/smart-money)"
+      "Bash(start http://localhost:3100/signals/smart-money)",
+      "Bash(start http://localhost:3000/portfolio)",
+      "Bash(for file in \"frontend/app/signals/smart-money/SmartMoneyUltimate.tsx\" \"frontend/app/signals/liquidation/LiquidationUltimate.tsx\" \"frontend/app/signals/whale-tracker/WhaleTrackerUltimate.tsx\" \"frontend/app/signals/arbitrage/components/RealTimeOpportunities.tsx\" \"frontend/app/signals/arbitrage/components/ExchangePriceMatrix.tsx\")",
+      "Bash(do echo \"File: $file\")",
+      "Bash(done)",
+      "Bash(awk:*)",
+      "Bash(start http://localhost:3003)",
+      "Bash(start http://localhost:3004)"
     ],
     "deny": [],
     "ask": []

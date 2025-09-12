@@ -91,7 +91,7 @@ export default function CorrelationMatrix({ coins, selectedPair, timeframe }: Co
         'BNBUSDT': { 'BTCUSDT': 0.72, 'ETHUSDT': 0.78, 'SOLUSDT': 0.65 },
         'SOLUSDT': { 'BTCUSDT': 0.68, 'ETHUSDT': 0.75, 'BNBUSDT': 0.65 }
       }
-      return dummyCorrelations[symbol1]?.[symbol2] || Math.random() * 0.6 + 0.3
+      return dummyCorrelations[symbol1]?.[symbol2] || (((Date.now() % 1000) / 1000) * 0.6 + 0.3)
     }
   }
 

@@ -15,14 +15,14 @@ export default function PredictionTab({ symbol, currentPrice, waveData, historic
   // 예측 데이터 생성
   const predictionData = Array.from({ length: 30 }, (_, i) => {
     const trend = i < 10 ? 1.02 : i < 20 ? 0.98 : 1.03
-    const noise = (Math.random() - 0.5) * 0.02
+    const noise = (((Date.now() % 1000) / 1000) - 0.5) * 0.02
     const price = currentPrice * Math.pow(trend + noise, i)
     
     return {
       day: `D+${i}`,
       primary: price,
-      alternative1: price * (1 + (Math.random() - 0.5) * 0.1),
-      alternative2: price * (1 + (Math.random() - 0.5) * 0.15),
+      alternative1: price * (1 + (((Date.now() % 1000) / 1000) - 0.5) * 0.1),
+      alternative2: price * (1 + (((Date.now() % 1000) / 1000) - 0.5) * 0.15),
       confidence: Math.max(30, 90 - i * 2)
     }
   })

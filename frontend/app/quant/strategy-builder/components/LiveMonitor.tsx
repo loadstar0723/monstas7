@@ -61,8 +61,8 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
     intervalRef.current = setInterval(() => {
       const newDataPoint = {
         time: new Date().toLocaleTimeString(),
-        price: 45000 + Math.random() * 2000,
-        signal: Math.random() > 0.8 ? (Math.random() > 0.5 ? 'BUY' : 'SELL') : null
+        price: 45000 + ((Date.now() % 1000) / 1000) * 2000,
+        signal: ((Date.now() % 1000) / 1000) > 0.8 ? (((Date.now() % 1000) / 1000) > 0.5 ? 'BUY' : 'SELL') : null
       }
       
       setLiveData(prev => [...prev.slice(-50), newDataPoint])
@@ -71,17 +71,17 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
         setStats(prev => ({
           ...prev,
           totalSignals: prev.totalSignals + 1,
-          executedTrades: Math.random() > 0.3 ? prev.executedTrades + 1 : prev.executedTrades
+          executedTrades: ((Date.now() % 1000) / 1000) > 0.3 ? prev.executedTrades + 1 : prev.executedTrades
         }))
         
         addLog('SUCCESS', `${newDataPoint.signal} 신호 발생 @ $${safePrice(newDataPoint.price, 2)}`)
         
-        if (Math.random() > 0.7) {
+        if (((Date.now() % 1000) / 1000) > 0.7) {
           addLog('INFO', '거래 실행됨')
           setStats(prev => ({
             ...prev,
             currentPosition: newDataPoint.signal === 'BUY' ? 'LONG' : 'SHORT',
-            unrealizedPnL: (Math.random() - 0.5) * 1000
+            unrealizedPnL: (((Date.now() % 1000) / 1000) - 0.5) * 1000
           }))
         }
       }
@@ -133,7 +133,7 @@ export default function LiveMonitor({ symbol }: LiveMonitorProps) {
   // 로그 추가
   const addLog = (type: ExecutionLog['type'], message: string) => {
     const newLog: ExecutionLog = {
-      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}_${((Date.now() % 1000) / 1000).toString(36).substr(2, 9)}`,
       timestamp: new Date(),
       type,
       message

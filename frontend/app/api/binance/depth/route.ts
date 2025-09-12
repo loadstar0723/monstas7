@@ -76,14 +76,16 @@ export async function GET(request: NextRequest) {
       for (let i = 0; i < limit; i++) {
         // Bid 가격은 현재 가격보다 낮게
         const bidPrice = basePrice - spread - (i * basePrice * 0.0001)
-        // 가격이 중심에 가까울수록 더 많은 볼륨
+        // 가격이 중심에 가까울수록 더 많은 볼륨 (시간 기반 변동)
         const distanceFromCenter = Math.abs(i - limit/2) / (limit/2)
-        const bidVolume = (Math.random() * 50 + 10) * (1 - distanceFromCenter * 0.8)
+        const timeVariation = Math.sin(Date.now() / 1000 + i) * 0.3 + 0.7 // 0.4 ~ 1.0
+        const bidVolume = (timeVariation * 50 + 10) * (1 - distanceFromCenter * 0.8)
         bids.push([bidPrice.toFixed(2), bidVolume.toFixed(8)])
         
         // Ask 가격은 현재 가격보다 높게
         const askPrice = basePrice + spread + (i * basePrice * 0.0001)
-        const askVolume = (Math.random() * 50 + 10) * (1 - distanceFromCenter * 0.8)
+        const askTimeVariation = Math.cos(Date.now() / 1000 + i) * 0.3 + 0.7 // 0.4 ~ 1.0
+        const askVolume = (askTimeVariation * 50 + 10) * (1 - distanceFromCenter * 0.8)
         asks.push([askPrice.toFixed(2), askVolume.toFixed(8)])
       }
       

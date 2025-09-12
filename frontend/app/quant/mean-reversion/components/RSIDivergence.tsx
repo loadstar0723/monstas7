@@ -74,7 +74,7 @@ export default function RSIDivergence({ coin, marketData, historicalData }: RSID
 
     const intervalId = setInterval(() => {
       setRsiHistory(prev => {
-        const newRsi = marketData.rsi + (Math.random() - 0.5) * 5 // 약간의 변동
+        const newRsi = marketData.rsi + (((Date.now() % 1000) / 1000) - 0.5) * 5 // 약간의 변동
         const newPoint = {
           time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
           rsi: Math.max(0, Math.min(100, newRsi)),

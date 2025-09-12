@@ -161,7 +161,7 @@ export default function DexFlowUltimate() {
 
     // Binance WebSocket 연결 (실시간 가격)
     const symbol = coin === 'USDT' ? 'BTCUSDT' : `${coin}USDT`
-    wsRef.current = /* WebSocket replaced with optimized service */}@ticker`)
+    wsRef.current = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`)
     
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -997,7 +997,7 @@ export default function DexFlowUltimate() {
                     <span>USDT</span>
                     <span className="text-green-400">
                       {arbitrageOps.length > 0 && arbitrageOps[0].spread > 0 
-                        ? `+${arbitrageOps[0].safeFixed(spread, 2)}%`
+                        ? `+${safeFixed(arbitrageOps[0].spread, 2)}%`
                         : '+0.00%'}
                     </span>
                   </div>
@@ -1005,7 +1005,7 @@ export default function DexFlowUltimate() {
                     <span>USDC</span>
                     <span className="text-green-400">
                       {arbitrageOps.length > 1 && arbitrageOps[1].spread > 0 
-                        ? `+${arbitrageOps[1].safeFixed(spread, 2)}%`
+                        ? `+${safeFixed(arbitrageOps[1].spread, 2)}%`
                         : '+0.00%'}
                     </span>
                   </div>
@@ -1290,7 +1290,7 @@ export default function DexFlowUltimate() {
                       <span>{selectedCoin}/USDT</span>
                       <span className="text-yellow-400">
                         {liquidityPools.length > 0 && liquidityPools[0].apy
-                          ? `+${liquidityPools[0].safeFixed(apy, 0)}%`
+                          ? `+${safeFixed(liquidityPools[0].apy, 0)}%`
                           : '계산중'}
                       </span>
                     </div>
@@ -1379,7 +1379,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">예상 APY</span>
                       <span className="text-green-400">
                         {liquidityPools.length > 0 && liquidityPools[0].apy 
-                          ? `${liquidityPools[0].safeFixed(apy, 1)}%`
+                          ? `${safeFixed(liquidityPools[0].apy, 1)}%`
                           : '0.0%'}
                       </span>
                     </div>
@@ -1395,7 +1395,7 @@ export default function DexFlowUltimate() {
                   </div>
                   <p className="text-sm text-gray-300 mb-2">
                     DEX-CEX 스프레드가 {arbitrageOps.length > 0 && arbitrageOps[0].spread
-                      ? arbitrageOps[0].safeFixed(spread, 1)
+                      ? safeFixed(arbitrageOps[0].spread, 1)
                       : '0.0'}% 감지되었습니다.
                   </p>
                   <div className="bg-gray-900/50 rounded p-2 text-xs">
@@ -1403,7 +1403,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">예상 수익</span>
                       <span className="text-green-400">
                         ${arbitrageOps.length > 0 && arbitrageOps[0].netProfit
-                          ? arbitrageOps[0].safeFixed(netProfit, 0)
+                          ? safeFixed(arbitrageOps[0].netProfit, 0)
                           : '0'}
                       </span>
                     </div>

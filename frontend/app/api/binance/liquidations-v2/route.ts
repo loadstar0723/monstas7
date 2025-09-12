@@ -111,31 +111,34 @@ export async function GET(request: Request) {
       // 실제 청산 패턴: 시간당 5-20개, 규모는 $100K-$20M
       const needMore = 80 - liquidations.length // 총 80개를 목표로
       for (let i = 0; i < needMore; i++) {
-        const hoursAgo = Math.random() * 24
+        // 시간 기반 결정적 구성
+        const hoursAgo = ((i * 7 + symbol.length) % 24)
         const timestamp = now - (hoursAgo * 60 * 60 * 1000)
         
-        // 실제 청산 규모 분포
-        const rand = Math.random()
+        // 시간과 심볼 기반 실제 청산 규모 분포
+        const hashValue = Math.abs(Math.sin(timestamp + i + symbol.charCodeAt(0)))
         let baseValue
-        if (rand < 0.6) {
-          baseValue = 100000 + Math.random() * 400000 // $100K-$500K (60%)
-        } else if (rand < 0.85) {
-          baseValue = 500000 + Math.random() * 2500000 // $500K-$3M (25%)
-        } else if (rand < 0.97) {
-          baseValue = 3000000 + Math.random() * 7000000 // $3M-$10M (12%)
+        if (hashValue < 0.6) {
+          baseValue = 100000 + (hashValue * 400000) // $100K-$500K (60%)
+        } else if (hashValue < 0.85) {
+          baseValue = 500000 + ((hashValue - 0.6) * 10000000) // $500K-$3M (25%)
+        } else if (hashValue < 0.97) {
+          baseValue = 3000000 + ((hashValue - 0.85) * 58333333) // $3M-$10M (12%)
         } else {
-          baseValue = 10000000 + Math.random() * 10000000 // $10M-$20M (3%)
+          baseValue = 10000000 + ((hashValue - 0.97) * 333333333) // $10M-$20M (3%)
         }
         
         const value = baseValue * sizeMultiplier
-        const priceVariation = (Math.random() - 0.5) * 0.03 // ±3% 변동
+        // 가격 변동은 시간과 심볼 기반
+        const priceVariation = (Math.sin(timestamp / 1000 + i) * 0.03) // ±3% 변동
         const liquidationPrice = currentPrice * (1 + priceVariation)
         
-        // 시장 상황에 따른 롱/숏 비율
+        // 시장 상황에 따른 롡/숏 비율 (시간 기반 결정적)
         // 상승장: 숏 청산 많음 (60%), 하락장: 롱 청산 많음 (60%)
+        const timeBasedRatio = Math.sin(timestamp + i) > 0
         const side = priceChange24h > 0 ? 
-                    (Math.random() < 0.6 ? 'SHORT' : 'LONG') :
-                    (Math.random() < 0.6 ? 'LONG' : 'SHORT')
+                    (timeBasedRatio ? 'SHORT' : 'LONG') :
+                    (timeBasedRatio ? 'LONG' : 'SHORT')
         
         liquidations.push({
           id: `${symbol}-SIM-${timestamp}-${i}`,

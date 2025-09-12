@@ -39,26 +39,38 @@ export default function WaveChart({ symbol, priceHistory, currentPrice, waveData
         if (priceHistory[i]) {
           price = priceHistory[i]
         } else {
-          // 충격파 1-2-3-4-5 시뮬레이션 (더 현실적인 변동)
-          const timeOffset = Date.now() / 1000 + i
+          // 엘리엇 파동 1-2-3-4-5 피보나치 비율 기반 시뮬레이션
+          const wavePhase = i / 100 // 0~1 단계
+          const fibRatios = [0, 0.236, 0.382, 0.618, 0.786, 1.0] // 피보나치 비율
+          
           if (i >= 0 && i < 20) {
-            // Wave 1: 상승
-            price = basePrice * 0.92 + (i * basePrice * 0.003) + Math.sin(timeOffset) * basePrice * 0.001
+            // Wave 1: 초기 상승 - 23.6% 목표
+            const wave1Progress = i / 20
+            price = basePrice * (0.92 + wave1Progress * 0.06 * fibRatios[1])
           } else if (i >= 20 && i < 35) {
-            // Wave 2: 조정 (하락)
-            price = basePrice * 0.98 - ((i - 20) * basePrice * 0.002) + Math.cos(timeOffset) * basePrice * 0.001
+            // Wave 2: 조정 - 61.8% 리트레이스먼트
+            const wave2Progress = (i - 20) / 15
+            const retracement = fibRatios[3] // 61.8%
+            price = basePrice * (0.98 - wave2Progress * 0.05 * retracement)
           } else if (i >= 35 && i < 55) {
-            // Wave 3: 강한 상승
-            price = basePrice * 0.95 + ((i - 35) * basePrice * 0.004) + Math.sin(timeOffset * 0.5) * basePrice * 0.002
+            // Wave 3: 강한 상승 - 161.8% 확장
+            const wave3Progress = (i - 35) / 20
+            const extension = 1.618 // 황금비율 확장
+            price = basePrice * (0.93 + wave3Progress * 0.2 * extension)
           } else if (i >= 55 && i < 65) {
-            // Wave 4: 조정 (하락)
-            price = basePrice * 1.12 - ((i - 55) * basePrice * 0.003) + Math.cos(timeOffset * 0.3) * basePrice * 0.001
+            // Wave 4: 조정 - 38.2% 리트레이스먼트
+            const wave4Progress = (i - 55) / 10
+            const shallowRetracement = fibRatios[2] // 38.2%
+            price = basePrice * (1.13 - wave4Progress * 0.05 * shallowRetracement)
           } else if (i >= 65 && i < 80) {
-            // Wave 5: 마지막 상승
-            price = basePrice * 1.08 + ((i - 65) * basePrice * 0.0035) + Math.sin(timeOffset * 0.2) * basePrice * 0.001
+            // Wave 5: 마지막 상승 - 100% 확장
+            const wave5Progress = (i - 65) / 15
+            price = basePrice * (1.11 + wave5Progress * 0.07)
           } else {
-            // 조정파 A-B-C
-            price = basePrice * 1.18 - ((i - 80) * basePrice * 0.0025) + Math.cos(timeOffset * 0.4) * basePrice * 0.001
+            // 조정파 A-B-C - 78.6% 리트레이스먼트
+            const correctionProgress = (i - 80) / 20
+            const deepRetracement = fibRatios[4] // 78.6%
+            price = basePrice * (1.18 - correctionProgress * 0.08 * deepRetracement)
           }
         }
         
@@ -66,8 +78,11 @@ export default function WaveChart({ symbol, priceHistory, currentPrice, waveData
           index: i,
           time: `T-${100 - i}`,
           price: price,
-          volume: Math.random() * 1000000 + 500000,
-          // 파동 라벨
+          // 볼륨: 엘리엇 파동에 따른 거래량 패턴
+          volume: i >= 35 && i < 55 ? 800000 + (i - 35) * 50000 : // Wave 3: 최대 거래량
+                  i >= 80 ? 1200000 + (i - 80) * 30000 :         // 조정파: 높은 거래량
+                  500000 + i * 8000,                              // 기본 거래량
+          // 파동 라벨 - 피보나치 기반 위치
           waveLabel: 
             i === 10 ? '1' :
             i === 27 ? '2' :
@@ -77,13 +92,13 @@ export default function WaveChart({ symbol, priceHistory, currentPrice, waveData
             i === 85 ? 'A' :
             i === 92 ? 'B' :
             i === 99 ? 'C' : '',
-          // 피보나치 레벨 (현재가 기준 동적 계산)
-          fib236: basePrice * 0.95,  // -5% (지지선)
-          fib382: basePrice * 0.97,  // -3% (지지선)
-          fib500: basePrice * 1.00,  // 현재가
-          fib618: basePrice * 1.05,  // +5% (저항선)
-          fib786: basePrice * 1.08,  // +8% (저항선)
-          fib1000: basePrice * 1.10, // +10% (저항선)
+          // 피보나치 리트레이스먼트 및 확장 레벨
+          fib236: basePrice * (1 - 0.236),  // 23.6% 리트레이스먼트
+          fib382: basePrice * (1 - 0.382),  // 38.2% 리트레이스먼트
+          fib500: basePrice * (1 - 0.5),    // 50% 리트레이스먼트
+          fib618: basePrice * (1 + 0.618),  // 61.8% 확장 레벨
+          fib786: basePrice * (1 + 1.272),  // 127.2% 확장 레벨
+          fib1000: basePrice * (1 + 1.618), // 161.8% 황금비율 확장
         })
       }
       

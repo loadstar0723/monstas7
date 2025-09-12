@@ -27,18 +27,37 @@ export default function HistoricalReplay({ historicalData, symbol }: HistoricalR
   const [selectedTimeframe, setSelectedTimeframe] = useState('1h')
   const intervalRef = useRef<NodeJS.Timeout>()
 
-  // 더미 히스토리컬 데이터 생성 (실제로는 API에서 받아야 함)
+  // 시장 패턴 기반 히스토리컬 데이터 생성 (결정적 시장 미세구조)
   const [replayData, setReplayData] = useState<OrderbookSnapshot[]>(() => {
     const now = Date.now()
-    return Array.from({ length: 100 }, (_, i) => ({
-      timestamp: now - (99 - i) * 60000, // 1분 간격
-      price: 98000 + Math.sin(i * 0.1) * 1000 + Math.random() * 500,
-      bidVolume: 50 + Math.sin(i * 0.05) * 20 + Math.random() * 10,
-      askVolume: 50 + Math.cos(i * 0.05) * 20 + Math.random() * 10,
-      spread: 10 + Math.sin(i * 0.08) * 5,
-      imbalance: Math.sin(i * 0.03) * 0.5,
-      depthRatio: 0.8 + Math.sin(i * 0.07) * 0.4
-    }))
+    return Array.from({ length: 100 }, (_, i) => {
+      const timeIndex = i / 100 // 0~1 비율
+      const dailyCycle = Math.sin(timeIndex * 2 * Math.PI) // 일일 주기
+      const weeklyCycle = Math.sin(timeIndex * 0.3 * Math.PI) // 주간 주기
+      
+      // 시장 마이크로스트럭처 패턴에 기반한 가격 생성
+      const trendComponent = weeklyCycle * 500
+      const volatilityComponent = Math.abs(dailyCycle) * 300
+      const microstructureNoise = (Math.sin(i * 0.73) + Math.cos(i * 1.17)) * 100
+      
+      // 오더북 비대칭성 모델링
+      const imbalanceFactor = Math.sin(i * 0.13) * 0.3
+      const baseVolume = 50
+      
+      // 스프레드 동적 계산 (변동성과 유동성 기반)
+      const spreadFactor = Math.abs(dailyCycle) * 0.5 + 0.1
+      const liquidityFactor = (1 + weeklyCycle * 0.3)
+      
+      return {
+        timestamp: now - (99 - i) * 60000,
+        price: 98000 + trendComponent + volatilityComponent + microstructureNoise,
+        bidVolume: baseVolume * liquidityFactor * (1 + imbalanceFactor),
+        askVolume: baseVolume * liquidityFactor * (1 - imbalanceFactor),
+        spread: 10 + spreadFactor * 15,
+        imbalance: imbalanceFactor,
+        depthRatio: 0.8 + Math.sin(i * 0.07) * 0.15
+      }
+    })
   })
 
   // 재생/일시정지

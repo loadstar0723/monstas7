@@ -36,12 +36,20 @@ export default function SimpleTradingChart({ symbol }: TradingChartProps) {
         const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=${timeframe}&limit=100`)
         
         if (!response.ok) {
-          // API 실패 시 더미 데이터 사용 (로깅 없음)
-          const dummyData = Array.from({ length: 100 }, (_, i) => ({
-            time: new Date(Date.now() - (100 - i) * 3600000).toLocaleTimeString(),
-            price: 40000 + Math.random() * 10000,
-            volume: Math.random() * 1000000
-          }))
+          // API 실패 시 기본 패턴 기반 데이터 사용 (로깅 없음)
+          const basePrice = 40000
+          const dummyData = Array.from({ length: 100 }, (_, i) => {
+            const timeValue = (100 - i) * 3600000
+            const trend = Math.sin(i * 0.1) * 2000 + Math.cos(i * 0.05) * 1000
+            const volatility = Math.abs(Math.sin(i * 0.2)) * 500
+            const price = basePrice + trend + (i % 2 === 0 ? volatility : -volatility)
+            const volume = 500000 + Math.abs(Math.sin(i * 0.3)) * 500000
+            return {
+              time: new Date(Date.now() - timeValue).toLocaleTimeString(),
+              price: Math.max(price, basePrice * 0.5),
+              volume
+            }
+          })
           setChartData(dummyData)
           setCurrentPrice(dummyData[dummyData.length - 1].price)
           return
@@ -76,12 +84,20 @@ export default function SimpleTradingChart({ symbol }: TradingChartProps) {
           }
         }
       } catch (error) {
-        // 에러 시 더미 데이터 사용 (로깅 없음)
-        const dummyData = Array.from({ length: 100 }, (_, i) => ({
-          time: new Date(Date.now() - (100 - i) * 3600000).toLocaleTimeString(),
-          price: 40000 + Math.random() * 10000,
-          volume: Math.random() * 1000000
-        }))
+        // 에러 시 기본 패턴 기반 데이터 사용 (로깅 없음)
+        const basePrice = 40000
+        const dummyData = Array.from({ length: 100 }, (_, i) => {
+          const timeValue = (100 - i) * 3600000
+          const trend = Math.sin(i * 0.1) * 2000 + Math.cos(i * 0.05) * 1000
+          const volatility = Math.abs(Math.sin(i * 0.2)) * 500
+          const price = basePrice + trend + (i % 2 === 0 ? volatility : -volatility)
+          const volume = 500000 + Math.abs(Math.sin(i * 0.3)) * 500000
+          return {
+            time: new Date(Date.now() - timeValue).toLocaleTimeString(),
+            price: Math.max(price, basePrice * 0.5),
+            volume
+          }
+        })
         setChartData(dummyData)
         setCurrentPrice(dummyData[dummyData.length - 1].price)
       } finally {

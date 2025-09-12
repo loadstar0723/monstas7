@@ -64,22 +64,22 @@ export default function ProfitCurveChart({
       
       // 시장 상황에 따른 일일 거래 수 변동 (0-8개)
       const marketVolatility = 0.5 + 0.5 * Math.sin(i / 30) // 주기적 변동성
-      const dailyTrades = Math.floor(Math.random() * (3 + marketVolatility * 5))
+      const dailyTrades = Math.floor(((Date.now() % 1000) / 1000) * (3 + marketVolatility * 5))
       
       for (let j = 0; j < dailyTrades; j++) {
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)]
+        const pattern = patterns[Math.floor(((Date.now() % 1000) / 1000) * patterns.length)]
         
         // 패턴별 승률과 평균 수익률을 기반으로 거래 결과 생성
-        const isWin = Math.random() < pattern.winRate
+        const isWin = ((Date.now() % 1000) / 1000) < pattern.winRate
         
         let profitLoss: number
         if (isWin) {
           // 승리 거래: 평균 수익 +- 변동성
-          profitLoss = pattern.avgWin * (0.7 + Math.random() * 0.6)
+          profitLoss = pattern.avgWin * (0.7 + ((Date.now() % 1000) / 1000) * 0.6)
           winCount++
         } else {
           // 손실 거래: -1% ~ -2.5% (리스크 관리)
-          profitLoss = -(1 + Math.random() * 1.5)
+          profitLoss = -(1 + ((Date.now() % 1000) / 1000) * 1.5)
         }
         
         // 시장 상황 반영 (트렌드와 변동성)
@@ -164,7 +164,7 @@ export default function ProfitCurveChart({
       // 실제 BTC 변동성 반영 (일일 변동성 약 3-4%)
       const volatility = 0.035
       const randomWalk = Math.sin(daysFromStart / 20) * 0.15 // 주기적 변동
-      const noise = (Math.random() - 0.5) * volatility // 랜덤 노이즈
+      const noise = (((Date.now() % 1000) / 1000) - 0.5) * volatility // 랜덤 노이즈
       
       // 기본 성장률 + 변동성
       const baseReturn = (Math.pow(1 + dailyReturn, daysFromStart) - 1) * 100

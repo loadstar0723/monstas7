@@ -52,12 +52,12 @@ export default function HistoricalSweeps({ sweeps, currentPrice }: HistoricalSwe
           
           data.push({
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-            totalSweeps: Math.floor(Math.random() * 100) + 20,
-            buySweeps: Math.floor(Math.random() * 60) + 10,
-            sellSweeps: Math.floor(Math.random() * 60) + 10,
-            avgVolume: Math.random() * 50 + 10,
-            avgImpact: Math.random() * 3 + 0.5,
-            maxImpact: Math.random() * 8 + 2
+            totalSweeps: Math.floor(((Date.now() % 1000) / 1000) * 100) + 20,
+            buySweeps: Math.floor(((Date.now() % 1000) / 1000) * 60) + 10,
+            sellSweeps: Math.floor(((Date.now() % 1000) / 1000) * 60) + 10,
+            avgVolume: ((Date.now() % 1000) / 1000) * 50 + 10,
+            avgImpact: ((Date.now() % 1000) / 1000) * 3 + 0.5,
+            maxImpact: ((Date.now() % 1000) / 1000) * 8 + 2
           })
         }
         

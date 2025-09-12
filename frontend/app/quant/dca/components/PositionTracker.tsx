@@ -70,9 +70,13 @@ export default function PositionTracker({ selectedCoin, settings }: Props) {
     
     // 간격에 따른 포지션 생성
     while (currentDate <= today && samplePositions.length * settings.amount < settings.totalBudget) {
-      // 랜덤 가격 생성 (실제로는 과거 가격 데이터 사용)
-      const randomPriceVariation = 0.8 + Math.random() * 0.4 // 0.8 ~ 1.2 범위
-      const price = currentPrice * randomPriceVariation
+      // 시장 패턴 기반 가격 생성 (실제로는 과거 가격 데이터 사용)
+      const daysSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000))
+      const marketTrend = Math.sin(daysSinceStart * 0.1) * 0.15 // 15% 트렌드 변동
+      const volatility = Math.cos(daysSinceStart * 0.05) * 0.1 // 10% 변동성
+      const seasonality = Math.sin(daysSinceStart * 0.02) * 0.05 // 5% 계절성
+      const priceVariation = 1 + marketTrend + volatility + seasonality
+      const price = currentPrice * Math.max(0.5, Math.min(1.5, priceVariation)) // 0.5-1.5 범위
       const coins = settings.amount / price
 
       samplePositions.push({

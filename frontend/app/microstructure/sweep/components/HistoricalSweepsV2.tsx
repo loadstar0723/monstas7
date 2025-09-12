@@ -92,13 +92,16 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
           const hour = new Date(kline[0]).getHours()
           const timeWeight = (hour >= 2 && hour <= 6) || (hour >= 14 && hour <= 18) ? 1.5 : 1
           
-          // 추가 변동성 기반 스윕 계산
-          const randomFactor = 0.8 + Math.random() * 0.4 // 0.8-1.2
+          // 변동성과 거래량 기반 스윕 계산 (결정적)
+          const volumeVariation = Math.sin((timestamp.getTime() / 86400000) * 2 * Math.PI) * 0.2 + 1 // 일일 주기
+          const volatilityFactor = Math.tanh(volatility / 10) // 변동성 정규화
           
           const estimatedSweeps = Math.floor(
-            (Math.log10(volumeInMillion + 1) * 35 + volatility * 10) * scaleFactor * timeWeight * randomFactor
+            (Math.log10(volumeInMillion + 1) * 35 + volatility * 10) * scaleFactor * timeWeight * volumeVariation
           )
-          const buyRatio = 0.5 + (priceImpact > 0 ? 0.2 : -0.2) + (Math.random() - 0.5) * 0.1
+          // 가격 모멘텀과 시간대별 트렌드 기반 매수 비율
+          const hourlyBias = Math.cos((hour / 24) * 2 * Math.PI) * 0.1 // 시간대별 바이어스
+          const buyRatio = 0.5 + (priceImpact > 0 ? 0.2 : -0.2) + hourlyBias
           
           return {
             date: timestamp.toLocaleDateString('ko-KR', { 
@@ -137,19 +140,22 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
           const dateEnd = new Date(date)
           dateEnd.setHours(23, 59, 59, 999)
           
-          // 에러 시 기본값 사용
-          const randomVariation = Math.random() * 0.4 + 0.8 // 0.8~1.2 변동
+          // 에러 시 시간 기반 결정적 기본값 사용
+          const timeBasedVariation = (Math.sin((i / days) * 2 * Math.PI) + 1) * 0.2 + 0.8 // 0.8~1.2 변동
           const baseValue = 20 + Math.sin(i / 5) * 10 // 사인파 형태로 변동
-          const dailyEstimatedSweeps = Math.floor(baseValue * randomVariation)
+          const dailyEstimatedSweeps = Math.floor(baseValue * timeBasedVariation)
+          
+          // 시장 시간대별 패턴 적용
+          const marketCycleRatio = (Math.cos((i / 7) * 2 * Math.PI) + 1) / 2 // 주간 사이클
           
           data.push({
             date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
             totalSweeps: dailyEstimatedSweeps,
-            buySweeps: Math.floor(dailyEstimatedSweeps * 0.5),
-            sellSweeps: Math.floor(dailyEstimatedSweeps * 0.5),
-            avgVolume: 0.5 * randomVariation * (1 + i / 30), // 시간이 지날수록 거래량 증가
-            avgImpact: 2 + randomVariation + Math.sin(i / 3) * 1.5, // 2~4.5% 범위 변동
-            maxImpact: 4 + randomVariation * 2 + Math.sin(i / 3) * 2, // 4~8% 범위 변동
+            buySweeps: Math.floor(dailyEstimatedSweeps * (0.45 + marketCycleRatio * 0.1)),
+            sellSweeps: Math.floor(dailyEstimatedSweeps * (0.55 - marketCycleRatio * 0.1)),
+            avgVolume: 0.5 * timeBasedVariation * (1 + i / 30), // 시간이 지날수록 거래량 증가
+            avgImpact: 2 + timeBasedVariation + Math.sin(i / 3) * 1.5, // 2~4.5% 범위 변동
+            maxImpact: 4 + timeBasedVariation * 2 + Math.sin(i / 3) * 2, // 4~8% 범위 변동
             high: currentPrice * 1.02,
             low: currentPrice * 0.98,
             close: currentPrice,

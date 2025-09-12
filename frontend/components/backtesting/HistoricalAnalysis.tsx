@@ -43,12 +43,12 @@ export default function HistoricalAnalysis({ analysis, coin, period }: Historica
       'ETHUSDT': 3.2, 
       'BNBUSDT': 2.8 
     }[coin.symbol] || 2.0
-    return baseVolatility + (Math.random() * 0.5 - 0.25) // 실제 API 데이터로 대체 필요
+    return baseVolatility + ((((Date.now() % 1000) / 1000) * 0.5 - 0.25)) // 실제 API 데이터로 대체 필요
   }
 
   const calculateTrendStrength = () => {
     // ADX 기반 트렌드 강도 (실제 구현 필요)
-    return 65 + Math.random() * 20
+    return 65 + (((Date.now() % 1000) / 1000) * 20)
   }
 
   const findSupportLevels = () => {
@@ -74,7 +74,7 @@ export default function HistoricalAnalysis({ analysis, coin, period }: Historica
   const determineMarketPhase = () => {
     const phases = ['축적', '상승', '분배', '하락']
     // 실제 구현에서는 가격 패턴과 거래량 분석
-    return phases[Math.floor(Math.random() * phases.length)]
+    return phases[Math.floor(((Date.now() % 1000) / 1000) * phases.length)]
   }
 
   const detectPatterns = () => {

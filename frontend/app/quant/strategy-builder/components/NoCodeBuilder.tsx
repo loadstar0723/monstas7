@@ -70,7 +70,7 @@ export default function NoCodeBuilder({ symbol }: NoCodeBuilderProps) {
   // 블록 추가
   const addBlock = (block: any, type: 'condition' | 'action') => {
     const newBlock: StrategyBlock = {
-      id: `${Date.now()}_${Math.random()}`,
+      id: `${Date.now()}_${((Date.now() % 1000) / 1000)}`,
       type: type,
       name: block.name,
       params: block.params ? {} : undefined

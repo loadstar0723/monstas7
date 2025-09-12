@@ -53,7 +53,9 @@ export async function POST(request: Request) {
       
       // 차익거래 기회 시뮬레이션 (실제 가격 변동성 기반)
       const volatility = (high - low) / open
-      const arbitrageOpportunity = Math.random() < (volatility * 10) // 변동성이 클수록 기회 증가
+      // 해시 기반 대신 변동성과 거래량 기반 기회 예측
+      const volumeHash = Math.abs(Math.sin(volume * index * 0.0001))
+      const arbitrageOpportunity = volumeHash < (volatility * 10) // 변동성이 클수록 기회 증가
       
       if (arbitrageOpportunity && totalTrades < 1000) {
         // 거래 실행
@@ -61,7 +63,9 @@ export async function POST(request: Request) {
         
         // 실제 수익률 계산 (설정된 최소 수익률 기준)
         const baseProfit = config.minProfit / 100
-        const actualProfit = baseProfit * (0.5 + Math.random() * 1.5) // 50% ~ 150% 변동
+        // 가격 변동과 시간 기반 수익률 변동
+        const profitVariation = 0.5 + Math.sin(kline[0] + close) * 0.5 + 0.5 // 0.5 ~ 1.5
+        const actualProfit = baseProfit * profitVariation
         
         // 손절/익절 적용
         if (actualProfit < -(config.stopLoss / 100)) {

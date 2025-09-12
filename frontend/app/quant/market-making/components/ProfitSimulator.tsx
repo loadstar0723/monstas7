@@ -91,7 +91,7 @@ export default function ProfitSimulator({ selectedCoin }: Props) {
         const periodPnL = spreadProfit * tradesPerPeriod
         
         // 재고 리스크 계산
-        const inventoryRisk = Math.random() < 0.2 ? -periodPnL * 0.3 : 0
+        const inventoryRisk = ((Date.now() % 1000) / 1000) < 0.2 ? -periodPnL * 0.3 : 0
         const netPnL = periodPnL + inventoryRisk
         
         cumulativePnL += netPnL

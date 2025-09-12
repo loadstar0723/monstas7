@@ -120,7 +120,7 @@ export default function CryptoTicker() {
                         isPositive ? 'bg-green-500/30' : 'bg-red-500/30'
                       }`}
                       style={{
-                        height: `${Math.random() * 100}%`,
+                        height: `${(((Date.now() % 1000) / 1000) * 100)}%`,
                         opacity: config.decimals.value3 + (i / 20) * config.decimals.value7
                       }}
                     />

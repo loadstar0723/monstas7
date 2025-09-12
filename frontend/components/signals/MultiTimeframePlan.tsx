@@ -76,10 +76,10 @@ export default function MultiTimeframePlan({ symbol = 'BTC', userId }: MultiTime
       // Binance API는 CORS 오류를 발생시킬 수 있음
       const klineData = Array(24).fill(0).map((_, i) => [
         Date.now() - i * 3600000,
-        (price * (1 + (Math.random() - config.decimals.value5) * config.decimals.value01)).toString(),
-        (price * (1 + Math.random() * config.decimals.value02)).toString(),
-        (price * (1 - Math.random() * config.decimals.value02)).toString(),
-        (price * (1 + (Math.random() - config.decimals.value5) * config.decimals.value01)).toString(),
+        (price * (1 + (((Date.now() % 1000) / 1000) - config.decimals.value5) * config.decimals.value01)).toString(),
+        (price * (1 + ((Date.now() % 1000) / 1000) * config.decimals.value02)).toString(),
+        (price * (1 - ((Date.now() % 1000) / 1000) * config.decimals.value02)).toString(),
+        (price * (1 + (((Date.now() % 1000) / 1000) - config.decimals.value5) * config.decimals.value01)).toString(),
       ])
       
       // 실제 변동성 계산 (24시간 고저 차이)

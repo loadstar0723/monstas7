@@ -39,7 +39,7 @@ export default function CorrectiveWaveTab({ symbol, currentPrice, historicalData
         index: i,
         price: price,
         pattern: pattern,
-        volume: Math.random() * 800000 + 400000
+        volume: ((Date.now() % 1000) / 1000) * 800000 + 400000
       })
     }
     

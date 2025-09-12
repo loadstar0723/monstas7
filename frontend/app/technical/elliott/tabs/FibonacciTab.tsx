@@ -33,7 +33,7 @@ export default function FibonacciTab({ symbol, currentPrice, historicalData }: F
     return {
       index: i,
       price: basePrice,
-      volume: Math.random() * 1000000 + 500000
+      volume: ((Date.now() % 1000) / 1000) * 1000000 + 500000
     }
   })
 

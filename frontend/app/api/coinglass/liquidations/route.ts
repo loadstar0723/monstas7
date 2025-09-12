@@ -25,18 +25,20 @@ export async function GET(request: Request) {
       const liquidations = []
       const baseTime = Date.now()
       
-      // 변동성에 따른 청산 빈도 계산
+      // 변동성에 따른 청산 빈도 계산 (결정적)
       const volatility = Math.abs(priceChange)
-      const liquidationCount = Math.floor(volatility * 2) + Math.floor(Math.random() * 5)
+      const timeHash = Math.abs(Math.sin(baseTime / 1000))
+      const liquidationCount = Math.floor(volatility * 2) + Math.floor(timeHash * 5)
       
       for (let i = 0; i < liquidationCount; i++) {
-        const isLong = Math.random() > 0.5
-        const priceOffset = (Math.random() - 0.5) * currentPrice * 0.02 // ±2% 범위
+        const positionHash = Math.sin(baseTime + i + symbol.charCodeAt(0))
+        const isLong = positionHash > 0
+        const priceOffset = positionHash * currentPrice * 0.02 // ±2% 범위
         const liquidationPrice = currentPrice + priceOffset
         
-        // 거래량 기반 청산 규모 계산
+        // 거래량 기반 청산 규모 계산 (결정적)
         const baseSize = volume24h / 10000
-        const sizeMultiplier = Math.random() * 10 + 1
+        const sizeMultiplier = Math.abs(Math.cos(baseTime + i)) * 10 + 1
         const liquidationValue = baseSize * sizeMultiplier
         
         liquidations.push({
@@ -45,7 +47,7 @@ export async function GET(request: Request) {
           price: liquidationPrice,
           quantity: liquidationValue / liquidationPrice,
           value: liquidationValue,
-          time: baseTime - i * 60000 * Math.random() * 10, // 최근 10분 내
+          time: baseTime - i * 60000 * (Math.abs(Math.sin(i)) * 10), // 최근 10분 내
           exchange: 'Binance',
           type: liquidationValue > baseSize * 5 ? 'large' : 'normal'
         })

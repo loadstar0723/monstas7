@@ -74,8 +74,8 @@ export default function RiskManagement({ coin, marketData }: RiskManagementProps
       setRiskHistory(prev => {
         const newPoint = {
           time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-          score: risk.score + (Math.random() - 0.5) * 10,
-          volatility: risk.volatility + (Math.random() - 0.5) * 2
+          score: risk.score + (((Date.now() % 1000) / 1000) - 0.5) * 10,
+          volatility: risk.volatility + (((Date.now() % 1000) / 1000) - 0.5) * 2
         }
         return [...prev, newPoint].slice(-30)
       })

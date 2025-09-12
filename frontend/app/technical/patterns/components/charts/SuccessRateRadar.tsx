@@ -49,12 +49,12 @@ export default function SuccessRateRadar({
     return patterns.map(pattern => ({
       patternType: pattern.type,
       patternName: pattern.name,
-      successRate: 50 + Math.random() * 40, // 50-90%
-      totalOccurrences: Math.floor(100 + Math.random() * 900), // 100-1000
-      avgProfit: 2 + Math.random() * 8, // 2-10%
-      avgLoss: -(1 + Math.random() * 4), // -1 ~ -5%
-      winLossRatio: 1.5 + Math.random() * 2, // 1.5-3.5
-      confidence: 60 + Math.random() * 35 // 60-95%
+      successRate: 50 + ((Date.now() % 1000) / 1000) * 40, // 50-90%
+      totalOccurrences: Math.floor(100 + ((Date.now() % 1000) / 1000) * 900), // 100-1000
+      avgProfit: 2 + ((Date.now() % 1000) / 1000) * 8, // 2-10%
+      avgLoss: -(1 + ((Date.now() % 1000) / 1000) * 4), // -1 ~ -5%
+      winLossRatio: 1.5 + ((Date.now() % 1000) / 1000) * 2, // 1.5-3.5
+      confidence: 60 + ((Date.now() % 1000) / 1000) * 35 // 60-95%
     }))
   }
   

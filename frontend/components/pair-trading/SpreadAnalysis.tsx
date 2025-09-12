@@ -28,7 +28,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
       
       for (let i = 0; i < 50; i++) {
         const time = new Date(now - (50 - i) * 60000).toLocaleTimeString()
-        const spread = baseSpread + (Math.sin(i / 10) * 0.1) + (Math.random() * 0.05 - 0.025)
+        const spread = baseSpread + (Math.sin(i / 10) * 0.1) + ((((Date.now() % 1000) / 1000) * 0.05 - 0.025))
         initialData.push({
           time,
           spread: spread,

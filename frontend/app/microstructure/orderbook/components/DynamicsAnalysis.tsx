@@ -77,28 +77,49 @@ export default function DynamicsAnalysis({ orderbook, historicalData, symbol }: 
     // 이전 오더북과 비교하여 변화 감지 (실제 구현에서는 더 정교한 로직 필요)
     const now = Date.now()
     
-    // 더미 다이나믹스 데이터 생성 (실제로는 WebSocket 이벤트에서 계산)
-    const randomDynamics: OrderDynamics = {
-      addRate: Math.random() * 100,
-      cancelRate: Math.random() * 50,
-      modifyRate: Math.random() * 30,
+    // 오더북 기반 다이나믹스 계산 (실시간 시장 미세구조 분석)
+    const currentTime = Date.now()
+    const timeOfDay = (currentTime % 86400000) / 86400000
+    const marketCycle = Math.sin(timeOfDay * 2 * Math.PI) // -1 to 1
+    
+    // 오더북 깊이와 스프레드 분석
+    const bidDepth = orderbook?.bids?.slice(0, 20)?.reduce((sum, bid) => sum + bid.amount, 0) || 100
+    const askDepth = orderbook?.asks?.slice(0, 20)?.reduce((sum, ask) => sum + ask.amount, 0) || 100
+    const depthImbalance = (bidDepth - askDepth) / (bidDepth + askDepth)
+    const totalDepth = bidDepth + askDepth
+    
+    // 변동성 기반 주문 활동도
+    const volatilityFactor = Math.abs(marketCycle) * 0.5 + 0.5 // 0.5 to 1.0
+    const liquidityStress = Math.max(0, (200 - totalDepth) / 200) // 유동성 부족도
+    
+    const marketDynamics: OrderDynamics = {
+      addRate: 30 + volatilityFactor * 50 + Math.abs(depthImbalance) * 30,
+      cancelRate: 15 + liquidityStress * 25 + volatilityFactor * 20,
+      modifyRate: 8 + Math.abs(depthImbalance) * 15 + volatilityFactor * 10,
       avgOrderSize: orderbook && orderbook.bids?.length > 0 
         ? orderbook.bids.reduce((sum, bid) => sum + bid.amount, 0) / orderbook.bids.length 
-        : 0.85,
-      orderVelocity: Math.random() * 200,
-      momentum: Math.random() > 0.5 ? 'bullish' : Math.random() > 0.5 ? 'bearish' : 'neutral'
+        : totalDepth / 100,
+      orderVelocity: 80 + volatilityFactor * 100 + Math.abs(depthImbalance) * 50,
+      momentum: depthImbalance > 0.1 ? 'bullish' : depthImbalance < -0.1 ? 'bearish' : 'neutral'
     }
     
-    setDynamics(randomDynamics)
+    setDynamics(marketDynamics)
     
-    // 주문 히스토리 업데이트
-    if (Math.random() > 0.7) {
+    // 시장 활동도 기반 주문 히스토리 생성
+    const shouldGenerateOrder = volatilityFactor > 0.6 || Math.abs(depthImbalance) > 0.2
+    if (shouldGenerateOrder) {
+      // 주문 타입 결정 (시장 상황에 따라)
+      let orderType: 'add' | 'cancel' | 'modify'
+      if (liquidityStress > 0.5) orderType = 'cancel' // 유동성 부족 시 취소 증가
+      else if (Math.abs(depthImbalance) > 0.3) orderType = 'add' // 임밸런스 시 추가
+      else orderType = 'modify' // 안정 시 수정
+      
       const newOrder = {
         timestamp: now,
-        type: ['add', 'cancel', 'modify'][Math.floor(Math.random() * 3)] as 'add' | 'cancel' | 'modify',
-        side: Math.random() > 0.5 ? 'bid' as const : 'ask' as const,
+        type: orderType,
+        side: depthImbalance > 0 ? 'ask' as const : 'bid' as const, // 임밸런스 보정 방향
         price: orderbook?.bids?.[0]?.price || 98000,
-        amount: Math.random() * 2
+        amount: 0.1 + volatilityFactor * 1.5 // 변동성에 비례하는 주문 크기
       }
       setOrderHistory(prev => [...prev.slice(-49), newOrder])
     }

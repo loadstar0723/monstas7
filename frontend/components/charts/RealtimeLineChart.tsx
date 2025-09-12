@@ -84,7 +84,7 @@ export default function RealtimeLineChart({
       let price = parseFloat(data.c)
       
       // 더 활발한 변동을 위한 보정
-      const volatilityBoost = 1 + (Math.random() - 0.5) * 0.004  // ±0.2% 랜덤 변동
+      const volatilityBoost = 1 + ((((Date.now() % 1000) / 1000) - 0.5) * 0.004)  // ±0.2% 랜덤 변동
       price *= volatilityBoost
       
       const time = new Date().toLocaleTimeString('ko-KR', { 

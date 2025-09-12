@@ -30,7 +30,7 @@ export default function CointegrationTest({ pair, timeframe }: CointegrationTest
     for (let i = 0; i < 50; i++) {
       initialResiduals.push({
         index: i,
-        residual: Math.sin(i / 5) * 100 + (Math.random() - 0.5) * 50
+        residual: Math.sin(i / 5) * 100 + ((((Date.now() % 1000) / 1000) - 0.5) * 50)
       })
     }
     setResiduals(initialResiduals)

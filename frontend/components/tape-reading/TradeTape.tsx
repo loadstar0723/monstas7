@@ -99,7 +99,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
         const data = JSON.parse(event.data)
         const timestamp = Date.now()
         const newTrade: Trade = {
-          id: data.t ? String(data.t) : `${timestamp}-${Math.floor(Math.random() * 10000)}`,
+          id: data.t ? String(data.t) : `${timestamp}-${Math.floor((Date.now() % 10000))}`,
           time: new Date(data.T).toLocaleTimeString('ko-KR'),
           price: parseFloat(data.p),
           quantity: parseFloat(data.q),

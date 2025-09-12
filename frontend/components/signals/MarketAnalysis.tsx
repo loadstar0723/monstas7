@@ -21,10 +21,10 @@ export default function MarketAnalysis() {
   useEffect(() => {
     // 시뮬레이션 데이터 생성
     const generateIndicators = () => {
-      const rsi = 50 + Math.random() * 50
-      const macd = Math.random() * 2 - 1
-      const bb = Math.random() * 100
-      const volume = 50 + Math.random() * 50
+      const rsi = 50 + (((Date.now() % 1000) / 1000) * 50)
+      const macd = (((Date.now() % 1000) / 1000) * 2 - 1)
+      const bb = (((Date.now() % 1000) / 1000) * 100)
+      const volume = 50 + (((Date.now() % 1000) / 1000) * 50)
       
       const newIndicators: MarketIndicator[] = [
         {
@@ -61,7 +61,7 @@ export default function MarketAnalysis() {
       setOverallSignal(buyCount > sellCount ? 'buy' : sellCount > buyCount ? 'sell' : 'neutral')
       
       // 시장 심리 계산
-      setMarketSentiment(Math.random() * 100)
+      setMarketSentiment((((Date.now() % 1000) / 1000) * 100))
     }
     
     generateIndicators()

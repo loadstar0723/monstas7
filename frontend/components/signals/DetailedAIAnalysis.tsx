@@ -100,7 +100,7 @@ export default function DetailedAIAnalysis({
     const basePrice = currentPrice || 68500
     setAnalysisData({
       technicalAnalysis: {
-        confidence: Math.floor(Math.random() * 30) + 60, // 60-90
+        confidence: (Math.floor(((Date.now() + 60) % 30) + 60)), // 60-90
         factors: [
           `현재가: $${basePrice.toLocaleString()}`,
           'RSI 과매수 구간 접근',

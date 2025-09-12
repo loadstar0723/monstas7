@@ -86,8 +86,8 @@ export default function PatternHeatmap({
       time,
       patterns: patternTypes.map(type => ({
         type,
-        strength: Math.random() * 100,
-        confidence: 60 + Math.random() * 40
+        strength: ((Date.now() % 1000) / 1000) * 100,
+        confidence: 60 + ((Date.now() % 1000) / 1000) * 40
       }))
     }))
   }

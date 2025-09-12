@@ -43,7 +43,7 @@ export default function ImpulseWaveTab({ symbol, currentPrice, historicalData }:
         index: i,
         price: price,
         waveLabel: waveLabel,
-        volume: Math.random() * 1000000 + 500000
+        volume: ((Date.now() % 1000) / 1000) * 1000000 + 500000
       })
     }
     

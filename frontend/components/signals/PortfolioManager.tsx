@@ -132,7 +132,7 @@ export default function PortfolioManager({
         const allocation = (volume / totalVolume) * 100
         
         // 평균 매수가는 현재가의 95-${config.percentage.value105} 범위에서 계산
-        const avgBuyPrice = currentPrice * (config.decimals.value95 + Math.random() * config.decimals.value1)
+        const avgBuyPrice = currentPrice * (config.decimals.value95 + ((Date.now() % 1000) / 1000) * config.decimals.value1)
         const amount = (10000 * (allocation / 100)) / avgBuyPrice // $10,000 기준
         const value = amount * currentPrice
         const pnl = value - (amount * avgBuyPrice)

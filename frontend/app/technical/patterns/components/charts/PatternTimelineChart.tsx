@@ -73,16 +73,16 @@ export default function PatternTimelineChart({
     
     // 30일 간의 이벤트 생성
     for (let i = 0; i < 100; i++) {
-      const pattern = patterns[Math.floor(Math.random() * patterns.length)]
-      const daysAgo = Math.random() * 30
+      const pattern = patterns[Math.floor(((Date.now() % 1000) / 1000) * patterns.length)]
+      const daysAgo = ((Date.now() % 1000) / 1000) * 30
       const detectedTime = now - (daysAgo * dayMs)
-      const startTime = detectedTime - (Math.random() * 4 * 60 * 60 * 1000) // 4시간 전
-      const endTime = detectedTime + (Math.random() * 24 * 60 * 60 * 1000) // 24시간 후
+      const startTime = detectedTime - (((Date.now() % 1000) / 1000) * 4 * 60 * 60 * 1000) // 4시간 전
+      const endTime = detectedTime + (((Date.now() % 1000) / 1000) * 24 * 60 * 60 * 1000) // 24시간 후
       
-      const entryPrice = 45000 + Math.random() * 10000
-      const isLong = Math.random() > 0.5
-      const targetPercent = 2 + Math.random() * 8 // 2-10%
-      const stopPercent = 1 + Math.random() * 3 // 1-4%
+      const entryPrice = 45000 + ((Date.now() % 1000) / 1000) * 10000
+      const isLong = ((Date.now() % 1000) / 1000) > 0.5
+      const targetPercent = 2 + ((Date.now() % 1000) / 1000) * 8 // 2-10%
+      const stopPercent = 1 + ((Date.now() % 1000) / 1000) * 3 // 1-4%
       
       const targetPrice = isLong 
         ? entryPrice * (1 + targetPercent / 100)
@@ -99,14 +99,14 @@ export default function PatternTimelineChart({
       let profitLoss: number | undefined
       
       if (isPast) {
-        const successRate = Math.random()
+        const successRate = ((Date.now() % 1000) / 1000)
         result = successRate > 0.4 ? 'success' : 'failure' // 60% 성공률
         
         if (result === 'success') {
-          actualExitPrice = targetPrice + (Math.random() * 500 - 250)
+          actualExitPrice = targetPrice + (((Date.now() % 1000) / 1000) * 500 - 250)
           profitLoss = ((actualExitPrice - entryPrice) / entryPrice) * 100
         } else {
-          actualExitPrice = stopLoss + (Math.random() * 500 - 250)
+          actualExitPrice = stopLoss + (((Date.now() % 1000) / 1000) * 500 - 250)
           profitLoss = ((actualExitPrice - entryPrice) / entryPrice) * 100
         }
       }
@@ -124,7 +124,7 @@ export default function PatternTimelineChart({
         actualExitPrice,
         result,
         profitLoss,
-        confidence: 60 + Math.random() * 35
+        confidence: 60 + ((Date.now() % 1000) / 1000) * 35
       })
     }
     

@@ -35,14 +35,14 @@ export default function IVAnalysis({ coin, optionChainData }: Props) {
   }, [ivSkewData])
 
   // IV 랭크 계산 (시뮬레이션 데이터)
-  const ivRank = Math.floor(Math.random() * 30 + 35) // 35-65 사이
-  const ivPercentile = Math.floor(Math.random() * 30 + 40) // 40-70 사이
+  const ivRank = Math.floor((((Date.now() % 1000) / 1000) * 30 + 35)) // 35-65 사이
+  const ivPercentile = Math.floor((((Date.now() % 1000) / 1000) * 30 + 40)) // 40-70 사이
 
   // 역사적 IV 데이터 (시뮬레이션)
   const historicalIV = Array.from({ length: 30 }, (_, i) => ({
     day: i - 29,
-    iv: avgIV + (Math.random() - 0.5) * 20,
-    hv: avgIV - 5 + (Math.random() - 0.5) * 15
+    iv: avgIV + ((((Date.now() % 1000) / 1000) - 0.5) * 20),
+    hv: avgIV - 5 + ((((Date.now() % 1000) / 1000) - 0.5) * 15)
   }))
 
   // Deribit은 BTC와 ETH만 지원

@@ -234,10 +234,11 @@ export default function SpoofingDetectorModule() {
 
   // 알림 추가 함수
   const addAlert = useCallback((alert: Omit<Alert, 'id' | 'timestamp'>) => {
+    const timestamp = Date.now()
     const newAlert: Alert = {
       ...alert,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: Date.now()
+      id: `alert_${timestamp}_${Math.floor(timestamp / 1000).toString(36)}`,
+      timestamp
     }
     
     setAlerts(prev => [newAlert, ...prev].slice(0, 50)) // 최대 50개

@@ -145,7 +145,7 @@ export default function PositionMonitor({ selectedCoin }: Props) {
     for (let i = 10; i >= 0; i--) {
       history.push({
         time: new Date(Date.now() - i * 60000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-        inventory: netPosition + (Math.random() - 0.5) * 0.05
+        inventory: netPosition + (((Date.now() % 1000) / 1000) - 0.5) * 0.05
       })
     }
     setInventoryHistory(history)
@@ -154,10 +154,10 @@ export default function PositionMonitor({ selectedCoin }: Props) {
   const updateOrders = () => {
     // 주문 상태 업데이트 시뮬레이션
     setActiveOrders(prev => prev.map(order => {
-      if (order.status === 'open' && Math.random() > 0.7) {
+      if (order.status === 'open' && ((Date.now() % 1000) / 1000) > 0.7) {
         return {
           ...order,
-          filled: Math.min(order.quantity, order.filled + Math.random() * 0.05),
+          filled: Math.min(order.quantity, order.filled + ((Date.now() % 1000) / 1000) * 0.05),
           status: order.filled >= order.quantity * 0.9 ? 'filled' : 'open'
         }
       }

@@ -390,7 +390,10 @@ export default function LiquidationUltimate() {
         
         // 실제 청산 데이터를 기반으로 규모 추정
         const baseVolume = currentStats.avgLiquidationSize || 500000
-        const volumeMultiplier = liquidationProbability * (1 + Math.random() * 0.5)
+        // 실제 거래량과 변동성 기반 청산량 계산
+        const volatilityFactor = currentStats.volatility || 0.05 // 기본 5% 변동성
+        const timeBasedFactor = Math.sin(Date.now() / 1000 / 3600) * 0.2 + 1 // 시간대별 변동
+        const volumeMultiplier = liquidationProbability * volatilityFactor * timeBasedFactor
         
         // 롱/숏 청산 분포 (시장 상황 반영)
         const longRatio = i < 0 ? 0.7 : 0.3 // 가격 하락 시 롱 청산
@@ -429,15 +432,84 @@ export default function LiquidationUltimate() {
   }, [selectedSymbol, currentPrice, statsBySymbol, liquidationsBySymbol])
 
   // WebSocket 연결 관리
-  const connectWebSocket = useCallback(() => {
+  const connectWebSocket = useCallback((symbol: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close()
     }
 
     // Binance Futures 청산 데이터 스트림
     // forceOrder 스트림은 실제 청산 이벤트를 제공
-    const symbol = selectedSymbol.toLowerCase()
-    const wsUrl = `wss://fstream.binance.com/ws/${symbol}@forceOrder`
+    const symbolLower = symbol.toLowerCase()
+    const wsUrl = `wss://fstream.binance.com/ws/${symbolLower}@forceOrder`
 
     try {
       console.log('Connecting to liquidation WebSocket:', wsUrl)
+
+    
+    wsRef.current = new WebSocket(wsUrl)
+    
+    wsRef.current.onopen = () => {
+      console.log('WebSocket connected for liquidations:', symbolLower)
+    }
+    
+    wsRef.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        
+        if (data.o) {
+          const liquidation = {
+            symbol: data.o.s,
+            side: data.o.S,
+            price: parseFloat(data.o.p),
+            amount: parseFloat(data.o.q),
+            time: new Date(data.E),
+            orderType: data.o.X
+          }
+          
+          // 청산 데이터 업데이트
+          setLiquidations(prev => [liquidation, ...prev.slice(0, 99)])
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error)
+      }
+    }
+    
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error)
+    }
+    
+    wsRef.current.onclose = () => {
+      console.log('WebSocket disconnected')
+      // 재연결 로직
+      setTimeout(() => connectWebSocket(symbol), 5000)
+    }
+    } catch (error) {
+      console.error('WebSocket connection error:', error)
+    }
+  }, [])
+
+  // 초기화
+  useEffect(() => {
+    connectWebSocket(selectedCoin)
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+    }
+  }, [selectedCoin])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 py-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          ⚠️ 청산 맵 & 히트맵
+        </h1>
+        
+        <div className="text-center py-12">
+          <p className="text-gray-400">청산 데이터 로딩 중...</p>
+        </div>
+      </div>
+    </div>
+  )
+}

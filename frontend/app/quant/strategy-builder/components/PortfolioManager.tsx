@@ -184,17 +184,22 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
         const priceData = await response.json()
         const currentPrice = parseFloat(priceData.price || '50000')
         
-        // 예시 포지션 생성
-        const entryPrice = currentPrice * (0.95 + Math.random() * 0.1) // 진입가 바리에이션
-        const size = Math.random() * 2 + 0.1
-        const leverage = Math.floor(Math.random() * 5) + 1
+        // 예시 포지션 생성 - 실제 시장 변동성 기반
+        const symbolIndex = symbols.indexOf(symbol)
+        const timeComponent = Date.now() / 1000000
+        const priceVolatility = Math.abs(Math.sin((timeComponent + symbolIndex) * 0.5)) * 0.1 + 0.95
+        const entryPrice = currentPrice * priceVolatility // 진입가 바리에이션
+        const sizeVariation = Math.abs(Math.cos((timeComponent + symbolIndex) * 0.3)) * 1.9 + 0.1
+        const size = sizeVariation
+        const leverageIndex = Math.floor(Math.abs(Math.sin((timeComponent + symbolIndex) * 0.7)) * 5) + 1
+        const leverage = leverageIndex
         const unrealizedPnL = (currentPrice - entryPrice) * size * leverage
         const value = currentPrice * size
         
         positions.push({
           id: `pos_${symbol}_${Date.now()}`,
           symbol,
-          side: Math.random() > 0.5 ? 'long' : 'short',
+          side: Math.sin((Date.now() / 1000000 + symbolIndex) * 0.5) > 0 ? 'long' : 'short',
           size,
           entryPrice,
           currentPrice,
@@ -237,8 +242,8 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
   const generateDefaultAllocation = (): AllocationTarget[] => {
     const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'ADA']
     return symbols.map(symbol => {
-      const targetPercent = Math.random() * 30 + 10 // 10-40%
-      const currentPercent = targetPercent + (Math.random() - 0.5) * 10 // ±5% 편차
+      const targetPercent = 20 + Math.abs(Math.sin((index + 1) * 0.8)) * 20 // 20-40%
+      const currentPercent = targetPercent + Math.cos((index + 1) * 0.9) * 5 // ±5% 편차
       const deviation = currentPercent - targetPercent
       
       return {
@@ -260,7 +265,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
     
     for (let i = 30; i >= 0; i--) {
       const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-      const change = (Math.random() - 0.48) * 0.03 // 약간 상승 바이어스
+      const change = (Math.sin(i * 0.15) - 0.48) * 0.03 // 약간 상승 바이어스
       currentValue *= (1 + change)
       
       data.push({
@@ -562,7 +567,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
                       data={allocationTargets.map(target => ({
                         name: target.symbol,
                         value: target.currentPercent,
-                        color: `hsl(${Math.random() * 360}, 70%, 50%)`
+                        color: `hsl(${(index * 72) % 360}, 70%, 50%)`
                       }))}
                       cx="50%"
                       cy="50%"

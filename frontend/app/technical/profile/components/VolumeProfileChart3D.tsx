@@ -459,13 +459,17 @@ export default function VolumeProfileChart3D({
     ctx.fillStyle = bgGradient
     ctx.fillRect(0, 0, rect.width, rect.height)
     
-    // 별 효과
+    // 별 효과 - 피보나치 배열로 배치
     ctx.save()
+    const fibSequence = [1, 1, 2, 3, 5, 8, 13, 21, 34]
     for (let i = 0; i < 50; i++) {
-      const x = Math.random() * rect.width
-      const y = Math.random() * rect.height
-      const size = Math.random() * 2
-      const opacity = Math.random() * 0.5
+      const fibIndex = i % fibSequence.length
+      const fibRatio = fibSequence[fibIndex] / 21 // 정규화
+      
+      const x = (rect.width * fibRatio * (i % 7) / 7) + (rect.width / 8)
+      const y = (rect.height * (1 - fibRatio) * (i % 5) / 5) + (rect.height / 10)
+      const size = 0.5 + fibRatio * 1.5
+      const opacity = 0.1 + fibRatio * 0.4
       
       ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
       ctx.beginPath()

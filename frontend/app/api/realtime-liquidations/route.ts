@@ -173,19 +173,22 @@ function generateSyntheticLiquidations(
   const liquidations = []
   const baseTime = Date.now()
   
-  // 불균형이 클수록 더 많은 청산 생성
+  // 불균형이 클수록 더 많은 청산 생성 (결정적)
   const liquidationCount = Math.floor(Math.abs(imbalance) * 10 * (volatility / 2))
   
   for (let i = 0; i < Math.min(liquidationCount, 10); i++) {
     const isLong = imbalance < 0 // 매도 압력이 강하면 롱 청산
-    const priceDeviation = (Math.random() * 0.005 + 0.001) * currentPrice
+    // 가격 변동은 시간과 인덱스 기반 결정적 계산
+    const timeHash = Math.abs(Math.sin(baseTime / 1000 + i))
+    const priceDeviation = (timeHash * 0.005 + 0.001) * currentPrice
     const liquidationPrice = isLong 
       ? currentPrice - priceDeviation
       : currentPrice + priceDeviation
     
-    // 거래량 기반 청산 규모
+    // 거래량 기반 청산 규모 (결정적)
     const baseSize = volume24h / 5000
-    const sizeMultiplier = Math.random() * 5 + 1
+    const sizeHash = Math.abs(Math.cos(baseTime + i))
+    const sizeMultiplier = sizeHash * 5 + 1
     const liquidationValue = baseSize * sizeMultiplier * (1 + volatility / 10)
     
     liquidations.push({

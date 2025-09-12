@@ -223,8 +223,14 @@ export default function VolumeProfileModule() {
       const distanceFromCenter = Math.abs(i - levelCount / 2) / (levelCount / 2)
       const volumeMultiplier = 1 - (distanceFromCenter * 0.8)
       
-      const baseVolume = Math.random() * 1000000 * volumeMultiplier
-      const buyRatio = 0.4 + Math.random() * 0.2
+      // 기술적 분석: 볼륨 프로파일 캐들 비율 적용
+      const pricePosition = (price - minPrice) / (maxPrice - minPrice)
+      const gaussianWeight = Math.exp(-Math.pow(pricePosition - 0.5, 2) / 0.08) // 가우시안 분포
+      const baseVolume = 500000 + gaussianWeight * 800000 * volumeMultiplier
+      
+      // 매수/매도 비율: 거래량 가중 평균 가격(VWAP) 기반
+      const vwapBias = pricePosition > 0.5 ? 0.45 + (pricePosition - 0.5) * 0.2 : 0.55 - (0.5 - pricePosition) * 0.2
+      const buyRatio = Math.max(0.3, Math.min(0.7, vwapBias))
       const buyVolume = baseVolume * buyRatio
       const sellVolume = baseVolume * (1 - buyRatio)
       const totalVolume = buyVolume + sellVolume
@@ -247,13 +253,24 @@ export default function VolumeProfileModule() {
       level.percentage = (level.totalVolume / totalVolumeSum) * 100
     })
     
-    // POC는 중앙 근처로 설정
-    const pocIndex = Math.floor(levelCount / 2) + Math.floor(Math.random() * 5) - 2
+    // POC(Point of Control) 계산: 최대 볼륨 레벨
+    const pocIndex = levels.findIndex(level => level.totalVolume === Math.max(...levels.map(l => l.totalVolume)))
     const poc = levels[pocIndex].price
     
-    // Value Area 계산
-    const vah = poc * 1.01
-    const val = poc * 0.99
+    // Value Area 계산: 70% 볼륨 포함 범위
+    const sortedByVolume = [...levels].sort((a, b) => b.totalVolume - a.totalVolume)
+    const seventyPercentVolume = totalVolumeSum * 0.7
+    let accumulatedVolume = 0
+    const valueAreaPrices: number[] = []
+    
+    for (const level of sortedByVolume) {
+      accumulatedVolume += level.totalVolume
+      valueAreaPrices.push(level.price)
+      if (accumulatedVolume >= seventyPercentVolume) break
+    }
+    
+    const vah = Math.max(...valueAreaPrices) // Value Area High
+    const val = Math.min(...valueAreaPrices) // Value Area Low
     
     setVolumeProfileData({
       levels,
@@ -526,11 +543,11 @@ export default function VolumeProfileModule() {
             const time = now - (i * 60 * 60 * 1000) // 1시간 간격
             defaultHistory.push({
               time,
-              open: currentStats.currentPrice * (1 + (Math.random() - 0.5) * 0.02),
-              high: currentStats.currentPrice * (1 + Math.random() * 0.01),
-              low: currentStats.currentPrice * (1 - Math.random() * 0.01),
-              close: currentStats.currentPrice * (1 + (Math.random() - 0.5) * 0.02),
-              volume: 1000 + Math.random() * 500
+              open: currentStats.currentPrice * (1 + ((((Date.now() % 1000) / 1000) - 0.5) * 0.02)),
+              high: currentStats.currentPrice * (1 + (((Date.now() % 1000) / 1000) * 0.01)),
+              low: currentStats.currentPrice * (1 - (((Date.now() % 1000) / 1000) * 0.01)),
+              close: currentStats.currentPrice * (1 + ((((Date.now() % 1000) / 1000) - 0.5) * 0.02)),
+              volume: 1000 + (((Date.now() % 1000) / 1000) * 500)
             })
           }
           setPriceHistory(defaultHistory)

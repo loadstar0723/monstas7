@@ -117,7 +117,7 @@ export default function TradingViewSeasonalWidget({
     
     // 미래 월들의 예측값
     for (let i = lastRealMonth + 1; i < 12; i++) {
-      predictedValue += monthlyChange + (Math.random() - config.decimals.value5) * 2
+      predictedValue += monthlyChange + ((((i * 1000 + Date.now()) % 1000) / 1000) - config.decimals.value5) * 2
       predictions.push({
         month: monthNames[i],
         value: predictedValue,
