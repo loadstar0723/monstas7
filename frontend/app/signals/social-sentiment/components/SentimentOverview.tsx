@@ -20,7 +20,9 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
 
   // 디버깅용 로그
   useEffect(() => {
-    console.log('SentimentOverview - sentimentData:', {
+    console.log('SentimentOverview 렌더링 - coin:', coin)
+    console.log('SentimentOverview - sentimentData 전체:', sentimentData)
+    console.log('SentimentOverview - sentimentData 상세:', {
       score: sentimentData.sentimentScore,
       historyLength: sentimentData.sentimentHistory?.length,
       firstHistory: sentimentData.sentimentHistory?.[0],
@@ -159,7 +161,14 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         {/* 감성 트렌드 차트 */}
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h3 className="text-lg font-bold mb-4">감성 점수 추이</h3>
-          {sentimentData.sentimentHistory && sentimentData.sentimentHistory.length > 0 ? (
+          {(() => {
+            console.log('차트 렌더링 체크:', {
+              hasHistory: !!sentimentData.sentimentHistory,
+              length: sentimentData.sentimentHistory?.length,
+              isArray: Array.isArray(sentimentData.sentimentHistory)
+            });
+            return sentimentData.sentimentHistory && sentimentData.sentimentHistory.length > 0;
+          })() ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sentimentData.sentimentHistory} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />

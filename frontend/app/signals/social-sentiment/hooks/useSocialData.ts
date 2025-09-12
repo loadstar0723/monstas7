@@ -49,7 +49,14 @@ const getInitialData = (): SocialSentimentData => {
 }
 
 export default function useSocialData(coin: string) {
-  const [sentimentData, setSentimentData] = useState<SocialSentimentData>(getInitialData())
+  const initialData = getInitialData()
+  console.log('useSocialData - 초기 데이터:', {
+    historyLength: initialData.sentimentHistory.length,
+    firstItem: initialData.sentimentHistory[0],
+    lastItem: initialData.sentimentHistory[initialData.sentimentHistory.length - 1]
+  })
+  
+  const [sentimentData, setSentimentData] = useState<SocialSentimentData>(initialData)
   const [loading, setLoading] = useState(false) // false로 시작해서 즉시 렌더링
   const [error, setError] = useState<string | null>(null)
 
@@ -104,12 +111,17 @@ export default function useSocialData(coin: string) {
               let history: Array<{ time: string; score: number }> = []
               
               if (klinesResponse.ok) {
-                const klines = await klinesResponse.json()
+                const klinesData = await klinesResponse.json()
+                console.log('Klines 응답 구조:', Object.keys(klinesData))
+                
+                // API는 { data: [...], klines: [...] } 형태로 반환
+                const klines = klinesData.data || klinesData.klines || []
+                console.log('추출된 klines 배열:', klines.length, '개')
                 
                 // 기준 가격 (24시간 전)
                 const basePrice = Array.isArray(klines) && klines[0] ? parseFloat(klines[0][4]) : parseFloat(ticker.lastPrice)
                 
-                history = Array.isArray(klines) ? klines.map((kline: any[]) => {
+                history = Array.isArray(klines) && klines.length > 0 ? klines.map((kline: any[]) => {
                   const closePrice = parseFloat(kline[4])
                   const priceChangePercent = ((closePrice - basePrice) / basePrice) * 100
                   
@@ -142,10 +154,10 @@ export default function useSocialData(coin: string) {
               }
 
               console.log('sentimentHistory 데이터:', history.length, '개')
-              console.log('전체 히스토리:', history)
+              console.log('전체 히스토리:', JSON.stringify(history))
               console.log('setSentimentData 호출 직전...')
               
-              setSentimentData({
+              const newData = {
                 sentimentScore: Math.floor(finalSentiment),
                 sentimentChange: priceChange,
                 totalMentions: estimatedMentions,
@@ -158,7 +170,15 @@ export default function useSocialData(coin: string) {
                 sentimentHistory: history,
                 trendingKeywords: [], // TODO: 실제 소셜 API 연동 필요
                 influencers: [] // TODO: 실제 인플루언서 API 연동 필요
+              }
+              
+              console.log('새 데이터 생성됨:', {
+                historyLength: newData.sentimentHistory.length,
+                score: newData.sentimentScore
               })
+              
+              setSentimentData(newData)
+              console.log('setSentimentData 호출 완료')
             }
           }
         } catch (err) {
