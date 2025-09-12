@@ -12,7 +12,14 @@ export async function generateSampleFootprintData(symbol: string, currentPrice: 
       return []
     }
     
-    const klines = await response.json()
+    const result = await response.json()
+    const klines = result.data || result.klines || []
+    
+    // 배열이 아니면 빈 배열 반환
+    if (!Array.isArray(klines)) {
+      console.error('klines is not an array:', klines)
+      return []
+    }
     
     // 실제 거래 데이터도 가져오기
     let trades: any[] = []
