@@ -11,6 +11,13 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  // CORS 헤더 추가
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  })
+
   try {
     const { searchParams } = new URL(request.url)
     const symbolsParam = searchParams.get('symbols')
@@ -27,8 +34,15 @@ export async function GET(request: NextRequest) {
       }
     }
     
+    console.log('Fetching prices for symbols:', symbols)
+    
     // Binance API에서 24시간 티커 정보 가져오기 (가격 + 변동률 포함)
     const response = await fetch('https://api.binance.com/api/v3/ticker/24hr')
+    
+    if (!response.ok) {
+      throw new Error(`Binance API error: ${response.status}`)
+    }
+    
     const data = await response.json()
     
     // 요청된 심볼만 필터링
@@ -45,23 +59,10 @@ export async function GET(request: NextRequest) {
       volume: item.volume
     }))
     
-    // CORS 헤더 추가
-    const headers = new Headers({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    })
-    
+    console.log('Returning prices:', prices.length, 'items')
     return NextResponse.json(prices, { headers })
   } catch (error: any) {
-    console.error('Binance API error:', error)
-    
-    // CORS 헤더 추가
-    const headers = new Headers({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    })
+    console.error('Binance API error:', error.message || error)
     
     // Rate limit 에러 또는 개발 환경에서는 시뮬레이션 데이터 반환
     if (process.env.NODE_ENV === 'development' || error.message?.includes('429')) {
