@@ -292,52 +292,72 @@ export default function MomentumModule() {
 
   // WebSocket 연결
   const connectWebSocket = useCallback((symbol: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    // 기존 WebSocket 연결 정리
+    if (wsRef.current) {
       wsRef.current.close()
+      wsRef.current = null
     }
 
-    const streamName = symbol.toLowerCase() + '@ticker'
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
-
-    ws.onopen = () => {
-      console.log('WebSocket connected for', symbol)
-      setError(null)
+    // 재연결 타이머 정리
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
     }
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.e === '24hrTicker') {
-        const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
-        setCoinData(prev => ({
-          ...prev!,
-          symbol: data.s,
-          name: coin?.name || symbol,
-          price: parseFloat(data.c),
-          change24h: parseFloat(data.P),
-          volume24h: parseFloat(data.v),
-          high24h: parseFloat(data.h),
-          low24h: parseFloat(data.l),
-          marketCap: parseFloat(data.q)
-        }))
+    try {
+      const streamName = symbol.toLowerCase() + '@ticker'
+      const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
+
+      ws.onopen = () => {
+        console.log('WebSocket connected for', symbol)
+        setError(null)
       }
-    }
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-      setError('WebSocket 연결 오류')
-    }
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected')
-      // 재연결 로직
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (wsRef.current?.readyState !== WebSocket.OPEN) {
-          connectWebSocket(symbol)
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data.e === '24hrTicker') {
+            const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
+            setCoinData(prev => ({
+              ...prev!,
+              symbol: data.s,
+              name: coin?.name || symbol,
+              price: parseFloat(data.c),
+              change24h: parseFloat(data.P),
+              volume24h: parseFloat(data.v),
+              high24h: parseFloat(data.h),
+              low24h: parseFloat(data.l),
+              marketCap: parseFloat(data.q)
+            }))
+          }
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err)
         }
-      }, 5000)
-    }
+      }
 
-    wsRef.current = ws
+      ws.onerror = (error) => {
+        console.warn('WebSocket connection error, will retry in 5 seconds')
+        // WebSocket error 이벤트는 상세 정보를 제공하지 않으므로 warning으로 처리
+      }
+
+      ws.onclose = (event) => {
+        console.log('WebSocket disconnected, code:', event.code, 'reason:', event.reason)
+        // 정상 종료가 아닌 경우에만 재연결
+        if (event.code !== 1000 && event.code !== 1001) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+              console.log('Attempting to reconnect WebSocket...')
+              connectWebSocket(symbol)
+            }
+          }, 5000)
+        }
+      }
+
+      wsRef.current = ws
+    } catch (err) {
+      console.error('Failed to create WebSocket:', err)
+      setError('WebSocket 연결 실패')
+    }
   }, [])
 
   // 코인 변경 시
@@ -369,11 +389,15 @@ export default function MomentumModule() {
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
+      // WebSocket 정상 종료
       if (wsRef.current) {
-        wsRef.current.close()
+        wsRef.current.close(1000, 'Component unmounting')
+        wsRef.current = null
       }
+      // 재연결 타이머 정리
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
+        reconnectTimeoutRef.current = null
       }
     }
   }, [])
