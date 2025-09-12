@@ -381,11 +381,12 @@ export default function FootprintChartModule() {
       try {
         const response = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=5m&limit=288`)
         if (response.ok) {
-          const klines = await response.json()
+          const result = await response.json()
+          const klines = result.data || result.klines || [] // API 응답 구조에 맞게 수정
           console.log(`[풋프린트] ${selectedSymbol} 캔들 데이터 수신:`, klines.length)
           
           // 캔들 데이터를 풋프린트 데이터로 변환 (최근 50개만 실시간처럼 처리)
-          const recentKlines = klines.slice(-50) // 최근 4시간 데이터만 실시간 변환
+          const recentKlines = Array.isArray(klines) ? klines.slice(-50) : [] // 배열 확인 후 처리
           recentKlines.forEach((kline: any) => {
             const [timestamp, open, high, low, close, volume, closeTime, quoteVolume] = kline
             const avgPrice = (parseFloat(high) + parseFloat(low)) / 2
@@ -405,7 +406,7 @@ export default function FootprintChartModule() {
           })
           
           // 가격 히스토리 설정
-          const priceHistoryData = klines.map((kline: any) => {
+          const priceHistoryData = Array.isArray(klines) ? klines.map((kline: any) => {
             const [timestamp, open, high, low, close, volume] = kline
             const time = new Date(parseInt(timestamp))
             const hours = time.getHours().toString().padStart(2, '0')
@@ -418,11 +419,11 @@ export default function FootprintChartModule() {
               close: parseFloat(close),
               volume: parseFloat(volume)
             }
-          })
+          }) : []
           setPriceHistory(priceHistoryData)
           
           // 초기 가격 및 변화율 설정
-          if (klines.length > 0) {
+          if (Array.isArray(klines) && klines.length > 0) {
             const lastKline = klines[klines.length - 1]
             const firstKline = klines[0]
             const lastPrice = parseFloat(lastKline[4]) // 현재 종가
