@@ -160,8 +160,9 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         {/* 감성 트렌드 차트 */}
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h3 className="text-lg font-bold mb-4">감성 점수 추이</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={sentimentData.sentimentHistory || []} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+          {sentimentData.sentimentHistory && sentimentData.sentimentHistory.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={sentimentData.sentimentHistory} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="time" 
@@ -188,6 +189,14 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
               />
             </LineChart>
           </ResponsiveContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-gray-500 text-center">
+                <div className="text-lg mb-2">데이터 로딩 중...</div>
+                <div className="text-sm">실시간 감성 데이터를 가져오고 있습니다</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 감성 분포 차트 */}

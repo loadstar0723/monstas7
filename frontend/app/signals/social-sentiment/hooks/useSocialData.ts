@@ -28,7 +28,7 @@ const getInitialData = (): SocialSentimentData => {
         hour: '2-digit',
         hour12: true 
       }),
-      score: 50 // 중립값으로 시작
+      score: 45 + Math.floor(Math.random() * 10) // 45-55 사이의 초기값
     }
   })
 

@@ -1168,3 +1168,23 @@ const getTTL = (dataType) => {
   }
 }
 ```
+
+
+
+  📋 수정된 추천안
+
+  // 1. CryptoCompare (메인 데이터)
+  - 무료: 월 100,000 호출
+  - 실시간 가격, 오더북, 거래량
+  - 뉴스, 소셜 데이터 포함
+  - WebSocket 실시간 스트리밍
+
+  // 2. Binance WebSocket (실시간 보조)
+  - 무료, 무제한
+  - 초단위 가격 업데이트
+  - 오더북 실시간 변화
+
+  // 3. Alternative.me (공포탐욕지수)
+  - 무료 API
+  - Fear & Greed Index
+  
