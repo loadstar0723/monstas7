@@ -499,7 +499,6 @@ export default function SmartMoneyUltimate() {
     connectionDelayRef.current = setTimeout(() => {
       // 데이터 서비스 구독
       const callback = (data: any) => {
-        console.log(`스마트 머니 데이터 서비스 연결: ${symbol}`)
         setIsConnected(true)
         
         // 실시간 데이터 처리
