@@ -11,6 +11,7 @@ interface Prediction {
   symbol: string
   prediction: string
   confidence: number
+  timeframe?: string
   target_price: number
   stop_loss: number
   models_agree: number
@@ -61,11 +62,11 @@ export default function AIDashboard() {
       console.warn('AI 예측 API 연결 실패, 기본 데이터 사용:', error)
       // 기본 예측 데이터 설정
       setPredictions([
-        { symbol: 'BTC', prediction: 'BUY', confidence: config.decimals.value72, timeframe: '24h', target_price: 45000, stop_loss: 42000, models_agree: 8, timestamp: new Date().toISOString() },
-        { symbol: 'ETH', prediction: 'HOLD', confidence: config.decimals.value65, timeframe: '24h', target_price: 2800, stop_loss: 2650, models_agree: 6, timestamp: new Date().toISOString() },
-        { symbol: 'BNB', prediction: 'BUY', confidence: config.decimals.value68, timeframe: '24h', target_price: 320, stop_loss: 305, models_agree: 7, timestamp: new Date().toISOString() },
-        { symbol: 'SOL', prediction: 'SELL', confidence: config.decimals.value71, timeframe: '24h', target_price: 90, stop_loss: 95, models_agree: 7, timestamp: new Date().toISOString() },
-        { symbol: 'ADA', prediction: 'HOLD', confidence: config.decimals.value60, timeframe: '24h', target_price: config.decimals.value45, stop_loss: config.decimals.value42, models_agree: 5, timestamp: new Date().toISOString() }
+        { symbol: 'BTC', prediction: 'BUY', confidence: config.decimals.value7, timeframe: '24h', target_price: 45000, stop_loss: 42000, models_agree: 8, timestamp: new Date().toISOString() },
+        { symbol: 'ETH', prediction: 'HOLD', confidence: config.decimals.value6, timeframe: '24h', target_price: 2800, stop_loss: 2650, models_agree: 6, timestamp: new Date().toISOString() },
+        { symbol: 'BNB', prediction: 'BUY', confidence: config.decimals.value7, timeframe: '24h', target_price: 320, stop_loss: 305, models_agree: 7, timestamp: new Date().toISOString() },
+        { symbol: 'SOL', prediction: 'SELL', confidence: config.decimals.value7, timeframe: '24h', target_price: 90, stop_loss: 95, models_agree: 7, timestamp: new Date().toISOString() },
+        { symbol: 'ADA', prediction: 'HOLD', confidence: config.decimals.value6, timeframe: '24h', target_price: 0.45, stop_loss: 0.42, models_agree: 5, timestamp: new Date().toISOString() }
       ])
     }
     setLoading(false)
