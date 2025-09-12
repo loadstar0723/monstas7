@@ -42,7 +42,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
           </div>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-2xl font-bold text-white">
-              {momentumData?.safeFixed(rsi, 1) || '0.0'}
+              {momentumData?.rsi ? momentumData.rsi.toFixed(1) : '0.0'}
             </span>
           </div>
           <div className="relative">
@@ -67,32 +67,32 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-gray-400">MACD</h3>
             <span className={`text-xs px-2 py-1 rounded ${
-              momentumData?.macd.histogram > 0 
+              momentumData?.macd?.histogram > 0 
                 ? 'bg-green-900/20 text-green-400' 
                 : 'bg-red-900/20 text-red-400'
             }`}>
-              {momentumData?.macd.histogram > 0 ? '상승' : '하락'}
+              {momentumData?.macd?.histogram > 0 ? '상승' : '하락'}
             </span>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">MACD</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.safeFixed(macd.macd, 2) || '0.00'}
+                {momentumData?.macd?.macd ? momentumData.macd.macd.toFixed(2) : '0.00'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">Signal</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.safeFixed(macd.signal, 2) || '0.00'}
+                {momentumData?.macd?.signal ? momentumData.macd.signal.toFixed(2) : '0.00'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">Histogram</span>
               <span className={`text-sm font-semibold ${
-                momentumData?.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'
+                momentumData?.macd?.histogram > 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                {momentumData?.safeFixed(macd.histogram, 2) || '0.00'}
+                {momentumData?.macd?.histogram ? momentumData.macd.histogram.toFixed(2) : '0.00'}
               </span>
             </div>
           </div>
@@ -104,9 +104,9 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
             <h3 className="text-sm font-medium text-gray-400">Stochastic</h3>
             {momentumData && (
               <span className={`text-xs px-2 py-1 rounded bg-gray-700 ${
-                getStochasticStatus(momentumData.stochastic.k, momentumData.stochastic.d).color
+                getStochasticStatus(momentumData.stochastic?.k || 0, momentumData.stochastic?.d || 0).color
               }`}>
-                {getStochasticStatus(momentumData.stochastic.k, momentumData.stochastic.d).text}
+                {getStochasticStatus(momentumData.stochastic?.k || 0, momentumData.stochastic?.d || 0).text}
               </span>
             )}
           </div>
@@ -114,13 +114,13 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">%K</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.safeFixed(stochastic.k, 1) || '0.0'}
+                {momentumData?.stochastic?.k ? momentumData.stochastic.k.toFixed(1) : '0.0'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">%D</span>
               <span className="text-sm font-semibold text-white">
-                {momentumData?.safeFixed(stochastic.d, 1) || '0.0'}
+                {momentumData?.stochastic?.d ? momentumData.stochastic.d.toFixed(1) : '0.0'}
               </span>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
             <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                style={{ width: `${momentumData?.stochastic.k || 0}%` }}
+                style={{ width: `${momentumData?.stochastic?.k || 0}%` }}
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function MomentumIndicators({ momentumData }: MomentumIndicatorsP
           </div>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-2xl font-bold text-white">
-              {momentumData?.safeFixed(williams, 1) || '0.0'}
+              {momentumData?.williams ? momentumData.williams.toFixed(1) : '0.0'}
             </span>
             <span className="text-gray-500 text-sm mb-1">%</span>
           </div>

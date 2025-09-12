@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { apiRateLimiter, retryWithBackoff, isRateLimitError } from '@/lib/apiRateLimiter'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,15 +13,21 @@ export async function GET(request: NextRequest) {
     // Binance API 직접 호출
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
     
-    const response = await fetch(binanceUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
-      },
-      cache: 'no-store'
-    })
+    // 레이트 리밋 적용한 API 호출
+    const response = await apiRateLimiter.throttle(
+      () => fetch(binanceUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        },
+        cache: 'no-store'
+      }),
+      `klines_${symbol}_${interval}_${limit}` // 캐싱 키
+    )
 
+    let data: any
+    
     if (!response.ok) {
       console.error('Binance API error:', response.status, response.statusText)
       
@@ -29,8 +36,8 @@ export async function GET(request: NextRequest) {
       const now = Date.now()
       const sampleKlines = []
       
-      // 최소한의 초기 데이터 생성 (500개)
-      for (let i = 499; i >= 0; i--) {
+      // 최소한의 초기 데이터 생성 (100개)
+      for (let i = 99; i >= 0; i--) {
         const time = now - (i * 60 * 60 * 1000) // 1시간 간격
         const variation = Math.sin(i * 0.1) * basePrice * 0.02 // 사인파 패턴
         const open = basePrice + variation
@@ -39,38 +46,26 @@ export async function GET(request: NextRequest) {
         const low = Math.min(open, close) * 0.995
         const volume = 500 + Math.sin(i * 0.05) * 300
         
-        sampleKlines.push({
-          time: new Date(time).toLocaleTimeString(),
-          openTime: time,
-          open,
-          high,
-          low,
-          close,
-          volume,
-          closeTime: time + 3599999
-        })
+        sampleKlines.push([
+          time,
+          open.toString(),
+          high.toString(),
+          low.toString(),
+          close.toString(),
+          volume.toString(),
+          time + 3599999,
+          volume.toString(),
+          0,
+          volume.toString(),
+          volume.toString(),
+          '0'
+        ])
       }
       
-      return NextResponse.json(
-        {
-          success: true,
-          klines: sampleKlines,
-          data: [],
-          count: sampleKlines.length,
-          timestamp: new Date().toISOString(),
-          note: 'Using calculated data due to rate limit'
-        },
-        { 
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        }
-      )
+      data = sampleKlines
+    } else {
+      data = await response.json()
     }
-
-    const data = await response.json()
     console.log(`Successfully fetched ${data?.length || 0} klines`)
     
     // CORS 헤더 추가
