@@ -338,7 +338,7 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
           <div className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5" />
             <p className="text-gray-300 text-sm">
-              대량 주문 시 ±1% 범위에서 약 {depthLevels[2]?.safeFixed(slippage, 2)}%의 슬리피지가 예상됩니다.
+              대량 주문 시 ±1% 범위에서 약 {safeFixed(depthLevels[2]?.slippage, 2)}%의 슬리피지가 예상됩니다.
             </p>
           </div>
         </div>
