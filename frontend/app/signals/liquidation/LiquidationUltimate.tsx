@@ -358,7 +358,7 @@ export default function LiquidationUltimate() {
 
     if (totalValue > 10000000 && liquidationRate > 10) {
       const alert: CascadeAlert = {
-        id: `${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`,
         symbol: selectedSymbol,
         type: 'critical',
         message: `⚠️ 캐스케이드 청산 위험! 5분간 $${(totalValue/1000000).toFixed(1)}M 청산`,

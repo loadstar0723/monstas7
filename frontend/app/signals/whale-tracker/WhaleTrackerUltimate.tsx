@@ -425,7 +425,7 @@ export default function WhaleTrackerUltimate() {
         console.log(`API 거래 데이터: ${tradesData.trades.length}건`)
         const formattedTrades = tradesData.trades
           .map((trade: any) => ({
-          id: `${selectedSymbol}-${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${trade.id }`,
+          id: `${selectedSymbol}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${trade.id }`,
           symbol: selectedSymbol,  // 선택된 심볼로 통일
           type: trade.type?.toLowerCase() === 'sell' ? 'sell' : 'buy' as 'buy' | 'sell',
           amount: parseFloat(trade.quantity || trade.amount || 0),
@@ -788,7 +788,7 @@ export default function WhaleTrackerUltimate() {
             })
             
             const trade: WhaleTransaction = {
-              id: `${symbol}-${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${data.a }`,
+              id: `${symbol}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${data.a }`,
               symbol: symbol,  // 전체 심볼 유지 (BTCUSDT 형태)
               price: price,
               amount: quantity,  // amount로 변경
@@ -1026,7 +1026,7 @@ export default function WhaleTrackerUltimate() {
   // 알림 추가
   const addNotification = (type: 'info' | 'warning' | 'success' | 'error', message: string) => {
     const notification = {
-      id: `${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}-${(Date.now() % 10000).toString(36)}`, // 유니크 ID 생성 (비-랜덤)
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${(Date.now() % 10000).toString(36)}`, // 유니크 ID 생성
       type,
       message,
       time: new Date().toLocaleTimeString()

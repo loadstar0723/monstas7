@@ -68,7 +68,7 @@ const generateInsiderTransaction = (
     value > 100000 ? 'medium' : 'low'
     
   return {
-    id: `tx_${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}_${index}`,
+    id: `tx_${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}_${index}`,
     timestamp: new Date(Date.now() - (index * 3600000)), // index * 1시간
     type,
     category,
