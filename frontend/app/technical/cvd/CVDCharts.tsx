@@ -8,7 +8,9 @@ import {
   PolarRadiusAxis, ScatterChart, Scatter
 } from 'recharts'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Activity, AlertTriangle, Target, BookOpen } from 'lucide-react'
+import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
+import { FaExclamationTriangle, FaCrosshairs, FaBook } from 'react-icons/fa'
+import { BiPulse } from 'react-icons/bi'
 
 // 색상 정의
 const COLORS = {
@@ -151,9 +153,9 @@ export function CVDOverviewTab({ cvdData, currentCVD, currentDelta, buyPressure,
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-sm">CVD 추세</span>
             {trend === 'up' ? (
-              <TrendingUp className="w-5 h-5 text-green-400" />
+              <HiTrendingUp className="w-5 h-5 text-green-400" />
             ) : (
-              <TrendingDown className="w-5 h-5 text-red-400" />
+              <HiTrendingDown className="w-5 h-5 text-red-400" />
             )}
           </div>
           <p className={`text-2xl font-bold ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
@@ -164,7 +166,7 @@ export function CVDOverviewTab({ cvdData, currentCVD, currentDelta, buyPressure,
         <div className="bg-gray-900/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-sm">압력 비율</span>
-            <Activity className="w-5 h-5 text-purple-400" />
+            <BiPulse className="w-5 h-5 text-purple-400" />
           </div>
           <p className="text-2xl font-bold text-white">
             {((buyPressure / (buyPressure + sellPressure)) * 100).toFixed(1)}%
@@ -174,7 +176,7 @@ export function CVDOverviewTab({ cvdData, currentCVD, currentDelta, buyPressure,
         <div className="bg-gray-900/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-sm">CVD 강도</span>
-            <Target className="w-5 h-5 text-blue-400" />
+            <FaCrosshairs className="w-5 h-5 text-blue-400" />
           </div>
           <p className="text-2xl font-bold text-blue-400">
             {(strength * 100).toFixed(1)}%
@@ -184,7 +186,7 @@ export function CVDOverviewTab({ cvdData, currentCVD, currentDelta, buyPressure,
         <div className="bg-gray-900/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-sm">신호</span>
-            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+            <FaExclamationTriangle className="w-5 h-5 text-yellow-400" />
           </div>
           <p className={`text-2xl font-bold ${currentDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
             {currentDelta > 0 ? '매수' : '매도'}
@@ -545,7 +547,7 @@ export function EducationTab() {
       {/* CVD 개념 */}
       <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
         <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="w-6 h-6 text-purple-500" />
+          <FaBook className="w-6 h-6 text-purple-500" />
           <h3 className="text-xl font-bold text-white">CVD란 무엇인가?</h3>
         </div>
         <div className="space-y-3 text-gray-400">

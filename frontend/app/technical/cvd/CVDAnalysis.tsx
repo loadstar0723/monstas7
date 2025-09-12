@@ -2,11 +2,13 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
+import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { 
-  TrendingUp, TrendingDown, Activity, AlertTriangle, 
-  CheckCircle, XCircle, Info, Target, Shield, Zap,
-  BarChart3, Brain, Eye, Gauge
-} from 'lucide-react'
+  FaExclamationTriangle, FaCheckCircle, FaTimesCircle,
+  FaInfoCircle, FaCrosshairs, FaShieldAlt, FaBolt,
+  FaBrain, FaEye, FaTachometerAlt
+} from 'react-icons/fa'
+import { BiPulse, BiBarChart } from 'react-icons/bi'
 
 // 색상 정의
 const COLORS = {
@@ -23,7 +25,7 @@ export function CVDConceptCard() {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
       <div className="flex items-center gap-3 mb-4">
-        <Brain className="w-6 h-6 text-purple-500" />
+        <FaBrain className="w-6 h-6 text-purple-500" />
         <h3 className="text-xl font-bold text-white">CVD 이해하기</h3>
       </div>
       
@@ -70,7 +72,7 @@ export function BuySellPressureGauge({ buyPressure, sellPressure }: any) {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
       <div className="flex items-center gap-3 mb-4">
-        <Gauge className="w-6 h-6 text-blue-500" />
+        <FaTachometerAlt className="w-6 h-6 text-blue-500" />
         <h3 className="text-xl font-bold text-white">시장 압력</h3>
       </div>
       
@@ -159,17 +161,17 @@ export function BuySellPressureGauge({ buyPressure, sellPressure }: any) {
           <div className="flex items-center gap-2">
             {Math.abs(netPressure) > 500000 ? (
               <>
-                <Zap className="w-4 h-4 text-yellow-400" />
+                <FaBolt className="w-4 h-4 text-yellow-400" />
                 <span className="text-yellow-400 font-semibold">강함</span>
               </>
             ) : Math.abs(netPressure) > 200000 ? (
               <>
-                <Activity className="w-4 h-4 text-blue-400" />
+                <BiPulse className="w-4 h-4 text-blue-400" />
                 <span className="text-blue-400 font-semibold">보통</span>
               </>
             ) : (
               <>
-                <Info className="w-4 h-4 text-gray-400" />
+                <FaInfoCircle className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-400 font-semibold">약함</span>
               </>
             )}
@@ -192,13 +194,13 @@ export function TrendSignals({ cvdData }: any) {
   
   // 신호 생성
   if (cvdUp && priceUp) {
-    signals.push({ type: 'bullish', label: '강세 지속', icon: TrendingUp, color: 'text-green-400' })
+    signals.push({ type: 'bullish', label: '강세 지속', icon: HiTrendingUp, color: 'text-green-400' })
   } else if (!cvdUp && !priceUp) {
-    signals.push({ type: 'bearish', label: '약세 지속', icon: TrendingDown, color: 'text-red-400' })
+    signals.push({ type: 'bearish', label: '약세 지속', icon: HiTrendingDown, color: 'text-red-400' })
   } else if (!priceUp && cvdUp) {
-    signals.push({ type: 'bullish', label: '강세 다이버전스', icon: CheckCircle, color: 'text-green-400' })
+    signals.push({ type: 'bullish', label: '강세 다이버전스', icon: FaCheckCircle, color: 'text-green-400' })
   } else if (priceUp && !cvdUp) {
-    signals.push({ type: 'bearish', label: '약세 다이버전스', icon: AlertTriangle, color: 'text-red-400' })
+    signals.push({ type: 'bearish', label: '약세 다이버전스', icon: FaExclamationTriangle, color: 'text-red-400' })
   }
   
   // 델타 신호
@@ -207,7 +209,7 @@ export function TrendSignals({ cvdData }: any) {
     signals.push({
       type: recentDelta > 0 ? 'bullish' : 'bearish',
       label: recentDelta > 0 ? '강한 매수' : '강한 매도',
-      icon: Zap,
+      icon: FaBolt,
       color: recentDelta > 0 ? 'text-green-400' : 'text-red-400'
     })
   }
@@ -215,7 +217,7 @@ export function TrendSignals({ cvdData }: any) {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
       <div className="flex items-center gap-3 mb-4">
-        <Eye className="w-6 h-6 text-yellow-500" />
+        <FaEye className="w-6 h-6 text-yellow-500" />
         <h3 className="text-xl font-bold text-white">추세 신호</h3>
       </div>
       
@@ -328,7 +330,7 @@ export function TradingStrategyCard({ currentCVD, currentDelta }: any) {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
       <div className="flex items-center gap-3 mb-4">
-        <Target className="w-6 h-6 text-purple-500" />
+        <FaCrosshairs className="w-6 h-6 text-purple-500" />
         <h3 className="text-xl font-bold text-white">트레이딩 전략</h3>
       </div>
       
@@ -355,7 +357,7 @@ export function TradingStrategyCard({ currentCVD, currentDelta }: any) {
                 {strategy.name}
               </h4>
               <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-blue-400" />
+                <FaShieldAlt className="w-4 h-4 text-blue-400" />
                 <span className="text-blue-400 text-sm">{strategy.confidence}% 신뢰도</span>
               </div>
             </div>
@@ -382,7 +384,7 @@ export function TradingStrategyCard({ currentCVD, currentDelta }: any) {
         {/* 리스크 경고 */}
         <div className="p-3 bg-yellow-900/20 rounded-lg border border-yellow-700/30">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5" />
+            <FaExclamationTriangle className="w-4 h-4 text-yellow-400 mt-0.5" />
             <div className="flex-1">
               <p className="text-yellow-400 font-semibold text-sm mb-1">리스크 관리</p>
               <p className="text-gray-400 text-xs">
@@ -400,7 +402,7 @@ export function TradingStrategyCard({ currentCVD, currentDelta }: any) {
 // CVD 지표 카드
 export function CVDIndicatorCard({ value, label, trend, description }: any) {
   const isPositive = value >= 0
-  const trendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Activity
+  const trendIcon = trend === 'up' ? HiTrendingUp : trend === 'down' ? HiTrendingDown : BiPulse
   
   return (
     <motion.div
