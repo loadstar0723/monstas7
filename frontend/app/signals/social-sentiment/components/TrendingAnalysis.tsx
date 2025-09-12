@@ -31,6 +31,7 @@ export default function TrendingAnalysis({ coin }: TrendingAnalysisProps) {
   useEffect(() => {
     const analyzeVolume = async () => {
       try {
+        const symbol = `${coin}USDT`
         // 최근 거래량 스파이크 분석
         const tickerResponse = await fetch24hrTicker(symbol)
         let currentVolume = 1000000000 // 기본값

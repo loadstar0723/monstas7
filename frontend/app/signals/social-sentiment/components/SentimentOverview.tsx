@@ -34,6 +34,9 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
   useEffect(() => {
     const fetchPriceData = async () => {
       try {
+        const symbol = `${coin}USDT`
+        const interval = '1h'
+        const limit = 24
         // 현재 가격 정보
         const tickerResponse = await fetch24hrTicker(symbol)
         if (tickerResponse.ok) {

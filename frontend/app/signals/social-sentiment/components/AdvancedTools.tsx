@@ -57,6 +57,9 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
     
     const analyzeAdvancedMetrics = async () => {
       try {
+        const symbol = `${coin}USDT`
+        const interval = '1h'
+        const limit = 100
         // 백테스트 시뮬레이션 (실제로는 히스토리 데이터 필요)
         const klinesResponse = await fetchKlines(symbol, interval, limit)
         let klines: any[] = []

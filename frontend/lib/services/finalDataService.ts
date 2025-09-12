@@ -6,12 +6,48 @@
  * API 한도: CryptoCompare 100,000/월 (충분)
  */
 
-import NodeCache from 'node-cache'
+// 간단한 메모리 캐시 구현 (node-cache 대체)
+class SimpleCache {
+  private cache = new Map<string, { data: any; expires: number }>()
+  private ttl: number
+
+  constructor(options: { stdTTL: number }) {
+    this.ttl = options.stdTTL * 1000 // 초를 밀리초로 변환
+  }
+
+  set(key: string, value: any): boolean {
+    this.cache.set(key, {
+      data: value,
+      expires: Date.now() + this.ttl
+    })
+    return true
+  }
+
+  get(key: string): any | undefined {
+    const item = this.cache.get(key)
+    if (!item) return undefined
+    
+    if (Date.now() > item.expires) {
+      this.cache.delete(key)
+      return undefined
+    }
+    
+    return item.data
+  }
+
+  del(key: string): number {
+    return this.cache.delete(key) ? 1 : 0
+  }
+
+  flushAll(): void {
+    this.cache.clear()
+  }
+}
 
 // 메모리 캐시
-const priceCache = new NodeCache({ stdTTL: 30 })    // 가격: 30초
-const newsCache = new NodeCache({ stdTTL: 3600 })   // 뉴스: 1시간
-const socialCache = new NodeCache({ stdTTL: 1800 }) // 소셜: 30분
+const priceCache = new SimpleCache({ stdTTL: 30 })    // 가격: 30초
+const newsCache = new SimpleCache({ stdTTL: 3600 })   // 뉴스: 1시간
+const socialCache = new SimpleCache({ stdTTL: 1800 }) // 소셜: 30분
 
 /**
  * 1. Binance WebSocket - 실시간 가격 (무료, 무제한)
