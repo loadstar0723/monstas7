@@ -355,10 +355,10 @@ export default function OrderbookHeatmapUltimate() {
             </div>
             <div className="mt-2">
               <span className="text-2xl font-bold text-white">
-                ${orderbook?.safeFixed(spread, 2) || '0.00'}
+                ${safeFixed(orderbook?.spread, 2) || '0.00'}
               </span>
               <span className="text-sm text-gray-400 ml-2">
-                ({orderbook?.safeFixed(spreadPercent, 3) || '0.000'}%)
+                ({safeFixed(orderbook?.spreadPercent, 3) || '0.000'}%)
               </span>
             </div>
           </div>
