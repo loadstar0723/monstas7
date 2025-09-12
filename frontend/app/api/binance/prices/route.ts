@@ -27,17 +27,22 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // Binance API에서 실시간 가격 정보 가져오기
-    const response = await fetch('https://api.binance.com/api/v3/ticker/price')
+    // Binance API에서 24시간 티커 정보 가져오기 (가격 + 변동률 포함)
+    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr')
     const data = await response.json()
     
     // 요청된 심볼만 필터링
     const filtered = data.filter((item: any) => symbols.includes(item.symbol))
     
-    // ticker/price API는 간단한 형식만 제공하므로
+    // 필요한 정보만 추출
     const prices = filtered.map((item: any) => ({
       symbol: item.symbol,
-      price: item.price
+      lastPrice: item.lastPrice,
+      priceChangePercent: item.priceChangePercent,
+      price: item.lastPrice, // 호환성을 위해 유지
+      highPrice: item.highPrice,
+      lowPrice: item.lowPrice,
+      volume: item.volume
     }))
     
     // CORS 헤더 추가
@@ -88,10 +93,19 @@ export async function GET(request: NextRequest) {
         'DOTUSDT': 8
       }
       
-      const simulatedPrices = symbols.map(symbol => ({
-        symbol,
-        price: String(basePrices[symbol] || 100)
-      }))
+      const simulatedPrices = symbols.map(symbol => {
+        const basePrice = basePrices[symbol] || 100
+        const changePercent = (Math.random() - 0.5) * 10 // -5% ~ +5%
+        return {
+          symbol,
+          lastPrice: String(basePrice),
+          priceChangePercent: String(changePercent),
+          price: String(basePrice), // 호환성을 위해 유지
+          highPrice: String(basePrice * 1.05),
+          lowPrice: String(basePrice * 0.95),
+          volume: String(Math.random() * 1000000)
+        }
+      })
       
       console.log('Returning simulated prices for development')
       return NextResponse.json(simulatedPrices, { headers })
