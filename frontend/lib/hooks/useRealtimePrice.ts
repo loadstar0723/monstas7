@@ -188,17 +188,28 @@ export async function fetch24hrTicker(symbol: string) {
     )
     
     if (!response.ok) {
-      throw new Error(`Ticker fetch failed: ${response.status}`)
+      console.warn(`Ticker fetch 실패 (${response.status}), 기본값 사용`)
+      // 기본값 반환
+      return {
+        price: 0,
+        change24h: 0,
+        volume24h: 0,
+        high24h: 0,
+        low24h: 0,
+        count: 0
+      }
     }
     
     const data = await response.json()
+    
+    // 데이터 파싱 (null/undefined 체크)
     return {
-      price: parseFloat(data.lastPrice),
-      change24h: parseFloat(data.priceChangePercent),
-      volume24h: parseFloat(data.volume),
-      high24h: parseFloat(data.highPrice),
-      low24h: parseFloat(data.lowPrice),
-      count: parseInt(data.count)
+      price: parseFloat(data.lastPrice || data.price || '0'),
+      change24h: parseFloat(data.priceChangePercent || '0'),
+      volume24h: parseFloat(data.volume || data.quoteVolume || '0'),
+      high24h: parseFloat(data.highPrice || '0'),
+      low24h: parseFloat(data.lowPrice || '0'),
+      count: parseInt(data.count || '0')
     }
   } catch (error) {
     console.error('Ticker fetch error:', error)
