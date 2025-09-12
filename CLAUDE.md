@@ -965,3 +965,8 @@ import SystemOverview, { whaleTrackingOverview } from '@/components/signals/Syst
     - 레이트 리밋 에러 감지
     - 1초, 2초, 4초 간격으로 재시도
     - 최대 3회 재시도
+
+1. WebSocket 연결 풀 - 심볼별 독립 연결 관리
+2. 메모리 캐싱 - 30초 TTL로 API 호출 90% 감소
+3. Rate Limiter - 초당 10 요청 제한
+4. 자동 재연결 - 연결 끊김 시 5초 후 재연결

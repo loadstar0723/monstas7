@@ -209,7 +209,8 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(touch:*)",
       "Bash(pkill:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "WebFetch(domain:developers.coindesk.com)"
     ],
     "deny": [],
     "ask": []
