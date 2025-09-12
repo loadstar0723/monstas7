@@ -45,7 +45,9 @@ export default function AIDashboard() {
     })
 
     return () => {
-      ws.close()
+      if (ws) {
+        ws.close()
+      }
     }
   }, [selectedSymbol])
 
