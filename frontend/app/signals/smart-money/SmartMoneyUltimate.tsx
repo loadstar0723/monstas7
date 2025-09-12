@@ -1071,7 +1071,7 @@ export default function SmartMoneyUltimate() {
               const institutionIndex = value > 1000000 ? 0 : value > 500000 ? 1 : value > 200000 ? 2 : 3
               
               return {
-                id: `hist-${trade.a}`,
+                id: `hist-${trade.T}-${idx}-${trade.a}`,
                 institution: getInstitutionLabel(value, trade.a.toString()),
                 symbol: selectedSymbol.replace('USDT', ''),
                 type: trade.m ? 'distribution' : 'accumulation',
