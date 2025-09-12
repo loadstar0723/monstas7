@@ -88,6 +88,12 @@ const getInitialData = (): SocialSentimentData => {
       score: 50 // 중립 초기값
     }
   })
+  
+  console.log('getInitialData - 생성된 히스토리:', {
+    length: history.length,
+    first: history[0],
+    last: history[history.length - 1]
+  })
 
   return {
     sentimentScore: 50,
@@ -231,11 +237,13 @@ export default function useSocialData(coin: string) {
               
               console.log('새 데이터 생성됨:', {
                 historyLength: newData.sentimentHistory.length,
-                score: newData.sentimentScore
+                score: newData.sentimentScore,
+                firstHistory: newData.sentimentHistory[0],
+                lastHistory: newData.sentimentHistory[newData.sentimentHistory.length - 1]
               })
               
               setSentimentData(newData)
-              console.log('setSentimentData 호출 완료')
+              console.log('setSentimentData 호출 완료, 현재 state:', newData)
             }
           }
         } catch (err) {

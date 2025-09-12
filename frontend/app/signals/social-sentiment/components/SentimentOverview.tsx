@@ -165,9 +165,10 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
             console.log('차트 렌더링 체크:', {
               hasHistory: !!sentimentData.sentimentHistory,
               length: sentimentData.sentimentHistory?.length,
-              isArray: Array.isArray(sentimentData.sentimentHistory)
+              isArray: Array.isArray(sentimentData.sentimentHistory),
+              data: sentimentData.sentimentHistory
             });
-            return sentimentData.sentimentHistory && sentimentData.sentimentHistory.length > 0;
+            return sentimentData.sentimentHistory && Array.isArray(sentimentData.sentimentHistory) && sentimentData.sentimentHistory.length > 0;
           })() ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sentimentData.sentimentHistory} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
