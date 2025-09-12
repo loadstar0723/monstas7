@@ -70,22 +70,25 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
     }
   }, [historicalData])
 
-  // 실시간 데이터 업데이트
+  // 실시간 데이터 업데이트 - chartData 의존성 제거로 무한 업데이트 방지
   useEffect(() => {
     if (marketData && chartData.length > 0) {
-      const updatedData = [...chartData]
-      const lastIndex = updatedData.length - 1
-      
-      // 마지막 데이터 업데이트
-      updatedData[lastIndex] = {
-        ...updatedData[lastIndex],
-        price: marketData.price,
-        sma20: marketData.sma20,
-        sma50: marketData.sma50,
-        sma200: marketData.sma200,
-      }
-      
-      setChartData(updatedData)
+      setChartData(prev => {
+        if (prev.length === 0) return prev
+        const updatedData = [...prev]
+        const lastIndex = updatedData.length - 1
+        
+        // 마지막 데이터만 업데이트
+        updatedData[lastIndex] = {
+          ...updatedData[lastIndex],
+          price: marketData.price,
+          sma20: marketData.sma20,
+          sma50: marketData.sma50,
+          sma200: marketData.sma200,
+        }
+        
+        return updatedData
+      })
     }
   }, [marketData?.price, marketData?.sma20, marketData?.sma50, marketData?.sma200])
 

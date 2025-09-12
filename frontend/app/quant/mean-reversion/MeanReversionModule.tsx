@@ -383,6 +383,7 @@ export default function MeanReversionModule() {
         {/* 실시간 분석 섹션 */}
         <div className="mb-8">
           <RealtimeAnalysis 
+            coin={COINS.find(c => c.symbol === selectedCoin)}
             marketData={marketData}
             loading={loading}
           />
@@ -391,6 +392,7 @@ export default function MeanReversionModule() {
         {/* 메인 차트 */}
         <div className="mb-8">
           <PriceChart 
+            coin={COINS.find(c => c.symbol === selectedCoin)}
             symbol={selectedCoin}
             historicalData={priceHistory}
             marketData={marketData}
@@ -401,6 +403,7 @@ export default function MeanReversionModule() {
         {/* 지표 분석 그리드 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
           <BollingerBands 
+            coin={COINS.find(c => c.symbol === selectedCoin)}
             historicalData={priceHistory}
             marketData={marketData}
             loading={loading}
@@ -414,6 +417,7 @@ export default function MeanReversionModule() {
           />
           
           <RSIDivergence 
+            coin={COINS.find(c => c.symbol === selectedCoin)}
             historicalData={priceHistory}
             marketData={marketData}
             loading={loading}
@@ -430,9 +434,8 @@ export default function MeanReversionModule() {
           />
           
           <BacktestResults 
-            symbol={selectedCoin}
-            priceHistory={priceHistory}
-            loading={loading}
+            coin={COINS.find(c => c.symbol === selectedCoin)}
+            historicalData={priceHistory}
           />
         </div>
 

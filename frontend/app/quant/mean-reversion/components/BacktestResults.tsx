@@ -12,7 +12,7 @@ interface Coin {
 }
 
 interface BacktestResultsProps {
-  coin: Coin
+  coin?: Coin | null
   historicalData: any[]
 }
 
@@ -27,11 +27,23 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
     maxDrawdown: 0
   })
 
+  // coin이 undefined인 경우 기본값 사용
+  const safeCoin = coin || {
+    symbol: 'BTCUSDT',
+    name: 'Bitcoin',
+    color: '#F7931A'
+  }
+
   useEffect(() => {
     if (!Array.isArray(historicalData) || historicalData.length < 100) return
 
     // 간단한 백테스팅 시뮬레이션
-    const prices = historicalData.map(d => parseFloat(d[4]))
+    // 두 가지 데이터 형식 모두 지원
+    const prices = historicalData.map(d => {
+      if (d.close !== undefined) return d.close
+      if (d[4] !== undefined) return parseFloat(d[4])
+      return 0
+    })
     const trades: any[] = []
     let position = null
     let totalProfit = 0

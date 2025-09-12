@@ -61,24 +61,27 @@ export default function BollingerBands({ coin, historicalData, marketData }: Bol
     }
   }, [historicalData])
 
-  // 실시간 데이터 업데이트
+  // 실시간 데이터 업데이트 - 무한 업데이트 방지
   useEffect(() => {
     if (marketData && chartData.length > 0) {
-      const updatedData = [...chartData]
-      const lastIndex = updatedData.length - 1
-      
-      // 마지막 데이터 업데이트
-      updatedData[lastIndex] = {
-        ...updatedData[lastIndex],
-        price: marketData.price,
-        upper: marketData.upperBand,
-        middle: marketData.sma20,
-        lower: marketData.lowerBand,
-      }
-      
-      setChartData(updatedData)
+      setChartData(prev => {
+        if (prev.length === 0) return prev
+        const updatedData = [...prev]
+        const lastIndex = updatedData.length - 1
+        
+        // 마지막 데이터만 업데이트
+        updatedData[lastIndex] = {
+          ...updatedData[lastIndex],
+          price: marketData.price,
+          upper: marketData.upperBand,
+          middle: marketData.sma20,
+          lower: marketData.lowerBand,
+        }
+        
+        return updatedData
+      })
     }
-  }, [marketData])
+  }, [marketData?.price, marketData?.upperBand, marketData?.sma20, marketData?.lowerBand])
 
   const calculateBollingerBandsAtPoint = (data: any[], index: number, period: number, stdDev: number) => {
     if (index < period - 1) return null

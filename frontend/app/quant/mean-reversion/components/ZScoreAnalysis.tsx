@@ -88,7 +88,7 @@ export default function ZScoreAnalysis({ coin, marketData, historicalData }: ZSc
         const updated = [...prev, newPoint]
         return updated.slice(-50)
       })
-    }, 2000) // 2초마다 업데이트
+    }, 10000) // 10초마다 업데이트 (깜빡임 방지)
 
     return () => clearInterval(intervalId)
   }, [marketData, initialized])
