@@ -60,7 +60,7 @@ export default function MomentumOverview({ coinData, momentumData }: MomentumOve
           <p className="text-gray-400 text-sm mb-2">모멘텀 스코어</p>
           <div className="flex items-end gap-2">
             <span className="text-3xl font-bold text-white">
-              {momentumData?.momentumScore ? Math.round(momentumData.momentumScore) : '0'}
+              {momentumData?.momentumScore.toFixed(0) || '0'}
             </span>
             <span className="text-gray-500 text-lg mb-1">/100</span>
           </div>
@@ -97,21 +97,21 @@ export default function MomentumOverview({ coinData, momentumData }: MomentumOve
                 momentumData?.rsi > 70 ? 'text-red-400' : 
                 momentumData?.rsi < 30 ? 'text-green-400' : 'text-gray-300'
               }`}>
-                {momentumData?.rsi ? momentumData.rsi.toFixed(1) : '-'}
+                {momentumData?.rsi.toFixed(1) || '-'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500 text-sm">MACD</span>
               <span className={`text-sm font-medium ${
-                momentumData?.macd?.histogram > 0 ? 'text-green-400' : 'text-red-400'
+                momentumData?.macd.histogram > 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                {momentumData?.macd?.histogram > 0 ? '상승' : '하락'}
+                {momentumData?.macd.histogram > 0 ? '상승' : '하락'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500 text-sm">Stochastic</span>
               <span className="text-sm font-medium text-gray-300">
-                {momentumData?.stochastic?.k ? momentumData.stochastic.k.toFixed(1) : '-'}
+                {momentumData?.stochastic.k.toFixed(1) || '-'}
               </span>
             </div>
           </div>

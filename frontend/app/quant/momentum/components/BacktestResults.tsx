@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface BacktestResultsProps {
   symbol: string
@@ -115,25 +114,25 @@ export default function BacktestResults({ symbol, priceHistory }: BacktestResult
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-xs text-gray-400 mb-1">총 수익률</p>
           <p className={`text-2xl font-bold ${results.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {results.totalReturn >= 0 ? '+' : ''}{safeFixed(results.totalReturn, 2)}%
+            {results.totalReturn >= 0 ? '+' : ''}{results.totalReturn.toFixed(2)}%
           </p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-xs text-gray-400 mb-1">승률</p>
           <p className={`text-2xl font-bold ${results.winRate > 50 ? 'text-green-400' : 'text-red-400'}`}>
-            {safeFixed(results.winRate, 1)}%
+            {results.winRate.toFixed(1)}%
           </p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-xs text-gray-400 mb-1">최대 낙폭</p>
           <p className="text-2xl font-bold text-orange-400">
-            -{safeFixed(results.maxDrawdown, 1)}%
+            -{results.maxDrawdown.toFixed(1)}%
           </p>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-4">
           <p className="text-xs text-gray-400 mb-1">손익비</p>
           <p className={`text-2xl font-bold ${results.profitFactor > 1 ? 'text-green-400' : 'text-red-400'}`}>
-            {safeFixed(results.profitFactor, 2)}
+            {results.profitFactor.toFixed(2)}
           </p>
         </div>
       </div>
@@ -156,15 +155,15 @@ export default function BacktestResults({ symbol, priceHistory }: BacktestResult
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500">평균 수익</span>
-            <span className="text-sm font-medium text-green-400">+${safeFixed(results.avgWin, 2)}</span>
+            <span className="text-sm font-medium text-green-400">+${results.avgWin.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500">평균 손실</span>
-            <span className="text-sm font-medium text-red-400">-${safeFixed(results.avgLoss, 2)}</span>
+            <span className="text-sm font-medium text-red-400">-${results.avgLoss.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500">샤프 비율</span>
-            <span className="text-sm font-medium text-white">{safeFixed(results.sharpeRatio, 2)}</span>
+            <span className="text-sm font-medium text-white">{results.sharpeRatio.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -183,7 +182,7 @@ export default function BacktestResults({ symbol, priceHistory }: BacktestResult
           />
         </div>
         <div className="flex justify-between text-xs text-gray-500 mt-2">
-          <span>승리 {safeFixed(results.winRate, 1)}%</span>
+          <span>승리 {results.winRate.toFixed(1)}%</span>
           <span>패배 {(100 - results.winRate).toFixed(1)}%</span>
         </div>
       </div>

@@ -2,7 +2,6 @@
 
 import { MomentumData } from '../MomentumModule'
 import { useEffect, useState } from 'react'
-import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface TrendStrengthProps {
   momentumData: MomentumData | null
@@ -134,7 +133,7 @@ export default function TrendStrength({ momentumData, priceHistory }: TrendStren
         <div className="bg-gray-800/50 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-400 mb-3">ADX (추세 강도)</h3>
           <div className="flex items-end gap-2 mb-3">
-            <span className="text-2xl font-bold text-white">{safeFixed(adx, 1)}</span>
+            <span className="text-2xl font-bold text-white">{adx.toFixed(1)}</span>
             <span className="text-gray-500 text-sm mb-1">/100</span>
           </div>
           <p className={`text-sm ${adx > 25 ? 'text-green-400' : 'text-yellow-400'}`}>
@@ -159,20 +158,20 @@ export default function TrendStrength({ momentumData, priceHistory }: TrendStren
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">EMA 20</span>
               <span className="text-sm font-semibold text-white">
-                ${safeFixed(ema20, 2)}
+                ${ema20.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">EMA 50</span>
               <span className="text-sm font-semibold text-white">
-                ${safeFixed(ema50, 2)}
+                ${ema50.toFixed(2)}
               </span>
             </div>
             {priceHistory.length >= 200 && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">EMA 200</span>
                 <span className="text-sm font-semibold text-white">
-                  ${safeFixed(ema200, 2)}
+                  ${ema200.toFixed(2)}
                 </span>
               </div>
             )}

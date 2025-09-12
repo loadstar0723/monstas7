@@ -37,7 +37,7 @@ export default function CoinSelector({ coins, selectedCoin, onSelectCoin, coinDa
               <div className="text-right">
                 <p className="text-gray-400 text-xs">24시간 변동</p>
                 <p className={`text-xl font-bold ${coinData.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {coinData.change24h >= 0 ? '+' : ''}{coinData.change24h?.toFixed(2) || '0.00'}%
+                  {coinData.change24h >= 0 ? '+' : ''}{coinData.change24h.toFixed(2)}%
                 </p>
               </div>
               <div className="text-right hidden sm:block">

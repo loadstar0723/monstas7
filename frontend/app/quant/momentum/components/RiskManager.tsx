@@ -2,7 +2,6 @@
 
 import { MomentumData, CoinData } from '../MomentumModule'
 import { useState, useEffect } from 'react'
-import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 
 interface RiskManagerProps {
   momentumData: MomentumData | null
@@ -83,7 +82,7 @@ export default function RiskManager({ momentumData, coinData }: RiskManagerProps
           <div>
             <p className="text-sm text-gray-400">종합 리스크 스코어</p>
             <p className={`text-2xl font-bold ${getRiskLevel(riskScore).color}`}>
-              {safeFixed(riskScore, 0)}/100
+              {riskScore.toFixed(0)}/100
             </p>
           </div>
           <div className={`px-3 py-1 rounded-full ${getRiskLevel(riskScore).bg} ${getRiskLevel(riskScore).color}`}>
@@ -113,7 +112,7 @@ export default function RiskManager({ momentumData, coinData }: RiskManagerProps
               currentDrawdown > 10 ? 'text-red-400' : 
               currentDrawdown > 5 ? 'text-yellow-400' : 'text-green-400'
             }`}>
-              {safeFixed(currentDrawdown, 1)}%
+              {currentDrawdown.toFixed(1)}%
             </span>
           </div>
           <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
@@ -136,7 +135,7 @@ export default function RiskManager({ momentumData, coinData }: RiskManagerProps
               sharpeRatio > 1 ? 'text-green-400' :
               sharpeRatio > 0 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              {safeFixed(sharpeRatio, 2)}
+              {sharpeRatio.toFixed(2)}
             </span>
           </div>
           <p className="text-xs text-gray-500">
@@ -153,7 +152,7 @@ export default function RiskManager({ momentumData, coinData }: RiskManagerProps
               winRate > 60 ? 'text-green-400' :
               winRate > 45 ? 'text-yellow-400' : 'text-red-400'
             }`}>
-              {safeFixed(winRate, 0)}%
+              {winRate.toFixed(0)}%
             </span>
           </div>
           <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
