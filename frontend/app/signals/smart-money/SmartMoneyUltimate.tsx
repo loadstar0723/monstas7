@@ -815,7 +815,7 @@ export default function SmartMoneyUltimate() {
   const generateSampleHistoricalData = () => {
     console.log('Generating estimated historical data based on current price')
     
-    const currentPrice = currentPrice || 50000 // BTC 기본값
+    const basePrice = currentPrice || 50000 // BTC 기본값
     const monthlyData = []
     const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
     
@@ -823,11 +823,11 @@ export default function SmartMoneyUltimate() {
       // 시간 기반 가격 변동 (월별 실제 패턴 반영)
       const timeBasedVariation = Math.sin(i * 0.5) * 0.15 + (i % 3 === 0 ? 0.1 : 0) // 계절성 반영
       const priceVariation = 1 + timeBasedVariation // 실제 시장 패턴
-      const monthPrice = currentPrice * priceVariation * (1 - i * 0.02) // 과거로 갈수록 낮은 가격
+      const monthPrice = basePrice * priceVariation * (1 - i * 0.02) // 과거로 갈수록 낮은 가격
       
       // 실제 시장 볼륨 패턴 (현재 가격과 연동)
       const baseVolume = 1000000000
-      const priceBasedMultiplier = 1 + (currentPrice / 50000 - 1) * 0.5 // 가격 상승시 볼륨 증가
+      const priceBasedMultiplier = 1 + (basePrice / 50000 - 1) * 0.5 // 가격 상승시 볼륨 증가
       const volume = baseVolume * priceBasedMultiplier * (1.2 + Math.sin(i * 0.8) * 0.3) // 월별 볼륨 패턴
       
       monthlyData.push({
