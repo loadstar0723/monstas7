@@ -55,11 +55,16 @@ jobs:
             cd frontend
             
             # package.json이 변경된 경우만 설치
-            if ! diff package.json ../monstas7/frontend/package.json > /dev/null 2>&1; then
-              echo "📦 변경된 패키지 설치 중..."
-              npm ci --prefer-offline --no-audit
+            if [ -f ~/$CURRENT_DIR/frontend/package.json ]; then
+              if ! diff package.json ~/$CURRENT_DIR/frontend/package.json > /dev/null 2>&1; then
+                echo "📦 변경된 패키지 설치 중..."
+                npm ci --prefer-offline --no-audit
+              else
+                echo "✅ 패키지 변경 없음 - 설치 스킵"
+              fi
             else
-              echo "✅ 패키지 변경 없음 - 설치 스킵"
+              echo "📦 새 설치 진행 중..."
+              npm ci --prefer-offline --no-audit
             fi
             
             # 4️⃣ Prisma 재생성 (빠름)
