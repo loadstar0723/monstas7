@@ -8,9 +8,11 @@ import {
 } from 'react-icons/fa'
 import { SiBinance, SiCardano, SiDogecoin, SiPolkadot } from 'react-icons/si'
 import { 
-  TrendingUp, TrendingDown, Activity, Volume2, BarChart3,
-  LineChart, Target, Shield, Zap, Brain
-} from 'lucide-react'
+  FaTrophy, FaShieldAlt, FaBolt, FaBrain,
+  FaVolumeUp, FaCrosshairs, FaSignal
+} from 'react-icons/fa'
+import { BiLineChart, BiBarChart } from 'react-icons/bi'
+import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { CVDOverviewTab, CVDAnalysisTab, DeltaHistogramTab, DivergenceTab, StrategyTab, EducationTab } from './CVDCharts'
 import { CVDConceptCard, BuySellPressureGauge, TrendSignals, TradingStrategyCard } from './CVDAnalysis'
 
@@ -31,10 +33,10 @@ const TRACKED_SYMBOLS = [
 // 탭 정의
 const TABS = [
   { id: '종합', label: '종합 분석', icon: <FaChartLine className="w-4 h-4" />, description: 'CVD 종합 대시보드' },
-  { id: 'CVD분석', label: 'CVD 분석', icon: <LineChart className="w-4 h-4" />, description: '누적 볼륨 델타 분석' },
+  { id: 'CVD분석', label: 'CVD 분석', icon: <BiLineChart className="w-4 h-4" />, description: '누적 볼륨 델타 분석' },
   { id: '델타히스토그램', label: '델타 히스토그램', icon: <FaChartBar className="w-4 h-4" />, description: '델타 분포 분석' },
-  { id: '다이버전스', label: '다이버전스', icon: <Activity className="w-4 h-4" />, description: '가격-CVD 다이버전스' },
-  { id: '전략', label: '전략', icon: <Target className="w-4 h-4" />, description: '트레이딩 전략' },
+  { id: '다이버전스', label: '다이버전스', icon: <FaSignal className="w-4 h-4" />, description: '가격-CVD 다이버전스' },
+  { id: '전략', label: '전략', icon: <FaCrosshairs className="w-4 h-4" />, description: '트레이딩 전략' },
   { id: '교육', label: '교육', icon: <FaGraduationCap className="w-4 h-4" />, description: 'CVD 학습 가이드' }
 ]
 
@@ -151,7 +153,7 @@ export default function CVDModule() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                <BarChart3 className="w-8 h-8 text-purple-500" />
+                <BiBarChart className="w-8 h-8 text-purple-500" />
                 CVD (Cumulative Volume Delta) 분석
               </h1>
               <p className="text-gray-400">누적 볼륨 델타를 통한 시장 압력 분석</p>
