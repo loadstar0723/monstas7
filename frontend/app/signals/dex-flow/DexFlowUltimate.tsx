@@ -374,7 +374,7 @@ export default function DexFlowUltimate() {
                       <span>IL 리스크</span>
                       <span className="text-orange-400">
                         {liquidityPools.length > 0 && liquidityPools[0].ilRisk 
-                          ? `-${liquidityPools[0].safeFixed(ilRisk, 2)}%`
+                          ? `-${safeFixed(liquidityPools[0].ilRisk, 2)}%`
                           : '계산중'}
                       </span>
                     </div>
@@ -834,7 +834,7 @@ export default function DexFlowUltimate() {
                       <span className="text-gray-400">IL 손실</span>
                       <span className="font-bold text-red-400">
                         {liquidityPools.length > 0 && liquidityPools[0].ilRisk
-                          ? `-${liquidityPools[0].safeFixed(ilRisk, 2)}%`
+                          ? `-${safeFixed(liquidityPools[0].ilRisk, 2)}%`
                           : '-'}
                       </span>
                     </div>
