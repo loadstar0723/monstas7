@@ -100,9 +100,9 @@ export default function useSocialData(coin: string) {
                 const klines = await klinesResponse.json()
                 
                 // 기준 가격 (24시간 전)
-                const basePrice = parseFloat(klines[0]?.[4] || ticker.lastPrice)
+                const basePrice = Array.isArray(klines) && klines[0] ? parseFloat(klines[0][4]) : parseFloat(ticker.lastPrice)
                 
-                history = klines.map((kline: any[]) => {
+                history = Array.isArray(klines) ? klines.map((kline: any[]) => {
                   const closePrice = parseFloat(kline[4])
                   const priceChangePercent = ((closePrice - basePrice) / basePrice) * 100
                   
@@ -118,7 +118,7 @@ export default function useSocialData(coin: string) {
                     }),
                     score: Math.floor(normalizedScore)
                   }
-                })
+                }) : []
               } else {
                 // 폴백: API 실패 시 현재 감성 점수 기반으로 생성
                 history = Array.from({ length: 24 }, (_, i) => {

@@ -388,7 +388,7 @@ export default function RealTimeOpportunities({ selectedCoin }: Props) {
             <p className="text-sm text-gray-400">최고 수익</p>
           </div>
           <p className="text-2xl font-bold text-green-400">
-            ${filteredOpportunities[0]?.safeFixed(netProfit, 2) || '0'}
+            ${filteredOpportunities[0]?.netProfit?.toFixed(2) || '0'}
           </p>
         </div>
         

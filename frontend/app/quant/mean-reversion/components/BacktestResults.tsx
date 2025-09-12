@@ -28,7 +28,7 @@ export default function BacktestResults({ coin, historicalData }: BacktestResult
   })
 
   useEffect(() => {
-    if (historicalData.length < 100) return
+    if (!Array.isArray(historicalData) || historicalData.length < 100) return
 
     // 간단한 백테스팅 시뮬레이션
     const prices = historicalData.map(d => parseFloat(d[4]))

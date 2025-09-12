@@ -100,7 +100,7 @@ export default function RealTimeGridChart({ selectedCoin }: Props) {
           limit: 100
         })
         
-        if (klines) {
+        if (klines && Array.isArray(klines)) {
           const formattedData: PriceData[] = klines.map((kline: any) => ({
             time: new Date(kline[0]).toLocaleTimeString('ko-KR'),
             price: parseFloat(kline[4]), // 종가
@@ -265,13 +265,13 @@ export default function RealTimeGridChart({ selectedCoin }: Props) {
           <div>
             <p className="text-gray-400">상한가</p>
             <p className="text-white font-medium">
-              ${gridLines.length > 0 ? gridLines[gridLines.length - 1].safePrice(price, 2) : '0'}
+              ${gridLines.length > 0 ? gridLines[gridLines.length - 1].price?.toFixed(2) || '0' : '0'}
             </p>
           </div>
           <div>
             <p className="text-gray-400">하한가</p>
             <p className="text-white font-medium">
-              ${gridLines.length > 0 ? gridLines[0].safePrice(price, 2) : '0'}
+              ${gridLines.length > 0 ? gridLines[0].price?.toFixed(2) || '0' : '0'}
             </p>
           </div>
           <div>

@@ -216,19 +216,19 @@ export default function BollingerBands({ coin, historicalData, marketData }: Bol
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">상단 밴드</div>
           <div className="text-red-400 font-bold">
-            ${marketData?.safeFixed(upperBand, 2) || '-'}
+            ${marketData?.upperBand?.toFixed(2) || '-'}
           </div>
         </div>
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">중간선 (SMA)</div>
           <div className="text-blue-400 font-bold">
-            ${marketData?.safeFixed(sma20, 2) || '-'}
+            ${marketData?.sma20?.toFixed(2) || '-'}
           </div>
         </div>
         <div className="bg-black/30 rounded p-3">
           <div className="text-gray-400 mb-1">하단 밴드</div>
           <div className="text-green-400 font-bold">
-            ${marketData?.safeFixed(lowerBand, 2) || '-'}
+            ${marketData?.lowerBand?.toFixed(2) || '-'}
           </div>
         </div>
       </div>

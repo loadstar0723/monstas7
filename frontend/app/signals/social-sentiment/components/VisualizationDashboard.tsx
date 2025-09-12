@@ -60,7 +60,7 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
         setHeatmapData(heatmap)
 
         // 가격-감성 상관관계 데이터
-        const correlation = klines.slice(-24).map((kline: any[], index: number) => {
+        const correlation = Array.isArray(klines) ? klines.slice(-24).map((kline: any[], index: number) => {
           const price = parseFloat(kline[4])
           const volume = parseFloat(kline[5])
           const time = new Date(kline[0]).toLocaleTimeString('ko-KR', { hour: '2-digit' })
@@ -77,7 +77,7 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
             volume: volume / 1000000,
             correlation: Math.abs(priceChange) > 2 ? 'HIGH' : 'LOW'
           }
-        })
+        }) : []
         setCorrelationData(correlation)
 
         // 글로벌 센티먼트 비교 (주요 코인들)

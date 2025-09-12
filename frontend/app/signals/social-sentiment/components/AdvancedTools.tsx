@@ -63,7 +63,7 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
         }
 
         let cumulative = 0
-        const backtest = klines.map((kline: any[], index: number) => {
+        const backtest = Array.isArray(klines) ? klines.map((kline: any[], index: number) => {
           const price = parseFloat(kline[4])
           const volume = parseFloat(kline[5])
           const priceChange = index > 0 ? (price - parseFloat(klines[index - 1][4])) / parseFloat(klines[index - 1][4]) * 100 : 0
@@ -93,12 +93,12 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
             result,
             cumulative
           }
-        })
+        }) : []
         
         setBacktestResults(backtest)
 
         // 상관관계 분석을 위한 산점도 데이터
-        const correlation = klines.slice(-20).map((kline: any[]) => {
+        const correlation = Array.isArray(klines) ? klines.slice(-20).map((kline: any[]) => {
           const price = parseFloat(kline[4])
           const volume = parseFloat(kline[5])
           const priceChange = parseFloat(kline[2]) - parseFloat(kline[3])
@@ -108,7 +108,7 @@ export default function AdvancedTools({ coin }: AdvancedToolsProps) {
             y: (price - parseFloat(klines[0][4])) / parseFloat(klines[0][4]) * 100, // 가격 변화율
             z: volume / 1000000000 // 거래량 (십억 단위)
           }
-        })
+        }) : []
         
         setCorrelationData(correlation)
 

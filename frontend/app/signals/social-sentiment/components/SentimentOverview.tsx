@@ -45,11 +45,11 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         if (klinesResponse.ok) {
           const klines = await klinesResponse.json()
           
-          const history = klines.map((kline: any[]) => ({
+          const history = Array.isArray(klines) ? klines.map((kline: any[]) => ({
             time: new Date(kline[0]).toLocaleTimeString('ko-KR', { hour: '2-digit' }),
             price: parseFloat(kline[4]),
             volume: parseFloat(kline[5])
-          }))
+          })) : []
 
           setPriceHistory(history)
         }

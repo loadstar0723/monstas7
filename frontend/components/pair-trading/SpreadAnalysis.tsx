@@ -304,7 +304,7 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
             >
               <div className="text-xs text-gray-400 mb-1">현재 스프레드</div>
               <div className="text-lg font-bold text-white">
-                {spreadData.length > 0 ? spreadData[spreadData.length - 1].safeFixed(spread, 4) : '0.0000'}
+                {spreadData.length > 0 ? spreadData[spreadData.length - 1].spread?.toFixed(4) || '0.0000' : '0.0000'}
               </div>
             </motion.div>
 

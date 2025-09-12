@@ -109,11 +109,18 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
   }
 
   const calculateVolatility = (klines: any[]): number => {
+    // klines가 배열이 아니거나 비어있으면 기본값 반환
+    if (!Array.isArray(klines) || klines.length < 2) {
+      return 50 // 중간 변동성 기본값
+    }
+    
     const returns = klines.slice(1).map((k, i) => {
       const prevClose = parseFloat(klines[i][4])
       const currentClose = parseFloat(k[4])
       return ((currentClose - prevClose) / prevClose) * 100
     })
+    
+    if (returns.length === 0) return 50
     
     const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length
     const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
@@ -132,6 +139,11 @@ export default function MMOptimizationTool({ selectedCoin }: Props) {
   }
 
   const calculateTrend = (klines: any[]): number => {
+    // klines가 배열이 아니거나 비어있으면 기본값 반환
+    if (!Array.isArray(klines) || klines.length === 0) {
+      return 0 // 중립 트렌드
+    }
+    
     const firstPrice = parseFloat(klines[0][4])
     const lastPrice = parseFloat(klines[klines.length - 1][4])
     const change = ((lastPrice - firstPrice) / firstPrice) * 100

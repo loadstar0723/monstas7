@@ -92,12 +92,34 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
         // 백테스트 실행 (실제 계산)
         const processedData = processBacktestData(klines, selectedStrategy)
         
-        setBacktestData({
-          historicalPrices: klines,
-          metrics: processedData.metrics,
-          strategies: processedData.strategies,
-          analysis: processedData.analysis
-        })
+        // processedData가 undefined인 경우 처리
+        if (!processedData) {
+          setBacktestData({
+            historicalPrices: klines,
+            metrics: {
+              totalTrades: 0,
+              winRate: 0,
+              avgProfit: 0,
+              maxProfit: 0,
+              maxLoss: 0,
+              sharpeRatio: 0,
+              maxDrawdown: 0
+            },
+            strategies: [],
+            analysis: {
+              bestEntry: 0,
+              bestExit: 0,
+              riskLevel: 'low'
+            }
+          })
+        } else {
+          setBacktestData({
+            historicalPrices: klines,
+            metrics: processedData.metrics,
+            strategies: processedData.strategies,
+            analysis: processedData.analysis
+          })
+        }
         
         onError(null)
       } catch (error) {
@@ -179,6 +201,26 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
   // 백테스트 데이터 처리 함수
   const processBacktestData = (klines: any[], strategy: string) => {
     // 실제 백테스팅 로직 구현
+    if (!Array.isArray(klines)) {
+      console.warn('klines is not an array')
+      return {
+        metrics: {
+          totalTrades: 0,
+          winRate: 0,
+          avgProfit: 0,
+          maxProfit: 0,
+          maxLoss: 0,
+          sharpeRatio: 0,
+          maxDrawdown: 0
+        },
+        strategies: [],
+        analysis: {
+          bestEntry: 0,
+          bestExit: 0,
+          riskLevel: 'low'
+        }
+      }
+    }
     const prices = klines.map(k => parseFloat(k[4])) // 종가
     const volumes = klines.map(k => parseFloat(k[5]))
     

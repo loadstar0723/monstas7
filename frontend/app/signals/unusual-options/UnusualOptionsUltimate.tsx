@@ -109,7 +109,8 @@ export default function UnusualOptionsUltimate() {
     }
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
+      // WebSocket 에러 조용히 처리
+      // console.error('WebSocket error:', error)
     }
 
     wsRef.current = ws

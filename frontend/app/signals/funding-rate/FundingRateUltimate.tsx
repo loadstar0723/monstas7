@@ -98,7 +98,8 @@ export default function FundingRateUltimate() {
     }
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
+      // WebSocket 에러 조용히 처리
+      // console.error('WebSocket error:', error)
     }
 
     ws.onclose = () => {
@@ -260,7 +261,7 @@ export default function FundingRateUltimate() {
                       <FaUserGraduate /> 트레이딩 전략
                     </h3>
                     <p className="text-sm text-gray-300">
-                      현재 펀딩비: {fundingData?.safeFixed(current.fundingRate, 4)}%
+                      현재 펀딩비: {fundingData?.current?.fundingRate ? fundingData.current.fundingRate.toFixed(4) : '0.0000'}%
                     </p>
                     <div className="mt-2 p-3 bg-gray-900/50 rounded">
                       <p className="text-sm font-semibold text-yellow-400">
@@ -286,8 +287,8 @@ export default function FundingRateUltimate() {
                         {currentCoin?.name} 실시간 펀딩비
                       </h3>
                       <div className="text-3xl font-bold">
-                        <span className={fundingData?.current.fundingRate || 0 > 0 ? 'text-green-400' : 'text-red-400'}>
-                          {fundingData?.safeFixed(current.fundingRate, 4)}%
+                        <span className={(fundingData?.current?.fundingRate || 0) > 0 ? 'text-green-400' : 'text-red-400'}>
+                          {fundingData?.current?.fundingRate ? fundingData.current.fundingRate.toFixed(4) : '0.0000'}%
                         </span>
                       </div>
                     </div>
@@ -303,7 +304,7 @@ export default function FundingRateUltimate() {
                       <div>
                         <p className="text-xs text-gray-400">연율화 수익률</p>
                         <p className="text-lg font-semibold text-yellow-400">
-                          {fundingData?.safeFixed(current.annualizedRate, 2)}%
+                          {fundingData?.current?.annualizedRate ? fundingData.current.annualizedRate.toFixed(2) : '0.00'}%
                         </p>
                       </div>
                       <div>
@@ -317,7 +318,7 @@ export default function FundingRateUltimate() {
                         <p className={`text-lg font-semibold ${
                           (fundingData?.current.premium || 0) > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {fundingData?.safeFixed(current.premium, 3)}%
+                          {fundingData?.current?.premium ? fundingData.current.premium.toFixed(3) : '0.000'}%
                         </p>
                       </div>
                     </div>
@@ -355,7 +356,7 @@ export default function FundingRateUltimate() {
                       <div className="text-right">
                         <p className="text-xs text-gray-400">신뢰도</p>
                         <p className="text-lg font-bold text-yellow-400">
-                          {fundingData?.safeFixed(recommendation.confidence, 1)}%
+                          {fundingData?.recommendation?.confidence ? fundingData.recommendation.confidence.toFixed(1) : '0.0'}%
                         </p>
                       </div>
                     </div>
@@ -466,19 +467,19 @@ export default function FundingRateUltimate() {
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">평균 펀딩비</p>
                   <p className="text-xl font-bold text-white">
-                    {fundingData?.safeFixed(statistics.avgRate, 4)}%
+                    {fundingData?.statistics ? safeFixed(fundingData.statistics.avgRate, 4) : '0.0000'}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">최대 펀딩비</p>
                   <p className="text-xl font-bold text-green-400">
-                    {fundingData?.safeFixed(statistics.maxRate, 4)}%
+                    {fundingData?.statistics ? safeFixed(fundingData.statistics.maxRate, 4) : '0.0000'}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <p className="text-sm text-gray-400 mb-1">최소 펀딩비</p>
                   <p className="text-xl font-bold text-red-400">
-                    {fundingData?.safeFixed(statistics.minRate, 4)}%
+                    {fundingData?.statistics ? safeFixed(fundingData.statistics.minRate, 4) : '0.0000'}%
                   </p>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
@@ -572,7 +573,7 @@ export default function FundingRateUltimate() {
                           <ol className="text-xs space-y-1 text-gray-400">
                             <li>1. 현물 {currentCoin?.name} 매수</li>
                             <li>2. 선물 {currentCoin?.name} 숏 포지션</li>
-                            <li>3. 펀딩비 {fundingData?.safeFixed(current.fundingRate, 4)}% 수취</li>
+                            <li>3. 펀딩비 {fundingData?.current?.fundingRate ? fundingData.current.fundingRate.toFixed(4) : '0.0000'}% 수취</li>
                             <li>4. 리스크 없는 수익 실현</li>
                           </ol>
                         </div>

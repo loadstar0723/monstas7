@@ -110,6 +110,14 @@ export default function MomentumModule() {
       }
       
       const data = await response.json()
+      
+      // data가 배열이 아닌 경우 처리
+      if (!Array.isArray(data)) {
+        console.warn('Received non-array data:', data)
+        setPriceHistory([])
+        return
+      }
+      
       const history = data.map((item: any[]) => ({
         time: item[0],
         open: parseFloat(item[1]),

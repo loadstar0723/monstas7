@@ -763,7 +763,7 @@ export default function SidebarNew() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-r from-purple-900/80 to-purple-800/80 
+        className="fixed top-4 left-4 z-[9999] p-3 rounded-xl bg-gradient-to-r from-purple-900/80 to-purple-800/80 
                    backdrop-blur-sm border border-purple-600/50 hover:border-purple-500 
                    shadow-xl hover:shadow-purple-500/30 transition-all group"
       >

@@ -141,7 +141,7 @@ export default function PositionSizer({ momentumData, coinData }: PositionSizerP
             {calculateShares().toFixed(4)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            @ ${coinData?.safePrice(price, 2)}
+            @ ${coinData?.price?.toFixed(2) || '0.00'}
           </p>
         </div>
 

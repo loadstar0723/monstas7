@@ -170,7 +170,7 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
                 <p className={`text-xl font-bold ${
                   (prices[coins[currentIndex].symbol]?.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                 }`}>
-                  {prices[coins[currentIndex].symbol]?.safePercent(change) || '0.00'}%
+                  {prices[coins[currentIndex].symbol]?.change?.toFixed(2) || '0.00'}%
                 </p>
               </div>
             </div>
@@ -218,8 +218,8 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
               {prices[coin.symbol] && (
                 <p className="text-xs mt-1">
                   ${prices[coin.symbol].price > 10 
-                    ? prices[coin.symbol].safePrice(price, 0) 
-                    : prices[coin.symbol].safePrice(price, 2)
+                    ? prices[coin.symbol].price.toFixed(0) 
+                    : prices[coin.symbol].price.toFixed(2)
                   }
                 </p>
               )}

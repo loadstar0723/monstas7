@@ -21,7 +21,7 @@ export default function BacktestChart({ data, coin, strategy }: BacktestChartPro
   const [processedData, setProcessedData] = useState<any[]>([])
 
   useEffect(() => {
-    if (!data || data.length === 0) return
+    if (!data || !Array.isArray(data) || data.length === 0) return
 
     const processed = data.map((candle, index) => {
       const close = parseFloat(candle[4])

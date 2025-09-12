@@ -53,9 +53,15 @@ export default function CoinSelector({ coins, selectedCoin, onSelectCoin }: Prop
         return
       }
       
-      // 배열인지 확인
+      // 배열인지 확인 - 빈 객체인 경우 빈 배열로 처리
       if (!Array.isArray(data)) {
-        console.error('예상치 못한 데이터 형식:', data)
+        // 빈 객체이거나 잘못된 형식인 경우 조용히 처리
+        if (Object.keys(data).length === 0) {
+          // 빈 객체인 경우 로딩만 false로 설정
+          setLoading(false)
+          return
+        }
+        console.warn('예상치 못한 데이터 형식, 빈 배열로 처리')
         setLoading(false)
         return
       }

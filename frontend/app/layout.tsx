@@ -68,7 +68,7 @@ export default function RootLayout({
         {/* AuthProvider 제거 - next-auth 비활성화 */}
         <ThemeProvider>
           <SidebarProvider>
-            <ClientInit />
+            {/* <ClientInit /> */}
             <ServiceWorkerRegistration />
             <PWAInstallPrompt />
             <div className="min-h-screen">
