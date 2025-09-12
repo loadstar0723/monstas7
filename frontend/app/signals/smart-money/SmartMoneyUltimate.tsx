@@ -334,6 +334,7 @@ export default function SmartMoneyUltimate() {
   const priceCallbackRef = useRef<((data: any) => void) | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
   const connectionDelayRef = useRef<NodeJS.Timeout>()
+  const wsRef = useRef<WebSocket | null>(null)
 
   // 데이터 서비스 연결 관리
   const connectDataService = (symbol: string) => {
@@ -460,14 +461,14 @@ export default function SmartMoneyUltimate() {
         
         const historicalFlows = trades
           .filter((trade: any) => trade.T > dayAgo)
-          .map((trade: any) => {
+          .map((trade: any, idx: number) => {
             const price = parseFloat(trade.p)
             const quantity = parseFloat(trade.q)
             const value = price * quantity
             
             if (value > 10000) {
               return {
-                id: `hist-${trade.a}`,
+                id: `hist-${trade.T}-${idx}-${trade.a}`,
                 institution: getInstitutionLabel(value, trade.a.toString()),
                 symbol: symbol.replace('USDT', ''),
                 type: trade.m ? 'distribution' : 'accumulation',
@@ -497,72 +498,89 @@ export default function SmartMoneyUltimate() {
     // 연결 지연 (빠른 전환 방지)
     clearTimeout(connectionDelayRef.current)
     connectionDelayRef.current = setTimeout(() => {
-      // 데이터 서비스 구독
-      const callback = (data: any) => {
-        setIsConnected(true)
+      // WebSocket 직접 연결 (브라우저에서만)
+      if (typeof window !== 'undefined') {
+        const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
         
-        // 실시간 데이터 처리
-        const price = parseFloat(data.p)
-        const quantity = parseFloat(data.q)
-        const value = price * quantity
-
-        // 현재 가격 업데이트
-        setCurrentPrice(price)
-
-        // 코인별 임계값 설정 (가격대가 다르므로)
-        const threshold = symbol === 'BTCUSDT' ? 10000 :   // BTC: $10K 이상
-                         symbol === 'ETHUSDT' ? 5000 :     // ETH: $5K 이상  
-                         symbol === 'SOLUSDT' ? 2000 :     // SOL: $2K 이상
-                         symbol === 'BNBUSDT' ? 3000 :     // BNB: $3K 이상
-                         1000                               // 기타: $1K 이상
-        
-        // 대규모 거래만 기관 거래로 분류
-        if (value > threshold) {
-          // 거래량에 따른 기관 추정 (큰 거래일수록 주요 기관)
-          // 거래 규모에 따른 익명 기관 레이블
-          const institution = getInstitutionLabel(value, data.a?.toString())
-          const flow: InstitutionalFlow = {
-            id: `${Date.now()}-${value}`,
-            institution,
-            symbol: symbol.replace('USDT', ''),
-            type: data.m ? 'distribution' : 'accumulation',
-            amount: quantity,
-            price,
-            value,
-            time: new Date(data.T).toLocaleTimeString('ko-KR'),
-            timestamp: data.T,
-            confidence: value > 500000 ? 90 : value > 100000 ? 75 : 60,
-            source: value > 1000000 ? 'otc' : value > 500000 ? 'custody' : 'exchange',
-            impact: value > 1000000 ? 'high' : value > 500000 ? 'medium' : 'low'
-          }
-
-          setInstitutionalFlows(prev => [flow, ...prev].slice(0, 100))
+        ws.onmessage = (event) => {
+          setIsConnected(true)
+          const data = JSON.parse(event.data)
           
-          // 심볼별 저장
-          setFlowsBySymbol(prev => ({
-            ...prev,
-            [symbol]: [flow, ...(prev[symbol] || [])].slice(0, 50)
-          }))
+          // 실시간 데이터 처리
+          const price = parseFloat(data.p)
+          const quantity = parseFloat(data.q)
+          const value = price * quantity
 
-          // 알림 (대규모 거래)
-          if (value > 1000000) {
-            const notificationService = NotificationService.getInstance()
-            notificationService.showWhaleAlert(
-              selectedSymbol.replace('USDT', ''),
+          // 현재 가격 업데이트
+          setCurrentPrice(price)
+
+          // 코인별 임계값 설정 (가격대가 다르므로)
+          const threshold = symbol === 'BTCUSDT' ? 10000 :   // BTC: $10K 이상
+                           symbol === 'ETHUSDT' ? 5000 :     // ETH: $5K 이상  
+                           symbol === 'SOLUSDT' ? 2000 :     // SOL: $2K 이상
+                           symbol === 'BNBUSDT' ? 3000 :     // BNB: $3K 이상
+                           1000                               // 기타: $1K 이상
+          
+          // 대규모 거래만 기관 거래로 분류
+          if (value > threshold) {
+            // 거래량에 따른 기관 추정 (큰 거래일수록 주요 기관)
+            // 거래 규모에 따른 익명 기관 레이블
+            const institution = getInstitutionLabel(value, data.a?.toString())
+            const flow: InstitutionalFlow = {
+              id: `rt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${data.a}`,
+              institution,
+              symbol: symbol.replace('USDT', ''),
+              type: data.m ? 'distribution' : 'accumulation',
+              amount: quantity,
+              price,
               value,
-              flow.type === 'accumulation' ? 'buy' : 'sell'
-            )
-            audioService.playNotification()
+              time: new Date(data.T).toLocaleTimeString('ko-KR'),
+              timestamp: data.T,
+              confidence: value > 500000 ? 90 : value > 100000 ? 75 : 60,
+              source: value > 1000000 ? 'otc' : value > 500000 ? 'custody' : 'exchange',
+              impact: value > 1000000 ? 'high' : value > 500000 ? 'medium' : 'low'
+            }
+
+            setInstitutionalFlows(prev => [flow, ...prev].slice(0, 100))
+            
+            // 심볼별 저장
+            setFlowsBySymbol(prev => ({
+              ...prev,
+              [symbol]: [flow, ...(prev[symbol] || [])].slice(0, 50)
+            }))
+
+            // 알림 (대규모 거래)
+            if (value > 1000000) {
+              const notificationService = NotificationService.getInstance()
+              notificationService.showWhaleAlert(
+                selectedSymbol.replace('USDT', ''),
+                value,
+                flow.type === 'accumulation' ? 'buy' : 'sell'
+              )
+              audioService.playNotification()
+            }
           }
         }
+        
+        // WebSocket 참조 저장 (정리용)
+        if (wsRef.current) {
+          wsRef.current.close()
+        }
+        wsRef.current = ws
+        
+        ws.onerror = (error) => {
+          console.warn('WebSocket error:', error)
+          setIsConnected(false)
+        }
+        
+        ws.onclose = () => {
+          setIsConnected(false)
+        }
       }
-      
-      // 콜백 저장 및 구독
-      priceCallbackRef.current = callback
-      dataService.subscribeToPrice(symbol, callback)
     }, 500)
   }
 
+  
   // Binance 오더북 데이터 가져오기 (프록시 사용)
   const fetchOrderBookData = async (symbol: string) => {
     try {

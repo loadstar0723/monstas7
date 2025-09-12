@@ -74,6 +74,14 @@ interface GammaExposure {
   netGamma: number
 }
 
+
+// 고유 ID 생성 함수
+const generateUniqueId = (prefix: string = '', suffix: string = '') => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  return `${prefix}-${timestamp}-${random}${suffix ? '-' + suffix : ''}`;
+}
+
 export default function UnusualOptionsUltimate() {
   const [selectedCoin, setSelectedCoin] = useState('BTCUSDT')
   const [activeTab, setActiveTab] = useState('concept')

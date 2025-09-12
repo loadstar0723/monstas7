@@ -195,6 +195,14 @@ const liquidationOverview = {
   tips: '청산 밀집 구간은 강한 지지/저항선으로 작용합니다. 대규모 롱 청산 후 단기 반등 기회를 포착하고, 캐스케이드 위험 신호 시에는 즉시 리스크를 축소하세요.'
 }
 
+
+// 고유 ID 생성 함수
+const generateUniqueId = (prefix: string = '', suffix: string = '') => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  return `${prefix}-${timestamp}-${random}${suffix ? '-' + suffix : ''}`;
+}
+
 export default function LiquidationUltimate() {
   // 추적할 상위 10개 코인
   const TRACKED_SYMBOLS = [
@@ -350,7 +358,7 @@ export default function LiquidationUltimate() {
 
     if (totalValue > 10000000 && liquidationRate > 10) {
       const alert: CascadeAlert = {
-        id: Date.now().toString(),
+        id: `${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`,
         symbol: selectedSymbol,
         type: 'critical',
         message: `⚠️ 캐스케이드 청산 위험! 5분간 $${(totalValue/1000000).toFixed(1)}M 청산`,

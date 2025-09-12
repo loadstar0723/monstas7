@@ -68,7 +68,7 @@ const generateInsiderTransaction = (
     value > 100000 ? 'medium' : 'low'
     
   return {
-    id: `tx_${Date.now()}_${index}`,
+    id: `tx_${Date.now()}-${idx || 0}-${Math.random().toString(36).substr(2, 9)}_${index}`,
     timestamp: new Date(Date.now() - (index * 3600000)), // index * 1시간
     type,
     category,
@@ -117,6 +117,14 @@ interface UnlockEvent {
   type: 'team' | 'vc' | 'investor'
   impact: 'low' | 'medium' | 'high'
   percentage: number
+}
+
+
+// 고유 ID 생성 함수
+const generateUniqueId = (prefix: string = '', suffix: string = '') => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  return `${prefix}-${timestamp}-${random}${suffix ? '-' + suffix : ''}`;
 }
 
 export default function InsiderFlowUltimate() {

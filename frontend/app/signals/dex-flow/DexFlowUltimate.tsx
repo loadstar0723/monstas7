@@ -102,6 +102,14 @@ interface MEVActivity {
   bundleSize: number
 }
 
+
+// 고유 ID 생성 함수
+const generateUniqueId = (prefix: string = '', suffix: string = '') => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  return `${prefix}-${timestamp}-${random}${suffix ? '-' + suffix : ''}`;
+}
+
 export default function DexFlowUltimate() {
   const [selectedCoin, setSelectedCoin] = useState('BTC')  // BTC로 시작
   const [activeTab, setActiveTab] = useState<'overview' | 'swaps' | 'liquidity' | 'arbitrage' | 'mev' | 'analytics' | 'signals'>('overview')
