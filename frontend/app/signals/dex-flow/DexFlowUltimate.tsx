@@ -182,17 +182,15 @@ export default function DexFlowUltimate() {
     setLoading(true)
     try {
       // 실제 API 호출
-      const [priceRes, dexRes] = await Promise.all([
-        fetch24hrTicker(coin),
+      const [priceData, dexRes] = await Promise.all([
+        fetch24hrTicker(coin + 'USDT'),  // fetch24hrTicker는 직접 데이터 반환
         fetch(`/api/dex/flow?coin=${coin}`)
       ])
 
-      if (priceRes.ok) {
-        const priceData = await priceRes.json()
-        if (priceData.lastPrice) {
-          setCurrentPrice(priceData.lastPrice)
-          setPriceChange24h(priceData.priceChangePercent || 0)
-        }
+      // priceData는 이미 파싱된 데이터
+      if (priceData && priceData.price) {
+        setCurrentPrice(priceData.price)
+        setPriceChange24h(priceData.change24h || 0)
       }
 
       if (dexRes.ok) {

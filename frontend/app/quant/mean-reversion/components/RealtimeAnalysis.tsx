@@ -25,12 +25,20 @@ interface MarketData {
 }
 
 interface RealtimeAnalysisProps {
-  coin: Coin
-  marketData: MarketData | null
-  loading: boolean
+  coin?: Coin
+  marketData?: MarketData | null
+  loading?: boolean
 }
 
 export default function RealtimeAnalysis({ coin, marketData, loading }: RealtimeAnalysisProps) {
+  // coin이 undefined인 경우 기본값 사용
+  const safeCoin = coin || {
+    symbol: 'BTCUSDT',
+    name: 'Bitcoin',
+    icon: '₿',
+    color: '#F7931A'
+  }
+
   if (loading || !marketData) {
     return (
       <div className="bg-gray-800/50 rounded-xl p-6 animate-pulse">
@@ -77,7 +85,7 @@ export default function RealtimeAnalysis({ coin, marketData, loading }: Realtime
     >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-          <span style={{ color: coin.color }}>{coin.icon}</span>
+          <span style={{ color: safeCoin.color }}>{safeCoin.icon}</span>
           실시간 평균회귀 분석
         </h2>
         <div className={`px-4 py-2 rounded-lg ${status.bgColor} border ${status.color.replace('text', 'border')}`}>

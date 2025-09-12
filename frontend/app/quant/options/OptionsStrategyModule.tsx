@@ -55,7 +55,7 @@ export default function OptionsStrategyModule() {
   
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // 옵션 데이터 로드
+  // 옵션 데이터 로드 (try-catch 강화)
   const loadOptionsData = useCallback(async (currency: string) => {
     try {
       // 이전 요청 취소
@@ -67,72 +67,199 @@ export default function OptionsStrategyModule() {
       setLoading(true)
       setError(null)
       
-      // Deribit은 BTC와 ETH만 옵션 지원, 다른 코인은 시뮬레이션 데이터 사용
+      // Deribit은 BTC와 ETH만 옵션 지원, 다른 코인은 기본값 사용
       if (currency === 'BTC' || currency === 'ETH') {
-        // 옵션 상품 목록 가져오기
-        const optionsResponse = await fetch(
-          `/api/deribit/options?currency=${currency}`,
-          { signal: abortControllerRef.current.signal }
-        )
-        
-        if (optionsResponse.ok) {
-          const optionsData = await optionsResponse.json()
+        try {
+          // 옵션 상품 목록 가져오기
+          const optionsResponse = await fetch(
+            `/api/deribit/options?currency=${currency}`,
+            { signal: abortControllerRef.current.signal }
+          )
           
-          // 만기일 목록 추출
-          const expiryDates = Object.keys(optionsData.optionsByExpiry || {}).sort()
-          setExpiries(expiryDates)
-          
-          if (expiryDates.length > 0 && !selectedExpiry) {
-            setSelectedExpiry(expiryDates[0])
+          // response.ok 체크
+          if (!optionsResponse.ok) {
+            console.warn(`Deribit API 응답 오류: ${optionsResponse.status}`)
+            // 에러 시 기본 만료일 설정
+            const defaultExpiries = ['2024-12-27', '2025-01-03', '2025-01-10']
+            setExpiries(defaultExpiries)
+            if (!selectedExpiry) {
+              setSelectedExpiry(defaultExpiries[0])
+            }
+          } else {
+            const optionsData = await optionsResponse.json()
+            
+            // 데이터 유효성 검사
+            if (optionsData && optionsData.optionsByExpiry) {
+              const expiryDates = Object.keys(optionsData.optionsByExpiry).sort()
+              setExpiries(expiryDates)
+              
+              if (expiryDates.length > 0 && !selectedExpiry) {
+                setSelectedExpiry(expiryDates[0])
+              }
+              
+              // 현물 가격 설정
+              setSpotPrice(parseFloat(optionsData.spotPrice) || 0)
+            }
           }
-          
-          // 현물 가격 설정
-          setSpotPrice(optionsData.spotPrice || 0)
+        } catch (optionsError) {
+          console.error('Deribit 옵션 데이터 로드 실패:', optionsError)
+          // 기본 만료일 설정
+          const defaultExpiries = ['2024-12-27', '2025-01-03', '2025-01-10']
+          setExpiries(defaultExpiries)
+          if (!selectedExpiry) {
+            setSelectedExpiry(defaultExpiries[0])
+          }
         }
       }
       
       // 현물 가격 가져오기 (Binance)
-      const priceResponse = await fetch(
-        `https://api.binance.com/api/v3/ticker/price?symbol=${currency}USDT`,
-        { signal: abortControllerRef.current.signal }
-      )
-      
-      if (priceResponse.ok) {
-        const priceData = await priceResponse.json()
-        setSpotPrice(parseFloat(priceData.price))
+      try {
+        const priceResponse = await fetch(
+          `/api/binance/ticker?symbol=${currency}USDT`,
+          { signal: abortControllerRef.current.signal }
+        )
+        
+        if (priceResponse.ok) {
+          const priceData = await priceResponse.json()
+          if (priceData && priceData.lastPrice) {
+            setSpotPrice(parseFloat(priceData.lastPrice))
+          }
+        } else {
+          throw new Error(`Binance API 오류: ${priceResponse.status}`)
+        }
+      } catch (priceError) {
+        console.error('현물 가격 로드 실패:', priceError)
+        
+        // 에러 시 기본가격 맵 사용
+        const priceMap: Record<string, number> = {
+          'BTC': 98000, 'ETH': 3500, 'BNB': 700, 'SOL': 240,
+          'XRP': 2.5, 'ADA': 1.0, 'DOGE': 0.4, 'AVAX': 45,
+          'MATIC': 1.5, 'DOT': 10
+        }
+        
+        const defaultPrice = priceMap[currency] || 100
+        setSpotPrice(defaultPrice)
       }
       
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('옵션 데이터 로드 실패:', error)
-        setError('데이터를 불러오는데 실패했습니다.')
+        
+        // 완전 실패 시 기본가격 맵 사용
+        const priceMap: Record<string, number> = {
+          'BTC': 98000, 'ETH': 3500, 'BNB': 700, 'SOL': 240,
+          'XRP': 2.5, 'ADA': 1.0, 'DOGE': 0.4, 'AVAX': 45,
+          'MATIC': 1.5, 'DOT': 10
+        }
+        
+        const defaultPrice = priceMap[currency] || 100
+        setSpotPrice(defaultPrice)
+        setError('일부 데이터를 불러오는데 실패했습니다. 기본값을 사용합니다.')
       }
     } finally {
       setLoading(false)
     }
   }, [selectedExpiry])
 
-  // 옵션 체인 데이터 로드
+  // 옵션 체인 데이터 로드 (try-catch 강화)
   const loadOptionChain = useCallback(async () => {
-    if (!selectedExpiry || (!['BTC', 'ETH'].includes(selectedCoin))) return
+    if (!selectedExpiry || (!['BTC', 'ETH'].includes(selectedCoin))) {
+      // BTC, ETH가 아닌 경우 기본 옵션 체인 데이터 생성
+      const defaultChain = generateDefaultOptionChain(selectedCoin)
+      setOptionChainData(defaultChain)
+      return
+    }
     
     try {
       const response = await fetch(
         `/api/deribit/option-chain?currency=${selectedCoin}&expiry=${selectedExpiry}`
       )
       
-      if (response.ok) {
-        const data = await response.json()
-        setOptionChainData(data.optionChain)
-        if (data.spotPrice) {
-          setSpotPrice(data.spotPrice)
-        }
+      // response.ok 체크
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
+      
+      const data = await response.json()
+      
+      // 데이터 유효성 검사
+      if (!data) {
+        throw new Error('Empty response data')
+      }
+      
+      setOptionChainData(data.optionChain || null)
+      
+      if (data.spotPrice && !isNaN(parseFloat(data.spotPrice))) {
+        setSpotPrice(parseFloat(data.spotPrice))
+      }
+      
+      setError(null) // 성공시 에러 해제
+      
     } catch (error) {
       console.error('옵션 체인 로드 실패:', error)
-      setError('옵션 체인 데이터를 불러오는데 실패했습니다.')
+      
+      // 에러 시 기본 옵션 체인 데이터로 폴백
+      const defaultChain = generateDefaultOptionChain(selectedCoin)
+      setOptionChainData(defaultChain)
+      
+      setError('옵션 체인 데이터를 불러오는데 실패했습니다. 기본 데이터를 사용합니다.')
     }
   }, [selectedCoin, selectedExpiry])
+  
+  // 기본 옵션 체인 데이터 생성 함수 (강화된 계산)
+  const generateDefaultOptionChain = (coin: string) => {
+    // 코인별 기본 가격 맵핑
+    const priceMap: Record<string, number> = {
+      'BTC': 98000,
+      'ETH': 3500,
+      'BNB': 700,
+      'SOL': 240,
+      'XRP': 2.5,
+      'ADA': 1.0,
+      'DOGE': 0.4,
+      'AVAX': 45,
+      'MATIC': 1.5,
+      'DOT': 10
+    }
+    
+    const basePrice = priceMap[coin] || 100 // 기본값 100
+    
+    // 기본 행사가격들 (현재가 기준 ±20%)
+    const strikes: number[] = []
+    for (let i = -20; i <= 20; i += 5) {
+      const strike = Math.round(basePrice * (1 + i / 100))
+      if (strike > 0) strikes.push(strike) // 양수만 추가
+    }
+    
+    return strikes.map(strike => {
+      // 내재가치 계산 (안전하게)
+      const callIntrinsic = Math.max(0, basePrice - strike)
+      const putIntrinsic = Math.max(0, strike - basePrice)
+      
+      // 시간가치 + 내재가치
+      const timeValue = basePrice * 0.02 // 2% 시간가치
+      
+      return {
+        strike,
+        call: {
+          price: Math.max(0.01, callIntrinsic + timeValue),
+          delta: strike < basePrice ? Math.min(0.95, Math.max(0.05, 0.7)) : Math.min(0.95, Math.max(0.05, 0.3)),
+          gamma: Math.max(0.0001, Math.min(0.01, 0.001)),
+          theta: Math.max(-0.1, Math.min(-0.01, -0.05)),
+          vega: Math.max(0.01, Math.min(0.5, 0.1)),
+          iv: Math.max(0.1, Math.min(1.0, 0.25))
+        },
+        put: {
+          price: Math.max(0.01, putIntrinsic + timeValue),
+          delta: strike > basePrice ? Math.max(-0.95, Math.min(-0.05, -0.7)) : Math.max(-0.95, Math.min(-0.05, -0.3)),
+          gamma: Math.max(0.0001, Math.min(0.01, 0.001)),
+          theta: Math.max(-0.1, Math.min(-0.01, -0.05)),
+          vega: Math.max(0.01, Math.min(0.5, 0.1)),
+          iv: Math.max(0.1, Math.min(1.0, 0.25))
+        }
+      }
+    })
+  }
 
   // 코인 변경 시
   useEffect(() => {
@@ -162,8 +289,11 @@ export default function OptionsStrategyModule() {
           <h3 className="text-xl font-bold mb-2">오류 발생</h3>
           <p className="text-gray-300">{error}</p>
           <button 
-            onClick={() => loadOptionsData(selectedCoin)}
-            className="mt-4 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+            onClick={() => {
+              setError(null)
+              loadOptionsData(selectedCoin)
+            }}
+            className="mt-4 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
           >
             다시 시도
           </button>

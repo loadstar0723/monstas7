@@ -23,8 +23,10 @@ interface MarketData {
 }
 
 interface TradingSignalsProps {
-  coin: Coin
+  coin?: Coin | null
   marketData: MarketData | null
+  priceHistory?: any[]
+  loading?: boolean
 }
 
 interface Signal {
@@ -37,7 +39,7 @@ interface Signal {
   riskReward: number
 }
 
-export default function TradingSignals({ coin, marketData }: TradingSignalsProps) {
+export default function TradingSignals({ coin, marketData, priceHistory, loading }: TradingSignalsProps) {
   const [signal, setSignal] = useState<Signal | null>(null)
   const [signalHistory, setSignalHistory] = useState<any[]>([])
 

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { BINANCE_CONFIG } from '@/lib/binanceConfig'
-import { useWebSocketFirst } from '@/lib/useWebSocketFirst'
+import { useRealtimePrice, useRealtimeKlines } from '@/lib/hooks/useOptimizedWebSocket'
 import CoinSelector from './components/CoinSelector'
 import MomentumOverview from './components/MomentumOverview'
 import PriceChart from './components/PriceChart'
@@ -64,268 +63,187 @@ export default function MomentumModule() {
   const [priceHistory, setPriceHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected')
-  const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const lastUpdateRef = useRef<number>(0)
 
-  // WebSocket 데이터 처리
-  const handleWebSocketData = useCallback((data: any) => {
-    // 스트림 데이터 처리
-    if (data.stream && data.data) {
-      const streamData = data.data
-      
-      // 24시간 티커 데이터 처리
-      if (streamData.e === '24hrTicker') {
-        const coin = SUPPORTED_COINS.find(c => c.symbol === streamData.s)
-        setCoinData({
-          symbol: streamData.s,
-          name: coin?.name || streamData.s,
-          price: parseFloat(streamData.c),
-          change24h: parseFloat(streamData.P),
-          volume24h: parseFloat(streamData.v),
-          high24h: parseFloat(streamData.h),
-          low24h: parseFloat(streamData.l),
-          marketCap: parseFloat(streamData.q)
-        })
-        setConnectionStatus('connected')
-      }
-      // 1분 캔들 데이터 처리
-      else if (streamData.e === 'kline' && streamData.k) {
-        const kline = streamData.k
+  // 최적화된 WebSocket 훅 사용
+  const realtimePrice = useRealtimePrice(selectedCoin, { enabled: true })
+  const { currentKline, klines, isConnected } = useRealtimeKlines(selectedCoin, '1m', { enabled: true })
+
+  // 실시간 가격 데이터를 coinData로 변환
+  useEffect(() => {
+    if (realtimePrice.price > 0) {
+      const coin = SUPPORTED_COINS.find(c => c.symbol === selectedCoin)
+      setCoinData({
+        symbol: selectedCoin,
+        name: coin?.name || selectedCoin,
+        price: realtimePrice.price,
+        change24h: realtimePrice.changePercent,
+        volume24h: realtimePrice.volume,
+        high24h: realtimePrice.high,
+        low24h: realtimePrice.low,
+        marketCap: realtimePrice.volume * realtimePrice.price // 근사치
+      })
+      setLoading(false)
+    }
+  }, [realtimePrice, selectedCoin])
+
+  // K라인 데이터를 priceHistory로 변환
+  useEffect(() => {
+    if (klines.length > 0) {
+      const formattedHistory = klines.map(kline => ({
+        time: kline.openTime,
+        open: kline.open,
+        high: kline.high,
+        low: kline.low,
+        close: kline.close,
+        volume: kline.volume
+      }))
+      setPriceHistory(formattedHistory)
+    }
+  }, [klines])
+
+  // 현재 K라인으로 실시간 가격 히스토리 업데이트
+  useEffect(() => {
+    if (currentKline && !currentKline.isKlineClosed) {
+      setPriceHistory(prev => {
+        const updated = [...prev]
+        const currentTime = currentKline.openTime
         
-        // 실시간 캔들 업데이트 (닫히지 않은 캔들도 포함)
-        setPriceHistory(prev => {
-          const newCandle = {
-            time: kline.t,
-            open: parseFloat(kline.o),
-            high: parseFloat(kline.h),
-            low: parseFloat(kline.l),
-            close: parseFloat(kline.c),
-            volume: parseFloat(kline.v)
+        // 마지막 캔들이 현재 시간과 같으면 업데이트, 아니면 추가
+        const lastIndex = updated.length - 1
+        if (updated[lastIndex] && updated[lastIndex].time === currentTime) {
+          updated[lastIndex] = {
+            time: currentTime,
+            open: currentKline.open,
+            high: currentKline.high,
+            low: currentKline.low,
+            close: currentKline.close,
+            volume: currentKline.volume
           }
-          
-          // 기존 캔들 업데이트 또는 새 캔들 추가
-          if (prev.length > 0 && prev[prev.length - 1].time === kline.t) {
-            // 같은 시간의 캔들 업데이트
-            return [...prev.slice(0, -1), newCandle]
-          } else if (kline.x) {
-            // 새로운 캔들 추가 (캔들이 닫혔을 때)
-            return [...prev, newCandle].slice(-100)
-          } else {
-            // 첫 데이터이거나 실시간 업데이트
-            return prev.length === 0 ? [newCandle] : prev
-          }
-        })
-      }
+        } else {
+          updated.push({
+            time: currentTime,
+            open: currentKline.open,
+            high: currentKline.high,
+            low: currentKline.low,
+            close: currentKline.close,
+            volume: currentKline.volume
+          })
+        }
+        
+        return updated.slice(-500) // 최근 500개 유지
+      })
     }
-    // 단순 티커 데이터 처리 (이전 형식 호환)
-    else if (data.e === '24hrTicker' || data.s) {
-      const coin = SUPPORTED_COINS.find(c => c.symbol === (data.s || data.symbol))
-      if (data.c || data.lastPrice) {
-        setCoinData({
-          symbol: data.s || data.symbol,
-          name: coin?.name || data.s || data.symbol,
-          price: parseFloat(data.c || data.lastPrice),
-          change24h: parseFloat(data.P || data.priceChangePercent || '0'),
-          volume24h: parseFloat(data.v || data.volume || '0'),
-          high24h: parseFloat(data.h || data.highPrice || '0'),
-          low24h: parseFloat(data.l || data.lowPrice || '0'),
-          marketCap: parseFloat(data.q || data.quoteVolume || '0')
-        })
-        setConnectionStatus('connected')
-      }
-    }
-  }, [])
+  }, [currentKline])
 
-  // WebSocket 에러 처리
-  const handleWebSocketError = useCallback((error: any) => {
-    console.error('WebSocket error:', error)
-    setConnectionStatus('error')
-    // 에러 시 폴백으로 REST API 사용
-    if (selectedCoin) {
-      fetchCoinDataWithRateLimit(selectedCoin)
+  // 초기 히스토리 데이터 로드
+  const loadInitialData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Binance API에서 초기 K라인 데이터 가져오기
+      const response = await fetch(`/api/binance/klines?symbol=${selectedCoin}&interval=1m&limit=500`)
+      if (!response.ok) throw new Error('Failed to fetch initial data')
+      
+      const klineData = await response.json()
+      
+      if (Array.isArray(klineData)) {
+        const formattedHistory = klineData.map((kline: any) => ({
+          time: kline[0], // openTime
+          open: parseFloat(kline[1]),
+          high: parseFloat(kline[2]),
+          low: parseFloat(kline[3]),
+          close: parseFloat(kline[4]),
+          volume: parseFloat(kline[5])
+        }))
+        
+        setPriceHistory(formattedHistory)
+      }
+    } catch (err) {
+      console.error('초기 데이터 로드 실패:', err)
+      setError(err instanceof Error ? err.message : '데이터 로드 실패')
+    } finally {
+      setLoading(false)
     }
   }, [selectedCoin])
 
-  // WebSocket 우선 사용 훅
-  const { isConnected } = useWebSocketFirst({
-    symbol: selectedCoin,
-    onData: handleWebSocketData,
-    onError: handleWebSocketError,
-    autoReconnect: true,
-    maxReconnectAttempts: 5
-  })
-
-  // 레이트 리밋 적용 코인 정보 가져오기
-  const fetchCoinDataWithRateLimit = useCallback(async (symbol: string) => {
-    try {
-      setError(null)
-      // 최소 100ms 간격 체크
-      const now = Date.now()
-      if (now - lastUpdateRef.current < 100) {
-        return // 너무 빠른 요청 방지
-      }
-      lastUpdateRef.current = now
-
-      const response = await fetch(`/api/binance/ticker?symbol=${symbol}`)
-      if (!response.ok) {
-        if (response.status === 429) {
-          setError('API 레이트 리밋에 도달했습니다. WebSocket 데이터를 사용합니다.')
-          return
-        }
-        throw new Error(`Failed to fetch coin data`)
-      }
-      
-      const data = await response.json()
-      const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
-      
-      setCoinData({
-        symbol: data.symbol,
-        name: coin?.name || symbol,
-        price: parseFloat(data.lastPrice),
-        change24h: parseFloat(data.priceChangePercent),
-        volume24h: parseFloat(data.volume),
-        high24h: parseFloat(data.highPrice),
-        low24h: parseFloat(data.lowPrice),
-        marketCap: parseFloat(data.quoteVolume)
-      })
-    } catch (err) {
-      console.error('Error fetching coin data:', err)
-      // 에러 메시지를 간단하게 표시
-      setError('데이터 로드 중... WebSocket 연결 대기 중')
-    }
-  }, [])
-
-  // 히스토리컬 데이터 가져오기 (레이트 리밋 적용)
-  const fetchHistoricalData = useCallback(async (symbol: string) => {
-    try {
-      setError(null)
-      const response = await fetch(
-        `/api/binance/klines?symbol=${symbol}&interval=1h&limit=100`
-      )
-      
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn('Rate limit reached, using WebSocket data only')
-          return // WebSocket 데이터만 사용
-        }
-        throw new Error('Failed to fetch historical data')
-      }
-      
-      const result = await response.json()
-      
-      // API 응답 구조 확인
-      const data = result.klines || result.data || result
-      
-      // data가 배열이 아닌 경우 처리
-      if (!Array.isArray(data)) {
-        console.warn('Using WebSocket data only')
-        return
-      }
-      
-      // 이미 처리된 데이터인지 확인
-      if (data.length > 0) {
-        if (data[0].time) {
-          // 이미 처리된 데이터
-          setPriceHistory(data)
-        } else if (Array.isArray(data[0])) {
-          // 원시 Binance 데이터 처리
-          const history = data.map((item: any[]) => ({
-            time: item[0],
-            open: parseFloat(item[1]),
-            high: parseFloat(item[2]),
-            low: parseFloat(item[3]),
-            close: parseFloat(item[4]),
-            volume: parseFloat(item[5])
-          }))
-          setPriceHistory(history)
-        } else if (data[0].openTime) {
-          // API에서 처리된 데이터
-          const history = data.map((item: any) => ({
-            time: item.openTime,
-            open: item.open,
-            high: item.high,
-            low: item.low,
-            close: item.close,
-            volume: item.volume
-          }))
-          setPriceHistory(history)
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching historical data:', err)
-      // 에러 시 WebSocket 데이터만 사용
-      setError(null) // 에러 메시지 숨김
-    }
-  }, [])
+  // 선택된 코인 변경 시 초기 데이터 로드
+  useEffect(() => {
+    loadInitialData()
+  }, [selectedCoin, loadInitialData])
 
   // 모멘텀 지표 계산
-  const calculateMomentumIndicators = (data: any[]) => {
-    if (data.length < 14) return
+  const calculateMomentumIndicators = useCallback((prices: number[]): MomentumData | null => {
+    if (prices.length < 20) return null
 
-    const closes = data.map(d => d.close)
-    
-    // RSI 계산
-    const rsi = calculateRSI(closes, 14)
-    
-    // MACD 계산
-    const macd = calculateMACD(closes)
-    
-    // Stochastic 계산
-    const stochastic = calculateStochastic(data, 14, 3)
-    
-    // Williams %R 계산
-    const williams = calculateWilliams(data, 14)
-    
-    // ROC 계산
-    const roc = calculateROC(closes, 12)
-    
-    // 모멘텀 스코어 계산
-    const momentumScore = calculateMomentumScore(rsi, macd, stochastic, williams, roc)
-    
-    // 트렌드 판단
-    const trend = determineTrend(momentumScore, rsi, macd)
-    
-    setMomentumData({
-      rsi,
-      macd,
-      stochastic,
-      williams,
-      roc,
-      momentumScore,
-      trend
-    })
-  }
+    try {
+      // RSI 계산 (14기간)
+      const rsi = calculateRSI(prices.slice(-14))
+      
+      // MACD 계산 (12, 26, 9)
+      const macd = calculateMACD(prices)
+      
+      // Stochastic 계산 (14, 3, 3)
+      const stochastic = calculateStochastic(priceHistory.slice(-14))
+      
+      // Williams %R 계산 (14)
+      const williams = calculateWilliamsR(priceHistory.slice(-14))
+      
+      // ROC 계산 (10기간)
+      const roc = calculateROC(prices.slice(-10))
+      
+      // 모멘텀 점수 계산 (0-100)
+      const momentumScore = calculateMomentumScore({ rsi, macd, stochastic, williams, roc })
+      
+      // 트렌드 판단
+      const trend = determineTrend(momentumScore, rsi, macd.macd)
 
-  // RSI 계산
-  const calculateRSI = (prices: number[], period: number = 14): number => {
-    if (prices.length < period + 1) return 50
-
-    let gains = 0
-    let losses = 0
-
-    for (let i = prices.length - period; i < prices.length; i++) {
-      const change = prices[i] - prices[i - 1]
-      if (change > 0) {
-        gains += change
-      } else {
-        losses -= change
+      return {
+        rsi,
+        macd,
+        stochastic,
+        williams,
+        roc,
+        momentumScore,
+        trend
       }
+    } catch (err) {
+      console.error('모멘텀 지표 계산 오류:', err)
+      return null
     }
+  }, [priceHistory])
 
-    const avgGain = gains / period
-    const avgLoss = losses / period
+  // 가격 데이터가 업데이트될 때마다 모멘텀 지표 재계산
+  useEffect(() => {
+    if (priceHistory.length >= 20) {
+      const prices = priceHistory.map(p => p.close)
+      const newMomentumData = calculateMomentumIndicators(prices)
+      setMomentumData(newMomentumData)
+    }
+  }, [priceHistory, calculateMomentumIndicators])
+
+  // RSI 계산 함수
+  function calculateRSI(prices: number[]): number {
+    if (prices.length < 2) return 50
+    
+    let gains = 0, losses = 0
+    
+    for (let i = 1; i < prices.length; i++) {
+      const diff = prices[i] - prices[i - 1]
+      if (diff > 0) gains += diff
+      else losses += Math.abs(diff)
+    }
+    
+    const avgGain = gains / (prices.length - 1)
+    const avgLoss = losses / (prices.length - 1)
     
     if (avgLoss === 0) return 100
-    
     const rs = avgGain / avgLoss
     return 100 - (100 / (1 + rs))
   }
 
-  // MACD 계산
-  const calculateMACD = (prices: number[]) => {
+  // MACD 계산 함수
+  function calculateMACD(prices: number[]) {
     const ema12 = calculateEMA(prices, 12)
     const ema26 = calculateEMA(prices, 26)
     const macdLine = ema12 - ema26
@@ -338,465 +256,228 @@ export default function MomentumModule() {
     }
   }
 
-  // EMA 계산
-  const calculateEMA = (data: number[], period: number): number => {
-    if (data.length < period) return data[data.length - 1]
+  // EMA 계산 함수
+  function calculateEMA(prices: number[], period: number): number {
+    if (prices.length === 0) return 0
     
-    const multiplier = 2 / (period + 1)
-    let ema = data.slice(0, period).reduce((a, b) => a + b) / period
+    const k = 2 / (period + 1)
+    let ema = prices[0]
     
-    for (let i = period; i < data.length; i++) {
-      ema = (data[i] - ema) * multiplier + ema
+    for (let i = 1; i < prices.length; i++) {
+      ema = (prices[i] * k) + (ema * (1 - k))
     }
     
     return ema
   }
 
-  // Stochastic 계산
-  const calculateStochastic = (data: any[], period: number, smooth: number) => {
-    const highs = data.slice(-period).map(d => d.high)
-    const lows = data.slice(-period).map(d => d.low)
-    const close = data[data.length - 1].close
+  // Stochastic 계산 함수
+  function calculateStochastic(candles: any[]) {
+    if (candles.length < 14) return { k: 50, d: 50 }
     
-    const highest = Math.max(...highs)
-    const lowest = Math.min(...lows)
+    const highs = candles.map(c => c.high)
+    const lows = candles.map(c => c.low)
+    const closes = candles.map(c => c.close)
     
-    const k = ((close - lowest) / (highest - lowest)) * 100
-    const d = k // Simplified for now
+    const highestHigh = Math.max(...highs)
+    const lowestLow = Math.min(...lows)
+    const currentClose = closes[closes.length - 1]
+    
+    const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100
+    const d = k // 간단화된 계산
     
     return { k, d }
   }
 
-  // Williams %R 계산
-  const calculateWilliams = (data: any[], period: number): number => {
-    const highs = data.slice(-period).map(d => d.high)
-    const lows = data.slice(-period).map(d => d.low)
-    const close = data[data.length - 1].close
+  // Williams %R 계산 함수
+  function calculateWilliamsR(candles: any[]): number {
+    if (candles.length < 14) return -50
     
-    const highest = Math.max(...highs)
-    const lowest = Math.min(...lows)
+    const highs = candles.map(c => c.high)
+    const lows = candles.map(c => c.low)
+    const currentClose = candles[candles.length - 1].close
     
-    return ((highest - close) / (highest - lowest)) * -100
+    const highestHigh = Math.max(...highs)
+    const lowestLow = Math.min(...lows)
+    
+    return ((highestHigh - currentClose) / (highestHigh - lowestLow)) * -100
   }
 
-  // ROC 계산
-  const calculateROC = (prices: number[], period: number): number => {
-    if (prices.length < period + 1) return 0
+  // ROC (Rate of Change) 계산 함수
+  function calculateROC(prices: number[]): number {
+    if (prices.length < 2) return 0
     
     const currentPrice = prices[prices.length - 1]
-    const pastPrice = prices[prices.length - 1 - period]
+    const pastPrice = prices[0]
     
     return ((currentPrice - pastPrice) / pastPrice) * 100
   }
 
-  // 모멘텀 스코어 계산
-  const calculateMomentumScore = (
-    rsi: number,
-    macd: any,
-    stochastic: any,
-    williams: number,
+  // 모멘텀 점수 계산 함수
+  function calculateMomentumScore(indicators: {
+    rsi: number
+    macd: any
+    stochastic: any
+    williams: number
     roc: number
-  ): number => {
-    let score = 0
+  }): number {
+    const { rsi, macd, stochastic, williams, roc } = indicators
     
-    // RSI 점수 (0-25점)
-    if (rsi > 70) score += 25
-    else if (rsi > 60) score += 20
-    else if (rsi > 50) score += 15
-    else if (rsi > 40) score += 10
-    else if (rsi > 30) score += 5
+    // RSI 점수 (0-30: 0점, 30-70: 50점, 70-100: 100점)
+    let rsiScore = 50
+    if (rsi < 30) rsiScore = 0
+    else if (rsi > 70) rsiScore = 100
+    else rsiScore = ((rsi - 30) / 40) * 100
     
-    // MACD 점수 (0-25점)
-    if (macd.histogram > 0) score += 25
-    else score += 10
+    // MACD 점수
+    const macdScore = macd.histogram > 0 ? 75 : 25
     
-    // Stochastic 점수 (0-25점)
-    if (stochastic.k > 80) score += 25
-    else if (stochastic.k > 60) score += 20
-    else if (stochastic.k > 40) score += 15
-    else if (stochastic.k > 20) score += 10
-    else score += 5
+    // Stochastic 점수
+    const stochScore = stochastic.k > stochastic.d ? 75 : 25
     
-    // Williams %R 점수 (0-25점)
-    if (williams > -20) score += 25
-    else if (williams > -40) score += 20
-    else if (williams > -60) score += 15
-    else if (williams > -80) score += 10
-    else score += 5
+    // Williams %R 점수
+    const williamsScore = williams > -20 ? 100 : williams < -80 ? 0 : 50
     
-    return Math.min(100, score)
+    // ROC 점수
+    const rocScore = roc > 0 ? 75 : 25
+    
+    // 가중 평균 계산
+    return (rsiScore * 0.3 + macdScore * 0.25 + stochScore * 0.2 + williamsScore * 0.15 + rocScore * 0.1)
   }
 
-  // 트렌드 판단
-  const determineTrend = (score: number, rsi: number, macd: any): MomentumData['trend'] => {
-    if (score > 80 && rsi > 70) return 'strong_bullish'
-    if (score > 60) return 'bullish'
-    if (score < 20 && rsi < 30) return 'strong_bearish'
-    if (score < 40) return 'bearish'
+  // 트렌드 판단 함수
+  function determineTrend(
+    momentumScore: number, 
+    rsi: number, 
+    macd: number
+  ): 'strong_bullish' | 'bullish' | 'neutral' | 'bearish' | 'strong_bearish' {
+    if (momentumScore >= 80 && rsi > 70 && macd > 0) return 'strong_bullish'
+    if (momentumScore >= 60 && (rsi > 50 || macd > 0)) return 'bullish'
+    if (momentumScore <= 20 && rsi < 30 && macd < 0) return 'strong_bearish'
+    if (momentumScore <= 40 && (rsi < 50 || macd < 0)) return 'bearish'
     return 'neutral'
   }
 
-  // 폴링 폴백 함수
-  const startPolling = useCallback((symbol: string) => {
-    console.log('Starting polling for', symbol)
-    
-    // 기존 폴링 정리
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current)
-    }
-    
-    // 즉시 한 번 업데이트
-    fetchTickerData(symbol)
-    
-    // 3초마다 가격 업데이트
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        await fetchTickerData(symbol)
-      } catch (err) {
-        console.error('Polling error:', err)
-      }
-    }, 3000) as any
-  }, [])
-  
-  // 티커 데이터 가져오기 (API 라우트 사용)
-  const fetchTickerData = useCallback(async (symbol: string) => {
-    try {
-      const response = await fetch(`/api/ticker-stream?symbol=${symbol}`)
-      if (!response.ok) throw new Error('Failed to fetch ticker')
-      
-      const data = await response.json()
-      const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
-      
-      setCoinData({
-        symbol: data.s,
-        name: coin?.name || symbol,
-        price: parseFloat(data.c),
-        change24h: parseFloat(data.P),
-        volume24h: parseFloat(data.v),
-        high24h: parseFloat(data.h),
-        low24h: parseFloat(data.l),
-        marketCap: parseFloat(data.q)
-      })
-    } catch (err) {
-      console.error('Ticker fetch error:', err)
-    }
-  }, [])
-
-  // WebSocket 연결
-  const connectWebSocket = useCallback((symbol: string) => {
-    // 기존 연결 정리
-    if (wsRef.current) {
-      if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
-        wsRef.current.close()
-      }
-      wsRef.current = null
-    }
-
-    // 재연결 타이머 정리
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-      reconnectTimeoutRef.current = null
-    }
-
-    try {
-      const streamName = symbol.toLowerCase() + '@ticker'
-      const wsUrl = `${BINANCE_CONFIG.WS_BASE}/${streamName}`
-      console.log('Connecting to WebSocket:', wsUrl)
-      const ws = new WebSocket(wsUrl)
-      
-      wsRef.current = ws
-      setConnectionStatus('connecting')
-
-      // 연결 타임아웃 설정 (10초)
-      const connectionTimeout = setTimeout(() => {
-        if (ws.readyState !== WebSocket.OPEN) {
-          console.error('WebSocket connection timeout')
-          ws.close()
-          setError('WebSocket 연결 시간이 초과되었습니다.')
-          setConnectionStatus('disconnected')
-          
-          // 재연결 시도
-          if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current)
-          }
-          reconnectTimeoutRef.current = setTimeout(() => {
-            if (selectedSymbol) {
-              connectWebSocket(selectedSymbol)
-            }
-          }, 5000)
-        }
-      }, 10000)
-
-      ws.onopen = () => {
-        clearTimeout(connectionTimeout)
-        console.log('WebSocket connected:', symbol)
-        setConnectionStatus('connected')
-        setError(null)
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          const coin = SUPPORTED_COINS.find(c => c.symbol === symbol)
-          setCoinData(prev => ({
-            ...prev!,
-            symbol: data.s,
-            name: coin?.name || symbol,
-            price: parseFloat(data.c),
-            change24h: parseFloat(data.P),
-            volume24h: parseFloat(data.v),
-            high24h: parseFloat(data.h),
-            low24h: parseFloat(data.l),
-            marketCap: parseFloat(data.q)
-          }))
-        } catch (err) {
-          console.error('Error parsing WebSocket message:', err)
-        }
-      }
-
-      ws.onerror = (event) => {
-        clearTimeout(connectionTimeout)
-        console.error('WebSocket error occurred:', {
-          url: url,
-          readyState: ws.readyState,
-          event: event
-        })
-        setError('WebSocket 연결 오류가 발생했습니다. 잠시 후 다시 시도합니다.')
-        setConnectionStatus('error')
-      }
-
-      ws.onclose = (event) => {
-        clearTimeout(connectionTimeout)
-        console.log('WebSocket disconnected. Code:', event.code, 'Reason:', event.reason)
-        setConnectionStatus('disconnected')
-        wsRef.current = null
-
-        // 정상적인 종료가 아닌 경우 재연결 시도
-        if (event.code !== 1000 && event.code !== 1001) {
-          if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current)
-          }
-          
-          // 3회 재연결 시도 후 폴링으로 전환
-          const attempts = (wsRef.current as any)?.reconnectAttempts || 0
-          if (attempts < 3) {
-            console.log(`Attempting to reconnect WebSocket... (attempt ${attempts + 1}/3)`)
-            reconnectTimeoutRef.current = setTimeout(() => {
-              if (selectedSymbol) {
-                const newWs = wsRef.current
-                if (newWs) {
-                  (newWs as any).reconnectAttempts = attempts + 1
-                }
-                connectWebSocket(selectedSymbol)
-              }
-            }, 5000)
-          } else {
-            console.log('WebSocket reconnection failed, switching to polling mode')
-            setError('실시간 연결이 불안정합니다. 대체 방식으로 데이터를 가져옵니다.')
-            startPolling(selectedSymbol)
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error creating WebSocket connection:', error)
-      setError('WebSocket 연결을 생성하는 중 오류가 발생했습니다.')
-      setConnectionStatus('error')
-      
-      // 재연결 시도
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current)
-      }
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (selectedCoin) {
-          connectWebSocket(selectedCoin)
-        }
-      }, 5000)
-    }
-  }, [selectedCoin])
-
-  // 코인 변경 시
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    
-    // 데이터 초기화하지 않고 유지 (깜빡임 방지)
-    // setCoinData(null)
-    // setMomentumData(null)
-    // setPriceHistory([])
-    
-    // 히스토리컬 데이터 즉시 가져오기
-    fetchHistoricalData(selectedCoin)
-    
-    // WebSocket이 연결되지 않았을 때만 REST API 사용
-    if (!isConnected) {
-      fetchCoinDataWithRateLimit(selectedCoin)
-    }
-    
-    // 로딩 완료 (더 빠르게)
-    const timer = setTimeout(() => setLoading(false), 500)
-    
-    return () => {
-      clearTimeout(timer)
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current)
-      }
-    }
-  }, [selectedCoin, isConnected, fetchCoinDataWithRateLimit, fetchHistoricalData])
-
-  // 가격 히스토리 업데이트 시 모멘텀 지표 계산
-  useEffect(() => {
-    if (priceHistory.length >= 14) {
-      calculateMomentumIndicators(priceHistory)
-    }
-  }, [priceHistory])
-
-  // WebSocket 연결 상태 업데이트
-  useEffect(() => {
-    setConnectionStatus(isConnected ? 'connected' : 'disconnected')
-  }, [isConnected])
-
-  // 컴포넌트 언마운트 시 정리
-  useEffect(() => {
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmounting')
-      }
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current)
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">모멘텀 데이터 분석 중...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-center bg-red-500/10 border border-red-500/20 rounded-lg p-6">
-          <p className="text-red-400 mb-2">오류 발생</p>
-          <p className="text-gray-400">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            새로고침
-          </button>
-        </div>
-      </div>
-    )
+  // 연결 상태 표시 문자열
+  const getConnectionStatus = () => {
+    if (!isConnected) return '연결 중...'
+    return '실시간 연결됨'
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900">
-      {/* 코인 선택기 */}
-      <CoinSelector 
-        coins={SUPPORTED_COINS}
-        selectedCoin={selectedCoin}
-        onSelectCoin={setSelectedCoin}
-        coinData={coinData}
-      />
-
-      {/* WebSocket 연결 상태 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-0">
-        <div className="flex items-center justify-end gap-2 text-sm">
-          <div className={`flex items-center gap-2 ${
-            isConnected ? 'text-green-400' : 
-            connectionStatus === 'connecting' ? 'text-yellow-400' : 
-            connectionStatus === 'error' ? 'text-red-400' : 'text-gray-400'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${
-              isConnected ? 'bg-green-400' : 
-              connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' : 
-              connectionStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
-            }`} />
-            <span>
-              {connectionStatus === 'connected' ? '실시간 데이터 수신 중' :
-               connectionStatus === 'connecting' ? '데이터 연결 중...' :
-               connectionStatus === 'error' ? '연결 오류' : '연결 끊김'}
+    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-blue-900/10 to-indigo-900/20">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            📈 모멘텀 트레이딩 시스템
+          </h1>
+          <p className="text-gray-400">
+            실시간 모멘텀 지표 분석 및 트레이딩 전략
+          </p>
+          <div className="mt-2">
+            <span className={`inline-block px-3 py-1 rounded-full text-sm ${
+              isConnected ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
+            }`}>
+              {getConnectionStatus()}
             </span>
           </div>
-          {error && (
-            <div className="text-red-400 text-xs">
-              {error}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* 메인 대시보드 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* 모멘텀 개요 */}
-        <MomentumOverview coinData={coinData} momentumData={momentumData} />
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/30 border border-red-600 rounded-lg">
+            <p className="text-red-400">⚠️ {error}</p>
+          </div>
+        )}
 
-        {/* 가격 차트 */}
-        <PriceChart 
-          symbol={selectedCoin}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="lg:col-span-1">
+            <CoinSelector
+              coins={SUPPORTED_COINS}
+              selectedCoin={selectedCoin}
+              onCoinChange={setSelectedCoin}
+              coinData={coinData}
+            />
+          </div>
+          
+          <div className="lg:col-span-3">
+            <MomentumOverview
+              coinData={coinData}
+              momentumData={momentumData}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+          <div className="xl:col-span-2">
+            <PriceChart
+              symbol={selectedCoin}
+              priceHistory={priceHistory}
+              momentumData={momentumData}
+              loading={loading}
+            />
+          </div>
+          
+          <div>
+            <MomentumIndicators
+              momentumData={momentumData}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+          <VolumeAnalysis
+            priceHistory={priceHistory}
+            loading={loading}
+          />
+          
+          <TrendStrength
+            momentumData={momentumData}
+            priceHistory={priceHistory}
+            loading={loading}
+          />
+          
+          <SignalGenerator
+            momentumData={momentumData}
+            coinData={coinData}
+            loading={loading}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <PositionSizer
+            coinData={coinData}
+            momentumData={momentumData}
+            loading={loading}
+          />
+          
+          <RiskManager
+            coinData={coinData}
+            momentumData={momentumData}
+            loading={loading}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <BacktestResults
+            symbol={selectedCoin}
+            momentumData={momentumData}
+            priceHistory={priceHistory}
+            loading={loading}
+          />
+          
+          <LivePerformance
+            coinData={coinData}
+            momentumData={momentumData}
+            loading={loading}
+          />
+        </div>
+
+        <TradingStrategy
+          momentumData={momentumData}
+          coinData={coinData}
           priceHistory={priceHistory}
-          currentPrice={coinData?.price || 0}
-          momentumData={momentumData}
-        />
-
-        {/* 모멘텀 지표 */}
-        <MomentumIndicators momentumData={momentumData} />
-
-        {/* 거래량 분석 */}
-        <VolumeAnalysis 
-          symbol={selectedCoin}
-          volumeData={priceHistory}
-        />
-
-        {/* 추세 강도 */}
-        <TrendStrength 
-          momentumData={momentumData}
-          priceHistory={priceHistory}
-        />
-
-        {/* 신호 생성기 */}
-        <SignalGenerator 
-          momentumData={momentumData}
-          coinData={coinData}
-        />
-
-        {/* 포지션 사이저 */}
-        <PositionSizer 
-          momentumData={momentumData}
-          coinData={coinData}
-        />
-
-        {/* 리스크 관리 */}
-        <RiskManager 
-          momentumData={momentumData}
-          coinData={coinData}
-        />
-
-        {/* 백테스팅 결과 */}
-        <BacktestResults 
-          symbol={selectedCoin}
-          priceHistory={priceHistory}
-        />
-
-        {/* 실시간 성과 */}
-        <LivePerformance 
-          symbol={selectedCoin}
-          momentumData={momentumData}
-        />
-
-        {/* 종합 트레이딩 전략 */}
-        <TradingStrategy 
-          momentumData={momentumData}
-          coinData={coinData}
+          loading={loading}
         />
       </div>
     </div>

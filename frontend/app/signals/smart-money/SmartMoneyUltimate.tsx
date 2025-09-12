@@ -346,28 +346,53 @@ export default function SmartMoneyUltimate() {
 
     // 24시간 통계 가져오기 (API 프록시 사용)
     fetch(`/api/binance/ticker?symbol=${symbol}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          console.warn(`Ticker API 응답 오류: ${res.status}`)
+          return null
+        }
+        return res.json()
+      })
       .then(data => {
-        if (data.priceChangePercent) {
-          setPriceChange24h(parseFloat(data.priceChangePercent))
-          setVolume24h(parseFloat(data.volume) * parseFloat(data.lastPrice))
+        if (data && data.priceChangePercent) {
+          setPriceChange24h(parseFloat(data.priceChangePercent || '0'))
+          setVolume24h(parseFloat(data.volume || '0') * parseFloat(data.lastPrice || '0'))
         }
       })
-      .catch(err => console.warn('24시간 통계 로드 실패:', err))
+      .catch(err => {
+        console.warn('24시간 통계 로드 실패:', err)
+        setPriceChange24h(0)
+        setVolume24h(0)
+      })
     
     // Fear & Greed Index 가져오기
     fetch('/api/fear-greed')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          console.warn(`Fear & Greed API 응답 오류: ${res.status}`)
+          return null
+        }
+        return res.json()
+      })
       .then(data => {
-        if (data.value) {
+        if (data && data.value) {
           setFearGreedIndex(data.value)
         }
       })
-      .catch(err => console.warn('Fear & Greed Index 로드 실패:', err))
+      .catch(err => {
+        console.warn('Fear & Greed Index 로드 실패:', err)
+        setFearGreedIndex(50) // 기본값
+      })
     
     // 과거 24시간 시간별 데이터 가져오기 (1시간 간격)
     fetch(`/api/binance/klines?symbol=${symbol}&interval=1h&limit=24`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          console.warn(`Klines API 응답 오류: ${res.status}`)
+          return null
+        }
+        return res.json()
+      })
       .then(result => {
         if (result.success && result.data) {
           // Binance klines 데이터를 차트 형식으로 변환
@@ -500,9 +525,10 @@ export default function SmartMoneyUltimate() {
     connectionDelayRef.current = setTimeout(() => {
       // WebSocket 직접 연결 (브라우저에서만)
       if (typeof window !== 'undefined') {
-        const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
-        
-        ws.onmessage = (event) => {
+        try {
+          const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`)
+          
+          ws.onmessage = (event) => {
           setIsConnected(true)
           const data = JSON.parse(event.data)
           
@@ -574,6 +600,10 @@ export default function SmartMoneyUltimate() {
         }
         
         ws.onclose = () => {
+          setIsConnected(false)
+        }
+        } catch (wsError) {
+          console.error('WebSocket 연결 실패:', wsError)
           setIsConnected(false)
         }
       }

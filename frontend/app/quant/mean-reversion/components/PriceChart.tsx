@@ -21,21 +21,36 @@ interface MarketData {
 }
 
 interface PriceChartProps {
-  coin: Coin
-  historicalData: any[]
-  marketData: MarketData | null
+  coin?: Coin
+  historicalData?: any[]
+  marketData?: MarketData | null
+  symbol?: string
+  priceHistory?: any[]
+  loading?: boolean
 }
 
 export default function PriceChart({ coin, historicalData, marketData }: PriceChartProps) {
   const [chartData, setChartData] = useState<any[]>([])
 
+  // coin이 undefined인 경우 기본값 사용
+  const safeCoin = coin || {
+    symbol: 'BTCUSDT',
+    name: 'Bitcoin',
+    icon: '₿',
+    color: '#F7931A'
+  }
+
   useEffect(() => {
-    if (historicalData.length > 0) {
+    console.log('PriceChart historicalData length:', historicalData?.length)
+    console.log('PriceChart historicalData sample:', historicalData?.[0])
+    if (historicalData && historicalData.length > 0) {
       // 최근 100개 데이터만 사용
       const recentData = historicalData.slice(-100)
       
       const formattedData = recentData.map((d: any, index: number) => {
-        const close = parseFloat(d[4])
+        // priceHistory 형식인지 Binance kline 형식인지 확인
+        const close = d.close !== undefined ? d.close : (d[4] ? parseFloat(d[4]) : 0)
+        const time = d.time !== undefined ? d.time : (d[0] || Date.now())
         
         // SMA 계산
         const sma20 = calculateSMAAtPoint(recentData, index, 20)
@@ -43,7 +58,7 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
         const sma200 = calculateSMAAtPoint(recentData, index, 200)
         
         return {
-          time: new Date(d[0]).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+          time: new Date(time).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
           price: close,
           sma20: sma20,
           sma50: sma50,
@@ -72,14 +87,17 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
       
       setChartData(updatedData)
     }
-  }, [marketData])
+  }, [marketData?.price, marketData?.sma20, marketData?.sma50, marketData?.sma200])
 
   const calculateSMAAtPoint = (data: any[], index: number, period: number) => {
     if (index < period - 1) return null
     
     let sum = 0
     for (let i = 0; i < period; i++) {
-      sum += parseFloat(data[index - i][4])
+      const dataPoint = data[index - i]
+      // priceHistory 형식인지 Binance kline 형식인지 확인
+      const price = dataPoint.close !== undefined ? dataPoint.close : (dataPoint[4] ? parseFloat(dataPoint[4]) : 0)
+      sum += price
     }
     return sum / period
   }
@@ -93,8 +111,8 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <span style={{ color: coin.color }}>{coin.icon}</span>
-          {coin.name} 가격 차트
+          <span style={{ color: safeCoin.color }}>{safeCoin.icon}</span>
+          {safeCoin.name} 가격 차트
         </h3>
         <div className="text-sm text-gray-400">
           현재: ${marketData?.price?.toFixed(2) || '-'}
@@ -134,7 +152,7 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
           <Line 
             type="monotone" 
             dataKey="price" 
-            stroke={coin.color || '#10B981'}
+            stroke={safeCoin.color || '#10B981'}
             strokeWidth={2}
             dot={false}
             name="가격"

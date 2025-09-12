@@ -17,31 +17,53 @@ interface MarketData {
 }
 
 interface ZScoreAnalysisProps {
-  coin: Coin
-  marketData: MarketData | null
-  historicalData: any[]
+  coin?: Coin
+  marketData?: MarketData | null
+  historicalData?: any[]
+  priceHistory?: any[]
+  loading?: boolean
 }
 
 export default function ZScoreAnalysis({ coin, marketData, historicalData }: ZScoreAnalysisProps) {
   const [zScoreHistory, setZScoreHistory] = useState<any[]>([])
   const [initialized, setInitialized] = useState(false)
+  
+  // coin이 undefined인 경우 기본값 사용
+  const safeCoin = coin || {
+    symbol: 'BTCUSDT',
+    name: 'Bitcoin',
+    color: '#8B5CF6'
+  }
 
   // 과거 데이터로 초기 Z-Score 계산
   useEffect(() => {
-    if (historicalData.length > 20 && !initialized) {
+    if (historicalData && historicalData.length > 20 && !initialized) {
       const initialHistory = []
       const recentData = historicalData.slice(-50)
       
       for (let i = 20; i < recentData.length; i++) {
-        const prices = recentData.slice(i - 20, i).map(d => parseFloat(d[4]))
+        // 두 가지 데이터 형식 모두 지원
+        const prices = recentData.slice(i - 20, i).map(d => {
+          if (d.close !== undefined) return d.close
+          if (d[4] !== undefined) return parseFloat(d[4])
+          return 0
+        })
         const mean = prices.reduce((a, b) => a + b, 0) / prices.length
         const variance = prices.reduce((acc, price) => acc + Math.pow(price - mean, 2), 0) / prices.length
         const stdDev = Math.sqrt(variance)
-        const currentPrice = parseFloat(recentData[i][4])
+        
+        const currentPrice = recentData[i].close !== undefined 
+          ? recentData[i].close 
+          : (recentData[i][4] ? parseFloat(recentData[i][4]) : 0)
+        
         const zScore = stdDev > 0 ? (currentPrice - mean) / stdDev : 0
         
+        const timeValue = recentData[i].time !== undefined
+          ? recentData[i].time
+          : recentData[i][0]
+        
         initialHistory.push({
-          time: new Date(recentData[i][0]).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date(timeValue).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
           zScore: zScore,
           price: currentPrice
         })
@@ -144,7 +166,7 @@ export default function ZScoreAnalysis({ coin, marketData, historicalData }: ZSc
               <Line 
                 type="monotone" 
                 dataKey="zScore" 
-                stroke={coin.color || '#8B5CF6'}
+                stroke={safeCoin.color || '#8B5CF6'}
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}

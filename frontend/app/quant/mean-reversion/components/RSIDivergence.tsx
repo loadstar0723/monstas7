@@ -16,9 +16,11 @@ interface MarketData {
 }
 
 interface RSIDivergenceProps {
-  coin: Coin
-  marketData: MarketData | null
-  historicalData: any[]
+  coin?: Coin
+  marketData?: MarketData | null
+  historicalData?: any[]
+  priceHistory?: any[]
+  loading?: boolean
 }
 
 export default function RSIDivergence({ coin, marketData, historicalData }: RSIDivergenceProps) {
@@ -48,7 +50,7 @@ export default function RSIDivergence({ coin, marketData, historicalData }: RSID
 
   // 과거 데이터로 초기 RSI 설정
   useEffect(() => {
-    if (historicalData.length > 30 && !initialized) {
+    if (historicalData && historicalData.length > 30 && !initialized) {
       const initialHistory = []
       const recentData = historicalData.slice(-60)
       

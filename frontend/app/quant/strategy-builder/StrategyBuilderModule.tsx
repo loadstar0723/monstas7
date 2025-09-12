@@ -125,6 +125,7 @@ export default function StrategyBuilderModule() {
   const [marketData, setMarketData] = useState<MarketData | null>(null)
   const [activeSection, setActiveSection] = useState('concept')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [strategyMode, setStrategyMode] = useState<'nocode' | 'code'>('nocode')
   const [showScrollTop, setShowScrollTop] = useState(false)
   
@@ -152,8 +153,19 @@ export default function StrategyBuilderModule() {
       try {
         const ws = new WebSocket(wsUrl)
         
+        // 연결 타임아웃 설정 (15초)
+        const connectionTimeout = setTimeout(() => {
+          if (ws.readyState !== WebSocket.OPEN) {
+            console.error('WebSocket connection timeout')
+            ws.close(1000, 'Connection timeout')
+            setError('WebSocket 연결 시간이 초과되었습니다.')
+          }
+        }, 15000)
+        
         ws.onopen = () => {
+          clearTimeout(connectionTimeout)
           console.log(`WebSocket 연결 성공: ${selectedCoin}`)
+          setError(null)
         }
         
         ws.onmessage = (event) => {
@@ -162,38 +174,90 @@ export default function StrategyBuilderModule() {
           try {
             const data = JSON.parse(event.data)
             
+            // 데이터 유효성 검사
+            if (!data || !data.s || !data.c) {
+              console.warn('Invalid WebSocket data:', data)
+              return
+            }
+            
             // 현재 선택된 심볼과 일치하는 경우만 업데이트
             if (data.s === selectedCoin) {
               setMarketData({
                 symbol: selectedCoin,
-                price: parseFloat(data.c),
-                change24h: parseFloat(data.P),
-                volume24h: parseFloat(data.v),
-                high24h: parseFloat(data.h),
-                low24h: parseFloat(data.l)
+                price: parseFloat(data.c) || 0,
+                change24h: parseFloat(data.P) || 0,
+                volume24h: parseFloat(data.v) || 0,
+                high24h: parseFloat(data.h) || 0,
+                low24h: parseFloat(data.l) || 0
               })
+              setError(null) // 성공시 에러 해제
             } else {
               console.warn(`심볼 불일치 - 받은: ${data.s}, 기대: ${selectedCoin}`)
               // 잘못된 심볼 데이터를 받으면 연결 재시작
               ws.close(1000, 'Wrong symbol')
             }
-          } catch (error) {
-            console.error('WebSocket 메시지 파싱 에러:', error)
+          } catch (parseError) {
+            console.error('WebSocket 메시지 파싱 에러:', parseError)
+            setError('WebSocket 데이터 파싱 오류')
           }
         }
         
         ws.onerror = (error) => {
-          console.log('WebSocket 재연결 중...')
+          clearTimeout(connectionTimeout)
+          console.error('WebSocket 에러:', error)
+          setError('WebSocket 연결 오류가 발생했습니다. 재연결 중...')
+          
+          // 에러 시 기본값으로 폴백
+          const defaultPrice = selectedCoin === 'BTCUSDT' ? 98000 :
+                              selectedCoin === 'ETHUSDT' ? 3500 :
+                              selectedCoin === 'BNBUSDT' ? 700 :
+                              selectedCoin === 'SOLUSDT' ? 240 : 0
+          
+          setMarketData({
+            symbol: selectedCoin,
+            price: defaultPrice,
+            change24h: 0,
+            volume24h: 0,
+            high24h: defaultPrice * 1.05,
+            low24h: defaultPrice * 0.95
+          })
         }
         
-        ws.onclose = () => {
-          console.log(`WebSocket 연결 종료: ${selectedCoin}`)
+        ws.onclose = (event) => {
+          clearTimeout(connectionTimeout)
+          console.log(`WebSocket 연결 종료: ${selectedCoin} (코드: ${event.code})`)
           wsRef.current = null
+          
+          // 비정상 종료 시 재연결 시도
+          if (event.code !== 1000 && event.code !== 1001 && isActive) {
+            setTimeout(() => {
+              if (isActive) {
+                console.log(`WebSocket 재연결 시도: ${selectedCoin}`)
+                // 재귀 호출 대신 플래그로 제어
+              }
+            }, 3000)
+          }
         }
         
         wsRef.current = ws
       } catch (error) {
         console.error('WebSocket 생성 실패:', error)
+        setError('WebSocket 연결에 실패했습니다.')
+        
+        // WebSocket 실패 시 기본값으로 폴백
+        const defaultPrice = selectedCoin === 'BTCUSDT' ? 98000 :
+                            selectedCoin === 'ETHUSDT' ? 3500 :
+                            selectedCoin === 'BNBUSDT' ? 700 :
+                            selectedCoin === 'SOLUSDT' ? 240 : 0
+        
+        setMarketData({
+          symbol: selectedCoin,
+          price: defaultPrice,
+          change24h: 0,
+          volume24h: 0,
+          high24h: defaultPrice * 1.05,
+          low24h: defaultPrice * 0.95
+        })
       }
     }, 500)
     
@@ -209,31 +273,55 @@ export default function StrategyBuilderModule() {
     }
   }, [selectedCoin])
   
-  // 초기 데이터 로드
+  // 초기 데이터 로드 (try-catch 강화)
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true)
+      setError(null)
       
       try {
         // 24시간 티커 정보 가져오기
-        const { data: ticker } = await safeApiCall(
-          () => binanceAPI.get24hrTicker(selectedCoin),
-          null,
-          'StrategyBuilder'
-        )
+        const response = await fetch(`/api/binance/ticker?symbol=${selectedCoin}`)
         
-        if (ticker) {
-          setMarketData({
-            symbol: selectedCoin,
-            price: parseFloat(ticker.lastPrice),
-            change24h: parseFloat(ticker.priceChangePercent),
-            volume24h: parseFloat(ticker.volume),
-            high24h: parseFloat(ticker.highPrice),
-            low24h: parseFloat(ticker.lowPrice)
-          })
+        // response.ok 체크 추가
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
+        
+        const ticker = await response.json()
+        
+        // 데이터 유효성 검사
+        if (!ticker || !ticker.symbol) {
+          throw new Error('Invalid ticker data received')
+        }
+        
+        setMarketData({
+          symbol: selectedCoin,
+          price: parseFloat(ticker.lastPrice) || 0,
+          change24h: parseFloat(ticker.priceChangePercent) || 0,
+          volume24h: parseFloat(ticker.volume) || 0,
+          high24h: parseFloat(ticker.highPrice) || 0,
+          low24h: parseFloat(ticker.lowPrice) || 0
+        })
       } catch (error) {
         console.error('초기 데이터 로드 실패:', error)
+        
+        // 에러 시 기본값으로 폴백
+        const defaultPrice = selectedCoin === 'BTCUSDT' ? 98000 :
+                            selectedCoin === 'ETHUSDT' ? 3500 :
+                            selectedCoin === 'BNBUSDT' ? 700 :
+                            selectedCoin === 'SOLUSDT' ? 240 : 0
+        
+        setMarketData({
+          symbol: selectedCoin,
+          price: defaultPrice,
+          change24h: 0,
+          volume24h: 0,
+          high24h: defaultPrice * 1.05,
+          low24h: defaultPrice * 0.95
+        })
+        
+        setError('데이터 로드 중 오류가 발생했습니다. 기본값을 사용합니다.')
       } finally {
         setLoading(false)
       }

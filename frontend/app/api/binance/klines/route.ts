@@ -13,18 +13,15 @@ export async function GET(request: NextRequest) {
     // Binance API 직접 호출
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
     
-    // 레이트 리밋 적용한 API 호출
-    const response = await apiRateLimiter.throttle(
-      () => fetch(binanceUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0'
-        },
-        cache: 'no-store'
-      }),
-      `klines_${symbol}_${interval}_${limit}` // 캐싱 키
-    )
+    // Binance API 직접 호출 (레이트 리밋 문제 때문에 직접 처리)
+    const response = await fetch(binanceUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
+      },
+      cache: 'no-store'
+    })
 
     let data: any
     
