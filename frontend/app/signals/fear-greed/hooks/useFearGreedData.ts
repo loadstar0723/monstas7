@@ -89,34 +89,60 @@ export default function useFearGreedData(coin: string) {
     try {
       // Alternative.me API 호출 (전체 시장)
       const fearGreedResponse = await fetch('/api/fear-greed')
-      if (!fearGreedResponse.ok) throw new Error('Fear & Greed API 오류')
-      const fearGreedJson = await fearGreedResponse.json()
+      if (!fearGreedResponse.ok) {
+        console.warn('Fear & Greed API 오류, 기본값 사용')
+      }
       
-      const marketIndex = fearGreedJson.value || 50
-      const marketClassification = fearGreedJson.value_classification || 'Neutral'
+      let marketIndex = 50
+      let marketClassification = 'Neutral'
+      let fearGreedTimestamp = new Date().toISOString()
+      
+      if (fearGreedResponse.ok) {
+        const fearGreedJson = await fearGreedResponse.json()
+        marketIndex = fearGreedJson.value || 50
+        marketClassification = fearGreedJson.value_classification || 'Neutral'
+        fearGreedTimestamp = fearGreedJson.timestamp || new Date().toISOString()
+      }
 
       // Binance API 호출 (코인별 데이터)
       const symbol = `${coin}USDT`
-      const [tickerResponse, statsResponse] = await Promise.all([
-        fetch24hrTicker(symbol),
-        fetch24hrTicker(symbol)
-      ])
-
-      if (!tickerResponse.ok || !statsResponse.ok) {
-        throw new Error('Binance API 오류')
+      
+      // fetch24hrTicker는 직접 데이터를 반환함
+      const stats = await fetch24hrTicker(symbol)
+      console.log('Binance API 응답:', stats) // 디버깅용
+      
+      // 데이터가 없으면 기본값 사용
+      if (!stats || stats.price === 0) {
+        console.warn('Binance API 데이터 없음, 기본값 사용')
+        const defaultData: FearGreedData = {
+          value: 50,
+          classification: 'Neutral',
+          timestamp: new Date().toISOString(),
+          updateTime: new Date().toLocaleTimeString('ko-KR'),
+          coinPrice: 0,
+          priceChange24h: 0,
+          volume24h: 0,
+          marketCap: 0,
+          volatility: 0,
+          coinSentiment: 'Neutral',
+          rsi: 50,
+          momentum: 'neutral',
+          tradingSignal: 'hold',
+          confidence: 50
+        }
+        setFearGreedData(defaultData)
+        return
       }
-
-      const ticker = await tickerResponse.json()
-      const stats = await statsResponse.json()
-
-      const currentPrice = parseFloat(ticker.price)
-      const priceChange = parseFloat(stats.priceChangePercent)
-      const volume = parseFloat(stats.volume) * currentPrice
-      const highPrice = parseFloat(stats.highPrice)
-      const lowPrice = parseFloat(stats.lowPrice)
+      
+      // 24시간 통계 데이터 사용 (이미 파싱된 데이터)
+      const currentPrice = stats.price || 0
+      const priceChange = stats.change24h || 0
+      const volume = stats.volume24h || 0
+      const highPrice = stats.high24h || 0
+      const lowPrice = stats.low24h || 0
       
       // 변동성 계산
-      const volatility = ((highPrice - lowPrice) / currentPrice) * 100
+      const volatility = currentPrice > 0 ? ((highPrice - lowPrice) / currentPrice) * 100 : 0
 
       // RSI 계산 (간단한 버전)
       const rsi = 50 + (priceChange * 2) // 실제로는 더 복잡한 계산 필요
@@ -144,7 +170,7 @@ export default function useFearGreedData(coin: string) {
       const data: FearGreedData = {
         value: coinSentimentValue,
         classification: marketClassification,
-        timestamp: fearGreedJson.timestamp || new Date().toISOString(),
+        timestamp: fearGreedTimestamp,
         updateTime: new Date().toLocaleTimeString('ko-KR'),
         coinPrice: currentPrice,
         priceChange24h: priceChange,
@@ -176,15 +202,15 @@ export default function useFearGreedData(coin: string) {
     intervalRef.current = setInterval(fetchFearGreedData, 5 * 60 * 1000)
 
     // WebSocket 연결 (실시간 가격 업데이트)
-    const symbol = `${coin.toLowerCase()}usdt`
-    wsRef.current = new ModuleWebSocket('FearGreed')
-    const wsUrl = `${BINANCE_CONFIG.WS_BASE}/${symbol}@ticker`
-    
-    wsRef.current.connect(wsUrl, (data) => {
-      if (fearGreedData) {
+    try {
+      const symbol = `${coin.toLowerCase()}usdt`
+      wsRef.current = new ModuleWebSocket('FearGreed')
+      const wsUrl = `${BINANCE_CONFIG.WS_BASE}/${symbol}@ticker`
+      
+      wsRef.current.connect(wsUrl, (data) => {
         // 실시간 가격 업데이트
-        const newPrice = parseFloat(data.c)
-        const priceChange = parseFloat(data.P)
+        const newPrice = parseFloat(data.c || '0')
+        const priceChange = parseFloat(data.P || '0')
         
         setFearGreedData(prev => {
           if (!prev) return prev
@@ -208,8 +234,10 @@ export default function useFearGreedData(coin: string) {
             tradingSignal: getTradingSignal(updatedSentiment)
           }
         })
-      }
-    })
+      })
+    } catch (wsError) {
+      console.error('WebSocket 연결 오류:', wsError)
+    }
 
     return () => {
       if (wsRef.current) {
