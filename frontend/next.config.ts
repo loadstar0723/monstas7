@@ -31,12 +31,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // 개발 서버 cross-origin 허용
+  // 개발 서버 cross-origin 허용 (Replit 환경 포함)
   experimental: {
     serverActions: {
-      allowedOrigins: ['172.30.1.24:3000', 'localhost:3000'],
+      allowedOrigins: ['*'],
     },
   },
+  
+  // Cross-origin 개발 요청 허용
+  allowedDevOrigins: ['*'],
 };
 
 export default nextConfig;
