@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { FaBrain, FaChartLine, FaShieldAlt, FaRocket } from 'react-icons/fa'
+import { safeFixed, safePrice } from '@/lib/safeFormat'
 
 interface TradingStrategyProps {
   orderbook: any
