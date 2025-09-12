@@ -38,23 +38,22 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         const interval = '1h'
         const limit = 24
         // 현재 가격 정보
-        const tickerResponse = await fetch24hrTicker(symbol)
-        if (tickerResponse.ok) {
-          const ticker = await tickerResponse.json()
-          setCurrentPrice(parseFloat(ticker.lastPrice || '0'))
-          setPriceChange24h(parseFloat(ticker.priceChangePercent || '0'))
+        const tickerData = await fetch24hrTicker(symbol)
+        console.log('SentimentOverview - tickerData:', tickerData)
+        if (tickerData && tickerData.price) {
+          setCurrentPrice(tickerData.price)
+          setPriceChange24h(tickerData.change24h)
         }
 
         // 24시간 가격 히스토리 (1시간 캔들)
-        const klinesResponse = await fetchKlines(symbol, interval, limit)
-        if (klinesResponse.ok) {
-          const klines = await klinesResponse.json()
-          
-          const history = Array.isArray(klines) ? klines.map((kline: any[]) => ({
+        const klines = await fetchKlines(symbol, interval, limit)
+        console.log('SentimentOverview - klines:', klines)
+        if (klines && Array.isArray(klines)) {
+          const history = klines.map((kline: any[]) => ({
             time: new Date(kline[0]).toLocaleTimeString('ko-KR', { hour: '2-digit' }),
             price: parseFloat(kline[4]),
             volume: parseFloat(kline[5])
-          })) : []
+          }))
 
           setPriceHistory(history)
         }

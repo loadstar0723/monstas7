@@ -28,7 +28,7 @@ const getInitialData = (): SocialSentimentData => {
         hour: '2-digit',
         hour12: true 
       }),
-      score: 45 + Math.floor(Math.random() * 10) // 45-55 사이의 초기값
+      score: 50 // 중립 초기값
     }
   })
 
@@ -55,18 +55,24 @@ export default function useSocialData(coin: string) {
 
   useEffect(() => {
     const fetchSocialData = async () => {
+      console.log('fetchSocialData 시작, coin:', coin)
+      console.log('API 호출 시작...')
       try {
         // Fear & Greed Index API (전체 시장 감성)
         try {
           const fearGreedResponse = await fetch('https://api.alternative.me/fng/?limit=2')
+          console.log('Fear&Greed API 응답 상태:', fearGreedResponse.status)
           if (fearGreedResponse.ok) {
             const fearGreedData = await fearGreedResponse.json()
+            console.log('Fear&Greed 데이터:', fearGreedData)
             const marketSentiment = fearGreedData?.data?.[0]?.value ? parseInt(fearGreedData.data[0].value) : 50
             
             // Binance 가격 데이터
             const tickerResponse = await fetch(`/api/binance/ticker?symbol=${coin}USDT`)
+            console.log('Ticker API 응답 상태:', tickerResponse.status)
             if (tickerResponse.ok) {
               const ticker = await tickerResponse.json()
+              console.log('Ticker 데이터:', ticker)
               const priceChange = parseFloat(ticker.priceChangePercent || '0')
               const volume = parseFloat(ticker.quoteVolume || '0')
               
@@ -94,6 +100,7 @@ export default function useSocialData(coin: string) {
 
               // 실제 과거 가격 데이터 가져오기
               const klinesResponse = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=24`)
+              console.log('Klines API 호출 완료, status:', klinesResponse.status)
               let history: Array<{ time: string; score: number }> = []
               
               if (klinesResponse.ok) {
@@ -134,6 +141,10 @@ export default function useSocialData(coin: string) {
                 })
               }
 
+              console.log('sentimentHistory 데이터:', history.length, '개')
+              console.log('전체 히스토리:', history)
+              console.log('setSentimentData 호출 직전...')
+              
               setSentimentData({
                 sentimentScore: Math.floor(finalSentiment),
                 sentimentChange: priceChange,
