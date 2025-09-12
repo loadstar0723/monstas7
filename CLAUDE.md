@@ -81,12 +81,14 @@ cp 파일명.tsx.backup 파일명.tsx
 ```
 
 ### 🚨 즉시 복원 트리거
+
 - 파일 크기가 10% 이상 줄어들면 → 즉시 복원
 - 기능이 사라지면 → 즉시 복원  
 - 섹션이 없어지면 → 즉시 복원
 - 차트가 안 보이면 → 즉시 복원
 
 ### 📝 기억할 것
+
 **모든 파일은 심혈을 기울여 개발된 중요한 자산이므로 절대 함부로 삭제하거나 축소하지 않는다!**
 **특히 Ultimate, Module, Component 등 모든 기능 파일들은 절대 보호 대상이다!**
 
@@ -216,59 +218,6 @@ cp 파일명.tsx.backup 파일명.tsx
    - PostgreSQL DB에서 실시간 데이터 조회
    - Redis 캐싱으로 성능 최적화
 
-2. **각 페이지별 필수 실전 기능**
-
-   **🐋 고래 추적 (Whale Tracker)**
-   - Binance WebSocket 실시간 거래 감지
-   - 실제 온체인 데이터 (Etherscan, BSCscan API)
-   - 실제 거래소 입출금 플로우 모니터링
-   - 최소 임계값: BTC 1개, ETH 10개 이상 실제 거래
-
-   **💰 스마트 머니 (Smart Money)**
-   - 실제 기관 지갑 주소 추적
-   - Nansen, Glassnode API 연동
-   - 실시간 포지션 변화 감지
-
-   **📊 청산 맵 (Liquidation)**
-   - Binance Futures 실시간 청산 데이터
-   - Coinglass API 청산 히트맵
-   - 실제 레버리지 포지션 추적
-
-   **🌡️ 공포 탐욕 지수 (Fear & Greed)**
-   - Alternative.me API 실시간 지수
-   - CoinGecko 시장 데이터
-   - 실제 소셜 센티먼트 분석
-
-   **💸 펀딩 비율 (Funding Rate)**
-   - Binance Futures 실시간 펀딩
-   - 전 거래소 펀딩 집계
-   - 실제 금리 차익거래 기회
-
-   **🔄 차익거래 (Arbitrage)**
-   - 멀티 거래소 실시간 가격 비교
-   - 실제 거래 가능한 페어만 표시
-   - 수수료 포함 실제 수익률 계산
-
-   **🌊 DEX 플로우 (DEX Flow)**
-   - Uniswap, PancakeSwap 실시간 스왑
-   - 실제 유동성 풀 데이터
-   - MEV 봇 활동 추적
-
-   **💎 비정상 옵션 (Unusual Options)**
-   - Deribit 옵션 데이터
-   - 실제 대규모 옵션 거래
-   - 만기별 OI 변화 추적
-
-   **📱 소셜 센티먼트 (Social Sentiment)**
-   - Twitter API 실시간 분석
-   - Reddit API 트렌딩
-   - 실제 멘션 카운트와 센티먼트 점수
-
-   **🏦 인사이더 플로우 (Insider Flow)**
-   - 실제 프로젝트 팀 지갑 추적
-   - 토큰 언락 스케줄 모니터링
-   - VC 지갑 움직임 감지
-
 3. **필수 API 연동 체크리스트**
    - [ ] Binance REST API & WebSocket
    - [ ] CoinGecko API
@@ -325,78 +274,7 @@ cp 파일명.tsx.backup 파일명.tsx
 - [ ] 로딩 중 스켈레톤 UI 표시
 - [ ] 모바일 반응형 완벽 지원
 
-### 페이지별 필수 동작 확인
-
-**고래 추적 페이지**
-
-- [ ] Binance WebSocket 실시간 거래 스트림
-- [ ] BTC 1개 이상 거래만 표시
-- [ ] 거래 타입별 색상 구분 (매수:녹색, 매도:빨강)
-- [ ] 24시간 거래량 실시간 누적
-- [ ] 거래 영향도 계산 (low/medium/high)
-
-**스마트 머니 페이지**
-
-- [ ] 기관 지갑 실시간 모니터링
-- [ ] 포지션 변화 알림
-- [ ] 누적 수익률 계산
-- [ ] Top 10 기관 순위
-
-**청산 맵 페이지**
-
-- [ ] Binance Futures 실시간 청산
-- [ ] 가격대별 청산 규모 히트맵
-- [ ] 대규모 청산 알림 (>$1M)
-- [ ] 롱/숏 청산 비율
-
-**공포 탐욕 페이지**
-
-- [ ] Alternative.me API 실시간 지수
-- [ ] 히스토리 차트 (30일)
-- [ ] 구성 요소별 분석
-- [ ] 시장 단계 판단
-
-**펀딩 비율 페이지**
-
-- [ ] 전 거래소 펀딩 집계
-- [ ] 실시간 펀딩 변화
-- [ ] 차익거래 기회 표시
-- [ ] 히스토리 트렌드
-
-**차익거래 페이지**
-
-- [ ] 멀티 거래소 가격 비교
-- [ ] 수수료 포함 실제 수익률
-- [ ] 거래 가능 여부 체크
-- [ ] 자동 새로고침 (5초)
-
-**DEX 플로우 페이지**
-
-- [ ] Uniswap/PancakeSwap 실시간
-- [ ] 대규모 스왑 감지 (>$100k)
-- [ ] 유동성 변화 추적
-- [ ] MEV 봇 활동 표시
-
-**비정상 옵션 페이지**
-
-- [ ] Deribit 실시간 옵션 데이터
-- [ ] 대규모 포지션 변화
-- [ ] 만기별 OI 분석
-- [ ] IV 스큐 차트
-
-**소셜 센티먼트 페이지**
-
-- [ ] Twitter 실시간 멘션
-- [ ] Reddit 트렌딩 분석
-- [ ] 센티먼트 점수 계산
-- [ ] 인플루언서 추적
-
-**인사이더 플로우 페이지**
-
-- [ ] 팀 지갑 모니터링
-- [ ] 토큰 언락 알림
-- [ ] VC 움직임 추적
-- [ ] 의심스러운 활동 감지
+#
 
 ## ⚡ Next.js Fast Refresh 실시간 반영 설정
 
@@ -418,13 +296,6 @@ cd frontend && npx next dev -H 0.0.0.0 -p 3000
 cd frontend && npm run dev
 ```
 
-### ✅ Fast Refresh 확인 방법
-
-1. 개발 서버 실행 후 <http://localhost:3000> 접속
-2. 컴포넌트 파일 수정 후 저장 (Ctrl+S)
-3. 브라우저가 **자동으로 업데이트** (새로고침 없이)
-4. Console에 `[Fast Refresh] done` 메시지 확인
-
 ### 📌 Fast Refresh 최적화 설정
 
 2. **프론트엔드/백엔드 분리** - 각각 독립적으로 최적화되어 실행
@@ -433,17 +304,6 @@ cd frontend && npm run dev
 3. **개발 서버 최적화** - npm run dev로 실행 중이라 변경사항 실시간 감지
 4. **CSS 최적화** - 순수 Tailwind CSS로 스타일 처리가 빨라짐
 5. **병렬 처리** - Frontend와 Backend가 동시에 독립적으로 작동
-
-### 🛠️ 문제 해결
-
-- **Fast Refresh 안 될 때**:
-  1. 여러 개발 서버가 실행 중인지 확인: `netstat -ano | findstr :3000`
-  2. 모든 Node 프로세스 종료: `taskkill /F /IM node.exe /T`
-  3. 개발 서버 재시작: `cd frontend && npx next dev -p 3000`
-  
-- **포트 충돌 시**:
-  - 다른 포트 사용: `npx next dev -p 3001`
-  - 또는 기존 프로세스 종료 후 재시작
 
      MONSTA 프로젝트가 Next.js(최강 UI/UX) + FastAPI(Python AI/ML) 조합을 사용
 
@@ -543,23 +403,6 @@ npm run lint         # 코드 품질 체크
 - Prisma ORM으로 데이터베이스 관리
 - 마이그레이션: npx prisma migrate dev
 
-## 📊 트레이딩 시그널 페이지 필수 요소
-
-- **모든 페이지 상단에 AI 종합 분석 섹션 필수** (MarketAnalysis 컴포넌트)
-- **시각적 차트와 그래프 최대한 활용** (recharts, chart.js, lightweight-charts)
-- **실시간 데이터만 사용** - 절대 mock/가짜 데이터 금지
-- **텔레그램 봇 연동** - 구독 등급별 차등 기능 제공
-- **트레이딩 전략 설명** - 각 섹션마다 동적 분석과 실전 팁 포함
-
-## 🎯 시그널 페이지 구성 템플릿
-
-1. **MarketAnalysis** - AI 시장 종합 분석 (필수)
-2. **PriceChart** - 실시간 가격 차트 with 기술적 지표
-3. **전략별 컴포넌트** - WhaleTracker, InstitutionalFlow 등
-4. **ComprehensiveAnalysis** - 종합 트레이딩 전략 분석 (필수)
-5. **ProfitCalculator** - 수익 계산기
-6. **텔레그램 연동 안내** - 구독 등급별 혜택
-
 ## 🚀 종합분석 탭 필수 구성요소 (모든 시그널 페이지)
 
 ### 1. 거래 전략 (Trading Strategy)
@@ -613,14 +456,6 @@ npm run lint         # 코드 품질 체크
 - **자본 배분**: 구체적 % 제시
 - **주의사항**: 리스크 경고 및 대응방안
 
-## 🔑 실시간 데이터 소스
-
-- **Binance WebSocket**: 실시간 가격, 거래량, 오더북
-- **CoinGecko API**: 시가총액, 도미넌스, 전체 시장 데이터
-- **Alternative.me API**: Fear & Greed Index
-- **Glassnode/CryptoQuant**: 온체인 데이터 (고래 움직임, 거래소 플로우)
-- **TradingView Webhooks**: 기술적 지표 알림
-
 ## 📱 모바일 트레이딩 UI 원칙
 
 - **원터치 주문**: 매수/매도 즉시 실행
@@ -657,19 +492,8 @@ npm run lint         # 코드 품질 체크
 - 역할별 접근권한: 본사/총판/대리점/구독자
 - 6단계 구독 시스템: Free → Silver → Gold → Platinum → Diamond → Black
 
-## 🔧 개발 시 주의사항
-
-- Internal Server Error 발생 시 Prisma 재생성: npx prisma generate
-- 포트 충돌 시 다른 포트 사용 (3000-3006)
-- 모든 Node 프로세스 종료: taskkill /F /IM node.exe /T
 - **🇰🇷 필수: 항상 한국어로 답변 (영어 사용 절대 금지)**
 - **모든 커뮤니케이션은 100% 한국어로만 진행**
-
-## 📈 실시간 시장 데이터
-
-- 8개 암호화폐 실시간 추적: BTC, ETH, BNB, SOL, XRP, ADA, DOGE, AVAX
-- Binance API 연동
-- WebSocket으로 실시간 업데이트
 
 ## ⚡ 성능 최적화
 
@@ -729,22 +553,6 @@ GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으�
 - **텔레그램 봇 연동** - 구독 등급별 차등 기능 제공
 - **트레이딩 전략 설명** - 각 섹션마다 동적 분석과 실전 팁 포함
 
-## 🎯 시그널 페이지 구성 템플릿
-
-  1. **MarketAnalysis** - AI 시장 종합 분석 (필수)
-  2. **PriceChart** - 실시간 가격 차트 with 기술적 지표
-  3. **전략별 컴포넌트** - WhaleTracker, InstitutionalFlow 등
-  4. **ProfitCalculator** - 수익 계산기
-  5. **텔레그램 연동 안내** - 구독 등급별 혜택
-
-## 🔑 실시간 데이터 소스
-
-- **Binance WebSocket**: 실시간 가격, 거래량, 오더북
-- **CoinGecko API**: 시가총액, 도미넌스, 전체 시장 데이터
-- **Alternative.me API**: Fear & Greed Index
-- **Glassnode/CryptoQuant**: 온체인 데이터 (고래 움직임, 거래소 플로우)
-- **TradingView Webhooks**: 기술적 지표 알림
-
 ## 📱 모바일 트레이딩 UI 원칙
 
 - **원터치 주문**: 매수/매도 즉시 실행
@@ -764,14 +572,6 @@ GitHub Actions을 설정해서 커밋 → 푸시 → 자동 배포가 자동으�
 2. **빌드 전 자동 검증** (`prebuild` hook)
    - `npm run build` 실행 시 자동 검증
    - 규칙 위반 시 빌드 차단
-
-3. **Git 커밋 차단** (`.githooks/pre-commit`)
-   - 커밋 시도 시 자동 검증
-   - 규칙 위반 시 커밋 차단
-
-4. **GitHub Actions CI/CD** (`.github/workflows/enforce-rules.yml`)
-   - Push/PR 시 자동 검증
-   - 규칙 위반 시 배포 차단
 
 5. **ESLint 실시간 경고** (`.eslintrc.custom.js`)
    - IDE에서 실시간 경고 표시
@@ -804,14 +604,6 @@ npm run build:unsafe      # 검증 없이 빌드 (절대 권장 안함)
 npm run check:random      # Math.random 사용 카운트
 npm run detect:mock       # Mock 데이터 감지
 ```
-
-### ⚠️ 위반 시 차단되는 것들
-
-- ❌ `npm run dev` 실행 불가
-- ❌ `npm run build` 실행 불가  
-- ❌ `git commit` 불가
-- ❌ GitHub PR/Push 불가
-- ❌ 자동 배포 차단
 
 ### 🔥 규칙 위반 해결 방법
 
@@ -898,14 +690,6 @@ connectionDelayRef.current = setTimeout(() => {
   connectWebSocket(newSymbol)
 }, 500)
 
-// 3. 심볼별 초기값 설정
-const initialPrices = {
-  'BTCUSDT': 98000,
-  'ETHUSDT': 3500,
-  'BNBUSDT': 700
-}
-setCurrentPrice(initialPrices[newSymbol])
-```
 
 ## ⚛️ React Hook 규칙 - 절대 위반 금지
 
@@ -1059,49 +843,6 @@ node scripts/migrate-to-optimized-api.js
 - `/lib/hooks/useOptimizedMarketData.ts` - 최적화된 마켓 데이터 훅
 - `/lib/services/migrationHelper.ts` - 마이그레이션 헬퍼
 
-## 🚨 자주 발생하는 프로덕션 에러 패턴과 해결법
-
-### 1. undefined 변수 에러 패턴
-
-```typescript
-// ❌ 에러 발생 패턴
-"ilRisk is not defined"
-"price is not defined"
-"slippage is not defined"
-
-// ✅ 해결 방법
-// 1. Optional Chaining 사용
-${safeFixed(orderbook?.spread, 2)}
-
-// 2. 기본값 설정
-const price = data?.price || 0
-
-// 3. 안전한 접근
-${safeFixed(depthLevels?.find(l => l.percentage === selectedPercentage)?.bidPrice, 2)}
-```
-
-### 2. safeFixed 함수 사용 패턴
-
-```typescript
-// ❌ 잘못된 사용 (메서드로 호출)
-${object?.safeFixed(property, 2)}
-
-// ✅ 올바른 사용 (함수로 호출)
-${safeFixed(object?.property, 2)}
-```
-
-### 3. API 응답 구조 불일치
-
-```typescript
-// ❌ 배열 기대하지만 객체 수신
-const klines = result // 객체
-klines.slice(-50) // 에러!
-
-// ✅ 안전한 처리
-const klines = result.data || result.klines || []
-const recentKlines = Array.isArray(klines) ? klines.slice(-50) : []
-```
-
 ## 📊 API 제공업체 선택 가이드
 
 ### 최종 선택: 하이브리드 구조
@@ -1111,80 +852,21 @@ Binance WebSocket (무료) + CryptoCompare Free (무료) = 완벽한 솔루션
 - 실시간 가격: Binance WebSocket
 - 뉴스/소셜: CryptoCompare
 - 공포탐욕지수: Alternative.me
-- 총 비용: $0/월
 ```
-
-## 🎯 프로덕션 운영 노하우
-
-### 서버 다운 시 긴급 복구
-
-```bash
-# SSH 접속
-ssh -i monsta-key.pem ubuntu@13.209.84.93
-
-# 프로세스 확인
-pm2 list
-
-# 재시작
-cd ~/monstas7/frontend
-npm run build
-pm2 restart monsta-prod
-
-# 로그 확인
-pm2 logs monsta-prod --lines 100
-```
-
-## 🔍 트러블슈팅 가이드
-
-### 문제: "페이지가 작동하지 않습니다. ERR_EMPTY_RESPONSE"
-
-```bash
-# 원인: 코드 문법 에러로 서버 크래시
-# 해결:
-1. 에러 파일 찾기: grep -r "unexpected token" 
-2. 문법 수정 (주로 중괄호 불일치)
-3. 빌드 & 재시작: npm run build && pm2 restart
-```
-
-### 문제: "WebSocket 연결 실패"
-
-```javascript
-// 원인: 너무 많은 동시 연결
-// 해결: 연결 지연 및 재사용
-setTimeout(() => {
-  connectWebSocket(symbol)
-}, delay * 100) // 심볼별 100ms 간격
-```
-
-### 문제: "캐시 데이터 오래됨"
-
-```javascript
-// 해결: TTL 동적 조정
-const getTTL = (dataType) => {
-  switch(dataType) {
-    case 'price': return 30 // 30초
-    case 'news': return 3600 // 1시간
-    default: return 60
-  }
-}
-```
-
-
-
-  📋 수정된 추천안
 
   // 1. CryptoCompare (메인 데이터)
-  - 무료: 월 100,000 호출
-  - 실시간 가격, 오더북, 거래량
-  - 뉴스, 소셜 데이터 포함
-  - WebSocket 실시간 스트리밍
+
+- 실시간 가격, 오더북, 거래량
+- 뉴스, 소셜 데이터 포함
+- WebSocket 실시간 스트리밍
 
   // 2. Binance WebSocket (실시간 보조)
-  - 무료, 무제한
-  - 초단위 가격 업데이트
-  - 오더북 실시간 변화
+
+- 초단위 가격 업데이트
+- 오더북 실시간 변화
 
   // 3. Alternative.me (공포탐욕지수)
-  - 무료 API
-  - Fear & Greed Index
+
+- 무료 API
+- Fear & Greed Index
   

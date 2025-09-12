@@ -266,7 +266,7 @@ export default function OptionsStrategyModule() {
     loadOptionsData(selectedCoin)
     return () => {
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
+        abortControllerRef.current.abort('Component unmounted or coin changed')
       }
     }
   }, [selectedCoin, loadOptionsData])
