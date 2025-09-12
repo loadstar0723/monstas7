@@ -34,6 +34,12 @@ export class BinanceRealtimeService {
   private connect(stream: string) {
     if (this.connections.has(stream)) return
     
+    // 브라우저 환경에서만 WebSocket 연결
+    if (typeof window === 'undefined') {
+      console.log('Server-side rendering, skipping WebSocket connection')
+      return
+    }
+    
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`)
     
     ws.onmessage = (event) => {

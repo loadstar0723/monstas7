@@ -219,7 +219,9 @@
       "Bash(done)",
       "Bash(awk:*)",
       "Bash(start http://localhost:3003)",
-      "Bash(start http://localhost:3004)"
+      "Bash(start http://localhost:3004)",
+      "Bash(start http://localhost:3008/signals/smart-money)",
+      "Bash(start http://localhost:3009/signals/smart-money)"
     ],
     "deny": [],
     "ask": []
