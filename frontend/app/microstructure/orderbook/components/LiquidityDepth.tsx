@@ -284,13 +284,13 @@ export default function LiquidityDepth({ orderbook, symbol, currentPrice }: Liqu
             <div>
               <span className="text-gray-400">예상 체결 가격 (매도)</span>
               <p className="text-white font-medium">
-                ${depthLevels.find(l => l.percentage === selectedPercentage)?.safeFixed(bidPrice, 2)}
+                ${safeFixed(depthLevels.find(l => l.percentage === selectedPercentage)?.bidPrice, 2)}
               </p>
             </div>
             <div>
               <span className="text-gray-400">예상 체결 가격 (매수)</span>
               <p className="text-white font-medium">
-                ${depthLevels.find(l => l.percentage === selectedPercentage)?.safeFixed(askPrice, 2)}
+                ${safeFixed(depthLevels.find(l => l.percentage === selectedPercentage)?.askPrice, 2)}
               </p>
             </div>
           </div>
