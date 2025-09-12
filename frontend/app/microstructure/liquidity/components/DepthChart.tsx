@@ -188,7 +188,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.safeFixed(level5.imbalance, 1)}%
+                {safeFixed(imbalanceMetrics?.level5?.imbalance, 1)}%
               </span>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.safeFixed(level10.imbalance, 1)}%
+                {safeFixed(imbalanceMetrics?.level10?.imbalance, 1)}%
               </span>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function DepthChart({ orderbook, currentPrice }: DepthChartProps)
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white text-xs font-semibold">
-                {imbalanceMetrics?.safeFixed(level20.imbalance, 1)}%
+                {safeFixed(imbalanceMetrics?.level20?.imbalance, 1)}%
               </span>
             </div>
           </div>

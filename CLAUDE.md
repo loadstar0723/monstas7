@@ -79,18 +79,21 @@ alwaysApply: true
    - [ ] 향후 확장 가능한 구조인가?
 
 ### ❌ 잘못된 예시 (절대 하지 말 것)
+
 - NextAuth 에러 → 데이터베이스 연결 제거하고 mockUsers 사용 ❌
 - WebSocket 연결 실패 → 가짜 데이터 생성 ❌
 - API 에러 → API 호출 제거하고 하드코딩 ❌
 - 복잡한 기능 → 기능 단순화 또는 제거 ❌
 
 ### ✅ 올바른 예시 (이렇게 해결할 것)
+
 - NextAuth 에러 → 데이터베이스 연결 문제 해결, 환경변수 확인 ✅
 - WebSocket 연결 실패 → 연결 재시도 로직, 에러 핸들링 개선 ✅
 - API 에러 → CORS 설정, 인증 토큰 확인, 엔드포인트 수정 ✅
 - 복잡한 기능 → 모든 기능 유지하면서 구조 개선 ✅
 
 ### 💡 기억하라
+>
 > "빠른 해결보다 올바른 해결이 중요하다"
 > "기능을 제거하는 것은 해결이 아니다"
 > "실제 프로덕션에서 작동하지 않으면 의미가 없다"
@@ -948,3 +951,17 @@ import SystemOverview, { whaleTrackingOverview } from '@/components/signals/Syst
 - Starter: 지연 데이터
 - Platinum: 실시간
 - Infinity: VIP 전용
+
+1. WebSocket 우선 사용 (useWebSocketFirst 훅)
+    - Binance WebSocket 실시간 연결
+    - 자동 재연결 (최대 5회)
+    - 에러 시 REST API 폴백
+2. API 레이트 리미터 (apiRateLimiter.ts)
+    - 요청 큐잉 시스템
+    - 최소 100ms 간격 유지
+    - 5초 캐싱 적용
+    - 429 에러 자동 처리
+3. 지수 백오프 재시도
+    - 레이트 리밋 에러 감지
+    - 1초, 2초, 4초 간격으로 재시도
+    - 최대 3회 재시도
