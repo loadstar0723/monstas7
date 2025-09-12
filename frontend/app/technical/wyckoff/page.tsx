@@ -1,209 +1,127 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { config } from '@/lib/config'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+import { FaChartLine, FaSpinner } from 'react-icons/fa'
+import React from 'react'
 
-export default function WyckoffMethodPage() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+// 동적 임포트로 모듈 로드 (에러 격리 포함)
+const WyckoffModule = dynamic(
+  () => import('./WyckoffModule').catch((err) => {
+    console.error('Failed to load WyckoffModule:', err)
+    // 에러 발생 시 폴백 컴포넌트 반환
+    return {
+      default: () => (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <FaChartLine className="text-6xl text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-2">모듈 로드 실패</h2>
+            <p className="text-gray-400">와이코프 분석 모듈을 불러오는 중 오류가 발생했습니다.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              새로고침
+            </button>
+          </div>
+        </div>
+      )
+    }
+  }),
+  {
+    ssr: false, // 클라이언트 사이드 렌더링만 사용
+    loading: () => <LoadingComponent />
+  }
+)
 
-  useEffect(() => {
-    // TODO: API 호출로 실제 데이터 가져오기
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-  }, [])
-
+// 로딩 컴포넌트
+function LoadingComponent() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
-      {/* 헤더 */}
-      <div className="max-w-7xl mx-auto mb-8">
-        <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
-          <Link href="/" className="hover:text-white">홈</Link>
-          <span>/</span>
-          <span>기술적 분석</span>
-          <span>/</span>
-          <span className="text-white">Wyckoff Method</span>
-        </div>
-        
-        <h1 className="text-4xl font-bold text-white mb-2">Wyckoff Method</h1>
-        <p className="text-gray-400">카테고리: 기술적 분석</p>
-      </div>
-
-      {/* 메인 콘텐츠 */}
-      <div className="max-w-7xl mx-auto">
-        {loading ? (
-          <div className="bg-gray-800/50 rounded-xl p-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">데이터 로딩 중...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* 카드 1 - 개발 예정 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">개발 예정</h3>
-                <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">
-                  Coming Soon
-                </span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                이 기능은 현재 개발 중입니다. 곧 업데이트될 예정입니다.
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">예상 완료</span>
-                  <span className="text-gray-300">2025 Q1</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">우선순위</span>
-                  <span className="text-purple-400">높음</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 카드 2 - 기능 소개 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-4">주요 기능</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>실시간 데이터 분석</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>AI 기반 예측</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>자동화된 거래 실행</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>리스크 관리 도구</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* 카드 3 - 통계 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-4">예상 성능</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">정확도</span>
-                    <span className="text-green-400">${config.percentage.value87}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-400 h-2 rounded-full" style={{width: '${config.percentage.value87}'}}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">처리 속도</span>
-                    <span className="text-blue-400">${config.percentage.value95}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-400 h-2 rounded-full" style={{width: '${config.percentage.value95}'}}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">사용자 만족도</span>
-                    <span className="text-purple-400">${config.percentage.value92}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-purple-400 h-2 rounded-full" style={{width: '${config.percentage.value92}'}}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 개발 로드맵 */}
-        <div className="mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <h3 className="text-xl font-bold text-white mb-4">개발 로드맵</h3>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-green-400 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 1: 기본 구조</h4>
-                <p className="text-gray-400 text-sm">UI/UX 디자인, 데이터베이스 설계</p>
-              </div>
-              <span className="text-green-400 text-sm">완료</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 2: 핵심 기능</h4>
-                <p className="text-gray-400 text-sm">API 연동, 실시간 데이터 처리</p>
-              </div>
-              <span className="text-yellow-400 text-sm">진행 중</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-gray-600 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 3: AI 통합</h4>
-                <p className="text-gray-400 text-sm">머신러닝 모델, 예측 엔진</p>
-              </div>
-              <span className="text-gray-400 text-sm">예정</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-3 h-3 bg-gray-600 rounded-full mt-1.5"></div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold">Phase 4: 최적화</h4>
-                <p className="text-gray-400 text-sm">성능 개선, 사용자 피드백 반영</p>
-              </div>
-              <span className="text-gray-400 text-sm">예정</span>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="relative">
+          <FaSpinner className="text-6xl text-purple-500 animate-spin mx-auto mb-4" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <FaChartLine className="text-3xl text-white" />
           </div>
         </div>
-
-        {/* TODO 리스트 */}
-        <div className="mt-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-6 border border-purple-700/30">
-          <h3 className="text-xl font-bold text-white mb-4">📋 구현 예정 기능</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>실시간 WebSocket 연결</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>PostgreSQL 데이터베이스 연동</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>FastAPI 백엔드 통합</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>차트 라이브러리 구현</span>
-              </label>
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>사용자 인증 시스템</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>구독 등급 체크</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>다국어 지원</span>
-              </label>
-              <label className="flex items-center gap-2 text-gray-300">
-                <input type="checkbox" className="w-4 h-4 rounded" disabled />
-                <span>모바일 반응형 최적화</span>
-              </label>
-            </div>
-          </div>
+        <h2 className="text-2xl font-bold text-white mb-2">와이코프 분석 준비 중...</h2>
+        <p className="text-gray-400">실시간 시장 데이터를 불러오고 있습니다</p>
+        <div className="mt-4 flex justify-center gap-2">
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
       </div>
     </div>
+  )
+}
+
+// 에러 바운더리 컴포넌트
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Wyckoff Page Error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-red-500/50">
+            <div className="text-center">
+              <FaChartLine className="text-5xl text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-white mb-2">오류 발생</h2>
+              <p className="text-gray-400 mb-4">
+                페이지를 렌더링하는 중 문제가 발생했습니다.
+              </p>
+              {this.state.error && (
+                <details className="text-left mb-4">
+                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-300">
+                    오류 상세 정보
+                  </summary>
+                  <pre className="mt-2 p-2 bg-black/50 rounded text-xs text-red-400 overflow-auto">
+                    {this.state.error.toString()}
+                  </pre>
+                </details>
+              )}
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null })
+                  window.location.reload()
+                }}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+// 메인 페이지 컴포넌트
+export default function WyckoffPage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingComponent />}>
+        <WyckoffModule />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
