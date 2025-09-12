@@ -117,9 +117,10 @@ export function useCVDWebSocket(symbol: string) {
     const wsUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`;
     
     try {
-      wsRef.current = new WebSocket(wsUrl);
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
-      wsRef.current.onopen = () => {
+      ws.onopen = () => {
         console.log(`CVD WebSocket connected for ${symbol}`);
         setIsConnected(true);
         setError(null);
@@ -135,7 +136,7 @@ export function useCVDWebSocket(symbol: string) {
         aggregationInterval.current = setInterval(processAggregatedData, 1000); // Process every second
       };
 
-      wsRef.current.onmessage = (event) => {
+      ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           
@@ -163,12 +164,12 @@ export function useCVDWebSocket(symbol: string) {
         }
       };
 
-      wsRef.current.onerror = (err) => {
+      ws.onerror = (err) => {
         console.error('CVD WebSocket error:', err);
         setError('WebSocket connection error');
       };
 
-      wsRef.current.onclose = () => {
+      ws.onclose = () => {
         console.log('CVD WebSocket closed');
         setIsConnected(false);
         
@@ -178,8 +179,8 @@ export function useCVDWebSocket(symbol: string) {
           aggregationInterval.current = null;
         }
         
-        // Attempt to reconnect
-        if (reconnectAttempts.current < 5) {
+        // Only reconnect if this is the current WebSocket
+        if (wsRef.current === ws && reconnectAttempts.current < 5) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
           console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current})`);
@@ -187,7 +188,7 @@ export function useCVDWebSocket(symbol: string) {
           reconnectTimeout.current = setTimeout(() => {
             connect();
           }, delay);
-        } else {
+        } else if (reconnectAttempts.current >= 5) {
           setError('Failed to connect after 5 attempts');
         }
       };
@@ -235,13 +236,194 @@ export function useCVDWebSocket(symbol: string) {
   }, []);
 
   useEffect(() => {
-    // Reset and reconnect when symbol changes
-    disconnect();
-    resetCVD();
-    connect();
+    // Reset data when symbol changes
+    setCvdData([]);
+    cumulativeCVD.current = 0;
+    volumeWindow.current = [];
+    priceHistory.current = [];
+    dataBuffer.current = [];
+    setStats({
+      currentPrice: 0,
+      priceChange: 0,
+      volume24h: 0
+    });
+    
+    // Disconnect existing connection
+    if (reconnectTimeout.current) {
+      clearTimeout(reconnectTimeout.current);
+      reconnectTimeout.current = null;
+    }
+    
+    if (aggregationInterval.current) {
+      clearInterval(aggregationInterval.current);
+      aggregationInterval.current = null;
+    }
+    
+    let eventSource: EventSource | null = null;
+    
+    // Reset reconnect attempts
+    reconnectAttempts.current = 0;
+    
+    // Connect using EventSource
+    const connectToSymbol = () => {
+      try {
+        // Use API route to proxy WebSocket connection
+        eventSource = new EventSource(`/api/binance/stream?symbol=${symbol}`);
+        
+        eventSource.onopen = () => {
+          console.log(`CVD stream connected for ${symbol}`);
+          setIsConnected(true);
+          setError(null);
+          reconnectAttempts.current = 0;
+          
+          // Fetch initial ticker stats
+          fetch(`/api/binance/ticker?symbol=${symbol}`)
+            .then(response => response.json())
+            .then(data => {
+              const currentPrice = parseFloat(data.lastPrice);
+              priceHistory.current = [currentPrice];
+              
+              setStats({
+                currentPrice,
+                priceChange: parseFloat(data.priceChangePercent),
+                volume24h: parseFloat(data.quoteVolume)
+              });
+            })
+            .catch(err => console.error('Error fetching ticker stats:', err));
+          
+          // Start aggregation interval
+          if (aggregationInterval.current) {
+            clearInterval(aggregationInterval.current);
+          }
+          
+          aggregationInterval.current = setInterval(() => {
+            if (volumeWindow.current.length === 0) return;
+
+            const now = Date.now();
+            const windowSize = 5000; // 5 second window
+            const cutoff = now - windowSize;
+
+            // Filter out old data
+            volumeWindow.current = volumeWindow.current.filter(v => v.timestamp > cutoff);
+
+            if (volumeWindow.current.length === 0) return;
+
+            // Aggregate volume over the window
+            const aggregated = volumeWindow.current.reduce(
+              (acc, curr) => ({
+                buy: acc.buy + curr.buy,
+                sell: acc.sell + curr.sell
+              }),
+              { buy: 0, sell: 0 }
+            );
+
+            const delta = aggregated.buy - aggregated.sell;
+            cumulativeCVD.current += delta;
+
+            // Get latest price from price history
+            const currentPrice = priceHistory.current[priceHistory.current.length - 1] || 0;
+
+            const newDataPoint: CVDData = {
+              time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+              price: currentPrice,
+              buyVolume: Math.round(aggregated.buy),
+              sellVolume: Math.round(aggregated.sell),
+              delta: Math.round(delta),
+              cvd: Math.round(cumulativeCVD.current),
+              deltaPercent: aggregated.buy + aggregated.sell > 0 
+                ? ((aggregated.buy - aggregated.sell) / (aggregated.buy + aggregated.sell) * 100).toFixed(2)
+                : '0.00'
+            };
+
+            setCvdData(prev => {
+              const updated = [...prev, newDataPoint];
+              return updated.slice(-MAX_DATA_POINTS); // Keep only last MAX_DATA_POINTS
+            });
+
+            // Update current price in stats
+            setStats(prev => ({
+              ...prev,
+              currentPrice
+            }));
+          }, 1000); // Process every second
+        };
+        
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            // Update price history
+            const price = parseFloat(data.p);
+            priceHistory.current.push(price);
+            if (priceHistory.current.length > 10) {
+              priceHistory.current.shift(); // Keep last 10 prices
+            }
+            
+            // Calculate volume based on maker side
+            // m = true means the buyer is the maker (sell market order)
+            // m = false means the seller is the maker (buy market order)
+            const quantity = parseFloat(data.q);
+            const quoteQuantity = quantity * price;
+            
+            volumeWindow.current.push({
+              buy: data.m ? 0 : quoteQuantity,
+              sell: data.m ? quoteQuantity : 0,
+              timestamp: Date.now()
+            });
+            
+          } catch (err) {
+            console.error('Error processing aggTrade message:', err);
+          }
+        };
+        
+        eventSource.onerror = (err) => {
+          console.error('CVD stream error:', err);
+          setError('Stream connection error');
+          setIsConnected(false);
+          
+          // Clear aggregation interval
+          if (aggregationInterval.current) {
+            clearInterval(aggregationInterval.current);
+            aggregationInterval.current = null;
+          }
+          
+          // Attempt to reconnect
+          if (reconnectAttempts.current < 5) {
+            reconnectAttempts.current++;
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+            console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current})`);
+            
+            eventSource?.close();
+            reconnectTimeout.current = setTimeout(connectToSymbol, delay);
+          } else {
+            setError('Failed to connect after 5 attempts');
+            eventSource?.close();
+          }
+        };
+      } catch (err) {
+        console.error('Error creating EventSource:', err);
+        setError('Failed to create stream connection');
+      }
+    };
+    
+    // Initial connection
+    connectToSymbol();
 
     return () => {
-      disconnect();
+      // Cleanup on unmount or symbol change
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+        reconnectTimeout.current = null;
+      }
+      
+      if (aggregationInterval.current) {
+        clearInterval(aggregationInterval.current);
+        aggregationInterval.current = null;
+      }
+      
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, [symbol]); // Only reconnect when symbol changes
 
