@@ -184,7 +184,7 @@ export async function fetchOrderBook(symbol: string, limit: number = 20) {
 export async function fetch24hrTicker(symbol: string) {
   try {
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
+      `/api/binance/ticker?symbol=${symbol}`
     )
     
     if (!response.ok) {

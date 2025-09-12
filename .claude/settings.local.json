@@ -222,7 +222,8 @@
       "Bash(start http://localhost:3004)",
       "Bash(start http://localhost:3008/signals/smart-money)",
       "Bash(start http://localhost:3009/signals/smart-money)",
-      "Bash(start http://localhost:3027)"
+      "Bash(start http://localhost:3027)",
+      "Bash(start http://localhost:3028/signals/insider-flow)"
     ],
     "deny": [],
     "ask": []

@@ -1021,7 +1021,7 @@ export default function SmartMoneyUltimate() {
       try {
         const prices = await Promise.all(
           TRACKED_SYMBOLS.map(async (symbol) => {
-            const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+            const res = await fetch(`/api/binance/ticker?symbol=${symbol}`)
             const data = await res.json()
             return { symbol, price: parseFloat(data.price) }
           })

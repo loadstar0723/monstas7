@@ -111,7 +111,7 @@ const generateUniqueId = (prefix: string = '', suffix: string = '') => {
 }
 
 export default function DexFlowUltimate() {
-  const [selectedCoin, setSelectedCoin] = useState('BTC')  // BTC로 시작
+  const [selectedCoin, setSelectedCoin] = useState('BTCUSDT')  // BTCUSDT로 시작
   const [activeTab, setActiveTab] = useState<'overview' | 'swaps' | 'liquidity' | 'arbitrage' | 'mev' | 'analytics' | 'signals'>('overview')
   const [loading, setLoading] = useState(false)
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -183,7 +183,7 @@ export default function DexFlowUltimate() {
     try {
       // 실제 API 호출
       const [priceRes, dexRes] = await Promise.all([
-        fetch24hrTicker(symbol),
+        fetch24hrTicker(coin),
         fetch(`/api/dex/flow?coin=${coin}`)
       ])
 

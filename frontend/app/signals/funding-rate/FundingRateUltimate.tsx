@@ -10,7 +10,7 @@ import {
   FaBitcoin, FaEthereum, FaCoins, FaChartBar, FaHistory,
   FaRobot, FaCalculator, FaBalanceScale, FaFireAlt,
   FaWater, FaChartArea, FaInfoCircle, FaTrophy,
-  FaGraduationCap, FaLightbulb, FaUserGraduate
+  FaGraduationCap, FaLightbulb, FaUserGraduate, FaSync
 } from 'react-icons/fa'
 import { SiBinance, SiSolana, SiRipple, SiDogecoin } from 'react-icons/si'
 import { 
@@ -78,7 +78,7 @@ const generateUniqueId = (prefix: string = '', suffix: string = '') => {
 }
 
 export default function FundingRateUltimate() {
-  const [selectedCoin, setSelectedCoin] = useState('BTCUSDT')
+  const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
   const [fundingData, setFundingData] = useState<FundingData | null>(null)
   const [historyData, setHistoryData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -140,7 +140,7 @@ export default function FundingRateUltimate() {
   // 펀딩 히스토리 로드
   const loadFundingHistory = useCallback(async (symbol: string) => {
     try {
-      const response = await fetch(`/api/binance/fundingRate?symbol=${symbol}&limit=100`)
+      const response = await fetch(`/api/binance/funding-rate?symbol=${symbol}&limit=100`)
       if (response.ok) {
         const data = await response.json()
         setHistoryData(data)
@@ -225,11 +225,11 @@ export default function FundingRateUltimate() {
   
   // 초기화
   useEffect(() => {
-    connectWebSocket(selectedCoin)
-    loadFundingHistory(selectedCoin.replace('USDT', '') + 'USDT')
+    connectWebSocket(selectedSymbol)
+    loadFundingHistory(selectedSymbol)
     
     const priceInterval = setInterval(() => {
-      fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${selectedCoin}`)
+      fetch(`/api/binance/ticker?symbol=${selectedSymbol}`)
         .then(res => res.json())
         .then(data => {
           setCurrentPrice(parseFloat(data.price))
@@ -243,18 +243,18 @@ export default function FundingRateUltimate() {
       }
       clearInterval(priceInterval)
     }
-  }, [selectedCoin, connectWebSocket, loadFundingHistory])
+  }, [selectedSymbol, connectWebSocket, loadFundingHistory])
   
   // 자동 새로고침
   useEffect(() => {
     if (!autoRefresh) return
     
     const refreshInterval = setInterval(() => {
-      loadFundingHistory(selectedCoin.replace('USDT', '') + 'USDT')
+      loadFundingHistory(selectedSymbol)
     }, 30000)
     
     return () => clearInterval(refreshInterval)
-  }, [autoRefresh, selectedCoin, loadFundingHistory])
+  }, [autoRefresh, selectedSymbol, loadFundingHistory])
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 py-12">
@@ -270,9 +270,9 @@ export default function FundingRateUltimate() {
             return (
               <button
                 key={coin.symbol}
-                onClick={() => setSelectedCoin(coin.symbol)}
+                onClick={() => setSelectedSymbol(coin.symbol)}
                 className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                  selectedCoin === coin.symbol
+                  selectedSymbol === coin.symbol
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
