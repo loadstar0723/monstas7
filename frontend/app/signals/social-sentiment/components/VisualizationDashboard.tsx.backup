@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts'
 import { FaChartBar, FaMapMarkerAlt, FaNetworkWired, FaGlobe } from 'react-icons/fa'
@@ -40,7 +38,7 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
     const generateVisualizationData = async () => {
       try {
         // 가격 데이터 가져오기
-        const klinesResponse = await fetchKlines(symbol, interval, limit)
+        const klinesResponse = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=48`)
         let klines: any[] = []
         if (klinesResponse.ok) {
           klines = await klinesResponse.json()
@@ -87,7 +85,7 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
         const global = await Promise.all(
           coins.map(async (symbol) => {
             try {
-              const tickerResponse = await fetch24hrTicker(symbol)
+              const tickerResponse = await fetch(`/api/binance/ticker?symbol=${symbol}USDT`)
               let priceChange = 0
               let volume = 0
               

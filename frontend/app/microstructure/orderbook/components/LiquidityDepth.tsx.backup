@@ -1,8 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
 import { FaWater, FaChartLine, FaExclamationTriangle, FaCoins, FaArrowsAltV } from 'react-icons/fa'
 import { useState, useMemo, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'

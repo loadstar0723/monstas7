@@ -210,7 +210,9 @@
       "Bash(touch:*)",
       "Bash(pkill:*)",
       "Bash(true)",
-      "WebFetch(domain:developers.coindesk.com)"
+      "WebFetch(domain:developers.coindesk.com)",
+      "Bash(start http://localhost:3100/signals/whale-tracker)",
+      "Bash(start http://localhost:3100/signals/smart-money)"
     ],
     "deny": [],
     "ask": []

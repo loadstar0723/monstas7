@@ -21,6 +21,8 @@ import TabGuide, { tabGuides } from '@/components/signals/TabGuide'
 import { getWebSocketUrl, getStreamName } from '@/lib/websocketConfig'
 import { createWebSocket, reconnectWebSocket } from '@/lib/wsHelper'
 import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
+import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
+import { dataService } from '@/lib/services/finalDataService'
 
 const ComprehensiveAnalysis = dynamic(
   () => import('@/components/signals/ComprehensiveAnalysis'),
@@ -378,8 +380,8 @@ export default function WhaleTrackerUltimate() {
     volume: number
   }>>([])
 
-  // WebSocket 연결 (백그라운드)
-  const backgroundWsRefs = useRef<Record<string, WebSocket>>({}) // 모든 코인의 백그라운드 WebSocket
+  // 데이터 서비스 콜백 참조
+  const priceCallbacksRef = useRef<Map<string, (data: any) => void>>(new Map())
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const firstPrices = useRef<Record<string, number>>({}) // 각 심볼별 첫 가격 저장
 
@@ -589,14 +591,16 @@ export default function WhaleTrackerUltimate() {
     const savedTransactions = transactionsBySymbol[selectedSymbol] || []
     setTransactions(savedTransactions)
     
-    // 백그라운드 WebSocket이 이미 연결되어 있으므로 상태 표시
-    const bgWs = backgroundWsRefs.current[selectedSymbol]
-    if (bgWs && bgWs.readyState === WebSocket.OPEN) {
+    // 데이터 서비스 연결 상태 확인
+    const cached = dataService.getPrice(selectedSymbol)
+    if (cached) {
+      setCurrentPrice(cached.price || 0)
+      setPriceChange(cached.change24h || 0)
       setIsConnected(true)
-      console.log(`✅ ${selectedSymbol} 백그라운드 WebSocket 이미 연결됨`)
+      console.log(`✅ ${selectedSymbol} 데이터 서비스 연결됨`)
     } else {
       setIsConnected(false)
-      console.log(`⏳ ${selectedSymbol} 백그라운드 WebSocket 연결 대기중...`)
+      console.log(`⏳ ${selectedSymbol} 데이터 서비스 연결 대기중...`)
     }
     
     setCandleData([])
@@ -658,40 +662,22 @@ export default function WhaleTrackerUltimate() {
       fetchCandleData() // 15분봉 데이터 로드
     }, 1000)
     
-    // 모든 코인에 대해 WebSocket 연결 (백그라운드)
+    // 모든 코인에 대해 데이터 서비스 구독
     let delay = 0
     TRACKED_SYMBOLS.forEach(symbol => {
       setTimeout(() => {
-        const streamName = getStreamName(symbol, 'trade')
-        const wsUrl = getWebSocketUrl(streamName)
-        
         try {
-          const ws = new WebSocket(wsUrl)
-          
-          ws.onopen = () => {
-            console.log(`✅ ${symbol} WebSocket 연결 성공`)
+          // 데이터 서비스 구독 콜백 생성
+          const callback = (data: any) => {
+            // 실시간 가격 데이터 처리
+            const price = data.price || 0
+            const quantity = data.quantity || 0
+            const threshold = getThreshold(symbol)
+            
+            // 연결 상태 업데이트
             if (symbol === selectedSymbol) {
               setIsConnected(true)
             }
-          }
-          
-          ws.onerror = (error) => {
-            console.log(`⚠️ ${symbol} WebSocket 연결 재시도 중...`)
-            // WebSocket 에러는 Event 객체로 오므로 상세 정보가 없음
-          }
-          
-          ws.onclose = (event) => {
-            console.log(`🔌 ${symbol} WebSocket 연결 종료:`, event.code, event.reason)
-            if (symbol === selectedSymbol) {
-              setIsConnected(false)
-            }
-          }
-          
-          ws.onmessage = (event) => {
-          const data = JSON.parse(event.data)
-          const price = parseFloat(data.p)
-          const quantity = parseFloat(data.q)
-          const threshold = getThreshold(symbol)
           
           // 코인별 데이터 업데이트
           setAllCoinData(prev => ({
@@ -877,10 +863,13 @@ export default function WhaleTrackerUltimate() {
               })
           }
         }
-        
-        backgroundWsRefs.current[symbol] = ws
+          
+          // 콜백 저장 및 구독
+          priceCallbacksRef.current.set(symbol, callback)
+          dataService.subscribeToPrice(symbol, callback)
+          console.log(`✅ ${symbol} 데이터 서비스 구독 성공`)
         } catch (error) {
-          console.error(`WebSocket 생성 실패 ${symbol}:`, error)
+          console.error(`데이터 서비스 구독 실패 ${symbol}:`, error)
         }
       }, delay)
       delay += 300 // 0.3초씩 순차 연결
@@ -889,22 +878,11 @@ export default function WhaleTrackerUltimate() {
     // 클린업
     return () => {
       clearTimeout(candleTimer)
-      Object.entries(backgroundWsRefs.current).forEach(([symbol, ws]) => {
-        if (ws) {
-          try {
-            ws.onmessage = null
-            ws.onerror = null
-            ws.onclose = null
-            ws.onopen = null
-            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-              ws.close(1000, 'Component unmount')
-            }
-          } catch (error) {
-            console.error(`WebSocket cleanup error for ${symbol}:`, error)
-          }
-        }
+      // 모든 구독 해제
+      priceCallbacksRef.current.forEach((callback, symbol) => {
+        dataService.unsubscribeFromPrice(symbol, callback)
       })
-      backgroundWsRefs.current = {}
+      priceCallbacksRef.current.clear()
     }
   }, [])
   
@@ -912,11 +890,10 @@ export default function WhaleTrackerUltimate() {
   const fetchCandleData = useCallback(async () => {
     try {
       console.log('15분봉 데이터 로드 중...', selectedSymbol)
-      const res = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=15m&limit=20`)
-      const data = await res.json()
+      const data = await fetchKlines(selectedSymbol, '15m', 20)
       
-      if (data && data.data) {
-        const formattedData = data.data.map((candle: any[]) => {
+      if (data && Array.isArray(data)) {
+        const formattedData = data.map((candle: any[]) => {
           const date = new Date(candle[0])
           return {
             time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`,

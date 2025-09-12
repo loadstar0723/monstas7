@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { FaTwitter, FaReddit, FaTelegram, FaSmile, FaMeh, FaFrown } from 'react-icons/fa'
@@ -35,7 +33,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
     const fetchPriceData = async () => {
       try {
         // 현재 가격 정보
-        const tickerResponse = await fetch24hrTicker(symbol)
+        const tickerResponse = await fetch(`/api/binance/ticker?symbol=${coin}USDT`)
         if (tickerResponse.ok) {
           const ticker = await tickerResponse.json()
           setCurrentPrice(parseFloat(ticker.lastPrice || '0'))
@@ -43,7 +41,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         }
 
         // 24시간 가격 히스토리 (1시간 캔들)
-        const klinesResponse = await fetchKlines(symbol, interval, limit)
+        const klinesResponse = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=24`)
         if (klinesResponse.ok) {
           const klines = await klinesResponse.json()
           

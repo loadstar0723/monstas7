@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
+import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
+import { dataService } from '@/lib/services/finalDataService'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaDollarSign, FaUniversity, FaChartLine, FaBrain, FaShieldAlt,
@@ -328,17 +330,17 @@ export default function SmartMoneyUltimate() {
     lastUpdated: null
   })
 
-  // WebSocket 레퍼런스
-  const wsRef = useRef<WebSocket | null>(null)
+  // 데이터 서비스 콜백 참조
+  const priceCallbackRef = useRef<((data: any) => void) | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
   const connectionDelayRef = useRef<NodeJS.Timeout>()
 
-  // WebSocket 연결 관리
-  const connectWebSocket = (symbol: string) => {
-    // 기존 연결 정리
-    if (wsRef.current) {
-      wsRef.current.close(1000)
-      wsRef.current = null
+  // 데이터 서비스 연결 관리
+  const connectDataService = (symbol: string) => {
+    // 기존 구독 정리
+    if (priceCallbackRef.current) {
+      dataService.unsubscribeFromPrice(symbol, priceCallbackRef.current)
+      priceCallbackRef.current = null
     }
 
     // 24시간 통계 가져오기 (API 프록시 사용)
@@ -495,16 +497,12 @@ export default function SmartMoneyUltimate() {
     // 연결 지연 (빠른 전환 방지)
     clearTimeout(connectionDelayRef.current)
     connectionDelayRef.current = setTimeout(() => {
-      const streamName = symbol.toLowerCase() + '@aggTrade'
-      const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
-
-      ws.onopen = () => {
-        console.log(`스마트 머니 WebSocket 연결: ${symbol}`)
+      // 데이터 서비스 구독
+      const callback = (data: any) => {
+        console.log(`스마트 머니 데이터 서비스 연결: ${symbol}`)
         setIsConnected(true)
-      }
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data)
+        
+        // 실시간 데이터 처리
         const price = parseFloat(data.p)
         const quantity = parseFloat(data.q)
         const value = price * quantity
@@ -559,23 +557,10 @@ export default function SmartMoneyUltimate() {
           }
         }
       }
-
-      ws.onerror = (event) => {
-        console.warn('WebSocket 연결 에러 발생 - 재연결 시도 예정')
-        setIsConnected(false)
-      }
-
-      ws.onclose = () => {
-        setIsConnected(false)
-        // 자동 재연결
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (autoRefresh) {
-            connectWebSocket(symbol)
-          }
-        }, 5000)
-      }
-
-      wsRef.current = ws
+      
+      // 콜백 저장 및 구독
+      priceCallbackRef.current = callback
+      dataService.subscribeToPrice(symbol, callback)
     }, 500)
   }
 
@@ -1032,7 +1017,7 @@ export default function SmartMoneyUltimate() {
 
   // 초기화 및 심볼 변경 처리
   useEffect(() => {
-    connectWebSocket(selectedSymbol)
+    connectDataService(selectedSymbol)
     
     // 과거 24시간 거래 데이터 로드 (매집 구간 분석용)
     const loadHistoricalData = async () => {
@@ -1134,8 +1119,8 @@ export default function SmartMoneyUltimate() {
       clearTimeout(initialLoadTimeout)
       clearTimeout(reconnectTimeoutRef.current)
       clearTimeout(connectionDelayRef.current)
-      if (wsRef.current) {
-        wsRef.current.close()
+      if (priceCallbackRef.current) {
+        dataService.unsubscribeFromPrice(selectedSymbol, priceCallbackRef.current)
       }
     }
   }, [selectedSymbol, activeTab])

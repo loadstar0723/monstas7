@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
 import { ModuleWebSocket } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
@@ -98,8 +96,8 @@ export default function useFearGreedData(coin: string) {
       // Binance API 호출 (코인별 데이터)
       const symbol = `${coin}USDT`
       const [tickerResponse, statsResponse] = await Promise.all([
-        fetch24hrTicker(symbol),
-        fetch24hrTicker(symbol)
+        fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`),
+        fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`)
       ])
 
       if (!tickerResponse.ok || !statsResponse.ok) {

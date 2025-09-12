@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -161,7 +159,7 @@ export default function DexFlowUltimate() {
 
     // Binance WebSocket 연결 (실시간 가격)
     const symbol = coin === 'USDT' ? 'BTCUSDT' : `${coin}USDT`
-    wsRef.current = /* WebSocket replaced with optimized service */}@ticker`)
+    wsRef.current = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`)
     
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -175,7 +173,7 @@ export default function DexFlowUltimate() {
     try {
       // 실제 API 호출
       const [priceRes, dexRes] = await Promise.all([
-        fetch24hrTicker(symbol),
+        fetch(`/api/binance/ticker/24hr?symbol=${coin}USDT`),
         fetch(`/api/dex/flow?coin=${coin}`)
       ])
 
