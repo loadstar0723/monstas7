@@ -39,8 +39,17 @@ export default function TradingStrategy({ symbol }: TradingStrategyProps) {
         }
 
         const ticker = await tickerResponse.json()
-        const klines = await klinesResponse.json()
+        const klinesResult = await klinesResponse.json()
         const orderbook = await orderbookResponse.json()
+        
+        // API 응답에서 data 배열 추출
+        const klines = klinesResult.data || klinesResult.klines || klinesResult || []
+        
+        if (!Array.isArray(klines) || klines.length === 0) {
+          console.error('Invalid klines data:', klinesResult)
+          setIsLoading(false)
+          return
+        }
 
         // 현재 가격 및 변동성 분석
         const price = parseFloat(ticker.lastPrice)

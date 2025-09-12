@@ -35,8 +35,17 @@ export default function VolumeAnalysis({ symbol }: VolumeAnalysisProps) {
           throw new Error('Failed to fetch data')
         }
 
-        const klines = await klinesResponse.json()
+        const klinesResult = await klinesResponse.json()
         const ticker24hr = await ticker24hrResponse.json()
+        
+        // API 응답에서 data 배열 추출
+        const klines = klinesResult.data || klinesResult.klines || klinesResult || []
+        
+        if (!Array.isArray(klines) || klines.length === 0) {
+          console.error('Invalid klines data:', klinesResult)
+          setIsLoading(false)
+          return
+        }
         
         const avgVolume24h = parseFloat(ticker24hr.quoteVolume) / 288 // 5분 평균 (24시간 = 288개 5분)
         

@@ -127,7 +127,6 @@ export default function StrategyBuilderModule() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [strategyMode, setStrategyMode] = useState<'nocode' | 'code'>('nocode')
-  const [showScrollTop, setShowScrollTop] = useState(false)
   
   const wsRef = useRef<WebSocket | null>(null)
   const performance = useRef(new ModulePerformance('StrategyBuilder'))
@@ -334,7 +333,6 @@ export default function StrategyBuilderModule() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      setShowScrollTop(scrollTop > 300)
     }
     
     window.addEventListener('scroll', handleScroll)
@@ -604,41 +602,6 @@ export default function StrategyBuilderModule() {
           <TradingGuide symbol={selectedCoin} marketData={marketData} />
         </section>
       </div>
-      
-      {/* 상단 바로가기 버튼 */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.div 
-            className="fixed bottom-6 right-6 z-50"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.button
-              className="w-14 h-14 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm bg-opacity-90"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              title="상단으로 이동"
-            >
-              <svg 
-                className="w-6 h-6 text-white" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M5 10l7-7m0 0l7 7m-7-7v18" 
-                />
-              </svg>
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

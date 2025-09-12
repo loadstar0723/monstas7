@@ -40,8 +40,17 @@ export default function FootprintChart({ symbol }: FootprintChartProps) {
           throw new Error('Failed to fetch data')
         }
 
-        const klines = await klinesResponse.json()
+        const klinesResult = await klinesResponse.json()
         const trades = await tradesResponse.json()
+        
+        // API 응답에서 data 배열 추출
+        const klines = klinesResult.data || klinesResult.klines || klinesResult || []
+        
+        if (!Array.isArray(klines) || klines.length === 0) {
+          console.error('Invalid klines data:', klinesResult)
+          setIsLoading(false)
+          return
+        }
 
         // 가격 레벨 생성
         const priceMap = new Map<number, PriceLevel>()

@@ -241,7 +241,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({
 
   const generateDefaultAllocation = (): AllocationTarget[] => {
     const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'ADA']
-    return symbols.map(symbol => {
+    return symbols.map((symbol, index) => {
       const targetPercent = 20 + Math.abs(Math.sin((index + 1) * 0.8)) * 20 // 20-40%
       const currentPercent = targetPercent + Math.cos((index + 1) * 0.9) * 5 // ±5% 편차
       const deviation = currentPercent - targetPercent

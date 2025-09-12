@@ -14,7 +14,6 @@ import TradingStrategy from './components/TradingStrategy'
 import ConceptGuide from './components/ConceptGuide'
 import DepthChart from './components/DepthChart'
 import CoinSelector from './components/CoinSelector'
-import { ChevronUpIcon } from '@heroicons/react/24/outline'
 
 // 10개 주요 코인
 const SUPPORTED_COINS = [
@@ -38,7 +37,6 @@ export default function LiquidityPoolModule() {
   const [priceChange24h, setPriceChange24h] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showScrollTop, setShowScrollTop] = useState(false)
   
   const wsManager = useRef(WebSocketManager.getInstance())
   const orderbookHistoryRef = useRef<any[]>([])
@@ -180,20 +178,6 @@ export default function LiquidityPoolModule() {
     }
   }, [selectedCoin, loadInitialData, connectWebSocket])
   
-  // 스크롤 이벤트 리스너
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
-    }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-  
-  // 맨 위로 스크롤
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
@@ -384,17 +368,6 @@ export default function LiquidityPoolModule() {
           </div>
         )}
       </div>
-      
-      {/* 화면 위로 가기 버튼 */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 p-3 bg-purple-600 hover:bg-purple-700 rounded-full shadow-lg transition-all duration-300 group"
-          aria-label="맨 위로 이동"
-        >
-          <ChevronUpIcon className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-        </button>
-      )}
     </div>
   )
 }

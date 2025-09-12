@@ -166,9 +166,9 @@ export default function OptionsStrategyModule() {
       const defaultPrice = priceMap[currency] || 100
       setSpotPrice(defaultPrice)
       setError('일부 데이터를 불러오는데 실패했습니다. 기본값을 사용합니다.')
-    } finally {
-      setLoading(false)
     }
+    
+    setLoading(false)
   }, [selectedExpiry])
 
   // 옵션 체인 데이터 로드 (try-catch 강화)

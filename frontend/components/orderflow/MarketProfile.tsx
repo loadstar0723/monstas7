@@ -43,8 +43,16 @@ export default function MarketProfile({ symbol }: MarketProfileProps) {
           throw new Error('Failed to fetch data')
         }
 
-        const klines = await klinesResponse.json()
+        const klinesResult = await klinesResponse.json()
         const trades = await tradesResponse.json()
+        
+        // API 응답에서 data 배열 추출
+        const klines = klinesResult.data || klinesResult.klines || klinesResult || []
+        
+        if (!Array.isArray(klines) || klines.length === 0) {
+          console.error('Invalid klines data:', klinesResult)
+          return
+        }
 
         // 현재 가격
         const lastKline = klines[klines.length - 1]
@@ -321,15 +329,15 @@ export default function MarketProfile({ symbol }: MarketProfileProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <div className="text-center">
           <p className="text-xs text-gray-400">POC</p>
-          <p className="text-lg font-bold text-pink-400">${profileData?.safeFixed(poc, 2)}</p>
+          <p className="text-lg font-bold text-pink-400">${safeFixed(profileData?.poc, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VAH</p>
-          <p className="text-lg font-bold text-purple-400">${profileData?.safeFixed(vah, 2)}</p>
+          <p className="text-lg font-bold text-purple-400">${safeFixed(profileData?.vah, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VAL</p>
-          <p className="text-lg font-bold text-purple-400">${profileData?.safeFixed(val, 2)}</p>
+          <p className="text-lg font-bold text-purple-400">${safeFixed(profileData?.val, 2)}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-400">VA Range</p>
