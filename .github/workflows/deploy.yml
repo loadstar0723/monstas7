@@ -6,74 +6,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-without-downtime:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v3
       
-      - name: 🚀 무중단 배포 시작
+      - name: 🚀 배포 시작
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: 13.209.84.93
           username: ubuntu
           key: ${{ secrets.AWS_SERVER_KEY }}
           script: |
-            set -e  # 에러 발생 시 즉시 중단
+            echo "🎯 배포 시작..."
             
-            # 🔄 블루-그린 배포 전략
-            echo "🎯 무중단 배포 시작..."
+            # 프로젝트 디렉토리 확인 및 생성
+            PROJECT_DIR="$HOME/monstas7"
             
-            # 현재 실행 중인 버전 확인
-            CURRENT_DIR="monstas7"
-            NEW_DIR="monstas7_new"
-            BACKUP_DIR="monstas7_backup"
-            
-            # 1️⃣ 새 버전을 별도 디렉토리에 준비
-            echo "📦 새 버전 준비 중..."
-            
-            # 기존 새 디렉토리 제거
-            rm -rf ~/$NEW_DIR
-            
-            # 현재 버전 복사 (node_modules와 .next 캐시 보존)
-            if [ -d ~/$CURRENT_DIR ]; then
-              echo "🔄 기존 프로젝트 복사 중..."
-              cp -r ~/$CURRENT_DIR ~/$NEW_DIR
-              cd ~/$NEW_DIR
-            else
-              echo "🆕 새 프로젝트 클론 중..."
-              git clone https://github.com/loadstar0723/monstas7.git ~/$NEW_DIR
-              cd ~/$NEW_DIR
+            # 프로젝트가 없으면 클론
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "📦 프로젝트 클론 중..."
+              git clone https://github.com/loadstar0723/monstas7.git "$PROJECT_DIR"
             fi
             
-            # 2️⃣ 최신 코드만 업데이트 (캐시 보존)
+            # 프로젝트 디렉토리로 이동
+            cd "$PROJECT_DIR"
+            
+            # 최신 코드 가져오기
             echo "📥 최신 코드 가져오는 중..."
             git fetch origin master
             git reset --hard origin/master
             
-            # 3️⃣ 증분 설치 (변경된 패키지만)
+            # Frontend 디렉토리로 이동
             cd frontend
             
-            # package.json이 변경된 경우만 설치
-            if [ -f ~/$CURRENT_DIR/frontend/package.json ]; then
-              if ! diff package.json ~/$CURRENT_DIR/frontend/package.json > /dev/null 2>&1; then
-                echo "📦 변경된 패키지 설치 중..."
-                npm ci --prefer-offline --no-audit
-              else
-                echo "✅ 패키지 변경 없음 - 설치 스킵"
-              fi
-            else
-              echo "📦 새 설치 진행 중..."
-              npm ci --prefer-offline --no-audit
-            fi
+            # 패키지 설치
+            echo "📦 패키지 설치 중..."
+            npm ci || npm install
             
-            # 4️⃣ Prisma 재생성 (빠름)
+            # Prisma 생성
+            echo "🔧 Prisma 생성 중..."
             npx prisma generate
             
-            # 5️⃣ 증분 빌드 (캐시 활용)
-            echo "🔨 증분 빌드 중..."
-            
             # 환경변수 설정
+            echo "⚙️ 환경변수 설정 중..."
             cat > .env.production << 'EOF'
             NODE_ENV=production
             NEXTAUTH_SECRET=monstas7-secret-key-2024-production-secure
@@ -82,25 +59,27 @@ jobs:
             NEXT_PUBLIC_API_URL=http://13.209.84.93:3000/api
             EOF
             
-            # 빌드 (.next 캐시 활용으로 빠름)
+            # 빌드
+            echo "🔨 빌드 중..."
             npm run build
             
-            # 6️⃣ PM2 생태계 설정 업데이트
+            # PM2 설정
+            echo "🔄 PM2 설정 중..."
             cat > ecosystem.config.js << 'EOF'
             module.exports = {
               apps: [{
-                name: 'monsta-blue',
+                name: 'monsta-prod',
                 script: 'npm',
                 args: 'start',
-                cwd: './frontend',
+                cwd: './',
                 instances: 1,
                 exec_mode: 'fork',
                 autorestart: true,
                 watch: false,
-                max_memory_restart: '600M',
+                max_memory_restart: '1G',
                 env: {
                   NODE_ENV: 'production',
-                  PORT: 3001,  // 블루 버전은 3001 포트
+                  PORT: 3000,
                   NEXT_TELEMETRY_DISABLED: 1,
                   HOST: '0.0.0.0'
                 }
@@ -108,96 +87,23 @@ jobs:
             }
             EOF
             
-            # 7️⃣ 새 버전을 다른 포트(3001)에서 시작
-            echo "🔵 블루 버전 시작 중..."
-            pm2 delete monsta-blue 2>/dev/null || true
-            pm2 start ecosystem.config.js
-            
-            # 8️⃣ 새 버전 헬스 체크 (최대 30초 대기)
-            echo "🏥 새 버전 헬스 체크..."
-            for i in {1..30}; do
-              if curl -f http://localhost:3001 > /dev/null 2>&1; then
-                echo "✅ 새 버전 정상 작동 확인!"
-                break
-              fi
-              echo "⏳ 대기 중... ($i/30)"
-              sleep 1
-            done
-            
-            # 9️⃣ 트래픽 전환 (심볼릭 링크 교체)
-            echo "🔄 트래픽 전환 중..."
-            
-            # 백업 생성
-            if [ -d ~/$CURRENT_DIR ]; then
-              rm -rf ~/$BACKUP_DIR
-              mv ~/$CURRENT_DIR ~/$BACKUP_DIR
-            fi
-            
-            # 심볼릭 링크 교체 (원자적 작업)
-            mv ~/$NEW_DIR ~/$CURRENT_DIR
-            
-            # 🔟 기존 버전 종료 및 새 버전을 3000 포트로 전환
-            cd ~/$CURRENT_DIR/frontend
-            
-            # 3000 포트용 설정
-            cat > ecosystem.config.js << 'EOF'
-            module.exports = {
-              apps: [{
-                name: 'monsta-prod',
-                script: 'npm',
-                args: 'start',
-                cwd: './frontend',
-                instances: 2,  // 클러스터 모드로 2개 인스턴스
-                exec_mode: 'cluster',  // 클러스터 모드
-                autorestart: true,
-                watch: false,
-                max_memory_restart: '600M',
-                env: {
-                  NODE_ENV: 'production',
-                  PORT: 3000,
-                  NEXT_TELEMETRY_DISABLED: 1,
-                  HOST: '0.0.0.0'
-                },
-                wait_ready: true,
-                listen_timeout: 10000,
-                kill_timeout: 5000
-              }]
-            }
-            EOF
-            
-            # 기존 프로세스 종료 후 새로 시작
-            pm2 delete monsta-blue 2>/dev/null || true
+            # PM2로 앱 재시작
+            echo "🚀 앱 재시작 중..."
+            pm2 stop monsta-prod 2>/dev/null || true
             pm2 delete monsta-prod 2>/dev/null || true
             pm2 start ecosystem.config.js
             
+            # PM2 저장
             pm2 save
-            pm2 startup || true
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
             
-            # 1️⃣1️⃣ 최종 확인
-            echo "🎉 무중단 배포 완료!"
+            # 상태 확인
             echo "📊 PM2 상태:"
             pm2 status
             
-            # 백업 정리 (선택적)
-            if [ -d ~/$BACKUP_DIR ]; then
-              echo "🗑️ 이전 백업 제거 중..."
-              rm -rf ~/$BACKUP_DIR
-            fi
-            
-            echo "✅ 배포 완료 시간: $(date)"
+            echo "✅ 배포 완료!"
             echo "🌐 서비스 URL: http://13.209.84.93:3000"
       
       - name: ✅ 배포 성공 알림
         if: success()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.DEPLOY_TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.DEPLOY_TELEGRAM_BOT_TOKEN }}
-          message: |
-            ✅ 무중단 배포 성공!
-            
-            🚀 다운타임: 0초
-            📝 커밋: ${{ github.event.head_commit.message }}
-            🌐 URL: http://13.209.84.93:3000
-            
-            서버가 한 번도 끊기지 않고 배포되었습니다!
+        run: echo "배포가 성공적으로 완료되었습니다!"
