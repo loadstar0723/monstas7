@@ -39,6 +39,9 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
   useEffect(() => {
     const generateVisualizationData = async () => {
       try {
+        const symbol = `${coin}USDT`
+        const interval = '1h'
+        const limit = 100
         // 가격 데이터 가져오기
         const klinesResponse = await fetchKlines(symbol, interval, limit)
         let klines: any[] = []
@@ -369,13 +372,17 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-300">평균 감성</span>
                 <span className="text-white font-medium">
-                  {(globalSentiment.reduce((acc, cur) => acc + cur.sentiment, 0) / globalSentiment.length).toFixed(0)}%
+                  {globalSentiment.length > 0 
+                    ? (globalSentiment.reduce((acc, cur) => acc + cur.sentiment, 0) / globalSentiment.length).toFixed(0) 
+                    : 0}%
                 </span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-purple-500 h-2 rounded-full"
-                  style={{ width: `${globalSentiment.reduce((acc, cur) => acc + cur.sentiment, 0) / globalSentiment.length}%` }}
+                  style={{ width: `${globalSentiment.length > 0 
+                    ? globalSentiment.reduce((acc, cur) => acc + cur.sentiment, 0) / globalSentiment.length 
+                    : 0}%` }}
                 />
               </div>
             </div>

@@ -34,6 +34,7 @@ export default function InvestmentSignals({ coin }: InvestmentSignalsProps) {
   useEffect(() => {
     const analyzeSignals = async () => {
       try {
+        const symbol = `${coin}USDT`
         // 현재 시장 데이터
         let price = 0
         let change = 0

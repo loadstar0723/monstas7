@@ -34,6 +34,9 @@ export default function TradingStrategy({ coin }: TradingStrategyProps) {
   useEffect(() => {
     const analyzeStrategies = async () => {
       try {
+        const symbol = `${coin}USDT`
+        const interval = '1h'
+        const limit = 100
         // 현재 가격 정보
         // 기본값 설정 (API 호출 실패 시 사용)
         let price = currentPrice || 40000
