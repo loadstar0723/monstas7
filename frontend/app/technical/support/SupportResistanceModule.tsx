@@ -236,7 +236,7 @@ export default function SupportResistanceModule() {
       }
 
       ws.onerror = (error) => {
-        :', error.type || 'Connection error')
+        console.error('WebSocket error:', error.type || 'Connection error')
         setIsConnected(false)
       }
 
