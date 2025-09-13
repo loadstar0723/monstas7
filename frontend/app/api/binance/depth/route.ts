@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
     
     // Rate limit 에러 또는 개발 환경에서는 시뮬레이션 데이터 생성
     if (process.env.NODE_ENV === 'development' || error.message?.includes('429') || error.message?.includes('banned')) {
+      const { searchParams } = new URL(request.url)
       const symbol = searchParams.get('symbol') || 'BTCUSDT'
       const limit = parseInt(searchParams.get('limit') || '20')
       
