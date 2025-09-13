@@ -16,7 +16,7 @@ export async function safeApiCall<T>(
     const data = await apiCall()
     return { data, error: null }
   } catch (error) {
-    console.error(`API Error in ${moduleName || 'module'}:`, error)
+    console.error('API Error in ' + (moduleName || 'module') + ':', error)
     return { 
       data: fallbackData || null, 
       error: error as Error 
@@ -130,7 +130,7 @@ export function createModuleState<T>(
     try {
       localStorage.setItem(storageKey, JSON.stringify(state))
     } catch (error) {
-      console.error(`[${moduleName}] State save error:`, error)
+      console.error('[' + moduleName + '] State save error:', error)
     }
   }
   
@@ -205,7 +205,7 @@ export function reportModuleError(
   }
   
   // 콘솔에 출력
-  console.error(`[${moduleName}] Error Report:`, errorInfo)
+  console.error('[' + moduleName + '] Error Report:', errorInfo)
   
   // 추후 에러 수집 서비스로 전송 가능
   // sendToErrorService(errorInfo)
@@ -222,11 +222,11 @@ export async function initializeModule(
     try {
       const result = await check()
       if (!result) {
-        console.error(`[${moduleName}] Initialization check failed`)
+        console.error('[' + moduleName + '] Initialization check failed')
         return false
       }
     } catch (error) {
-      console.error(`[${moduleName}] Initialization error:`, error)
+      console.error('[' + moduleName + '] Initialization error:', error)
       return false
     }
   }
