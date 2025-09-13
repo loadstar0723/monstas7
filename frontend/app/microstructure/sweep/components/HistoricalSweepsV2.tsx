@@ -57,10 +57,10 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         const limit = timeframe === '7d' ? 168 : timeframe === '30d' ? 360 : 500
         
         // Binance Klines API 호출
-        const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`)
+        const response = await fetch('/api/binance/klines?symbol=' + symbol + '&interval=' + interval + '&limit=' + limit)
         
         if (!response.ok) {
-          throw new Error(`API 응답 실패: ${response.status}`)
+          throw new Error('API 응답 실패: ' + response.status)
         }
         
         const klines = await response.json()
