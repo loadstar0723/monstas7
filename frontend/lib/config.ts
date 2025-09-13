@@ -24,7 +24,10 @@ export const config = {
     value60: 60,
     value70: 70,
     value80: 80,
+    value87: 87,
     value90: 90,
+    value92: 92,
+    value95: 95,
     value100: 100,
   },
   delays: {
