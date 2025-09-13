@@ -388,7 +388,6 @@ export function useCVDWebSocket(symbol: string) {
           if (reconnectAttempts.current < 5) {
             reconnectAttempts.current++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-            `);
             
             eventSource?.close();
             reconnectTimeout.current = setTimeout(connectToSymbol, delay);
