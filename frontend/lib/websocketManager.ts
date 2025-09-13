@@ -68,7 +68,6 @@ class WebSocketManager {
       if (attempts < this.maxReconnectAttempts) {
         const delay = Math.min(1000 * Math.pow(2, attempts), 30000)
         setTimeout(() => {
-          `)
           this.reconnectAttempts.set(key, attempts + 1)
           this.connect(key, url, onMessage, onError, onOpen, onClose, onConnect)
         }, delay)
