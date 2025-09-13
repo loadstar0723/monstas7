@@ -1066,7 +1066,7 @@ export default function PatternRecognitionUltimate() {
                     <PatternHeatmap 
                       data={heatmapData}
                       selectedPattern={detectedPatterns[0]?.type}
-                      onPatternSelect={(pattern) => }
+                      onPatternSelect={(pattern) => console.log('Pattern selected:', pattern)}
                     />
                   </div>
                 </div>
@@ -1090,7 +1090,7 @@ export default function PatternRecognitionUltimate() {
                   <SuccessRateRadar 
                     data={radarData}
                     selectedPattern={detectedPatterns[0]?.type}
-                    onPatternSelect={(pattern) => }
+                    onPatternSelect={(pattern) => console.log('Pattern selected in calendar:', pattern)}
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">
@@ -1115,7 +1115,7 @@ export default function PatternRecognitionUltimate() {
                     trades={tradeHistoryData}
                     selectedPattern={detectedPatterns[0]?.type}
                     timeframe="3M"
-                    onDateHover={(date) => }
+                    onDateHover={(date) => console.log('Date hovered:', date)}
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">
@@ -1171,7 +1171,7 @@ export default function PatternRecognitionUltimate() {
                   <PatternTimelineChart 
                     events={timelineEvents}
                     currentTime={Date.now()}
-                    onEventClick={(event) => }
+                    onEventClick={(event) => console.log('Event clicked:', event)}
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">
