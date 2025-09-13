@@ -96,13 +96,13 @@ export default function DebugPanel({ footprintData, marketProfile, selectedSymbo
           {/* 디버그 액션 */}
           <div className="space-y-2">
             <button
-              onClick={() => }
+              onClick={() => console.log('Footprint Data:', footprintData)}
               className="w-full bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm"
             >
               콘솔에 풋프린트 데이터 출력
             </button>
             <button
-              onClick={() => }
+              onClick={() => console.log('Market Profile:', marketProfile)}
               className="w-full bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm"
             >
               콘솔에 마켓 프로파일 출력

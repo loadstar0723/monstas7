@@ -814,13 +814,6 @@ dataService.subscribeToPrice('BTCUSDT', (data) => {
 const news = await dataService.getNews(['BTC'])
 ```
 
-## ⚡ API Rate Limit 방지 전략
-
-### 문제
-
-- Binance API: 분당 1200 요청 제한
-- 다수 페이지 동시 접속 시 429 에러 발생
-
 ### 해결책
 
 1. **WebSocket 우선**: REST API 대신 WebSocket 스트리밍 사용
@@ -847,25 +840,24 @@ node scripts/migrate-to-optimized-api.js
 
 ### 최종 선택: 하이브리드 구조
 
-```
 Binance WebSocket (무료) + CryptoCompare Free (무료) = 완벽한 솔루션
+
 - 실시간 가격: Binance WebSocket
 - 뉴스/소셜: CryptoCompare
 - 공포탐욕지수: Alternative.me
-```
 
-  // 1. CryptoCompare (메인 데이터)
+  1. CryptoCompare (메인 데이터)
 
 - 실시간 가격, 오더북, 거래량
 - 뉴스, 소셜 데이터 포함
 - WebSocket 실시간 스트리밍
 
-  // 2. Binance WebSocket (실시간 보조)
+  2. Binance WebSocket (실시간 보조)
 
 - 초단위 가격 업데이트
 - 오더북 실시간 변화
 
-  // 3. Alternative.me (공포탐욕지수)
+  3. Alternative.me (공포탐욕지수)
 
 - 무료 API
 - Fear & Greed Index
