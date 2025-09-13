@@ -58,7 +58,6 @@ export default function HFTPatternModule() {
   const [orderbook, setOrderbook] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showScrollTop, setShowScrollTop] = useState(false)
   
   const wsManager = useRef(WebSocketManager.getInstance())
   const tradesHistoryRef = useRef<TradeData[]>([])
@@ -292,15 +291,6 @@ export default function HFTPatternModule() {
     setSelectedCoin(coin)
   }, [selectedCoin])
   
-  // 스크롤 이벤트 처리
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
-    }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
   
   // 초기 데이터 로드 및 WebSocket 연결
   useEffect(() => {
@@ -314,10 +304,6 @@ export default function HFTPatternModule() {
     }
   }, [selectedCoin, loadInitialData, connectWebSocket])
   
-  // 맨 위로 스크롤
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -442,15 +428,6 @@ export default function HFTPatternModule() {
         )}
       </div>
       
-      {/* 맨 위로 버튼 */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition-all duration-300 z-50"
-        >
-          <ChevronUpIcon className="h-6 w-6" />
-        </button>
-      )}
     </div>
   )
 }

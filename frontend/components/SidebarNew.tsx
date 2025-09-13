@@ -1266,7 +1266,10 @@ export default function SidebarNew() {
                                                 window.location.href = '/subscription/benefits'
                                               }
                                             } else {
-                                              setIsOpen(false)
+                                              // 페이지 이동이 완료된 후에 사이드바를 닫도록 setTimeout 사용
+                                              setTimeout(() => {
+                                                setIsOpen(false)
+                                              }, 100)
                                             }
                                           }}
                                           title={!canAccess 

@@ -299,25 +299,25 @@ export default function SpoofingHeatmap({ orderbook, symbol }: SpoofingHeatmapPr
         <div className="text-center">
           <div className="text-xs text-gray-400">스프레드</div>
           <div className="text-sm font-semibold text-white">
-            ${orderbook?.safeFixed(spread, 2) || '0.00'}
+            ${safeFixed(orderbook?.spread, 2) || '0.00'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">스프레드 %</div>
           <div className="text-sm font-semibold text-white">
-            {orderbook?.safeFixed(spreadPercent, 3) || '0.000'}%
+            {safeFixed(orderbook?.spreadPercent, 3) || '0.000'}%
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">최우선 매수</div>
           <div className="text-sm font-semibold text-green-400">
-            ${orderbook?.safeFixed(bestBid, 2) || '0.00'}
+            ${safeFixed(orderbook?.bestBid, 2) || '0.00'}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400">최우선 매도</div>
           <div className="text-sm font-semibold text-red-400">
-            ${orderbook?.safeFixed(bestAsk, 2) || '0.00'}
+            ${safeFixed(orderbook?.bestAsk, 2) || '0.00'}
           </div>
         </div>
       </div>
