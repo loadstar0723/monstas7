@@ -46,6 +46,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSymbol, setSelectedSymbol] = useState('BINANCE:BTCUSDT')
   const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     // 초기 데이터 로드
@@ -117,9 +118,12 @@ export default function Home() {
     }
   }, [])
 
-  const fetchMarketData = async () => {
+  const fetchMarketData = async (isRetry = false) => {
     try {
-      setError(null)
+      if (!isRetry) {
+        setError(null)
+      }
+      
       const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT']
       const promises = symbols.map(symbol => 
         fetch(`/api/binance/ticker?symbol=${symbol}`)
@@ -127,39 +131,37 @@ export default function Home() {
             if (!res.ok) throw new Error('API 응답 실패')
             return res.json()
           })
-          .catch(() => null)
+          .catch((err) => {
+            console.error(`Failed to fetch ${symbol}:`, err)
+            return null
+          })
       )
       
       const results = await Promise.all(promises)
       const validResults = results.filter(r => r !== null)
       
-      // API 호출이 모두 실패한 경우 폴백 데이터 사용
+      // API 호출이 모두 실패한 경우
       if (validResults.length === 0) {
-        // 폴백 데이터 설정
-        setBtcData({
-          symbol: 'BTCUSDT',
-          price: 97500.00,
-          change: 2.5,
-          volume: '2500M',
-          high: 98000,
-          low: 96000
-        })
-        setEthData({
-          symbol: 'ETHUSDT',
-          price: 3750.00,
-          change: 3.2,
-          volume: '1200M',
-          high: 3800,
-          low: 3700
-        })
-        setTopCoins([
-          { symbol: 'BTCUSDT', price: 97500, priceChangePercent: 2.5, quoteVolume: 2500000000 },
-          { symbol: 'ETHUSDT', price: 3750, priceChangePercent: 3.2, quoteVolume: 1200000000 },
-          { symbol: 'BNBUSDT', price: 690, priceChangePercent: 1.8, quoteVolume: 500000000 },
-          { symbol: 'SOLUSDT', price: 240, priceChangePercent: 4.5, quoteVolume: 800000000 }
-        ])
-        setError('실시간 데이터를 가져올 수 없습니다. 샘플 데이터를 표시 중입니다.')
-      } else if (validResults.length > 0) {
+        const maxRetries = 3
+        if (retryCount < maxRetries) {
+          setRetryCount(prev => prev + 1)
+          setError(`데이터 로드 중... 재시도 ${retryCount + 1}/${maxRetries}`)
+          // 재시도 간격: 2초, 5초, 10초
+          const retryDelay = [2000, 5000, 10000][retryCount]
+          setTimeout(() => fetchMarketData(true), retryDelay)
+        } else {
+          setError('실시간 데이터를 가져올 수 없습니다. 네트워크 연결을 확인해주세요.')
+          setIsLoading(false)
+          // 30초 후 재시도 카운트 리셋하고 다시 시도
+          setTimeout(() => {
+            setRetryCount(0)
+            fetchMarketData()
+          }, 30000)
+        }
+        return
+      }
+      
+      if (validResults.length > 0) {
         // BTC 데이터
         const btcPrice = validResults.find((p: Record<string, string>) => p.symbol === 'BTCUSDT')
         if (btcPrice) {
@@ -197,34 +199,22 @@ export default function Home() {
         
         setTopCoins(topVolumeCoins)
         setIsLoading(false)
+        // 성공 시 재시도 카운트 리셋
+        setRetryCount(0)
       }
     } catch (error) {
       console.error('마켓 데이터 로드 실패:', error)
-      setError('데이터를 불러오는 중 오류가 발생했습니다.')
-      // 에러 발생 시에도 폴백 데이터 제공
-      setBtcData({
-        symbol: 'BTCUSDT',
-        price: 97500.00,
-        change: 2.5,
-        volume: '2500M',
-        high: 98000,
-        low: 96000
-      })
-      setEthData({
-        symbol: 'ETHUSDT',
-        price: 3750.00,
-        change: 3.2,
-        volume: '1200M',
-        high: 3800,
-        low: 3700
-      })
-      setTopCoins([
-        { symbol: 'BTCUSDT', price: 97500, priceChangePercent: 2.5, quoteVolume: 2500000000 },
-        { symbol: 'ETHUSDT', price: 3750, priceChangePercent: 3.2, quoteVolume: 1200000000 },
-        { symbol: 'BNBUSDT', price: 690, priceChangePercent: 1.8, quoteVolume: 500000000 },
-        { symbol: 'SOLUSDT', price: 240, priceChangePercent: 4.5, quoteVolume: 800000000 }
-      ])
-      setIsLoading(false)
+      const maxRetries = 3
+      if (retryCount < maxRetries) {
+        setRetryCount(prev => prev + 1)
+        setError(`오류 발생. 재시도 중... (${retryCount + 1}/${maxRetries})`)
+        // 재시도 간격: 2초, 5초, 10초
+        const retryDelay = [2000, 5000, 10000][retryCount]
+        setTimeout(() => fetchMarketData(true), retryDelay)
+      } else {
+        setError('데이터를 불러올 수 없습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해주세요.')
+        setIsLoading(false)
+      }
     }
   }
 
