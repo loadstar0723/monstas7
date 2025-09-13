@@ -231,7 +231,9 @@
       "Bash(start http://localhost:3037/technical/ofi)",
       "Bash(start http://localhost:3037/technical/volume)",
       "Bash(start http://localhost:3037/technical/liquidity)",
-      "Bash(start http://localhost:3037/technical/liquidation)"
+      "Bash(start http://localhost:3037/technical/liquidation)",
+      "Bash(start http://localhost:3042)",
+      "Bash(start http://localhost:3043/technical/cvd)"
     ],
     "deny": [],
     "ask": []

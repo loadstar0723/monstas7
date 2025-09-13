@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaBitcoin, FaEthereum, FaChartLine, FaChartBar, FaChartArea, 
   FaGraduationCap, FaRobot, FaBalanceScale, FaVolumeUp, FaCrosshairs, 
   FaSignal, FaTrophy, FaShieldAlt, FaBolt, FaBrain
 } from 'react-icons/fa'
+import DynamicGuideSection from './DynamicGuideSection'
 import { SiBinance, SiCardano, SiDogecoin, SiPolkadot } from 'react-icons/si'
 import { BiLineChart, BiBarChart, BiPulse } from 'react-icons/bi'
 import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
@@ -51,6 +52,7 @@ const TRACKED_SYMBOLS = [
 
 // 탭 정의
 const TABS = [
+  { id: 'guide', label: '개념 가이드', icon: <FaGraduationCap className="w-4 h-4" />, description: 'CVD 개념과 원리 학습' },
   { id: 'overview', label: '종합분석', icon: <FaChartLine className="w-4 h-4" />, description: 'CVD 종합 대시보드' },
   { id: 'realtime', label: '실시간', icon: <BiPulse className="w-4 h-4" />, description: '실시간 CVD 분석' },
   { id: 'cumulative', label: '누적분석', icon: <FaChartArea className="w-4 h-4" />, description: '누적 볼륨 델타' },
@@ -876,65 +878,529 @@ export default function CVDModule() {
     }
 
     switch (activeTab) {
+      case 'guide':
+        return (
+          <div className="space-y-8">
+            {/* CVD 기본 개념 */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <FaBrain className="text-purple-400" />
+                CVD란 무엇인가?
+              </h3>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                    <h4 className="text-lg font-bold text-blue-400 mb-3">📊 CVD (Cumulative Volume Delta)</h4>
+                    <p className="text-gray-300 mb-3">
+                      CVD는 누적 볼륨 델타(Cumulative Volume Delta)의 약자로, 매수 거래량과 매도 거래량의 
+                      차이를 누적하여 계산한 지표입니다.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-400">매수 주문이 많으면 CVD 상승</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-red-400">✓</span>
+                        <span className="text-gray-400">매도 주문이 많으면 CVD 하락</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-purple-400">✓</span>
+                        <span className="text-gray-400">시장의 실제 매수/매도 압력을 시각화</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                    <h4 className="text-lg font-bold text-purple-400 mb-3">🔍 왜 CVD가 중요한가?</h4>
+                    <ul className="space-y-2 text-gray-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>가격 움직임의 실제 원인 파악 가능</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>스마트머니의 포지션 방향 추적</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>가격과 볼륨의 다이버전스 발견</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>시장 심리와 트렌드 강도 측정</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                    <h4 className="text-lg font-bold text-green-400 mb-3">📈 CVD 계산 방법</h4>
+                    <div className="bg-gray-900/50 p-3 rounded-lg font-mono text-sm mb-3">
+                      <div className="text-gray-300">Delta = Buy Volume - Sell Volume</div>
+                      <div className="text-blue-400 mt-1">CVD = Σ(Delta₁ + Delta₂ + ... + Deltaₙ)</div>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300">
+                      <p><strong className="text-white">1단계:</strong> 각 캔들의 매수/매도 볼륨 계산</p>
+                      <p><strong className="text-white">2단계:</strong> 델타(차이) = 매수량 - 매도량</p>
+                      <p><strong className="text-white">3단계:</strong> 델타를 시간순으로 누적</p>
+                      <p><strong className="text-white">4단계:</strong> CVD 곡선 생성</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                    <h4 className="text-lg font-bold text-yellow-400 mb-3">⚡ 실시간 활용 예시</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
+                        <span className="text-gray-300">현재 가격:</span>
+                        <span className="text-white font-bold">$43,250</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
+                        <span className="text-gray-300">CVD 값:</span>
+                        <span className="text-green-400 font-bold">+125,430</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
+                        <span className="text-gray-300">델타 %:</span>
+                        <span className="text-green-400 font-bold">+3.5%</span>
+                      </div>
+                      <div className="mt-3 p-2 bg-green-900/30 rounded border border-green-500/50">
+                        <span className="text-green-400 font-bold">해석:</span>
+                        <span className="text-gray-300 ml-2">강한 매수세, 상승 추세 지속 가능</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* CVD 패턴 분석 */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <FaChartBar className="text-blue-400" />
+                CVD 패턴 완벽 가이드
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 상승 패턴 */}
+                <div className="p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-500/30">
+                  <h4 className="text-lg font-bold text-green-400 mb-3">📈 상승 패턴</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD 상승 + 가격 상승</p>
+                      <p className="text-gray-400 text-sm">건전한 상승 트렌드</p>
+                      <p className="text-green-400 text-xs mt-1">신호: 강력한 매수 지속</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD 급등 + 가격 횡보</p>
+                      <p className="text-gray-400 text-sm">축적 단계 (Accumulation)</p>
+                      <p className="text-green-400 text-xs mt-1">신호: 곧 큰 상승 예상</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD V자 반등</p>
+                      <p className="text-gray-400 text-sm">강한 매수세 진입</p>
+                      <p className="text-green-400 text-xs mt-1">신호: 추세 전환 시작</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 하락 패턴 */}
+                <div className="p-4 bg-gradient-to-br from-red-900/20 to-red-800/10 rounded-lg border border-red-500/30">
+                  <h4 className="text-lg font-bold text-red-400 mb-3">📉 하락 패턴</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD 하락 + 가격 하락</p>
+                      <p className="text-gray-400 text-sm">건전한 하락 트렌드</p>
+                      <p className="text-red-400 text-xs mt-1">신호: 강력한 매도 지속</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD 급락 + 가격 횡보</p>
+                      <p className="text-gray-400 text-sm">분산 단계 (Distribution)</p>
+                      <p className="text-red-400 text-xs mt-1">신호: 곧 큰 하락 예상</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">CVD 역V자 하락</p>
+                      <p className="text-gray-400 text-sm">강한 매도세 진입</p>
+                      <p className="text-red-400 text-xs mt-1">신호: 하락 추세 가속</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 다이버전스 패턴 */}
+                <div className="p-4 bg-gradient-to-br from-purple-900/20 to-purple-800/10 rounded-lg border border-purple-500/30">
+                  <h4 className="text-lg font-bold text-purple-400 mb-3">🔄 다이버전스</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">가격↑ CVD↓</p>
+                      <p className="text-gray-400 text-sm">약세 다이버전스</p>
+                      <p className="text-yellow-400 text-xs mt-1">경고: 상승 동력 약화</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">가격↓ CVD↑</p>
+                      <p className="text-gray-400 text-sm">강세 다이버전스</p>
+                      <p className="text-yellow-400 text-xs mt-1">기회: 반등 가능성</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <p className="text-white font-semibold mb-1">히든 다이버전스</p>
+                      <p className="text-gray-400 text-sm">추세 지속 신호</p>
+                      <p className="text-yellow-400 text-xs mt-1">확인: 추세 강화</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 실전 트레이딩 전략 */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <FaTrophy className="text-yellow-400" />
+                CVD 실전 트레이딩 전략
+              </h3>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 진입 전략 */}
+                <div className="space-y-4">
+                  <h4 className="text-xl font-bold text-green-400 flex items-center gap-2">
+                    <HiTrendingUp />
+                    진입 전략 (Entry)
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    <div className="p-4 bg-green-900/20 rounded-lg border border-green-500/30">
+                      <h5 className="text-green-400 font-bold mb-2">🎯 롱 포지션 진입</h5>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li>• CVD 상승 전환 + 지지선 확인</li>
+                        <li>• 델타 +2% 이상 3개 캔들 연속</li>
+                        <li>• CVD-가격 강세 다이버전스 발생</li>
+                        <li>• 볼륨 급증 + CVD 상승 동시 발생</li>
+                        <li>• 이전 고점 CVD 레벨 돌파</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="p-4 bg-red-900/20 rounded-lg border border-red-500/30">
+                      <h5 className="text-red-400 font-bold mb-2">🎯 숏 포지션 진입</h5>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li>• CVD 하락 전환 + 저항선 확인</li>
+                        <li>• 델타 -2% 이상 3개 캔들 연속</li>
+                        <li>• CVD-가격 약세 다이버전스 발생</li>
+                        <li>• 볼륨 급증 + CVD 하락 동시 발생</li>
+                        <li>• 이전 저점 CVD 레벨 붕괴</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 청산 전략 */}
+                <div className="space-y-4">
+                  <h4 className="text-xl font-bold text-red-400 flex items-center gap-2">
+                    <HiTrendingDown />
+                    청산 전략 (Exit)
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    <div className="p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
+                      <h5 className="text-yellow-400 font-bold mb-2">⚠️ 이익 실현 타이밍</h5>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li>• CVD 기울기 완화 (모멘텀 약화)</li>
+                        <li>• 목표가 도달 + CVD 횡보</li>
+                        <li>• 극단적 델타값 출현 (±5% 초과)</li>
+                        <li>• CVD-가격 다이버전스 시작</li>
+                        <li>• 주요 저항/지지 CVD 레벨 도달</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="p-4 bg-red-900/20 rounded-lg border border-red-500/30">
+                      <h5 className="text-red-400 font-bold mb-2">🛑 손절 기준</h5>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li>• CVD 반대 방향 전환 확정</li>
+                        <li>• 델타 연속 3개 반대 신호</li>
+                        <li>• CVD 주요 레벨 붕괴</li>
+                        <li>• 예상과 반대 다이버전스 발생</li>
+                        <li>• 설정 손실률 도달 (-2~3%)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 리스크 관리 */}
+              <div className="mt-6 p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                <h4 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+                  <FaShieldAlt />
+                  리스크 관리 원칙
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-gray-900/50 rounded">
+                    <div className="text-2xl font-bold text-yellow-400 mb-1">2%</div>
+                    <div className="text-sm text-gray-400">거래당 최대 손실</div>
+                  </div>
+                  <div className="text-center p-3 bg-gray-900/50 rounded">
+                    <div className="text-2xl font-bold text-green-400 mb-1">1:2</div>
+                    <div className="text-sm text-gray-400">최소 손익비</div>
+                  </div>
+                  <div className="text-center p-3 bg-gray-900/50 rounded">
+                    <div className="text-2xl font-bold text-blue-400 mb-1">3회</div>
+                    <div className="text-sm text-gray-400">연속 손실 시 휴식</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 고급 활용법 */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <FaBolt className="text-yellow-400" />
+                CVD 고급 활용법
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                  <h4 className="text-lg font-bold text-blue-400 mb-3">🔍 멀티 타임프레임 분석</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">1분봉</span>
+                        <span className="text-gray-400">스캘핑 진입점</span>
+                      </div>
+                      <p className="text-sm text-gray-300">즉각적인 주문 흐름과 단기 모멘텀 파악</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">15분봉</span>
+                        <span className="text-gray-400">데이 트레이딩</span>
+                      </div>
+                      <p className="text-sm text-gray-300">중기 트렌드와 주요 전환점 확인</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">4시간봉</span>
+                        <span className="text-gray-400">스윙 트레이딩</span>
+                      </div>
+                      <p className="text-sm text-gray-300">장기 추세와 주요 축적/분산 구간</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                  <h4 className="text-lg font-bold text-purple-400 mb-3">⚡ 다른 지표와 조합</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">CVD + RSI</span>
+                        <span className="text-green-400">추천</span>
+                      </div>
+                      <p className="text-sm text-gray-300">과매수/과매도 구간에서 CVD 반전 확인</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">CVD + VWAP</span>
+                        <span className="text-green-400">추천</span>
+                      </div>
+                      <p className="text-sm text-gray-300">VWAP 기준 CVD 방향성으로 추세 강도 측정</p>
+                    </div>
+                    <div className="p-3 bg-gray-900/50 rounded">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white font-semibold">CVD + OBV</span>
+                        <span className="text-yellow-400">유용</span>
+                      </div>
+                      <p className="text-sm text-gray-300">볼륨 확인으로 CVD 신호 검증</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 주의사항 */}
+              <div className="mt-6 p-4 bg-red-900/20 rounded-lg border border-red-500/30">
+                <h4 className="text-lg font-bold text-red-400 mb-3">⚠️ 주의사항</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>CVD만으로 거래 결정 금지 (다른 지표 병행)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>급격한 뉴스 이벤트 시 CVD 신뢰도 하락</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>낮은 유동성 구간에서 왜곡 가능성</span>
+                    </li>
+                  </ul>
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>거래소별 CVD 차이 존재 (크로스 체크 필요)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>봇 거래 많은 구간에서 노이즈 증가</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">•</span>
+                      <span>항상 리스크 관리 원칙 준수</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* FAQ 섹션 */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <FaGraduationCap className="text-blue-400" />
+                자주 묻는 질문 (FAQ)
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-900/50 rounded-lg">
+                  <h4 className="text-lg font-bold text-yellow-400 mb-2">Q. CVD와 일반 볼륨의 차이는?</h4>
+                  <p className="text-gray-300">
+                    일반 볼륨은 전체 거래량만 보여주지만, CVD는 매수와 매도를 구분하여 실제 시장 압력의 방향을 보여줍니다. 
+                    예를 들어 높은 볼륨에도 CVD가 평평하다면 매수와 매도가 균형을 이루고 있다는 의미입니다.
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-gray-900/50 rounded-lg">
+                  <h4 className="text-lg font-bold text-yellow-400 mb-2">Q. CVD 다이버전스는 얼마나 신뢰할 수 있나요?</h4>
+                  <p className="text-gray-300">
+                    CVD 다이버전스는 70-80% 정도의 신뢰도를 보입니다. 특히 주요 지지/저항 레벨에서 발생하거나 
+                    다른 지표(RSI, MACD)와 함께 확인될 때 신뢰도가 높아집니다. 단독 사용보다는 확인 지표로 활용하세요.
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-gray-900/50 rounded-lg">
+                  <h4 className="text-lg font-bold text-yellow-400 mb-2">Q. 어떤 시간대의 CVD를 봐야 하나요?</h4>
+                  <p className="text-gray-300">
+                    트레이딩 스타일에 따라 다릅니다. 스캘핑은 1-5분봉, 데이트레이딩은 15분-1시간봉, 
+                    스윙트레이딩은 4시간-1일봉을 주로 참고합니다. 멀티 타임프레임으로 상위 추세를 확인하는 것이 중요합니다.
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-gray-900/50 rounded-lg">
+                  <h4 className="text-lg font-bold text-yellow-400 mb-2">Q. CVD가 급격히 변할 때는 어떻게 대응하나요?</h4>
+                  <p className="text-gray-300">
+                    급격한 CVD 변화는 대량 주문이나 뉴스 이벤트를 의미합니다. 먼저 원인을 파악하고, 
+                    변화 방향이 기존 포지션과 반대라면 즉시 손절을 고려하세요. 같은 방향이라면 일부 수익 실현을 검토하세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+        
       case 'overview':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <CVDTrendChart data={cvdData} />
+          <>
+            <DynamicGuideSection 
+              tabId="overview" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <CVDTrendChart data={cvdData} />
             </div>
             <CVDGaugeChart currentCVD={currentCVD} data={cvdData} />
             <PriceCVDComparisonChart data={cvdData} />
             <VolumeDeltaBarChart data={cvdData} />
-            <BuySellPressureChart data={cvdData} />
-          </div>
+              <BuySellPressureChart data={cvdData} />
+            </div>
+          </>
         )
 
       case 'realtime':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CVDMomentumChart data={cvdData} />
+          <>
+            <DynamicGuideSection 
+              tabId="realtime" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CVDMomentumChart data={cvdData} />
             <TradingSignalChart data={cvdData} />
             <CVDVolatilityChart data={cvdData} />
-            <BuySellPowerIndex data={cvdData} />
-          </div>
+              <BuySellPowerIndex data={cvdData} />
+            </div>
+          </>
         )
 
       case 'cumulative':
         return (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div className="xl:col-span-2">
-              <CumulativeVolumeProfile data={cvdData} />
+          <>
+            <DynamicGuideSection 
+              tabId="cumulative" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="xl:col-span-2">
+                <CumulativeVolumeProfile data={cvdData} />
             </div>
             <DeltaDistributionChart data={cvdData} />
-            <CVDRadarChart data={cvdData} />
-          </div>
+              <CVDRadarChart data={cvdData} />
+            </div>
+          </>
         )
 
       case 'divergence':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CVDDivergenceScatter data={cvdData} />
+          <>
+            <DynamicGuideSection 
+              tabId="divergence" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CVDDivergenceScatter data={cvdData} />
             <CVDCorrelationMatrix data={cvdData} />
             <div className="lg:col-span-2">
-              <PriceCVDComparisonChart data={cvdData} />
+                <PriceCVDComparisonChart data={cvdData} />
+              </div>
             </div>
-          </div>
+          </>
         )
 
       case 'timeframe':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TimeframeCVDHeatmap data={cvdData} />
+          <>
+            <DynamicGuideSection 
+              tabId="timeframe" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TimeframeCVDHeatmap data={cvdData} />
             <CVDRadarChart data={cvdData} />
             <div className="lg:col-span-2">
-              <CVDTrendChart data={cvdData} />
+                <CVDTrendChart data={cvdData} />
+              </div>
             </div>
-          </div>
+          </>
         )
 
       case 'strategy':
         return (
           <div className="space-y-6">
+            <DynamicGuideSection 
+              tabId="strategy" 
+              currentCVD={currentCVD}
+              currentDelta={currentDelta}
+              buyPressure={buyPressure}
+              sellPressure={sellPressure}
+            />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TradingSignalChart data={cvdData} />
               <BuySellPowerIndex data={cvdData} />
