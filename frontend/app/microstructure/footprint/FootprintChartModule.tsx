@@ -89,7 +89,7 @@ export default function FootprintChartModule() {
   const updateFootprintData = useCallback((order: OrderFlowData) => {
     const time = new Date(order.timestamp)
     const minutes = Math.floor(time.getMinutes() / 5) * 5
-    const timeKey = `${time.getHours().toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+    const timeKey = time.getHours().toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0')
     
     setFootprintData(prev => {
       const priceGrouping = FOOTPRINT_CONFIG.PRICE_GROUPING[selectedSymbol] || 1
@@ -178,7 +178,7 @@ export default function FootprintChartModule() {
     
     try {
       // Binance API에서 최근 거래 데이터 가져오기
-      const response = await fetch(`/api/binance/trades?symbol=${selectedSymbol}&limit=100`)
+      const response = await fetch('/api/binance/trades?symbol=' + selectedSymbol + '&limit=100')
       if (response.ok) {
         const data = await response.json()
         if (data && data.length > 0) {
@@ -232,7 +232,7 @@ export default function FootprintChartModule() {
 
     try {
       const symbol = selectedSymbol.toLowerCase()
-      const sseUrl = `/api/binance/websocket?stream=${symbol}@aggTrade`
+      const sseUrl = '/api/binance/websocket?stream=' + symbol + '@aggTrade'
       sseRef.current = new EventSource(sseUrl)
       
       sseRef.current.onopen = () => {
@@ -282,7 +282,7 @@ export default function FootprintChartModule() {
 
     try {
       const symbol = selectedSymbol.toLowerCase()
-      const wsUrl = `wss://stream.binance.com:9443/ws/${symbol}@aggTrade`
+      const wsUrl = 'wss://stream.binance.com:9443/ws/' + symbol + '@aggTrade'
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
@@ -334,7 +334,6 @@ export default function FootprintChartModule() {
       reconnectAttemptsRef.current += 1
       const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
       
-      `)
       reconnectTimeoutRef.current = setTimeout(() => {
         connectWebSocket()
       }, delay)
@@ -368,7 +367,7 @@ export default function FootprintChartModule() {
       
       // Binance API에서 최근 캔들 데이터 가져오기 (5분봉 288개 - 24시간)
       try {
-        const response = await fetch(`/api/binance/klines?symbol=${selectedSymbol}&interval=5m&limit=288`)
+        const response = await fetch('/api/binance/klines?symbol=' + selectedSymbol + '&interval=5m&limit=288')
         if (response.ok) {
           const result = await response.json()
           const klines = result.data || result.klines || [] // API 응답 구조에 맞게 수정
@@ -399,7 +398,7 @@ export default function FootprintChartModule() {
             const hours = time.getHours().toString().padStart(2, '0')
             const minutes = time.getMinutes().toString().padStart(2, '0')
             return {
-              time: `${hours}:${minutes}`,
+              time: hours + ':' + minutes,
               open: parseFloat(open),
               high: parseFloat(high),
               low: parseFloat(low),

@@ -89,7 +89,7 @@ export function useOrderbookWebSocket(symbol: string, depth: number = 20) {
   // 초기 오더북 스냅샷 가져오기
   const fetchOrderbookSnapshot = useCallback(async () => {
     try {
-      const response = await fetch(`/api/binance/orderbook?symbol=${symbol}&limit=${depth}`)
+      const response = await fetch('/api/binance/orderbook?symbol=' + symbol + '&limit=' + depth)
       if (!response.ok) throw new Error('Failed to fetch orderbook')
       
       const data = await response.json()
@@ -114,10 +114,10 @@ export function useOrderbookWebSocket(symbol: string, depth: number = 20) {
     try {
       // Binance WebSocket 스트림 (오더북 + 티커)
       const streams = [
-        `${symbol.toLowerCase()}@depth20@100ms`, // 오더북 업데이트 (100ms)
-        `${symbol.toLowerCase()}@ticker` // 가격 티커
+        symbol.toLowerCase() + '@depth20@100ms', // 오더북 업데이트 (100ms)
+        symbol.toLowerCase() + '@ticker' // 가격 티커
       ]
-      const wsUrl = `wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`
+      const wsUrl = 'wss://stream.binance.com:9443/stream?streams=' + streams.join('/')
       
       const ws = new WebSocket(wsUrl)
       wsRef.current = ws
@@ -170,7 +170,6 @@ export function useOrderbookWebSocket(symbol: string, depth: number = 20) {
         // 재연결 로직 (정상 종료가 아닌 경우에만)
         if (!event.wasClean && reconnectCountRef.current < 5) {
           const timeout = Math.min(1000 * Math.pow(2, reconnectCountRef.current), 30000)
-          `)
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectCountRef.current++
             connect()
