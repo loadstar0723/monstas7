@@ -247,7 +247,7 @@ export default function ElliottWaveModule() {
         wsRef.current.close()
       }
       clearTimeout(connectionDelayRef.current!)
-      clearInterval(priceSimulation)
+      // clearInterval(priceSimulation) - priceSimulation 변수가 정의되지 않음
     }
   }, [])
 
