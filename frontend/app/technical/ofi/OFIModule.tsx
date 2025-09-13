@@ -450,6 +450,22 @@ export default function OFIModule() {
     return null
   }
 
+  // CVD 데이터 준비 - 컴포넌트 최상위 레벨에서 계산
+  const cvdData = useMemo(() => {
+    return orderFlowRef.current.map((flow, index) => ({
+      time: new Date(flow.timestamp).toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      cvd: flow.cvd || 0,
+      delta: flow.delta || 0,
+      price: flow.price || 0,
+      volume: flow.size || 0,
+      side: flow.side
+    }))
+  }, [orderFlowData])
+
   // 렌더링 함수들
   const renderOverviewTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -1071,22 +1087,7 @@ export default function OFIModule() {
   )
 
   const renderCVDTab = () => {
-    // CVD 데이터 준비
-    const cvdData = useMemo(() => {
-      return orderFlowRef.current.map((flow, index) => ({
-        time: new Date(flow.timestamp).toLocaleTimeString('ko-KR', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          second: '2-digit'
-        }),
-        cvd: flow.cvd || 0,
-        delta: flow.delta || 0,
-        price: flow.price || 0,
-        volume: flow.size || 0,
-        side: flow.side
-      }))
-    }, [orderFlowData])
-
+    // cvdData는 이미 컴포넌트 최상위에서 계산됨
     return (
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* CVD 메인 차트 */}
