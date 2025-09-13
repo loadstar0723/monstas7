@@ -60,13 +60,33 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
       const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=5m&limit=100`)
       
       if (!response.ok) {
-        throw new Error(`API 응답 에러: ${response.status}`)
+        console.error(`API 응답 에러: ${response.status}`)
+        // 에러 발생 시 빈 데이터로 처리
+        setVolumeProfile([])
+        setLoading(false)
+        return
       }
       
-      const klines = await response.json()
-      console.log(`VolumeProfile 데이터 로드: ${symbol}`, klines?.length || 0, '개 캔들')
+      // response.text()로 먼저 받아서 확인
+      const text = await response.text()
+      let klines
       
-      if (Array.isArray(klines) && klines.length > 0) {
+      try {
+        klines = JSON.parse(text)
+      } catch (parseError) {
+        console.error('JSON 파싱 에러:', parseError)
+        console.error('응답 텍스트:', text)
+        setVolumeProfile([])
+        setLoading(false)
+        return
+      }
+      
+      // API 응답이 객체 형태로 올 수 있음
+      const klinesData = klines?.data || klines?.klines || klines
+      console.log(`VolumeProfile 데이터 로드: ${symbol}`, Array.isArray(klinesData) ? klinesData.length : 0, '개 캔들')
+      
+      if (Array.isArray(klinesData) && klinesData.length > 0) {
+        const klines = klinesData
         // 가격대별 거래량 집계
         const priceVolumeMap = new Map<number, PriceLevel>()
         let totalVolume = 0

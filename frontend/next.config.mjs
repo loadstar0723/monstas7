@@ -47,7 +47,7 @@ const nextConfig = {
       config.output = {
         ...config.output,
         chunkLoadTimeout: 300000, // 300초 (5분)
-        publicPath: 'http://localhost:3002/_next/',
+        publicPath: '/_next/',
         // 청크 파일명 단순화
         chunkFilename: 'static/chunks/[name].js',
       }

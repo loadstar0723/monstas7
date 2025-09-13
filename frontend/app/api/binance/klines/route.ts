@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { apiRateLimiter, retryWithBackoff, isRateLimitError } from '@/lib/apiRateLimiter'
 
+// 기본 가격 설정
+function getDefaultKlinePrice(symbol: string): number {
+  const prices: Record<string, number> = {
+    'BTCUSDT': 98000,
+    'ETHUSDT': 3500,
+    'BNBUSDT': 700,
+    'SOLUSDT': 200,
+    'XRPUSDT': 0.6,
+    'ADAUSDT': 0.6,
+    'DOGEUSDT': 0.1,
+    'AVAXUSDT': 40,
+    'MATICUSDT': 0.9,
+    'DOTUSDT': 8
+  }
+  return prices[symbol] || 100
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -139,23 +156,6 @@ function getIntervalMilliseconds(interval: string): number {
   
   const [, num, unit] = match
   return parseInt(num) * (units[unit] || units.m)
-}
-
-// 심볼별 기본 가격
-function getDefaultKlinePrice(symbol: string): number {
-  const prices: Record<string, number> = {
-    'BTCUSDT': 98000,
-    'ETHUSDT': 3500,
-    'BNBUSDT': 700,
-    'SOLUSDT': 200,
-    'XRPUSDT': 0.6,
-    'ADAUSDT': 0.6,
-    'DOGEUSDT': 0.1,
-    'AVAXUSDT': 40,
-    'MATICUSDT': 0.9,
-    'DOTUSDT': 8
-  }
-  return prices[symbol] || 100
 }
 
 // CoinGecko 코인 ID 매핑
