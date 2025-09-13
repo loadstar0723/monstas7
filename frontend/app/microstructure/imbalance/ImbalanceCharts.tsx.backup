@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { safeFixed } from '@/lib/safeFormat'
+import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { 
   RadarChart, 
   PolarGrid, 

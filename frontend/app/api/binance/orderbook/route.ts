@@ -8,14 +8,18 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol') || 'BTCUSDT'
     const limit = searchParams.get('limit') || '20'
     
+    console.log(`Fetching orderbook for ${symbol} with limit ${limit}`)
+    
     // Binance 오더북 API
     const response = await fetch(
       `${BINANCE_API_BASE}/api/v3/depth?symbol=${symbol}&limit=${limit}`,
       {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
         },
-        next: { revalidate: 1 } // 1초 캐시
+        cache: 'no-store'
       }
     )
     
@@ -55,9 +59,18 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Binance orderbook proxy error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch orderbook data' },
-      { status: 500 }
-    )
+    
+    // 에러 발생 시 기본 오더북 데이터 반환 (빈 오더북)
+    const defaultData = {
+      bids: [],
+      asks: [],
+      lastUpdateId: 0,
+      spread: 0,
+      spreadPercent: 0,
+      bestBid: 0,
+      bestAsk: 0
+    }
+    
+    return NextResponse.json(defaultData)
   }
 }

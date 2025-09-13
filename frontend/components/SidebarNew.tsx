@@ -633,9 +633,10 @@ export default function SidebarNew() {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [])
 
-  // 경로 변경 시 최근 방문 기록 업데이트
+  // 경로 변경 시 최근 방문 기록 업데이트 및 해당 카테고리 자동 펼치기
   useEffect(() => {
     if (pathname && pathname !== '/') {
+      // 최근 방문 기록 업데이트
       const newVisit = { path: pathname, timestamp: Date.now() }
       setRecentVisits(prev => {
         // 중복 제거 및 최대 5개 유지
@@ -644,6 +645,56 @@ export default function SidebarNew() {
         localStorage.setItem('monsta_recent_visits', JSON.stringify(updated))
         return updated
       })
+      
+      // 현재 경로에 해당하는 카테고리를 자동으로 펼치기
+      // 경로 예시: /signals/whale-tracker -> signals 카테고리 펼치기
+      const pathSegments = pathname.split('/').filter(Boolean)
+      if (pathSegments.length > 0) {
+        const firstSegment = pathSegments[0]
+        
+        // expandedCategories에 없으면 추가
+        setExpandedCategories(prev => {
+          if (!prev.includes(firstSegment)) {
+            return [...prev, firstSegment]
+          }
+          return prev
+        })
+        
+        // 카테고리가 속한 그룹도 자동으로 펼치기
+        const categoryToGroup: Record<string, string> = {
+          'signals': 'trading',
+          'quant': 'trading',
+          'microstructure': 'trading',
+          'technical': 'trading',
+          'ai': 'analysis',
+          'automation': 'analysis',
+          'telegram': 'community',
+          'gaming': 'community',
+          'macro': 'analysis',
+          'crypto': 'analysis',
+          'news': 'community',
+          'events': 'community',
+          'risk': 'management',
+          'portfolio': 'management',
+          'members': 'management',
+          'payment': 'management',
+          'marketing': 'management',
+          'analytics': 'management',
+          'education': 'community',
+          'system': 'management',
+          'subscription': 'management'
+        }
+        
+        const group = categoryToGroup[firstSegment]
+        if (group) {
+          setExpandedGroups(prev => {
+            if (!prev.includes(group)) {
+              return [...prev, group]
+            }
+            return prev
+          })
+        }
+      }
     }
   }, [pathname])
 
