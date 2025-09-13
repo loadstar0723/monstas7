@@ -19,6 +19,7 @@ import {
 import CoinSelector, { TRACKED_SYMBOLS } from '@/components/technical/CoinSelector'
 import TechnicalHeader from '@/components/technical/TechnicalHeader'
 import TechnicalChartWrapper from '@/components/technical/TechnicalChartWrapper'
+import OFIDynamicGuide from './OFIDynamicGuide'
 
 // 훅
 import { useTechnicalWebSocket } from '@/hooks/technical/useTechnicalWebSocket'
@@ -102,7 +103,8 @@ const COLORS = {
 export default function OFIModule() {
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
   const [activeTab, setActiveTab] = useState('overview')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // 초기값을 false로 변경
+  const [error, setError] = useState<string | null>(null)
   
   // WebSocket 데이터
   const { marketData, isConnected } = useTechnicalWebSocket({
@@ -287,7 +289,6 @@ export default function OFIModule() {
       // WebSocket 에러는 보안상 상세 정보를 제공하지 않음
       console.warn('OFI WebSocket 연결 에러 발생 - 재연결을 시도합니다')
       setError('WebSocket 연결 에러 - 재연결 중...')
-      setIsConnected(false)
     }
     
     ws.onclose = () => {
@@ -534,6 +535,19 @@ export default function OFIModule() {
           </div>
         </div>
       </div>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-3 mt-6">
+        <OFIDynamicGuide
+          tabId="overview"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
@@ -630,6 +644,19 @@ export default function OFIModule() {
           </ScatterChart>
         </ResponsiveContainer>
       </TechnicalChartWrapper>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-2 mt-6">
+        <OFIDynamicGuide
+          tabId="orderflow"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
@@ -733,6 +760,19 @@ export default function OFIModule() {
           </LineChart>
         </ResponsiveContainer>
       </TechnicalChartWrapper>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-2 mt-6">
+        <OFIDynamicGuide
+          tabId="imbalance"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
@@ -824,6 +864,19 @@ export default function OFIModule() {
           </BarChart>
         </ResponsiveContainer>
       </TechnicalChartWrapper>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-2 mt-6">
+        <OFIDynamicGuide
+          tabId="footprint"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
@@ -975,6 +1028,19 @@ export default function OFIModule() {
           </div>
         </div>
       </TechnicalChartWrapper>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-2 mt-6">
+        <OFIDynamicGuide
+          tabId="heatmap"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
@@ -1126,6 +1192,19 @@ export default function OFIModule() {
           </div>
         </div>
       </TechnicalChartWrapper>
+
+      {/* 동적 가이드 섹션 */}
+      <div className="xl:col-span-2 mt-6">
+        <OFIDynamicGuide
+          tabId="strategy"
+          currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+          buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+          sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+          delta={cumulativeDelta.current}
+          cvd={cumulativeDelta.current}
+          price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+        />
+      </div>
     </div>
   )
 
