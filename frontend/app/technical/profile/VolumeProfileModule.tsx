@@ -504,7 +504,6 @@ export default function VolumeProfileModule() {
       if (klineResponse.ok) {
         const response = await klineResponse.json()
         // 디버그용
-        )
         
         // response.klines 또는 response.data에서 kline 데이터 추출
         const klineData = response.klines || response.data || response || []
