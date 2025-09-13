@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+      - ai-analysis
+      - ai-trading
+      - websocket-server
+    networks:
+      - monsta-network
+
+  # Go AI 분석 서비스
+  ai-analysis:
+    build:
+      context: ./go-services/ai-analysis
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+  # Go AI 트레이딩 엔진
+  ai-trading:
+    build:
+      context: ./go-services/ai-trading
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+      - python-ai
+    networks:
+      - monsta-network
+
+  # Go WebSocket 서버
+  websocket-server:
+    build:
+      context: ./go-services/websocket-server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+  # Python AI 모델 서버
+  python-ai:
+    build:
+      context: ./ai-models
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - monsta-network
+
+  # Redis 캐시
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - monsta-network
+
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: monsta
+      POSTGRES_PASSWORD: monsta_password
+      POSTGRES_DB: monsta_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - monsta-network
+
+networks:
+  monsta-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
