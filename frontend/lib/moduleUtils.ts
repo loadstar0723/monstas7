@@ -42,7 +42,6 @@ export class ModuleWebSocket {
   connect(url: string, onMessage: (data: any) => void) {
     // 브라우저 환경이 아니면 연결하지 않음 (SSR 방지)
     if (typeof window === 'undefined') {
-      `)
       return
     }
     
@@ -104,7 +103,7 @@ export function createModuleState<T>(
   initialState: T,
   moduleName: string
 ) {
-  const storageKey = `monsta_module_${moduleName}`
+  const storageKey = 'monsta_module_' + moduleName
   
   // localStorage에서 이전 상태 복원
   const loadState = (): T => {
