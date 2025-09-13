@@ -494,7 +494,7 @@ export default function LiquidationUltimate() {
       }
 
       wsRef.current.onerror = (error) => {
-        :', error)
+        console.error('WebSocket error:', error)
         setIsConnected(false)
         
         // 청산 데이터가 없을 때 시뮬레이션 생성
