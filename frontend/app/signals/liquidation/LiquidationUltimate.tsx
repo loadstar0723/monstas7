@@ -494,7 +494,10 @@ export default function LiquidationUltimate() {
       }
 
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error)
+        // WebSocket 에러는 정상적인 재연결 과정에서 발생할 수 있음
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('WebSocket 연결 시도 중... (정상적인 동작)')
+        }
         setIsConnected(false)
         
         // 청산 데이터가 없을 때 시뮬레이션 생성
