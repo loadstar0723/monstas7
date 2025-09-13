@@ -121,7 +121,7 @@ export default function MarketProfile({ data, currentPrice, symbol }: MarketProf
           
           <div className="text-center">
             <div className="text-2xl font-bold text-white">
-              {valueAreaBounds?.safePercent(percentage) || '0'}%
+              {safePercent(valueAreaBounds?.percentage) || '0'}%
             </div>
             <div className="text-sm text-gray-400">밸류 비율</div>
           </div>

@@ -5,7 +5,9 @@ import { FOOTPRINT_CONFIG } from '../config/constants'
 export async function generateSampleFootprintData(symbol: string, currentPrice: number): Promise<FootprintCell[]> {
   try {
     // Binance API에서 과거 24시간 캔들 데이터 가져오기 (5분봉)
-    const response = await fetchKlines(symbol, interval, limit) // 24시간 = 288개 5분봉
+    const interval = '5m'
+    const limit = 288
+    const response = await fetch(`/api/binance/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`)
     
     if (!response.ok) {
       console.error('캔들 데이터 로드 실패')

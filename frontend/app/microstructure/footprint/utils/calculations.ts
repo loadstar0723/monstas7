@@ -67,7 +67,16 @@ export function calculateValueArea(data: FootprintCell[]): { high: number, low: 
 export function detectDeltaDivergence(deltaData: DeltaData[], priceData: { time: string, price: number }[]): boolean[] {
   const divergences: boolean[] = []
   
-  for (let i = 1; i < deltaData.length; i++) {
+  // 두 배열의 최소 길이 사용
+  const minLength = Math.min(deltaData.length, priceData.length)
+  
+  for (let i = 1; i < minLength; i++) {
+    // priceData 요소가 존재하는지 확인
+    if (!priceData[i] || !priceData[i-1]) {
+      divergences.push(false)
+      continue
+    }
+    
     const priceTrend = priceData[i].price > priceData[i-1].price
     const deltaTrend = deltaData[i].cumulativeDelta > deltaData[i-1].cumulativeDelta
     
