@@ -49,9 +49,9 @@ jobs:
             echo "Building production..."
             npm run build
             
-            # PM2 완전 재시작
+            # PM2 완전 재시작 (포트 3000 명시)
             pm2 delete monsta-prod || true
-            pm2 start npm --name monsta-prod -- start
+            PORT=3000 pm2 start npm --name monsta-prod -- start
             pm2 save
             
             # 프로세스 확인

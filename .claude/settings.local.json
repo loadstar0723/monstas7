@@ -242,7 +242,8 @@
       "Bash(start http://localhost:3047/technical/obituary)",
       "Bash(start http://localhost:3048/technical/obituary)",
       "Bash(start http://localhost:3000/technical/obituary)",
-      "Bash(start http://localhost:3050/technical/obituary)"
+      "Bash(start http://localhost:3050/technical/obituary)",
+      "Bash(start http://15.165.105.250)"
     ],
     "deny": [],
     "ask": []

@@ -58,10 +58,10 @@ jobs:
             echo "🏗️ Building production..."
             npm run build
             
-            # PM2로 재시작
+            # PM2로 재시작 (포트 3000 명시)
             echo "🚀 Starting server..."
             pm2 delete monsta-prod || true
-            pm2 start npm --name monsta-prod -- start
+            PORT=3000 pm2 start npm --name monsta-prod -- start
             pm2 save
             pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
             
