@@ -58,7 +58,7 @@ export class ModuleWebSocket {
           const data = JSON.parse(event.data)
           onMessage(data)
         } catch (error) {
-          console.error(`[${this.moduleName}] Message parse error:`, error)
+          console.error('[' + this.moduleName + '] Message parse error:', error)
         }
       }
       
@@ -70,7 +70,7 @@ export class ModuleWebSocket {
         this.attemptReconnect(url, onMessage)
       }
     } catch (error) {
-      console.error(`[${this.moduleName}] Connection error:`, error)
+      console.error('[' + this.moduleName + '] Connection error:', error)
     }
   }
 
