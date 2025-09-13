@@ -1028,7 +1028,7 @@ export default function PatternRecognitionUltimate() {
                       symbol={selectedSymbol}
                       currentPrice={currentPrice}
                       timeframe={timeframe}
-                      onPatternClick={(pattern) => }
+                      onPatternClick={(pattern) => console.log('Pattern clicked:', pattern)}
                     />
                     {candleData.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center">
