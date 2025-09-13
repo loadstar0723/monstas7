@@ -257,7 +257,7 @@ export function useCVDWebSocket(symbol: string) {
       aggregationInterval.current = null;
     }
     
-    let eventSource: EventSource | null = null;
+    let eventSource: any = null;
     
     // Reset reconnect attempts
     reconnectAttempts.current = 0;
@@ -266,7 +266,11 @@ export function useCVDWebSocket(symbol: string) {
     const connectToSymbol = () => {
       try {
         // Use API route to proxy WebSocket connection
-        eventSource = new EventSource('/api/binance/stream?symbol=' + symbol);
+        if (typeof window !== 'undefined' && window.EventSource) {
+          eventSource = new window.EventSource('/api/binance/stream?symbol=' + symbol);
+        } else {
+          throw new Error('EventSource not supported');
+        }
         
         eventSource.onopen = () => {
           setIsConnected(true);
