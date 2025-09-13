@@ -807,23 +807,25 @@ export default function SidebarNew() {
 
   return (
     <>
-      {/* 햄버거 메뉴 버튼 - 항상 표시 (데스크톱 & 모바일) */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-[9999] p-3 rounded-xl bg-gradient-to-r from-purple-900/80 to-purple-800/80 
-                   backdrop-blur-sm border border-purple-600/50 hover:border-purple-500 
-                   shadow-xl hover:shadow-purple-500/30 transition-all group"
-      >
-        <div className="relative">
-          <FaBars className="w-5 h-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
-          {/* 알림 점 - 더 밝게 */}
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/50" />
-        </div>
-      </motion.button>
+      {/* 햄버거 메뉴 버튼 - 사이드바가 닫혀있을 때만 표시 */}
+      {!isOpen && (
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-[9999] p-3 rounded-xl bg-gradient-to-r from-purple-900/80 to-purple-800/80
+                     backdrop-blur-sm border border-purple-600/50 hover:border-purple-500
+                     shadow-xl hover:shadow-purple-500/30 transition-all group"
+        >
+          <div className="relative">
+            <FaBars className="w-5 h-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
+            {/* 알림 점 - 더 밝게 */}
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/50" />
+          </div>
+        </motion.button>
+      )}
 
       {/* 오버레이 제거 - 투명 클릭 영역만 유지 */}
       <AnimatePresence>
