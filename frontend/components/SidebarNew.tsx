@@ -255,7 +255,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaChessQueen, label: '와이코프', path: '/technical/wyckoff', category: 'technical' },
       { icon: MdStackedLineChart, label: 'SMC', path: '/technical/smc', category: 'technical', isHot: true },
       { icon: BiBarChart, label: 'CVD', path: '/technical/cvd', category: 'technical' },
-      { icon: MdDataUsage, label: 'OI 플로우', path: '/technical/ofi', category: 'technical' },
+      { icon: MdDataUsage, label: 'OFI FLOW', path: '/technical/ofi', category: 'technical' },
       { icon: BiCylinder, label: '볼륨 분석', path: '/technical/volume', category: 'technical' },
       { icon: FaWater, label: '유동성 맵', path: '/technical/liquidity', category: 'technical', isNew: true },
       { icon: FaSkull, label: '청산 차트', path: '/technical/obituary', category: 'technical' }

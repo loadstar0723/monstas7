@@ -235,7 +235,13 @@
       "Bash(start http://localhost:3042)",
       "Bash(start http://localhost:3043/technical/cvd)",
       "Bash(start http://localhost:3045/technical/ofi)",
-      "Bash(start http://localhost:3046/technical/ofi)"
+      "Bash(start http://localhost:3046/technical/ofi)",
+      "Bash(start http://localhost:3046/technical/volume)",
+      "Bash(start http://localhost:5000/technical/obituary)",
+      "Bash(start http://localhost:3046/technical/obituary)",
+      "Bash(start http://localhost:3047/technical/obituary)",
+      "Bash(start http://localhost:3048/technical/obituary)",
+      "Bash(start http://localhost:3000/technical/obituary)"
     ],
     "deny": [],
     "ask": []

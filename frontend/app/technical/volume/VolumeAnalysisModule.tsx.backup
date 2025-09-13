@@ -9,9 +9,6 @@ import {
 } from 'recharts'
 import WebSocketManager from '@/lib/websocketManager'
 import { getWebSocketUrl, getStreamName } from '@/lib/websocketConfig'
-import { VolumeConceptGuide, VolumeDynamicAnalysis, VolumePatternAnalysis } from './VolumeDynamicAnalysis'
-import VolumeProfileChart from './VolumeProfileChart'
-import BuySellProfileChart from './BuySellProfileChart'
 
 interface VolumeAnalysisModuleProps {
   symbol?: string
@@ -188,49 +185,20 @@ export default function VolumeAnalysisModule({ symbol = 'BTCUSDT' }: VolumeAnaly
     const now = Date.now()
     const sampleData: VolumeData[] = []
     
-    // 정규분포를 따르는 가격 분포 생성
-    const priceRange = basePrice * 0.03 // 3% 범위
-    const minPrice = basePrice - priceRange
-    const maxPrice = basePrice + priceRange
-    const centerPrice = basePrice // POC가 될 중심 가격
-    
-    // 다양한 가격대에서 거래 생성 (프로파일 분석을 위해)
     for (let i = 99; i >= 0; i--) {
       const timestamp = now - (i * 60 * 1000) // 1분 간격
-      
-      // 정규분포를 따르는 가격 생성
-      const gaussianRandom = () => {
-        let u = 0, v = 0
-        while(u === 0) u = Math.random()
-        while(v === 0) v = Math.random()
-        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
-      }
-      
-      // 중심 가격 주변에 정규분포로 가격 생성
-      const deviation = gaussianRandom() * (priceRange / 3) // 표준편차 = range/3
-      let price = centerPrice + deviation
-      
-      // 가격 범위 제한
-      price = Math.max(minPrice, Math.min(maxPrice, price))
-      
-      // 가격대별로 거래량 차등 적용 (중심에 가까울수록 거래량 증가)
-      const distanceFromCenter = Math.abs(price - centerPrice)
-      const normalizedDistance = distanceFromCenter / priceRange
-      const volumeMultiplier = Math.exp(-normalizedDistance * 3) // 지수함수로 감소
-      
-      const baseVolume = 500 + Math.random() * 1500
-      const volume = baseVolume * volumeMultiplier + Math.random() * 200
-      
-      const buyRatio = 0.4 + Math.random() * 0.2
+      const priceVariation = Math.sin(i * 0.1) * basePrice * 0.02
+      const price = basePrice + priceVariation
+      const volume = 500 + Math.sin(i * 0.05) * 300 + Math.random() * 200
       
       sampleData.push({
         timestamp,
         price,
         volume,
-        buyVolume: volume * buyRatio,
-        sellVolume: volume * (1 - buyRatio),
-        trades: Math.floor(volume / 10),
-        vwap: price
+        buyVolume: volume * (0.4 + Math.random() * 0.2),
+        sellVolume: volume * (0.4 + Math.random() * 0.2),
+        trades: Math.floor(50 + Math.random() * 100),
+        vwap: price * (0.995 + Math.random() * 0.01)
       })
     }
     
@@ -263,14 +231,14 @@ export default function VolumeAnalysisModule({ symbol = 'BTCUSDT' }: VolumeAnaly
     let maxVolume = 0
     let pocPrice = 0
 
-    // 가격 단위 결정 - 더 세밀한 단위로 조정
+    // 가격 단위 결정
     const avgPrice = data.reduce((sum, d) => sum + d.price, 0) / data.length
     let priceUnit = 1
-    if (avgPrice > 10000) priceUnit = 50  // 100 -> 50으로 변경
-    else if (avgPrice > 1000) priceUnit = 5   // 10 -> 5로 변경
-    else if (avgPrice > 100) priceUnit = 0.5  // 1 -> 0.5로 변경
-    else if (avgPrice > 10) priceUnit = 0.1   // 0.5 -> 0.1로 변경
-    else if (avgPrice > 1) priceUnit = 0.05   // 0.1 -> 0.05로 변경
+    if (avgPrice > 10000) priceUnit = 100
+    else if (avgPrice > 1000) priceUnit = 10
+    else if (avgPrice > 100) priceUnit = 1
+    else if (avgPrice > 10) priceUnit = 0.5
+    else if (avgPrice > 1) priceUnit = 0.1
     else priceUnit = 0.01
 
     data.forEach(item => {
@@ -302,7 +270,7 @@ export default function VolumeAnalysisModule({ symbol = 'BTCUSDT' }: VolumeAnaly
     })
 
     // POC 및 Value Area 설정
-    const profileArray = Array.from(priceVolumeMap.values()).sort((a, b) => b.volume - a.price)
+    const profileArray = Array.from(priceVolumeMap.values()).sort((a, b) => a.price - b.price)
     
     profileArray.forEach(level => {
       level.isPOC = level.price === pocPrice
@@ -378,28 +346,21 @@ export default function VolumeAnalysisModule({ symbol = 'BTCUSDT' }: VolumeAnaly
     
     // 가격별 거래량 집계
     data.forEach(item => {
-      const roundedPrice = Math.round(item.price / 50) * 50 // 50 단위로 그룹화
+      const roundedPrice = Math.round(item.price * 100) / 100
       priceMap.set(roundedPrice, (priceMap.get(roundedPrice) || 0) + item.volume)
     })
     
     // 클러스터 분석
     const sortedPrices = Array.from(priceMap.entries()).sort((a, b) => b[1] - a[1])
     const avgVolume = Array.from(priceMap.values()).reduce((sum, vol) => sum + vol, 0) / priceMap.size
-    const currentPriceRef = data[data.length - 1]?.price || 100000
     
-    // 상위 15개 클러스터 생성 (더 많은 클러스터 생성)
-    sortedPrices.slice(0, 15).forEach(([price, volume]) => {
+    sortedPrices.slice(0, 10).forEach(([price, volume]) => {
       const density = volume / avgVolume
+      const currentPriceRef = data[data.length - 1]?.price || 0
       
-      // 현재가 대비 퍼센트로 타입 결정 (1% 기준)
-      const priceRatio = price / currentPriceRef
       let type: 'support' | 'resistance' | 'neutral' = 'neutral'
-      
-      if (priceRatio < 0.99) {  // 현재가의 99% 미만 = 지지
-        type = 'support'
-      } else if (priceRatio > 1.01) {  // 현재가의 101% 초과 = 저항
-        type = 'resistance'
-      }
+      if (price < currentPriceRef * 0.995) type = 'support'
+      else if (price > currentPriceRef * 1.005) type = 'resistance'
       
       clusters.push({
         price,
@@ -632,16 +593,6 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* 거래량 개념 가이드 */}
-      <VolumeConceptGuide symbol={symbol} />
-      
-      {/* AI 동적 분석 */}
-      <VolumeDynamicAnalysis 
-        currentPrice={currentPrice}
-        volumeData={volumeData}
-        symbol={symbol}
-      />
-      
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
@@ -669,51 +620,45 @@ function OverviewTab({
       {/* Volume Chart */}
       <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
         <h3 className="text-lg font-bold text-white mb-4">📈 거래량 추이</h3>
-        <div style={{ width: '100%', height: 300, position: 'relative' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={volumeData.length > 0 ? volumeData.slice(-50) : [
-              { timestamp: Date.now(), volume: 1000, price: currentPrice || 98000 },
-              { timestamp: Date.now() + 60000, volume: 1200, price: (currentPrice || 98000) + 100 },
-              { timestamp: Date.now() + 120000, volume: 1100, price: (currentPrice || 98000) - 50 }
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="timestamp"
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => new Date(value).toLocaleTimeString()}
-              />
-              <YAxis 
-                yAxisId="left"
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-              />
-              <YAxis 
-                yAxisId="right"
-                orientation="right"
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => `$${safeFixed(value, 0)}`}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar yAxisId="left" dataKey="volume" fill="#8B5CF6" />
-              <Line yAxisId="right" type="monotone" dataKey="price" stroke="#F59E0B" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={volumeData.slice(-50)}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis 
+              dataKey="timestamp"
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+            />
+            <YAxis 
+              yAxisId="left"
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+            />
+            <YAxis 
+              yAxisId="right"
+              orientation="right"
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#1F2937', 
+                border: '1px solid #374151',
+                borderRadius: '8px'
+              }}
+            />
+            <Bar yAxisId="left" dataKey="volume" fill="#8B5CF6" opacity={0.6} />
+            <Line yAxisId="right" type="monotone" dataKey="price" stroke="#F59E0B" strokeWidth={2} dot={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Buy/Sell Pressure */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">💹 매수/매도 압력</h3>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={volumeData.slice(-20)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="timestamp"
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
@@ -727,7 +672,7 @@ function OverviewTab({
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">🎯 거래량 분포</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
@@ -766,12 +711,6 @@ function ProfileTab({
 
   return (
     <div className="space-y-6">
-      {/* 거래량 패턴 분석 */}
-      <VolumePatternAnalysis 
-        profileData={profileData}
-        volumeClusters={[]}
-      />
-      
       {/* POC and Value Area Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-700/50">
@@ -791,19 +730,93 @@ function ProfileTab({
         </div>
       </div>
 
-      {/* Volume Profile Chart - Canvas Version */}
-      <VolumeProfileChart 
-        data={profileData} 
-        height={500}
-        title="📊 거래량 프로파일"
-      />
+      {/* Volume Profile Chart */}
+      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+        <h3 className="text-lg font-bold text-white mb-4">📊 거래량 프로파일</h3>
+        <ResponsiveContainer width="100%" height={500}>
+          <BarChart 
+            data={profileData} 
+            layout="horizontal"
+            margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis 
+              dataKey="volume" 
+              type="number"
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+            />
+            <YAxis 
+              dataKey="price" 
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#1F2937', 
+                border: '1px solid #374151',
+                borderRadius: '8px'
+              }}
+              formatter={(value: number, name: string) => {
+                if (name === 'volume') {
+                  return [`${(value / 1000).toFixed(2)}K`, '거래량']
+                }
+                return [value, name]
+              }}
+            />
+            <Bar dataKey="volume" fill="#8B5CF6">
+              {profileData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    entry.isPOC ? '#FBBF24' : 
+                    entry.isValueArea ? '#60A5FA' : 
+                    '#6B7280'
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-400 rounded"></div>
+            <span className="text-gray-400">POC</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-400 rounded"></div>
+            <span className="text-gray-400">Value Area (70%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-500 rounded"></div>
+            <span className="text-gray-400">기타</span>
+          </div>
+        </div>
+      </div>
 
-      {/* Buy/Sell Profile - Canvas Version */}
-      <BuySellProfileChart 
-        data={profileData.slice(-20)} 
-        height={400}
-        title="💹 매수/매도 프로파일"
-      />
+      {/* Buy/Sell Profile */}
+      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+        <h3 className="text-lg font-bold text-white mb-4">💹 매수/매도 프로파일</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={profileData.slice(-20)} layout="horizontal">
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis type="number" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+            <YAxis 
+              dataKey="price" 
+              type="number"
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `$${safeFixed(value, 0)}`}
+            />
+            <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }} />
+            <Bar dataKey="buyVolume" fill="#10B981" />
+            <Bar dataKey="sellVolume" fill="#EF4444" />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
@@ -848,18 +861,14 @@ function VWAPTab({
       <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
         <h3 className="text-lg font-bold text-white mb-4">📈 VWAP 차트</h3>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart 
-            data={vwapData.slice(-50)}
-            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+          <LineChart data={vwapData.slice(-50)}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="timestamp"
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
               tickFormatter={(value) => new Date(value).toLocaleTimeString()}
             />
             <YAxis 
-              domain={['dataMin', 'dataMax']}
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
               tickFormatter={(value) => `$${safeFixed(value, 0)}`}
             />
@@ -867,80 +876,46 @@ function VWAPTab({
               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
               labelFormatter={(value) => new Date(value).toLocaleString()}
             />
-            <Line type="monotone" dataKey="price" stroke="#F59E0B" strokeWidth={2} name="현재가" dot={false} animationDuration={0} />
-            <Line type="monotone" dataKey="vwap" stroke="#8B5CF6" strokeWidth={2} name="VWAP" dot={false} animationDuration={0} />
-            <Line type="monotone" dataKey="upperBand" stroke="#10B981" strokeWidth={1} strokeDasharray="5 5" name="상단 밴드" dot={false} animationDuration={0} />
-            <Line type="monotone" dataKey="lowerBand" stroke="#EF4444" strokeWidth={1} strokeDasharray="5 5" name="하단 밴드" dot={false} animationDuration={0} />
+            <Line type="monotone" dataKey="price" stroke="#F59E0B" strokeWidth={2} name="현재가" />
+            <Line type="monotone" dataKey="vwap" stroke="#8B5CF6" strokeWidth={2} name="VWAP" />
+            <Line type="monotone" dataKey="upperBand" stroke="#10B981" strokeWidth={1} strokeDasharray="5 5" name="상단 밴드" />
+            <Line type="monotone" dataKey="lowerBand" stroke="#EF4444" strokeWidth={1} strokeDasharray="5 5" name="하단 밴드" />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* VWAP Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">🎯 VWAP 분석</h3>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
               <span className="text-gray-400">현재 위치</span>
-              <div className="text-right">
-                <span className={`font-bold ${currentPrice > (currentVWAP?.vwap || 0) ? 'text-green-400' : 'text-red-400'}`}>
-                  {currentPrice > (currentVWAP?.vwap || 0) ? 'VWAP 위' : 'VWAP 아래'}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">
-                  {Math.abs(vwapDeviation).toFixed(2)}% 괴리
-                </p>
-              </div>
+              <span className={`font-bold ${currentPrice > (currentVWAP?.vwap || 0) ? 'text-green-400' : 'text-red-400'}`}>
+                {currentPrice > (currentVWAP?.vwap || 0) ? 'VWAP 위' : 'VWAP 아래'}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
               <span className="text-gray-400">밴드 내 위치</span>
-              <div className="text-right">
-                <span className={`font-bold ${
-                  currentPrice > (currentVWAP?.upperBand || 0) ? 'text-purple-400' : 
-                  currentPrice < (currentVWAP?.lowerBand || 0) ? 'text-orange-400' : 
-                  'text-blue-400'
-                }`}>
-                  {currentPrice > (currentVWAP?.upperBand || 0) ? '🔺 상단 돌파' : 
-                   currentPrice < (currentVWAP?.lowerBand || 0) ? '🔻 하단 이탈' : 
-                   '✅ 밴드 내'}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">
-                  {currentPrice > (currentVWAP?.upperBand || 0) 
-                    ? `+${((currentPrice - (currentVWAP?.upperBand || 0)) / currentPrice * 100).toFixed(2)}%`
-                    : currentPrice < (currentVWAP?.lowerBand || 0)
-                    ? `-${(((currentVWAP?.lowerBand || 0) - currentPrice) / currentPrice * 100).toFixed(2)}%`
-                    : '정상 범위'}
-                </p>
-              </div>
+              <span className="text-white font-bold">
+                {currentPrice > (currentVWAP?.upperBand || 0) ? '상단 돌파' : 
+                 currentPrice < (currentVWAP?.lowerBand || 0) ? '하단 이탈' : '밴드 내'}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
               <span className="text-gray-400">거래 신호</span>
-              <div className="text-right">
-                <span className={`font-bold text-lg ${
-                  Math.abs(vwapDeviation) > 3 ? 'text-red-500 animate-pulse' : 
-                  Math.abs(vwapDeviation) > 2 ? (vwapDeviation > 0 ? 'text-red-400' : 'text-green-400') : 
-                  Math.abs(vwapDeviation) > 1 ? 'text-yellow-400' : 
-                  'text-gray-400'
-                }`}>
-                  {Math.abs(vwapDeviation) > 3 ? (vwapDeviation > 0 ? '🔥 극단 과매수' : '💎 극단 과매도') :
-                   Math.abs(vwapDeviation) > 2 ? (vwapDeviation > 0 ? '📈 과매수' : '📉 과매도') :
-                   Math.abs(vwapDeviation) > 1 ? '⚡ 주의 구간' : 
-                   '⚖️ 중립'}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">
-                  {Math.abs(vwapDeviation) > 2 
-                    ? (vwapDeviation > 0 ? '조정 가능성' : '반등 가능성')
-                    : '추세 관찰'}
-                </p>
-              </div>
+              <span className={`font-bold ${vwapDeviation > 2 ? 'text-red-400' : vwapDeviation < -2 ? 'text-green-400' : 'text-yellow-400'}`}>
+                {vwapDeviation > 2 ? '과매수' : vwapDeviation < -2 ? '과매도' : '중립'}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">📊 VWAP 편차 분포</h3>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={vwapData.slice(-20)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="timestamp"
                 tick={{ fill: '#9CA3AF', fontSize: 10 }}
@@ -989,417 +964,88 @@ function ClustersTab({
         </div>
       </div>
 
-      {/* Cluster Visualization - Enhanced */}
-      <div className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 rounded-2xl p-8 border border-purple-500/30 shadow-2xl relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-purple-600/10 animate-pulse" />
-        
-        {/* Header with Animation */}
-        <div className="relative z-10 mb-6">
-          <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
-            <span className="text-3xl animate-bounce">🎯</span>
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-              거래량 클러스터 분포
-            </span>
-            <span className="text-xs px-3 py-1 bg-purple-500/30 rounded-full text-purple-300 animate-pulse">
-              LIVE
-            </span>
-          </h3>
-          <p className="text-gray-400 text-sm">실시간 지지/저항 구간 분석</p>
-        </div>
-
-        {/* Enhanced Chart */}
-        <ResponsiveContainer width="100%" height={450}>
-          <ScatterChart margin={{ top: 20, right: 30, bottom: 60, left: 60 }}>
-            <defs>
-              <linearGradient id="gridGradient" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#EC4899" stopOpacity={0.1} />
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-              <radialGradient id="supportGradient">
-                <stop offset="0%" stopColor="#10B981" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="#10B981" stopOpacity={0.3} />
-              </radialGradient>
-              <radialGradient id="resistanceGradient">
-                <stop offset="0%" stopColor="#EF4444" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="#EF4444" stopOpacity={0.3} />
-              </radialGradient>
-            </defs>
-            
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="url(#gridGradient)" 
-              strokeOpacity={0.3}
-              strokeWidth={1}
-            />
-            
+      {/* Cluster Visualization */}
+      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+        <h3 className="text-lg font-bold text-white mb-4">🎯 거래량 클러스터 분포</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <ScatterChart>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="volume"
-              domain={['dataMin', 'dataMax']}
-              tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 600 }}
-              tickFormatter={(value) => {
-                if (!value || value === 0) return '0'
-                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-                if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
-                return value.toFixed(0)
-              }}
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
+              tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
               name="거래량"
-              stroke="#8B5CF6"
-              strokeWidth={2}
-              label={{ 
-                value: '거래량 (Volume)', 
-                position: 'insideBottom', 
-                offset: -10,
-                style: { fill: '#9CA3AF', fontSize: 12, fontWeight: 600 }
-              }}
             />
-            
             <YAxis 
               dataKey="price"
-              domain={['dataMin', 'dataMax']}
-              tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 600 }}
+              tick={{ fill: '#9CA3AF', fontSize: 12 }}
               tickFormatter={(value) => `$${safeFixed(value, 0)}`}
               name="가격"
-              stroke="#8B5CF6"
-              strokeWidth={2}
-              label={{ 
-                value: '가격 (Price)', 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { fill: '#9CA3AF', fontSize: 12, fontWeight: 600 }
-              }}
             />
-            
             <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(17, 24, 39, 0.95)', 
-                border: '2px solid #8B5CF6',
-                borderRadius: '12px',
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)'
-              }}
-              cursor={{ strokeDasharray: '5 5', stroke: '#8B5CF6', strokeWidth: 2 }}
+              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+              cursor={{ strokeDasharray: '3 3' }}
               formatter={(value: any, name: string) => {
-                if (name === 'volume') return [
-                  <span className="font-bold text-purple-300">
-                    {(value / 1000).toFixed(2)}K
-                  </span>, 
-                  '🔊 거래량'
-                ]
-                if (name === 'price') return [
-                  <span className="font-bold text-yellow-300">
-                    ${safeFixed(value, 2)}
-                  </span>, 
-                  '💰 가격'
-                ]
+                if (name === 'volume') return [`${(value / 1000).toFixed(2)}K`, '거래량']
+                if (name === 'price') return [`$${safeFixed(value, 2)}`, '가격']
                 return [value, name]
               }}
-              labelFormatter={() => ''}
-              content={(props: any) => {
-                const { active, payload } = props
-                if (active && payload && payload[0]) {
-                  const data = payload[0].payload
-                  return (
-                    <div className="bg-gray-900/95 p-4 rounded-lg border-2 border-purple-500/50 shadow-2xl">
-                      <div className="text-white font-bold text-lg mb-2">
-                        {data.type === 'support' ? '🛡️ 지지 클러스터' : 
-                         data.type === 'resistance' ? '⚡ 저항 클러스터' : 
-                         '📊 중립 클러스터'}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex justify-between gap-4">
-                          <span className="text-gray-400">가격:</span>
-                          <span className="text-yellow-300 font-bold">${safeFixed(data.price, 2)}</span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-gray-400">거래량:</span>
-                          <span className="text-purple-300 font-bold">{(data.volume / 1000).toFixed(2)}K</span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-gray-400">중요도:</span>
-                          <span className="text-green-300 font-bold">{safeFixed(data.significance)}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                }
-                return null
-              }}
             />
-            
             <Scatter 
               data={volumeClusters} 
               fill="#8B5CF6"
-              shape={(props: any) => {
-                const { cx, cy, payload } = props
-                const size = Math.max(8, Math.min(20, payload.significance / 5))
-                const isSupport = payload.type === 'support'
-                const isResistance = payload.type === 'resistance'
-                
-                return (
-                  <g>
-                    {/* Glow Effect */}
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={size + 4}
-                      fill={isSupport ? '#10B981' : isResistance ? '#EF4444' : '#8B5CF6'}
-                      fillOpacity={0.2}
-                      className="animate-pulse"
-                    />
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={size + 2}
-                      fill={isSupport ? '#10B981' : isResistance ? '#EF4444' : '#8B5CF6'}
-                      fillOpacity={0.4}
-                    />
-                    {/* Main Circle */}
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={size}
-                      fill={isSupport ? 'url(#supportGradient)' : isResistance ? 'url(#resistanceGradient)' : '#8B5CF6'}
-                      stroke={isSupport ? '#10B981' : isResistance ? '#EF4444' : '#8B5CF6'}
-                      strokeWidth={2}
-                      filter="url(#glow)"
-                      className="cursor-pointer hover:scale-110 transition-transform"
-                    />
-                    {/* Center Dot */}
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={2}
-                      fill="#FFFFFF"
-                      fillOpacity={0.9}
-                    />
-                  </g>
-                )
-              }}
-            />
+            >
+              {volumeClusters.map((cluster, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    cluster.type === 'support' ? '#10B981' : 
+                    cluster.type === 'resistance' ? '#EF4444' : 
+                    '#6B7280'
+                  }
+                />
+              ))}
+            </Scatter>
           </ScatterChart>
         </ResponsiveContainer>
-
-        {/* Legend with Style */}
-        <div className="relative z-10 mt-6 flex justify-center gap-8">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500 shadow-lg shadow-green-500/50 animate-pulse" />
-            <span className="text-green-400 font-semibold">지지 구간</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse" />
-            <span className="text-red-400 font-semibold">저항 구간</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-purple-500 shadow-lg shadow-purple-500/50 animate-pulse" />
-            <span className="text-purple-400 font-semibold">중립 구간</span>
-          </div>
-        </div>
       </div>
 
-      {/* Cluster Details - Enhanced */}
+      {/* Cluster Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Support Clusters - Enhanced */}
-        <div className="bg-gradient-to-br from-green-900/30 via-gray-900 to-green-900/30 rounded-2xl p-6 border border-green-500/30 shadow-2xl relative overflow-hidden">
-          {/* Animated Background */}
-          <div className="absolute inset-0 bg-gradient-to-t from-green-600/5 to-transparent animate-pulse" />
-          
-          {/* Header with Animation */}
-          <div className="relative z-10 mb-4">
-            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
-              <span className="text-2xl animate-bounce">🛡️</span>
-              <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                지지 클러스터
-              </span>
-              <span className="text-xs px-2 py-1 bg-green-500/20 rounded-full text-green-300 animate-pulse">
-                {supportClusters.length}개
-              </span>
-            </h3>
-            <p className="text-green-400 text-sm">강력한 매수 방어선</p>
-          </div>
-          
-          {/* Clusters List with Enhanced Design */}
-          <div className="space-y-3 relative z-10">
-            {supportClusters.length > 0 ? (
-              supportClusters.slice(0, 5).map((cluster, index) => (
-                <div 
-                  key={index} 
-                  className="relative group"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Glow Effect on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <div className="relative flex justify-between items-center p-4 bg-gradient-to-r from-green-900/40 to-green-800/30 rounded-xl border border-green-500/20 hover:border-green-400/40 transition-all duration-300 hover:scale-[1.02]">
-                    {/* Price Section */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                        <span className="text-white font-bold text-sm">#{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="text-white font-bold text-lg flex items-center gap-2">
-                          ${safePrice(cluster.price)}
-                          {index === 0 && <span className="text-xs px-2 py-0.5 bg-yellow-500/30 rounded-full text-yellow-300">최강</span>}
-                        </p>
-                        <p className="text-green-400 text-sm flex items-center gap-1">
-                          <span className="text-green-300">📊</span>
-                          거래량: {safeThousand(cluster.volume)}K
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Significance Section */}
-                    <div className="text-right">
-                      <div className="flex flex-col items-end gap-1">
-                        <p className="text-green-300 text-xs font-semibold">중요도</p>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500"
-                              style={{ width: `${cluster.significance}%` }}
-                            />
-                          </div>
-                          <p className="text-white font-bold text-sm min-w-[40px] text-right">
-                            {safeFixed(cluster.significance)}%
-                          </p>
-                        </div>
-                        {cluster.significance > 80 && (
-                          <span className="text-xs text-green-400 animate-pulse">💪 강력</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+          <h3 className="text-lg font-bold text-white mb-4">🛡️ 지지 클러스터</h3>
+          <div className="space-y-3">
+            {supportClusters.slice(0, 5).map((cluster, index) => (
+              <div key={index} className="flex justify-between items-center p-3 bg-green-900/20 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">${safePrice(cluster.price)}</p>
+                  <p className="text-green-400 text-sm">거래량: {safeThousand(cluster.volume)}K</p>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p className="text-sm">지지 클러스터 분석 중...</p>
+                <div className="text-right">
+                  <p className="text-green-300 text-sm">중요도</p>
+                  <p className="text-white font-bold">{safeFixed(cluster.significance)}%</p>
+                </div>
               </div>
-            )}
+            ))}
           </div>
-          
-          {/* Summary Stats */}
-          {supportClusters.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-green-500/20">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-green-400">평균 강도</span>
-                <span className="text-white font-bold">
-                  {(supportClusters.reduce((sum, c) => sum + c.significance, 0) / supportClusters.length).toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm mt-1">
-                <span className="text-green-400">총 거래량</span>
-                <span className="text-white font-bold">
-                  {(supportClusters.reduce((sum, c) => sum + c.volume, 0) / 1000).toFixed(1)}K
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Resistance Clusters - Enhanced */}
-        <div className="bg-gradient-to-br from-red-900/30 via-gray-900 to-red-900/30 rounded-2xl p-6 border border-red-500/30 shadow-2xl relative overflow-hidden">
-          {/* Animated Background */}
-          <div className="absolute inset-0 bg-gradient-to-t from-red-600/5 to-transparent animate-pulse" />
-          
-          {/* Header with Animation */}
-          <div className="relative z-10 mb-4">
-            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
-              <span className="text-2xl animate-bounce">⚡</span>
-              <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-                저항 클러스터
-              </span>
-              <span className="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-300 animate-pulse">
-                {resistanceClusters.length}개
-              </span>
-            </h3>
-            <p className="text-red-400 text-sm">강력한 매도 저항선</p>
-          </div>
-          
-          {/* Clusters List with Enhanced Design */}
-          <div className="space-y-3 relative z-10">
-            {resistanceClusters.length > 0 ? (
-              resistanceClusters.slice(0, 5).map((cluster, index) => (
-                <div 
-                  key={index} 
-                  className="relative group"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Glow Effect on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <div className="relative flex justify-between items-center p-4 bg-gradient-to-r from-red-900/40 to-red-800/30 rounded-xl border border-red-500/20 hover:border-red-400/40 transition-all duration-300 hover:scale-[1.02]">
-                    {/* Price Section */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/30">
-                        <span className="text-white font-bold text-sm">#{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="text-white font-bold text-lg flex items-center gap-2">
-                          ${safePrice(cluster.price)}
-                          {index === 0 && <span className="text-xs px-2 py-0.5 bg-yellow-500/30 rounded-full text-yellow-300">최강</span>}
-                        </p>
-                        <p className="text-red-400 text-sm flex items-center gap-1">
-                          <span className="text-red-300">📊</span>
-                          거래량: {safeThousand(cluster.volume)}K
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Significance Section */}
-                    <div className="text-right">
-                      <div className="flex flex-col items-end gap-1">
-                        <p className="text-red-300 text-xs font-semibold">중요도</p>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-500"
-                              style={{ width: `${cluster.significance}%` }}
-                            />
-                          </div>
-                          <p className="text-white font-bold text-sm min-w-[40px] text-right">
-                            {safeFixed(cluster.significance)}%
-                          </p>
-                        </div>
-                        {cluster.significance > 80 && (
-                          <span className="text-xs text-red-400 animate-pulse">🔥 강력</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+          <h3 className="text-lg font-bold text-white mb-4">⚡ 저항 클러스터</h3>
+          <div className="space-y-3">
+            {resistanceClusters.slice(0, 5).map((cluster, index) => (
+              <div key={index} className="flex justify-between items-center p-3 bg-red-900/20 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">${safePrice(cluster.price)}</p>
+                  <p className="text-red-400 text-sm">거래량: {safeThousand(cluster.volume)}K</p>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p className="text-sm">저항 클러스터 분석 중...</p>
+                <div className="text-right">
+                  <p className="text-red-300 text-sm">중요도</p>
+                  <p className="text-white font-bold">{safeFixed(cluster.significance)}%</p>
+                </div>
               </div>
-            )}
+            ))}
           </div>
-          
-          {/* Summary Stats */}
-          {resistanceClusters.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-red-500/20">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-red-400">평균 강도</span>
-                <span className="text-white font-bold">
-                  {(resistanceClusters.reduce((sum, c) => sum + c.significance, 0) / resistanceClusters.length).toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm mt-1">
-                <span className="text-red-400">총 거래량</span>
-                <span className="text-white font-bold">
-                  {(resistanceClusters.reduce((sum, c) => sum + c.volume, 0) / 1000).toFixed(1)}K
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -1421,7 +1067,7 @@ function DistributionTab({
         <h3 className="text-lg font-bold text-white mb-4">📋 가격대별 거래량 분포</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={volumeDistribution}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="range"
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
@@ -1473,7 +1119,7 @@ function DistributionTab({
 
       {/* Distribution Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h4 className="text-lg font-bold text-white mb-3">💡 주요 인사이트</h4>
           <ul className="space-y-2 text-sm text-gray-300">
             <li>• 가장 활발한 거래 구간</li>
@@ -1483,7 +1129,7 @@ function DistributionTab({
           </ul>
         </div>
 
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h4 className="text-lg font-bold text-white mb-3">📈 거래 활성도</h4>
           <div className="space-y-3">
             <div className="flex justify-between">
@@ -1507,7 +1153,7 @@ function DistributionTab({
           </div>
         </div>
 
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h4 className="text-lg font-bold text-white mb-3">🎯 거래 효율성</h4>
           <ResponsiveContainer width="100%" height={150}>
             <RadarChart data={volumeDistribution.slice(0, 5)}>
@@ -1587,7 +1233,7 @@ function StrategyTab({
 
       {/* Key Levels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">🛡️ 주요 지지선</h3>
           <div className="space-y-3">
             {supportLevels.map((level, index) => (
@@ -1607,7 +1253,7 @@ function StrategyTab({
           </div>
         </div>
 
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 relative z-10">
+        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-4">⚡ 주요 저항선</h3>
           <div className="space-y-3">
             {resistanceLevels.map((level, index) => (
