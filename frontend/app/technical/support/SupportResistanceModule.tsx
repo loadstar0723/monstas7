@@ -154,7 +154,6 @@ export default function SupportResistanceModule() {
             volume: candle.volume
           }))
           
-          )
           setCandles(processedData)
           setPriceHistory(processedData.map((d: any) => d.close))
           
