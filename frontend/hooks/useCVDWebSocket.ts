@@ -114,7 +114,7 @@ export function useCVDWebSocket(symbol: string) {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const wsUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`;
+    const wsUrl = 'wss://stream.binance.com:9443/ws/' + symbol.toLowerCase() + '@aggTrade';
     
     try {
       const ws = new WebSocket(wsUrl);
@@ -181,7 +181,6 @@ export function useCVDWebSocket(symbol: string) {
         if (wsRef.current === ws && reconnectAttempts.current < 5) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-          `);
           
           reconnectTimeout.current = setTimeout(() => {
             connect();
