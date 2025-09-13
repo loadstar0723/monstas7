@@ -50,8 +50,6 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         
         setLoading(true)
       try {
-        `)
-        
         // Binance API interval 매핑 - 더 많은 데이터 가져오기
         const interval = timeframe === '7d' ? '1h' : timeframe === '30d' ? '2h' : '4h'
         const limit = timeframe === '7d' ? 168 : timeframe === '30d' ? 360 : 500
@@ -226,11 +224,11 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
                 <button
                   key={tf}
                   onClick={() => setTimeframe(tf)}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                  className={'px-3 py-1 rounded-lg text-sm transition-colors ' + (
                     timeframe === tf
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}
+                  )}
                 >
                   {tf === '7d' ? '7일' : tf === '30d' ? '30일' : '90일'}
                 </button>
