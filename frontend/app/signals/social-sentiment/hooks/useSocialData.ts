@@ -194,7 +194,6 @@ export default function useSocialData(coin: string) {
                 })
               }
 
-              )
               const newData = {
                 sentimentScore: Math.floor(finalSentiment),
                 sentimentChange: priceChange,
