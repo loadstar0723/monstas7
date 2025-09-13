@@ -60,7 +60,7 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
           const seconds = Math.floor((elapsed % 60000) / 1000)
           setStats(prev => ({
             ...prev,
-            uptime: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+            uptime: hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0')
           }))
         }
       }, 1000)
@@ -89,7 +89,7 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
     const connectWebSocket = () => {
       try {
         const symbol = selectedCoin.symbol.toLowerCase()
-        const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}usdt@ticker`)
+        const ws = new WebSocket('wss://stream.binance.com:9443/ws/' + symbol + 'usdt@ticker')
         
         ws.onopen = () => {
           retryCount = 0
@@ -128,7 +128,6 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
           if (retryCount < maxRetries) {
             retryCount++
             reconnectTimeout = setTimeout(() => {
-              `)
               connectWebSocket()
             }, 3000 * retryCount)
           }
@@ -155,7 +154,7 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
   // 실제 API에서 차익거래 기회 가져오기
   const fetchArbitrageOpportunities = async () => {
     try {
-      const response = await fetch(`/api/arbitrage/opportunities?symbol=${selectedCoin.symbol}USDT`)
+      const response = await fetch('/api/arbitrage/opportunities?symbol=' + selectedCoin.symbol + 'USDT')
       const data = await response.json()
       
       if (data.opportunities && data.opportunities.length > 0) {

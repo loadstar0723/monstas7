@@ -52,7 +52,6 @@ export default function RootLayout({
                     return '0';
                   }
                 };
-                .toISOString());
               })();
             `
           }}

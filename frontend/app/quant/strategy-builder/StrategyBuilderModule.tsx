@@ -143,7 +143,7 @@ export default function StrategyBuilderModule() {
     const connectionTimer = setTimeout(() => {
       if (!isActive) return // 이미 cleanup된 경우 중단
       
-      const wsUrl = `wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`
+      const wsUrl = 'wss://stream.binance.com:9443/ws/' + selectedCoin.toLowerCase() + '@ticker'
       try {
         const ws = new WebSocket(wsUrl)
         
@@ -216,7 +216,6 @@ export default function StrategyBuilderModule() {
         
         ws.onclose = (event) => {
           clearTimeout(connectionTimeout)
-          `)
           wsRef.current = null
           
           // 비정상 종료 시 재연결 시도
@@ -270,11 +269,11 @@ export default function StrategyBuilderModule() {
       
       try {
         // 24시간 티커 정보 가져오기
-        const response = await fetch(`/api/binance/ticker?symbol=${selectedCoin}`)
+        const response = await fetch('/api/binance/ticker?symbol=' + selectedCoin)
         
         // response.ok 체크 추가
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          throw new Error('HTTP ' + response.status + ': ' + response.statusText)
         }
         
         const ticker = await response.json()

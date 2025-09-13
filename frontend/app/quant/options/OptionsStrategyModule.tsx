@@ -100,7 +100,11 @@ export default function OptionsStrategyModule() {
               setSpotPrice(parseFloat(optionsData.spotPrice) || 0)
             }
           }
-        } catch (optionsError) {
+        } catch (optionsError: any) {
+          // 컴포넌트 언마운트나 코인 변경은 정상적인 동작이므로 무시
+          if (optionsError?.message === 'Component unmounted or coin changed') {
+            return
+          }
           console.error('Deribit 옵션 데이터 로드 실패:', optionsError)
           // 기본 만료일 설정
           const defaultExpiries = ['2024-12-27', '2025-01-03', '2025-01-10']
@@ -124,12 +128,11 @@ export default function OptionsStrategyModule() {
             setSpotPrice(parseFloat(priceData.lastPrice))
           }
         } else {
-          throw new Error(`Binance API 오류: ${priceResponse.status}`)
+          throw new Error('Binance API 오류: ' + priceResponse.status)
         }
       } catch (priceError: any) {
         // AbortError는 정상적인 취소이므로 무시
         if (priceError?.name === 'AbortError' || priceError?.message?.includes('aborted')) {
-          ')
           return
         }
         
@@ -149,7 +152,6 @@ export default function OptionsStrategyModule() {
     } catch (error: any) {
       // AbortError는 정상적인 취소이므로 무시
       if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
-        ')
         return
       }
       
