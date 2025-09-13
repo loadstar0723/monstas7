@@ -193,7 +193,7 @@ export default function InsiderFlowUltimate() {
       }
 
       // Binance WebSocket 형식에 맞게 수정
-      const symbol = (coin + 'USDT').toLowerCase()
+      const symbol = (coin.includes('USDT') ? coin : coin + 'USDT').toLowerCase()
       const wsUrl = 'wss://stream.binance.com:9443/ws/' + symbol + '@ticker'
       
       try {
@@ -284,7 +284,7 @@ export default function InsiderFlowUltimate() {
   // 과거 가격 데이터 로드
   const loadPriceHistory = async (coin: string) => {
     try {
-      const symbol = coin + 'USDT'
+      const symbol = coin.includes('USDT') ? coin : coin + 'USDT'
       const url = '/api/binance/klines?symbol=' + symbol + '&interval=1h&limit=24'
       const response = await fetch(url)
       if (response.ok) {
