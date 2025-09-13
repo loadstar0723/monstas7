@@ -18,7 +18,7 @@ import {
 // 공통 컴포넌트
 import CoinSelector, { TRACKED_SYMBOLS } from '@/components/technical/CoinSelector'
 import TechnicalHeader from '@/components/technical/TechnicalHeader'
-import TechnicalChartWrapper from '@/components/technical/TechnicalChartWrapper'
+import ChartContainer from '@/components/technical/ChartContainer'
 import OFIDynamicGuide from './OFIDynamicGuide'
 
 // 훅
@@ -70,10 +70,11 @@ interface ImbalanceZone {
 const TABS: TabConfig[] = [
   { id: 'overview', label: '개요', icon: <FaInfoCircle className="w-4 h-4" />, description: 'OFI 전체 개요' },
   { id: 'orderflow', label: '오더 플로우', icon: <FaChartLine className="w-4 h-4" />, description: '주문 흐름 분석' },
+  { id: 'cvd', label: 'CVD', icon: <FaChartArea className="w-4 h-4" />, description: '누적 거래량 델타' },
   { id: 'imbalance', label: '불균형', icon: <FaBalanceScale className="w-4 h-4" />, description: '매수/매도 불균형' },
   { id: 'footprint', label: '풋프린트', icon: <FaCrosshairs className="w-4 h-4" />, description: '풋프린트 차트' },
   { id: 'heatmap', label: '히트맵', icon: <FaFire className="w-4 h-4" />, description: '유동성 히트맵' },
-  { id: 'strategy', label: '전략', icon: <FaGraduationCap className="w-4 h-4" />, description: 'OFI 트레이딩 전략' }
+  { id: 'strategy', label: '전략', icon: <FaGraduationCap className="w-4 h-4" />, description: 'OFI 트레이똩 전략' }
 ]
 
 // OFI 설정
@@ -118,15 +119,38 @@ export default function OFIModule() {
     interval: '1m'
   })
 
+  // 초기 빈 데이터로 시작 - 실제 데이터가 도착하면 채워짐
+  const generateInitialData = () => {
+    const now = Date.now()
+    const initialOFI: OFIData[] = []
+    const initialOrderFlow: OrderFlowData[] = []
+    const initialFootprint: FootprintData[] = []
+    
+    // 최소한의 초기 데이터 (WebSocket 연결 전 차트 표시용)
+    initialOFI.push({
+      timestamp: now,
+      bidImbalance: 0,
+      askImbalance: 0,
+      totalImbalance: 0,
+      flowDirection: 'neutral',
+      strength: 0
+    })
+    
+    return { initialOFI, initialOrderFlow, initialFootprint }
+  }
+  
+  // 초기 데이터 설정
+  const { initialOFI, initialOrderFlow, initialFootprint } = useMemo(() => generateInitialData(), [])
+  
   // OFI 전용 상태
   const [orderBook, setOrderBook] = useState<{ bids: OrderBookLevel[], asks: OrderBookLevel[] }>({
     bids: [],
     asks: []
   })
-  const [orderFlowData, setOrderFlowData] = useState<OrderFlowData[]>([])
-  const [footprintData, setFootprintData] = useState<FootprintData[]>([])
+  const [orderFlowData, setOrderFlowData] = useState<OrderFlowData[]>(initialOrderFlow)
+  const [footprintData, setFootprintData] = useState<FootprintData[]>(initialFootprint)
   const [imbalanceZones, setImbalanceZones] = useState<ImbalanceZone[]>([])
-  const [ofiData, setOfiData] = useState<OFIData[]>([])
+  const [ofiData, setOfiData] = useState<OFIData[]>(initialOFI)
   
   const wsRef = useRef<WebSocket | null>(null)
   const orderFlowRef = useRef<OrderFlowData[]>([])
@@ -134,6 +158,9 @@ export default function OFIModule() {
 
   // WebSocket OFI 전용 연결
   const connectOFIWebSocket = useCallback(() => {
+    // 브라우저 환경 체크
+    if (typeof window === 'undefined') return
+    
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close()
     }
@@ -335,14 +362,14 @@ export default function OFIModule() {
     setImbalanceZones(zones)
   }, [orderBook])
 
-  // 차트 데이터 변환
+  // 차트 데이터 변환 - 숫자 타입 유지
   const processedOFIData = useMemo(() => {
     return ofiData.slice(-100).map(item => ({
       time: new Date(item.timestamp).toLocaleTimeString(),
-      bidImbalance: (item.bidImbalance * 100).toFixed(2),
-      askImbalance: (item.askImbalance * 100).toFixed(2),
-      totalImbalance: (item.totalImbalance * 100).toFixed(2),
-      strength: (item.strength * 100).toFixed(2)
+      bidImbalance: parseFloat((item.bidImbalance * 100).toFixed(2)),
+      askImbalance: parseFloat((item.askImbalance * 100).toFixed(2)),
+      totalImbalance: parseFloat((item.totalImbalance * 100).toFixed(2)),
+      strength: parseFloat((item.strength * 100).toFixed(2))
     }))
   }, [ofiData])
 
@@ -428,10 +455,10 @@ export default function OFIModule() {
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       {/* OFI 종합 지수 */}
       <div className="lg:col-span-2 xl:col-span-3">
-        <TechnicalChartWrapper 
+        <ChartContainer 
           title="OFI 종합 분석"
           height={400}
-          isLoading={loading}
+          loading={loading}
         >
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={processedOFIData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -464,7 +491,7 @@ export default function OFIModule() {
               </defs>
             </ComposedChart>
           </ResponsiveContainer>
-        </TechnicalChartWrapper>
+        </ChartContainer>
       </div>
 
       {/* 실시간 불균형 게이지 */}
@@ -555,10 +582,10 @@ export default function OFIModule() {
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
       {/* 실시간 주문 흐름 */}
       <div className="xl:col-span-2">
-        <TechnicalChartWrapper 
+        <ChartContainer 
           title="실시간 주문 흐름"
           height={400}
-          isLoading={loading}
+          loading={loading}
         >
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={processedOrderFlowData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -581,7 +608,6 @@ export default function OFIModule() {
                 yAxisId="delta"
                 dataKey="delta" 
                 name="델타"
-                fill={(data: any) => data.delta > 0 ? COLORS.bullish : COLORS.bearish}
               >
                 {processedOrderFlowData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.delta > 0 ? COLORS.bullish : COLORS.bearish} />
@@ -589,14 +615,14 @@ export default function OFIModule() {
               </Bar>
             </ComposedChart>
           </ResponsiveContainer>
-        </TechnicalChartWrapper>
+        </ChartContainer>
       </div>
 
       {/* CVD (누적 거래량 델타) */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="누적 거래량 델타 (CVD)"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={processedOrderFlowData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -615,13 +641,13 @@ export default function OFIModule() {
             <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.5)" strokeDasharray="2 2" />
           </LineChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 거래 크기 분포 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="거래 크기 분포"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart data={processedOrderFlowData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -643,7 +669,7 @@ export default function OFIModule() {
             />
           </ScatterChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 동적 가이드 섹션 */}
       <div className="xl:col-span-2 mt-6">
@@ -664,10 +690,10 @@ export default function OFIModule() {
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
       {/* 호가창 불균형 */}
       <div className="xl:col-span-2">
-        <TechnicalChartWrapper 
+        <ChartContainer 
           title="호가창 불균형 분석"
           height={400}
-          isLoading={loading}
+          loading={loading}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={processedOFIData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -681,14 +707,14 @@ export default function OFIModule() {
               <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.5)" strokeDasharray="2 2" />
             </BarChart>
           </ResponsiveContainer>
-        </TechnicalChartWrapper>
+        </ChartContainer>
       </div>
 
       {/* 불균형 존 히트맵 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="불균형 존 히트맵"
         height={350}
-        isLoading={loading}
+        loading={loading}
       >
         <div className="h-full p-4 space-y-2">
           {imbalanceZones.length > 0 ? imbalanceZones.map((zone, index) => (
@@ -727,13 +753,13 @@ export default function OFIModule() {
             </div>
           )}
         </div>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 불균형 강도 게이지 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="불균형 강도"
         height={350}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={processedOFIData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -759,7 +785,7 @@ export default function OFIModule() {
             </defs>
           </LineChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 동적 가이드 섹션 */}
       <div className="xl:col-span-2 mt-6">
@@ -780,10 +806,10 @@ export default function OFIModule() {
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
       {/* 풋프린트 차트 */}
       <div className="xl:col-span-2">
-        <TechnicalChartWrapper 
+        <ChartContainer 
           title="풋프린트 차트"
           height={500}
-          isLoading={loading}
+          loading={loading}
         >
           <div className="h-full overflow-y-auto">
             <div className="grid grid-cols-7 gap-1 p-4 text-xs">
@@ -820,14 +846,14 @@ export default function OFIModule() {
               ))}
             </div>
           </div>
-        </TechnicalChartWrapper>
+        </ChartContainer>
       </div>
 
       {/* 풋프린트 델타 차트 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="풋프린트 델타 분포"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={processedFootprintData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -842,13 +868,13 @@ export default function OFIModule() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 거래량 프로파일 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="거래량 프로파일"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart 
@@ -863,7 +889,7 @@ export default function OFIModule() {
             <Bar dataKey="totalVolume" fill={COLORS.neutral} name="총 거래량" />
           </BarChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 동적 가이드 섹션 */}
       <div className="xl:col-span-2 mt-6">
@@ -884,10 +910,10 @@ export default function OFIModule() {
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
       {/* 유동성 히트맵 */}
       <div className="xl:col-span-2">
-        <TechnicalChartWrapper 
+        <ChartContainer 
           title="유동성 히트맵"
           height={400}
-          isLoading={loading}
+          loading={loading}
         >
           <div className="h-full grid grid-cols-2 gap-4 p-4">
             {/* 매수 호가 */}
@@ -942,14 +968,14 @@ export default function OFIModule() {
               </div>
             </div>
           </div>
-        </TechnicalChartWrapper>
+        </ChartContainer>
       </div>
 
       {/* 호가창 깊이 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="호가창 깊이"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart 
@@ -987,13 +1013,13 @@ export default function OFIModule() {
             </defs>
           </AreaChart>
         </ResponsiveContainer>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 스프레드 분석 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="스프레드 분석"
         height={300}
-        isLoading={loading}
+        loading={loading}
       >
         <div className="h-full p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -1027,7 +1053,7 @@ export default function OFIModule() {
             <div className="text-sm text-gray-400">스프레드 비율</div>
           </div>
         </div>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 동적 가이드 섹션 */}
       <div className="xl:col-span-2 mt-6">
@@ -1043,6 +1069,170 @@ export default function OFIModule() {
       </div>
     </div>
   )
+
+  const renderCVDTab = () => {
+    // CVD 데이터 준비
+    const cvdData = useMemo(() => {
+      return orderFlowRef.current.map((flow, index) => ({
+        time: new Date(flow.timestamp).toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        cvd: flow.cvd || 0,
+        delta: flow.delta || 0,
+        price: flow.price || 0,
+        volume: flow.size || 0,
+        side: flow.side
+      }))
+    }, [orderFlowData])
+
+    return (
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* CVD 메인 차트 */}
+        <div className="xl:col-span-2">
+          <ChartContainer 
+            title="누적 거래량 델타 (CVD)"
+            description="실시간 매수/매도 거래량의 누적 차이"
+            height={500}
+            loading={loading}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={cvdData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                <XAxis dataKey="time" stroke="#94a3b8" fontSize={12} />
+                <YAxis yAxisId="cvd" orientation="left" stroke="#94a3b8" fontSize={12} />
+                <YAxis yAxisId="price" orientation="right" stroke="#94a3b8" fontSize={12} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                
+                {/* CVD 라인 */}
+                <Line
+                  yAxisId="cvd"
+                  type="monotone"
+                  dataKey="cvd"
+                  stroke={COLORS.bullish}
+                  strokeWidth={3}
+                  dot={false}
+                  name="CVD"
+                />
+                
+                {/* 가격 라인 */}
+                <Line
+                  yAxisId="price"
+                  type="monotone"
+                  dataKey="price"
+                  stroke="#8884d8"
+                  strokeWidth={1}
+                  dot={false}
+                  strokeDasharray="5 5"
+                  name="가격"
+                />
+                
+                {/* 0 기준선 */}
+                <ReferenceLine yAxisId="cvd" y={0} stroke="rgba(148, 163, 184, 0.5)" strokeDasharray="2 2" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+
+        {/* 델타 분포 차트 */}
+        <ChartContainer 
+          title="델타 분포"
+          description="개별 거래의 델타값 분포"
+          height={350}
+          loading={loading}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cvdData.slice(-50)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+              <XAxis dataKey="time" stroke="#94a3b8" fontSize={10} interval="preserveStartEnd" />
+              <YAxis stroke="#94a3b8" fontSize={12} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="delta" name="델타">
+                {cvdData.slice(-50).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.delta > 0 ? COLORS.bullish : COLORS.bearish} />
+                ))}
+              </Bar>
+              <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.5)" strokeDasharray="2 2" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+
+        {/* CVD 통계 */}
+        <ChartContainer 
+          title="CVD 통계"
+          height={350}
+          loading={loading}
+        >
+          <div className="h-full p-6 space-y-4">
+            {/* 현재 CVD */}
+            <div className="text-center p-4 rounded-lg border border-gray-700">
+              <div className="text-lg font-bold mb-2">현재 CVD</div>
+              <div className={`text-4xl font-bold ${
+                cumulativeDelta.current > 0 ? 'text-green-400' : 
+                cumulativeDelta.current < 0 ? 'text-red-400' : 
+                'text-gray-400'
+              }`}>
+                {cumulativeDelta.current.toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-400 mt-2">
+                {cumulativeDelta.current > 0 ? '매수 우세' : 
+                 cumulativeDelta.current < 0 ? '매도 우세' : 
+                 '균형'}
+              </div>
+            </div>
+
+            {/* CVD 추세 */}
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-400">CVD 추세</span>
+                <span className={`${
+                  cvdData.length > 10 && cvdData[cvdData.length - 1].cvd > cvdData[cvdData.length - 10].cvd
+                    ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {cvdData.length > 10 && cvdData[cvdData.length - 1].cvd > cvdData[cvdData.length - 10].cvd
+                    ? '상승 추세 ↑' : '하락 추세 ↓'}
+                </span>
+              </div>
+            </div>
+
+            {/* 거래량 비율 */}
+            <div className="space-y-2">
+              <div className="text-sm text-gray-400">매수/매도 비율</div>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-green-500/20 rounded p-2 text-center">
+                  <div className="text-green-400 font-bold">
+                    {orderFlowData.filter(f => f.side === 'buy').length}
+                  </div>
+                  <div className="text-xs text-gray-400">매수</div>
+                </div>
+                <div className="flex-1 bg-red-500/20 rounded p-2 text-center">
+                  <div className="text-red-400 font-bold">
+                    {orderFlowData.filter(f => f.side === 'sell').length}
+                  </div>
+                  <div className="text-xs text-gray-400">매도</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ChartContainer>
+
+        {/* 동적 가이드 섹션 */}
+        <div className="xl:col-span-2">
+          <OFIDynamicGuide
+            tabId="cvd"
+            currentImbalance={ofiData.length > 0 ? ofiData[ofiData.length - 1].totalImbalance : 0}
+            buyVolume={orderBook.bids.reduce((sum, bid) => sum + bid.quantity, 0)}
+            sellVolume={orderBook.asks.reduce((sum, ask) => sum + ask.quantity, 0)}
+            delta={cumulativeDelta.current}
+            cvd={cumulativeDelta.current}
+            price={chartData.length > 0 ? chartData[chartData.length - 1].close : 0}
+          />
+        </div>
+      </div>
+    )
+  }
 
   const renderStrategyTab = () => (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -1084,10 +1274,10 @@ export default function OFIModule() {
       </div>
 
       {/* 실시간 전략 신호 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="실시간 트레이딩 신호"
         height={350}
-        isLoading={loading}
+        loading={loading}
       >
         <div className="h-full p-6 space-y-4">
           {/* 현재 신호 */}
@@ -1141,13 +1331,13 @@ export default function OFIModule() {
             </div>
           </div>
         </div>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 백테스팅 결과 */}
-      <TechnicalChartWrapper 
+      <ChartContainer 
         title="전략 성과 분석"
         height={350}
-        isLoading={loading}
+        loading={loading}
       >
         <div className="h-full p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -1191,7 +1381,7 @@ export default function OFIModule() {
             </div>
           </div>
         </div>
-      </TechnicalChartWrapper>
+      </ChartContainer>
 
       {/* 동적 가이드 섹션 */}
       <div className="xl:col-span-2 mt-6">
@@ -1259,6 +1449,7 @@ export default function OFIModule() {
           >
             {activeTab === 'overview' && renderOverviewTab()}
             {activeTab === 'orderflow' && renderOrderFlowTab()}
+            {activeTab === 'cvd' && renderCVDTab()}
             {activeTab === 'imbalance' && renderImbalanceTab()}
             {activeTab === 'footprint' && renderFootprintTab()}
             {activeTab === 'heatmap' && renderHeatmapTab()}

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { 
   FaInfoCircle, FaChartLine, FaBalanceScale, FaCrosshairs,
   FaFire, FaGraduationCap, FaCheckCircle, FaExclamationTriangle,
-  FaArrowUp, FaArrowDown, FaTachometerAlt, FaBook
+  FaArrowUp, FaArrowDown, FaTachometerAlt, FaBook, FaRobot
 } from 'react-icons/fa'
 
 interface OFIDynamicGuideProps {
@@ -36,6 +36,62 @@ export default function OFIDynamicGuide({
   // 탭별 동적 콘텐츠
   const getTabContent = () => {
     switch(tabId) {
+      case 'cvd':
+        const cvdTrend = cvd > 0 ? '상승' : cvd < 0 ? '하락' : '중립'
+        const cvdStrength = Math.abs(cvd) > 1000 ? '매우 강함' : Math.abs(cvd) > 500 ? '강함' : Math.abs(cvd) > 100 ? '보통' : '약함'
+        
+        return (
+          <div className="bg-gradient-to-r from-purple-900/20 to-indigo-900/20 rounded-xl p-6 border border-purple-700/30">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <FaRobot className="text-purple-400" />
+              AI 분석 - CVD (누적 거래량 델타)
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <h4 className="font-bold text-blue-400 mb-3">📊 CVD 현황</h4>
+                <ul className="space-y-2 text-sm text-gray-300">
+                  <li>• 현재 CVD: <span className={cvd > 0 ? 'text-green-400' : 'text-red-400'}>{cvd.toFixed(2)}</span></li>
+                  <li>• 추세 방향: <span className={cvd > 0 ? 'text-green-400' : 'text-red-400'}>{cvdTrend}</span></li>
+                  <li>• 추세 강도: <span className="text-yellow-400">{cvdStrength}</span></li>
+                  <li>• 누적 델타: {delta.toFixed(2)}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-bold text-green-400 mb-3">💡 트레이딩 신호</h4>
+                <ul className="space-y-2 text-sm text-gray-300">
+                  <li>• {cvd > 500 ? '강한 매수 신호 ✅' : cvd < -500 ? '강한 매도 신호 ❌' : '중립 상태 ⚠️'}</li>
+                  <li>• {Math.abs(cvd) > 1000 ? '극단적 레벨 - 반전 주의' : '정상 범위 내 거래'}</li>
+                  <li>• {cvd > 0 && delta > 0 ? '상승 모멘텀 지속' : cvd < 0 && delta < 0 ? '하락 모멘텀 지속' : '모멘텀 변화 감지'}</li>
+                  <li>• 권장 포지션: {cvd > 200 ? 'Long' : cvd < -200 ? 'Short' : 'Wait'}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-bold text-yellow-400 mb-3">⚡ 실시간 전략</h4>
+                <ul className="space-y-2 text-sm text-gray-300">
+                  <li>• 진입가: {price.toFixed(2)} {cvd > 0 ? '±0.1%' : '±0.15%'}</li>
+                  <li>• 손절가: {(price * (cvd > 0 ? 0.98 : 1.02)).toFixed(2)}</li>
+                  <li>• 목표가: {(price * (cvd > 0 ? 1.03 : 0.97)).toFixed(2)}</li>
+                  <li>• 리스크: {Math.abs(cvd) > 1000 ? '높음 ⚠️' : Math.abs(cvd) > 500 ? '중간' : '낮음'}</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-4 bg-gray-800/50 rounded-lg">
+              <p className="text-sm text-gray-400">
+                💡 <span className="text-white font-bold">CVD 해석:</span> 
+                {cvd > 0 
+                  ? ' 누적 매수량이 매도량보다 많아 상승 압력이 존재합니다. 추세 지속 가능성이 높으나, 극단적 수준에서는 반전에 주의하세요.'
+                  : cvd < 0 
+                  ? ' 누적 매도량이 매수량보다 많아 하락 압력이 존재합니다. 추가 하락 가능성이 있으나, 과매도 구간에서는 반등에 대비하세요.'
+                  : ' 매수와 매도가 균형을 이루고 있습니다. 방향성 확인 후 진입을 권장합니다.'}
+              </p>
+            </div>
+          </div>
+        )
+        
       case 'overview':
         return (
           <div className="space-y-6">
