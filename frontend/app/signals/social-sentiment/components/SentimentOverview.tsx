@@ -148,9 +148,6 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h3 className="text-lg font-bold mb-4">감성 점수 추이</h3>
           {(() => {
-            ,
-              data: sentimentData.sentimentHistory
-            });
             return sentimentData.sentimentHistory && Array.isArray(sentimentData.sentimentHistory) && sentimentData.sentimentHistory.length > 0;
           })() ? (
             <ResponsiveContainer width="100%" height={300}>
