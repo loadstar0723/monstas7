@@ -47,29 +47,27 @@ const nextConfig = {
       config.output = {
         ...config.output,
         chunkLoadTimeout: 300000, // 300초 (5분)
-        publicPath: '/_next/',
+        publicPath: 'http://localhost:3002/_next/',
         // 청크 파일명 단순화
         chunkFilename: 'static/chunks/[name].js',
       }
       
-      // 청크 분할 최적화
+      // 청크 분할 비활성화 (개발 모드)
       config.optimization = {
         ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            // 모든 모듈을 하나의 청크로
-            framework: {
-              chunks: 'all',
-              name: 'framework',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-          },
-        },
+        splitChunks: false,
+        runtimeChunk: false,
+        minimize: false,
+      }
+    }
+    
+    // Script 태그 로딩 에러 방지
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
       }
     }
     

@@ -35,6 +35,11 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
   const [heatmapData, setHeatmapData] = useState<any[]>([])
   const [correlationData, setCorrelationData] = useState<any[]>([])
   const [globalSentiment, setGlobalSentiment] = useState<any[]>([])
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     const generateVisualizationData = async () => {
@@ -266,12 +271,12 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
         </h3>
         
         {/* 현재 시간 표시 */}
-        <div className="mb-4 text-sm text-gray-400">
-          현재 시간: {new Date().toLocaleString('ko-KR', { 
+        <div className="mb-4 text-sm text-gray-400" suppressHydrationWarning>
+          현재 시간: {typeof window !== 'undefined' ? new Date().toLocaleString('ko-KR', { 
             weekday: 'long', 
             hour: '2-digit', 
             minute: '2-digit' 
-          })}
+          }) : '로딩중...'}
         </div>
         
         <div className="overflow-x-auto">
@@ -301,7 +306,7 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
             <div>
               <p className="text-xs text-gray-400 mb-1">가장 활발한 시간</p>
               <p className="text-sm font-medium text-purple-400">
-                {(() => {
+                {!isClient || heatmapData.length === 0 ? '계산중' : (() => {
                   const maxData = heatmapData.reduce((max, current) => 
                     current.mentions > max.mentions ? current : max,
                     { day: 0, hour: 0, mentions: 0 }
@@ -314,31 +319,36 @@ export default function VisualizationDashboard({ coin }: VisualizationDashboardP
             <div>
               <p className="text-xs text-gray-400 mb-1">평균 감성</p>
               <p className="text-sm font-medium text-green-400">
-                {heatmapData.length > 0 
-                  ? (heatmapData.reduce((sum, d) => sum + d.value, 0) / heatmapData.length).toFixed(0)
-                  : 0}%
+                {!isClient || heatmapData.length === 0
+                  ? '계산중'
+                  : `${Math.round(heatmapData.reduce((sum, d) => sum + d.value, 0) / heatmapData.length)}%`}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1">주중/주말 차이</p>
               <p className="text-sm font-medium text-blue-400">
-                {(() => {
+                {!isClient || heatmapData.length === 0 ? '계산중' : (() => {
                   const weekday = heatmapData.filter(d => d.day >= 1 && d.day <= 5)
                   const weekend = heatmapData.filter(d => d.day === 0 || d.day === 6)
-                  const weekdayAvg = weekday.reduce((sum, d) => sum + d.mentions, 0) / weekday.length
-                  const weekendAvg = weekend.reduce((sum, d) => sum + d.mentions, 0) / weekend.length
+                  const weekdayAvg = weekday.length > 0 ? weekday.reduce((sum, d) => sum + d.mentions, 0) / weekday.length : 0
+                  const weekendAvg = weekend.length > 0 ? weekend.reduce((sum, d) => sum + d.mentions, 0) / weekend.length : 0
+                  if (weekendAvg === 0) return '0%'
                   const diff = ((weekdayAvg - weekendAvg) / weekendAvg * 100)
-                  return `${diff > 0 ? '+' : ''}${diff.toFixed(0)}%`
+                  if (isNaN(diff) || !isFinite(diff)) return '0%'
+                  return `${diff > 0 ? '+' : ''}${Math.round(diff)}%`
                 })()}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1">활동 집중도</p>
               <p className="text-sm font-medium text-orange-400">
-                {(() => {
+                {!isClient || heatmapData.length === 0 ? '계산중' : (() => {
                   const totalMentions = heatmapData.reduce((sum, d) => sum + d.mentions, 0)
-                  const maxMentions = Math.max(...heatmapData.map(d => d.mentions))
-                  return maxMentions > 0 ? `${(maxMentions / totalMentions * 100).toFixed(0)}%` : '0%'
+                  if (totalMentions === 0) return '0%'
+                  const maxMentions = Math.max(...heatmapData.map(d => d.mentions), 0)
+                  const ratio = maxMentions / totalMentions * 100
+                  if (isNaN(ratio) || !isFinite(ratio)) return '0%'
+                  return `${Math.round(ratio)}%`
                 })()}
               </p>
             </div>

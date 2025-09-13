@@ -29,9 +29,7 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         {/* 모든 스크립트보다 먼저 실행되는 긴급 패치 */}
-        <Script
-          id="safe-number-emergency"
-          strategy="beforeInteractive"
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -80,11 +78,6 @@ export default function RootLayout({
           </SidebarProvider>
         </ThemeProvider>
         {/* 추가 안전장치 */}
-        <Script
-          id="safe-number-backup"
-          strategy="afterInteractive"
-          src="/safe-number-init.js"
-        />
       </body>
     </html>
   );
