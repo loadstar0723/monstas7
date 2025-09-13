@@ -156,7 +156,6 @@ export default function useSocialData(coin: string) {
               
               if (klinesResponse.ok) {
                 const klinesData = await klinesResponse.json()
-                )
                 
                 // API는 { data: [...], klines: [...] } 형태로 반환
                 const klines = klinesData.data || klinesData.klines || []
