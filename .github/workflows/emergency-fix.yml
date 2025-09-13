@@ -62,10 +62,27 @@ jobs:
             echo "🚀 Starting server..."
             pm2 delete monsta-prod || true
             pm2 start npm --name monsta-prod -- start
+            pm2 save
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
             
-            # 상태 확인
+            # 프로세스가 실제로 실행 중인지 확인
+            sleep 5
             pm2 status
-            pm2 logs monsta-prod --lines 10
+            
+            # 포트 3000이 열려있는지 확인
+            echo "📡 Checking if port 3000 is listening..."
+            netstat -tlpn | grep :3000 || echo "⚠️ Port 3000 is not listening!"
+            
+            # PM2 로그 확인
+            echo "📝 PM2 logs:"
+            pm2 logs monsta-prod --lines 20 --nostream
+            
+            # 프로세스 재시작 시도
+            echo "🔄 Ensuring process is running..."
+            pm2 restart monsta-prod || pm2 start npm --name monsta-prod -- start
+            
+            # 최종 상태 확인
+            pm2 list
             
             echo "✅ Emergency deployment completed!"
           EOF
