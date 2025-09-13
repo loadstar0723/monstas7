@@ -2,18 +2,18 @@
 
 import dynamic from 'next/dynamic'
 
-const LiquidityMapModule = dynamic(() => import('./LiquidityMapModule'), { 
+const LiquidationChartModule = dynamic(() => import('./LiquidationChartModule'), { 
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">유동성 맵 모듈 로딩 중...</p>
+        <p className="text-gray-400">청산 차트 모듈 로딩 중...</p>
       </div>
     </div>
   )
 })
 
-export default function LiquidityMapPage() {
-  return <LiquidityMapModule />
+export default function LiquidationChartPage() {
+  return <LiquidationChartModule />
 }

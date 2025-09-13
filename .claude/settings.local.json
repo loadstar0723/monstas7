@@ -225,7 +225,13 @@
       "Bash(start http://localhost:3027)",
       "Bash(start http://localhost:3028/signals/insider-flow)",
       "Bash(start http://localhost:3029/signals/funding-rate)",
-      "Bash(start http://localhost:3030/signals/funding-rate)"
+      "Bash(start http://localhost:3030/signals/funding-rate)",
+      "Bash(start http://localhost:3037/technical/smc)",
+      "Bash(start http://localhost:3037/technical/cvd)",
+      "Bash(start http://localhost:3037/technical/ofi)",
+      "Bash(start http://localhost:3037/technical/volume)",
+      "Bash(start http://localhost:3037/technical/liquidity)",
+      "Bash(start http://localhost:3037/technical/liquidation)"
     ],
     "deny": [],
     "ask": []
