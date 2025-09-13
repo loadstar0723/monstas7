@@ -170,7 +170,7 @@ export class ModulePerformance {
       const avg = measurements.reduce((a, b) => a + b, 0) / measurements.length
       
       if (avg > 1000) {
-        }ms`)
+        console.warn('[Performance] ' + label + ' average: ' + avg.toFixed(2) + 'ms')
       }
     }
   }
