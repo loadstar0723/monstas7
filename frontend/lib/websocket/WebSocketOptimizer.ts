@@ -30,7 +30,7 @@ class WebSocketOptimizer {
    * 심볼별 실시간 가격 구독
    */
   subscribeToPrice(symbol: string, callback: (data: any) => void): () => void {
-    const streamName = `${symbol.toLowerCase()}@ticker`
+    const streamName = symbol.toLowerCase() + '@ticker'
     return this.subscribe(streamName, callback, 'price')
   }
 
@@ -38,7 +38,7 @@ class WebSocketOptimizer {
    * 심볼별 실시간 거래 구독 (고래 추적용)
    */
   subscribeToTrades(symbol: string, callback: (data: any) => void): () => void {
-    const streamName = `${symbol.toLowerCase()}@trade`
+    const streamName = symbol.toLowerCase() + '@trade'
     return this.subscribe(streamName, callback, 'trade')
   }
 
@@ -46,7 +46,7 @@ class WebSocketOptimizer {
    * 심볼별 실시간 오더북 구독
    */
   subscribeToOrderbook(symbol: string, callback: (data: any) => void): () => void {
-    const streamName = `${symbol.toLowerCase()}@depth@100ms`
+    const streamName = symbol.toLowerCase() + '@depth@100ms'
     return this.subscribe(streamName, callback, 'orderbook')
   }
 
@@ -54,7 +54,7 @@ class WebSocketOptimizer {
    * K라인 실시간 구독
    */
   subscribeToKlines(symbol: string, interval: string, callback: (data: any) => void): () => void {
-    const streamName = `${symbol.toLowerCase()}@kline_${interval}`
+    const streamName = symbol.toLowerCase() + '@kline_' + interval
     return this.subscribe(streamName, callback, 'kline')
   }
 
@@ -89,7 +89,7 @@ class WebSocketOptimizer {
   }
 
   private createConnection(streamName: string, type: string): WebSocketConnection {
-    const wsUrl = `wss://stream.binance.com:9443/ws/${streamName}`
+    const wsUrl = 'wss://stream.binance.com:9443/ws/' + streamName
     const ws = new WebSocket(wsUrl)
     
     const connection: WebSocketConnection = {
@@ -122,21 +122,22 @@ class WebSocketOptimizer {
       // WebSocket 에러는 주로 연결 종료 시 발생하므로 warn 레벨로 로깅
       if (ws.readyState === WebSocket.CLOSED) {
         // 정상적인 종료 과정에서의 에러는 디버그 레벨로
-        `)
+        console.debug('WebSocket 연결 종료')
       } else if (ws.readyState === WebSocket.CLOSING) {
-        `)
+        console.debug('WebSocket 연결 종료 중')
       } else {
         // 실제 연결 문제인 경우만 경고로 표시
-        : 재연결 시도 중...`)
+        console.warn('WebSocket 연결 오류: 재연결 시도 중...')
         
         // 재연결 시도 정보 추가
         if (connection.reconnectAttempts > 0) {
-          }
+          console.debug('재연결 시도 횟수:', connection.reconnectAttempts)
+        }
       }
     }
 
     ws.onclose = (event) => {
-      :`, event.code, event.reason)
+      console.log('WebSocket 연결 종료:', event.code, event.reason)
       
       // 정상 종료가 아니고 재연결 시도가 남아있으면 재연결
       if (event.code !== 1000 && connection.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
