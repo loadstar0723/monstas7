@@ -42,7 +42,7 @@ export function useCVDWebSocket(symbol: string) {
   // Get 24hr ticker stats from REST API
   const fetchTickerStats = useCallback(async () => {
     try {
-      const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=' + symbol);
       if (response.ok) {
         const data = await response.json();
         const currentPrice = parseFloat(data.lastPrice);
@@ -266,7 +266,7 @@ export function useCVDWebSocket(symbol: string) {
     const connectToSymbol = () => {
       try {
         // Use API route to proxy WebSocket connection
-        eventSource = new EventSource(`/api/binance/stream?symbol=${symbol}`);
+        eventSource = new EventSource('/api/binance/stream?symbol=' + symbol);
         
         eventSource.onopen = () => {
           setIsConnected(true);
@@ -274,7 +274,7 @@ export function useCVDWebSocket(symbol: string) {
           reconnectAttempts.current = 0;
           
           // Fetch initial ticker stats
-          fetch(`/api/binance/ticker?symbol=${symbol}`)
+          fetch('/api/binance/ticker?symbol=' + symbol)
             .then(response => response.json())
             .then(data => {
               const currentPrice = parseFloat(data.lastPrice);
