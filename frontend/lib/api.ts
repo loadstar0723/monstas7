@@ -167,7 +167,6 @@ export class APIClient {
       const maxReconnectAttempts = 5
 
       ws.onopen = () => {
-        console.log('WebSocket connected to:', wsURL)
         reconnectAttempts = 0
       }
 
@@ -181,18 +180,14 @@ export class APIClient {
       }
 
       ws.onerror = (error) => {
-        console.warn('WebSocket connection error to:', wsURL)
         // WebSocket 에러 객체는 보안상 상세 정보를 제공하지 않음
       }
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected. Code:', event.code, 'Reason:', event.reason)
-        
         // 정상 종료가 아니고 재연결 시도 횟수가 남아있을 때만 재연결
         if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000) // 지수 백오프
-          console.log(`Reconnecting WebSocket in ${delay}ms... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`)
           
           setTimeout(() => {
             this.connectWebSocket(onMessage)

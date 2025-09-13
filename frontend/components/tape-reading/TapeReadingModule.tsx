@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
+import { safeFixed, safePrice } from '@/lib/safeFormat'
 import { ErrorBoundary } from 'react-error-boundary'
 import dynamic from 'next/dynamic'
 
@@ -71,7 +71,7 @@ function ComponentLoader({ name }: { name: string }) {
 }
 
 // 에러 폴백 컴포넌트
-function ErrorFallback({ error, resetErrorBoundary }: any) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <div className="bg-red-900/20 border border-red-500 rounded-xl p-6 text-center">
       <h3 className="text-red-400 font-bold mb-2">오류 발생</h3>
@@ -114,7 +114,6 @@ export default function TapeReadingModule() {
     
     ws.onopen = () => {
       if (!isActive) return
-      console.log('WebSocket 연결됨:', selectedCoin)
       setWsConnected(true)
     }
 
@@ -136,15 +135,13 @@ export default function TapeReadingModule() {
       }
     }
 
-    ws.onerror = (error) => {
+    ws.onerror = () => {
       if (!isActive) return
-      console.log('WebSocket 연결 오류')
       setWsConnected(false)
     }
 
     ws.onclose = (event) => {
       if (!isActive) return
-      console.log('WebSocket 연결 종료')
       setWsConnected(false)
       // 정상 종료가 아닌 경우에만 재연결
       if (event.code !== 1000 && event.code !== 1001) {
