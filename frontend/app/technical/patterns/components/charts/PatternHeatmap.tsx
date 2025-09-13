@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useMemo } from 'react'
 import { safeFixed } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaInfoCircle, FaChartArea } from 'react-icons/fa'
 
 interface PatternHeatmapData {

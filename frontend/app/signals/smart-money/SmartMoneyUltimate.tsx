@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { dataService } from '@/lib/services/finalDataService'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   FaDollarSign, FaUniversity, FaChartLine, FaBrain, FaShieldAlt,
   FaExchangeAlt, FaHistory, FaCog, FaTelegram, FaFireAlt,
@@ -13,7 +12,6 @@ import {
   FaBell, FaWallet, FaDatabase, FaArrowUp, FaArrowDown,
   FaChartBar, FaChartPie, FaUserTie, FaBuilding, FaTrophy
 } from 'react-icons/fa'
-import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
 import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
 import dynamic from 'next/dynamic'
@@ -21,7 +19,6 @@ import dynamic from 'next/dynamic'
 import { config } from '@/lib/config'
 import SystemOverview from '@/components/signals/SystemOverview'
 import TabGuide from '@/components/signals/TabGuide'
-import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
 
 const ComprehensiveAnalysis = dynamic(
   () => import('@/components/signals/ComprehensiveAnalysis'),
@@ -348,7 +345,6 @@ export default function SmartMoneyUltimate() {
     fetch(`/api/binance/ticker?symbol=${symbol}`)
       .then(res => {
         if (!res.ok) {
-          console.warn(`Ticker API 응답 오류: ${res.status}`)
           return null
         }
         return res.json()
@@ -360,7 +356,6 @@ export default function SmartMoneyUltimate() {
         }
       })
       .catch(err => {
-        console.warn('24시간 통계 로드 실패:', err)
         setPriceChange24h(0)
         setVolume24h(0)
       })
@@ -369,7 +364,6 @@ export default function SmartMoneyUltimate() {
     fetch('/api/fear-greed')
       .then(res => {
         if (!res.ok) {
-          console.warn(`Fear & Greed API 응답 오류: ${res.status}`)
           return null
         }
         return res.json()
@@ -380,7 +374,6 @@ export default function SmartMoneyUltimate() {
         }
       })
       .catch(err => {
-        console.warn('Fear & Greed Index 로드 실패:', err)
         setFearGreedIndex(50) // 기본값
       })
     
@@ -388,7 +381,6 @@ export default function SmartMoneyUltimate() {
     fetch(`/api/binance/klines?symbol=${symbol}&interval=1h&limit=24`)
       .then(res => {
         if (!res.ok) {
-          console.warn(`Klines API 응답 오류: ${res.status}`)
           return null
         }
         return res.json()
@@ -422,7 +414,7 @@ export default function SmartMoneyUltimate() {
           setHourlyChartData(chartData)
         }
       })
-      .catch(err => console.warn('과거 24시간 데이터 로드 실패:', err))
+      .catch(err => console.error('Failed to fetch klines:', err))
     
     // 오더북 데이터 가져오기 (마켓메이커 분석용)
     fetch(`/api/binance/orderbook?symbol=${symbol}&limit=20`)
@@ -470,14 +462,13 @@ export default function SmartMoneyUltimate() {
           setMarketMakers(makers)
         }
       })
-      .catch(err => console.warn('오더북 데이터 로드 실패:', err))
+      .catch(err => console.error('Failed to fetch orderbook:', err))
     
     // 최근 거래 내역 가져오기 (차트 데이터용 - 프록시 사용)
     fetch(`/api/binance/trades?symbol=${symbol}&limit=500`)
       .then(res => res.json())
       .then(trades => {
         if (!Array.isArray(trades)) {
-          console.warn('거래 데이터 형식 오류')
           return
         }
         
@@ -518,7 +509,7 @@ export default function SmartMoneyUltimate() {
         
         setInstitutionalFlows(historicalFlows)
       })
-      .catch(err => console.warn('과거 거래 내역 로드 실패:', err))
+      .catch(err => console.error('Failed to fetch trades:', err))
 
     // 연결 지연 (빠른 전환 방지)
     clearTimeout(connectionDelayRef.current)
@@ -595,7 +586,6 @@ export default function SmartMoneyUltimate() {
         wsRef.current = ws
         
         ws.onerror = (error) => {
-          console.warn('WebSocket error:', error)
           setIsConnected(false)
         }
         
@@ -610,7 +600,6 @@ export default function SmartMoneyUltimate() {
     }, 500)
   }
 
-  
   // Binance 오더북 데이터 가져오기 (프록시 사용)
   const fetchOrderBookData = async (symbol: string) => {
     try {
@@ -626,7 +615,6 @@ export default function SmartMoneyUltimate() {
         }
       }).catch(err => {
         // 네트워크 에러 처리
-        console.warn(`오더북 네트워크 오류: ${err.message}`)
         return null
       })
       
@@ -635,12 +623,10 @@ export default function SmartMoneyUltimate() {
       if (!response) return null
       
       if (!response.ok) {
-        console.warn(`오더북 API 응답 실패: ${response.status}`)
         return null
       }
       
       const data = await response.json().catch(err => {
-        console.warn('오더북 JSON 파싱 실패:', err)
         return null
       })
       
@@ -648,7 +634,6 @@ export default function SmartMoneyUltimate() {
       
       // 데이터 유효성 검사
       if (!data.bids || !data.asks || data.bids.length === 0 || data.asks.length === 0) {
-        console.warn('오더북 데이터가 비어있음')
         return null
       }
       
@@ -668,9 +653,9 @@ export default function SmartMoneyUltimate() {
     } catch (error: any) {
       // 중단 에러는 무시
       if (error?.name === 'AbortError') {
-        console.warn('오더북 요청 타임아웃')
+        // AbortError는 무시
       } else {
-        console.warn(`오더북 데이터 로드 실패 (${symbol}):`, error?.message || error)
+        console.error('Failed to fetch orderbook depth:', error?.message || error)
       }
       return null
     }
@@ -686,8 +671,7 @@ export default function SmartMoneyUltimate() {
       if (response.ok) {
         const data = await response.json()
         setTokenUnlockData(data)
-        console.log('Token unlock data fetched:', data)
-      } else {
+        } else {
         console.error('Failed to fetch token unlock data')
         // 실패 시에도 빈 데이터 유지 (가짜 데이터 없음)
         setTokenUnlockData({
@@ -708,8 +692,6 @@ export default function SmartMoneyUltimate() {
 
   const fetchHistoricalVCData = async () => {
     try {
-      console.log('Fetching real VC historical data for', selectedSymbol)
-      
       // 실제 VC 과거 데이터 API 호출
       const response = await fetch(`/api/vc-historical?symbol=${selectedSymbol}&type=historical`)
       
@@ -723,9 +705,6 @@ export default function SmartMoneyUltimate() {
       const result = await response.json()
       
       if (result.success && result.data) {
-        console.log('Received real VC data:', result.data)
-        console.log('SeasonalPattern from API:', result.data.seasonalPattern)
-        
         // VC 과거 데이터 설정
         const vcDataToSet = {
           monthlyData: result.data.monthlyData || [],
@@ -738,18 +717,15 @@ export default function SmartMoneyUltimate() {
           }
         }
         
-        console.log('Setting VC data to state:', vcDataToSet)
         setHistoricalVCData(vcDataToSet)
         
         // 추가 분석 정보 저장
         if (result.data.marketAnalysis) {
-          console.log('VC Market Analysis:', result.data.marketAnalysis)
-        }
+          }
         
         // 최근 펀딩 라운드 정보
         if (result.data.fundingRounds) {
-          console.log('Recent Funding Rounds:', result.data.fundingRounds.recent)
-        }
+          }
       } else {
         console.error('Invalid VC data format:', result)
         await fetchAlternativeHistoricalData()
@@ -765,8 +741,6 @@ export default function SmartMoneyUltimate() {
   // 대체 데이터 소스 (일봉 데이터로 월별 집계)
   const fetchAlternativeHistoricalData = async () => {
     try {
-      console.log('Using alternative historical data method')
-      
       // 최근 365일 일봉 데이터로 월별 집계
       const response = await fetch(
         `/api/binance/klines?symbol=${selectedSymbol}&interval=1d&limit=365`
@@ -843,8 +817,6 @@ export default function SmartMoneyUltimate() {
   
   // 최후의 수단: 실시간 데이터 기반 추정
   const generateSampleHistoricalData = () => {
-    console.log('Generating estimated historical data based on current price')
-    
     const basePrice = currentPrice || 50000 // BTC 기본값
     const monthlyData = []
     const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
@@ -891,13 +863,10 @@ export default function SmartMoneyUltimate() {
   
   const processHistoricalData = (monthlyKlines: any[]) => {
     if (!Array.isArray(monthlyKlines) || monthlyKlines.length === 0) {
-      console.log('No historical data available')
       return
     }
     
-    console.log(`Processing ${monthlyKlines.length} months of historical data`)
-      
-      // 월별 데이터 생성
+    // 월별 데이터 생성
       const monthlyData = monthlyKlines.map((kline: any[], idx: number) => {
         const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
         const currentMonth = new Date().getMonth()
@@ -974,12 +943,6 @@ export default function SmartMoneyUltimate() {
         .slice(0, 10)
       
       // 상태 업데이트
-      console.log('Setting historical VC data:', {
-        monthlyDataCount: monthlyData.length,
-        topPerformersCount: topPerformers.length,
-        seasonalPattern
-      })
-      
       setHistoricalVCData({
         monthlyData,
         topPerformers,
@@ -1125,8 +1088,7 @@ export default function SmartMoneyUltimate() {
           setInstitutionalFlows(prev => [...historicalFlows, ...prev].slice(0, 500))
         }
       } catch (error) {
-        console.warn('과거 데이터 로드 실패:', error)
-      }
+        }
     }
     
     loadHistoricalData()
@@ -1357,7 +1319,6 @@ export default function SmartMoneyUltimate() {
             ))}
           </div>
         </motion.div>
-
 
         {/* 10개 탭 네비게이션 */}
         <div className="flex gap-2 mb-8 border-b border-gray-800 overflow-x-auto pb-2">
@@ -2512,9 +2473,6 @@ export default function SmartMoneyUltimate() {
             />
           </div>
         )}
-
-
-
 
         {/* 시스템 개요 - 하단으로 이동 */}
         {activeTab === 'overview' && (

@@ -610,11 +610,6 @@ export const RetracementTab: React.FC<TabProps> = ({
     return touches
   }, [fibonacciData, priceHistory, swingHigh, swingLow])
 
-  console.log('RetracementTab - fibonacciData:', fibonacciData)
-  console.log('RetracementTab - currentPrice:', currentPrice)
-  console.log('RetracementTab - swingHigh:', swingHigh)
-  console.log('RetracementTab - swingLow:', swingLow)
-
   return (
     <div className="space-y-6">
       {/* 디버그 정보 */}

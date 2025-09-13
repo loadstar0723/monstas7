@@ -217,6 +217,6 @@ const sentiment = await dataService.getSentiment('BTC')
 // WebSocket 실시간
 const ws = dataService.connectWebSocket(['BTCUSDT', 'ETHUSDT'])
 ws.onmessage = (event) => {
-  console.log('실시간 데이터:', JSON.parse(event.data))
+  )
 }
 */

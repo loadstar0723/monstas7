@@ -41,7 +41,6 @@ export default function RealTimePriceCard({ symbol, name, icon }: RealTimePriceC
         const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`)
         
         ws.onopen = () => {
-          console.log(`WebSocket 연결됨: ${symbol}`)
           setIsConnected(true)
         }
 
@@ -60,7 +59,6 @@ export default function RealTimePriceCard({ symbol, name, icon }: RealTimePriceC
         }
 
         ws.onerror = () => {
-          console.warn(`WebSocket 에러: ${symbol}`)
           setIsConnected(false)
         }
 

@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useMemo, memo } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
-import { config } from '@/lib/config'
 
 interface SimplePriceChartProps {
   symbol: string
@@ -59,7 +58,6 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
-        console.log('Binance WebSocket 연결됨')
         setLoading(false)
       }
       
@@ -80,12 +78,10 @@ export default function SimplePriceChart({ symbol, height = 400 }: SimplePriceCh
       
       wsRef.current.onerror = (error) => {
         // WebSocket 에러는 Event 객체로 오므로 세부 정보가 없음
-        console.log('WebSocket 연결 시도 중...')
         setLoading(false)
       }
       
       wsRef.current.onclose = (event) => {
-        console.log('WebSocket 연결 종료, 코드:', event.code)
         // 정상 종료가 아닌 경우에만 재연결
         if (event.code !== 1000) {
           // 5초 후 재연결

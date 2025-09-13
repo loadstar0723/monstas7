@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
 import ClientInit from "./ClientInit";
 import SidebarNew from "@/components/SidebarNew";
 // import AuthProvider from "@/components/AuthProvider"; // next-auth 비활성화
@@ -38,16 +37,13 @@ export default function RootLayout({
                 Number.prototype.toFixed = function(fractionDigits) {
                   try {
                     if (this == null || this == undefined) {
-                      console.warn('[Emergency] toFixed called on null/undefined');
                       return '0';
                     }
                     var num = Number(this);
                     if (isNaN(num)) {
-                      console.warn('[Emergency] toFixed called on NaN');
                       return '0';
                     }
                     if (!isFinite(num)) {
-                      console.warn('[Emergency] toFixed called on Infinity');
                       return '0';
                     }
                     return originalToFixed.call(num, fractionDigits);
@@ -56,7 +52,7 @@ export default function RootLayout({
                     return '0';
                   }
                 };
-                console.log('[Emergency] Number safety patch applied at: ' + new Date().toISOString());
+                .toISOString());
               })();
             `
           }}

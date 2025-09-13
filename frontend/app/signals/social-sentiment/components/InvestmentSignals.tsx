@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBullhorn, FaExclamationCircle, FaCheckCircle, FaTimesCircle, FaBalanceScale, FaRocket, FaBomb, FaShieldAlt } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'

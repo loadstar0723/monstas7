@@ -201,7 +201,6 @@ export default function MeanReversionModule() {
         // Binance API에서 초기 K라인 데이터 가져오기
         const response = await fetch(`/api/binance/klines?symbol=${selectedCoin}&interval=1m&limit=500`)
         if (!response.ok) {
-          console.warn('Failed to fetch initial data, using WebSocket data only')
           return
         }
         

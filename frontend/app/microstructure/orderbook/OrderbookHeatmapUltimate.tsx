@@ -25,7 +25,6 @@ import OrderFlowAnimation from './components/OrderFlowAnimation'
 import { useOrderbookWebSocket } from './hooks/useOrderbookWebSocket'
 import { useOrderbookAnalysis } from './hooks/useOrderbookAnalysis'
 
-
 // 타입 정의
 interface OrderbookLevel {
   price: number

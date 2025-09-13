@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaHistory, FaPlay, FaCog, FaChartLine, FaDollarSign } from 'react-icons/fa'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { BINANCE_CONFIG } from '@/lib/binanceConfig'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface CoinInfo {
   symbol: string

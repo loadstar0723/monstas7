@@ -88,7 +88,6 @@ export default function MarketDepthAnalyzer({ selectedCoin }: Props) {
     if (!data || !data.bids || !data.asks || 
         !Array.isArray(data.bids) || !Array.isArray(data.asks) ||
         data.bids.length === 0 || data.asks.length === 0) {
-      console.warn('오더북 데이터가 비어있습니다')
       return []
     }
     

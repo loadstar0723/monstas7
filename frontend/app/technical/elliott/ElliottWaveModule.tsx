@@ -130,7 +130,6 @@ export default function ElliottWaveModule() {
       const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`)
       
       ws.onopen = () => {
-        console.log('WebSocket 연결됨:', symbol)
         setLoading(false)
       }
 
@@ -185,8 +184,7 @@ export default function ElliottWaveModule() {
       }
 
       ws.onclose = () => {
-        console.log('WebSocket 연결 종료')
-      }
+        }
 
       wsRef.current = ws
     } catch (error) {

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetchKlines, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { FaTwitter, FaReddit, FaTelegram, FaSmile, FaMeh, FaFrown } from 'react-icons/fa'
@@ -20,18 +19,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
 
   // 디버깅용 로그
   useEffect(() => {
-    console.log('SentimentOverview 렌더링 - coin:', coin)
-    console.log('SentimentOverview - sentimentData 전체:', sentimentData)
-    console.log('SentimentOverview - sentimentData 상세:', {
-      score: sentimentData.sentimentScore,
-      historyLength: sentimentData.sentimentHistory?.length,
-      firstHistory: sentimentData.sentimentHistory?.[0],
-      lastHistory: sentimentData.sentimentHistory?.[sentimentData.sentimentHistory.length - 1],
-      positive: sentimentData.positive,
-      neutral: sentimentData.neutral,
-      negative: sentimentData.negative
-    })
-  }, [sentimentData])
+    }, [sentimentData])
 
   useEffect(() => {
     const fetchPriceData = async () => {
@@ -41,7 +29,6 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         const limit = 24
         // 현재 가격 정보
         const tickerData = await fetch24hrTicker(symbol)
-        console.log('SentimentOverview - tickerData:', tickerData)
         if (tickerData && tickerData.price) {
           setCurrentPrice(tickerData.price)
           setPriceChange24h(tickerData.change24h)
@@ -49,7 +36,6 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
 
         // 24시간 가격 히스토리 (1시간 캔들)
         const klines = await fetchKlines(symbol, interval, limit)
-        console.log('SentimentOverview - klines:', klines)
         if (klines && Array.isArray(klines)) {
           const history = klines.map((kline: any[]) => ({
             time: new Date(kline[0]).toLocaleTimeString('ko-KR', { hour: '2-digit' }),
@@ -162,10 +148,7 @@ export default function SentimentOverview({ coin }: SentimentOverviewProps) {
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h3 className="text-lg font-bold mb-4">감성 점수 추이</h3>
           {(() => {
-            console.log('차트 렌더링 체크:', {
-              hasHistory: !!sentimentData.sentimentHistory,
-              length: sentimentData.sentimentHistory?.length,
-              isArray: Array.isArray(sentimentData.sentimentHistory),
+            ,
               data: sentimentData.sentimentHistory
             });
             return sentimentData.sentimentHistory && Array.isArray(sentimentData.sentimentHistory) && sentimentData.sentimentHistory.length > 0;

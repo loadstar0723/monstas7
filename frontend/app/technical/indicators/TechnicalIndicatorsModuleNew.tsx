@@ -262,7 +262,6 @@ export default function TechnicalIndicatorsModule() {
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedSymbol.toLowerCase()}@ticker`)
     
     ws.onopen = () => {
-      console.log('WebSocket 연결됨:', selectedSymbol)
       setLoading(false)
     }
 
@@ -293,7 +292,6 @@ export default function TechnicalIndicatorsModule() {
     }
 
     ws.onclose = () => {
-      console.log('WebSocket 연결 종료')
       // 재연결 로직
       setTimeout(() => {
         if (wsRef.current === ws) {

@@ -31,7 +31,7 @@ export default function OrderFlowAnalysis({ symbol }: OrderFlowAnalysisProps) {
       .then(trades => {
         if (Array.isArray(trades)) {
           let cumulative = 0
-          const historicalData = trades.slice(-30).map((trade: any) => {
+          const historicalData = trades.slice(-30).map((trade: { qty: string; isBuyerMaker: boolean; time: number }) => {
             const volume = parseFloat(trade.qty) || 0
             const delta = trade.isBuyerMaker ? -volume : volume
             cumulative += delta

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 // import { signIn } from 'next-auth/react' // next-auth 비활성화
 import { motion } from 'framer-motion'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
-import LoadingSpinner from './LoadingSpinner'
 import { config } from '@/lib/config'
 
 export default function LoginForm() {

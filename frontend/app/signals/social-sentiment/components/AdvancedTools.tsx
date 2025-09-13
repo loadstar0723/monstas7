@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetchKlines } from '@/lib/hooks/useRealtimePrice'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { FaChartLine, FaBell, FaHistory, FaCalculator, FaCog, FaDownload, FaRobot, FaLightbulb } from 'react-icons/fa'

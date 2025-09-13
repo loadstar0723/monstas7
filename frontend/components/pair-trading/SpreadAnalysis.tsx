@@ -161,7 +161,6 @@ export default function SpreadAnalysis({ pair, timeframe, strategy }: SpreadAnal
         }
 
         ws.onerror = () => {
-          console.warn('WebSocket 연결 에러')
           setTimeout(connectWebSocket, 5000) // 5초 후 재연결
         }
 

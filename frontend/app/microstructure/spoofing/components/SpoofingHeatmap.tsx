@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaEye, FaChartBar } from 'react-icons/fa'
 
 interface OrderLevel {

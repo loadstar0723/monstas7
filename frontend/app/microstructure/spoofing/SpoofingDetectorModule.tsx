@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaChartBar, FaBell, FaFireAlt, FaWater, FaBalanceScale, 
   FaChartLine, FaBrain, FaExchangeAlt, FaHistory, FaCog, 

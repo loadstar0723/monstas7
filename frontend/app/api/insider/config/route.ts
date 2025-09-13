@@ -5,8 +5,7 @@ let prisma: any = null
 try {
   prisma = require('@/lib/prisma').default
 } catch (e) {
-  console.log('Prisma not available, using API only')
-}
+  }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -43,8 +42,7 @@ export async function GET(request: Request) {
           where: { symbol }
         })
       } catch (dbError) {
-        console.log('DB config not found, using calculated values')
-      }
+        }
     }
 
     // 동적으로 계산되는 설정값들 (DB 값 우선, 없으면 계산)

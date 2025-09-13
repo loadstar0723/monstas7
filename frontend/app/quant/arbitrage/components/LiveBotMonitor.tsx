@@ -92,7 +92,6 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
         const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}usdt@ticker`)
         
         ws.onopen = () => {
-          console.log(`WebSocket connected for ${symbol}`)
           retryCount = 0
         }
         
@@ -108,7 +107,6 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
         }
         
         ws.onerror = (error) => {
-          console.warn(`WebSocket error for ${symbol}:`, error)
           // 폴백 가격 설정
           const fallbackPrices: Record<string, number> = {
             'BTC': 98000,
@@ -126,12 +124,11 @@ export default function LiveBotMonitor({ selectedCoin, botStatus, botConfig }: L
         }
         
         ws.onclose = () => {
-          console.log(`WebSocket closed for ${symbol}`)
           // 재연결 시도
           if (retryCount < maxRetries) {
             retryCount++
             reconnectTimeout = setTimeout(() => {
-              console.log(`Reconnecting WebSocket... (attempt ${retryCount})`)
+              `)
               connectWebSocket()
             }, 3000 * retryCount)
           }

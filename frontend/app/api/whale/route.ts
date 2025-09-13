@@ -229,7 +229,6 @@ export async function POST(request: Request) {
     // 알림 설정 저장 등의 POST 작업 처리
     if (type === 'alerts') {
       // 실제로는 DB에 저장
-      console.log('Saving alert settings:', data)
       return NextResponse.json({ 
         success: true, 
         message: 'Alert settings saved' 

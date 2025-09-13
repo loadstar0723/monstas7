@@ -41,8 +41,6 @@ export default function PriceChart({ coin, historicalData, marketData }: PriceCh
   }
 
   useEffect(() => {
-    console.log('PriceChart historicalData length:', historicalData?.length)
-    console.log('PriceChart historicalData sample:', historicalData?.[0])
     if (historicalData && historicalData.length > 0) {
       // 최근 100개 데이터만 사용
       const recentData = historicalData.slice(-100)

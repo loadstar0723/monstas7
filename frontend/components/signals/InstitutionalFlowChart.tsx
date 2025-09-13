@@ -25,9 +25,8 @@ export default function InstitutionalFlowChart({ data }: InstitutionalFlowChartP
 
   // 디버깅: 데이터 확인 (개발 환경에서만)
   if (process.env.NODE_ENV === 'development') {
-    console.log('VC Chart Data:', data.slice(0, 3))
-    console.log('Max Value:', maxValue)
-    console.log('Data with values:', data.filter(d => d.inflow > 0 || d.outflow > 0).length)
+    console.log('InstitutionalFlowChart data:', data)
+    console.log('Data length:', data.length)
   }
   
   // 간단한 바 차트 구현

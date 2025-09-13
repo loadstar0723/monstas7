@@ -318,8 +318,8 @@ export default function ConceptGuide() {
             <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg p-4 border border-purple-500/30">
               <h4 className="text-white font-semibold mb-2">🎯 마스터의 조언</h4>
               <p className="text-gray-300 italic">
-                "테이프 리딩은 단순히 숫자를 보는 것이 아니라, 시장 참여자들의 심리와 의도를 읽는 예술입니다.
-                꾸준한 관찰과 경험을 통해 시장의 언어를 이해하게 될 것입니다."
+&quot;테이프 리딩은 단순히 숫자를 보는 것이 아니라, 시장 참여자들의 심리와 의도를 읽는 예술입니다.
+                꾸준한 관찰과 경험을 통해 시장의 언어를 이해하게 될 것입니다.&quot;
               </p>
             </div>
           </div>

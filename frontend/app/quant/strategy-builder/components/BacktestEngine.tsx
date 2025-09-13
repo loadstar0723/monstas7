@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { 
   FaChartLine, FaHistory, FaCog, FaPlay, FaDownload,
   FaTrophy, FaExclamationTriangle, FaChartBar 
 } from 'react-icons/fa'
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { binanceAPI } from '@/lib/binanceConfig'
 
 interface BacktestEngineProps {

@@ -47,11 +47,11 @@ export default function LargeTrades({ symbol }: LargeTradesProps) {
         if (Array.isArray(trades)) {
           const minValue = LARGE_TRADE_USD[symbol] || 50000
           const largeTrades = trades
-            .filter((trade: any) => {
+            .filter((trade: { price: string; qty: string }) => {
               const value = parseFloat(trade.price) * parseFloat(trade.qty)
               return value >= minValue
             })
-            .map((trade: any) => ({
+            .map((trade: { id: string; time: number; price: string; qty: string; isBuyerMaker: boolean }) => ({
               id: trade.id,
               time: new Date(trade.time).toLocaleTimeString('ko-KR'),
               price: parseFloat(trade.price),

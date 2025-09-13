@@ -58,7 +58,6 @@ class WebSocketPool {
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`)
     
     ws.onopen = () => {
-      console.log(`WebSocket connected: ${stream}`)
       // 재연결 타이머 제거
       if (this.reconnectTimers.has(stream)) {
         clearTimeout(this.reconnectTimers.get(stream)!)
@@ -89,7 +88,6 @@ class WebSocketPool {
     }
     
     ws.onclose = () => {
-      console.log(`WebSocket closed: ${stream}`)
       this.connections.delete(stream)
       this.scheduleReconnect(stream)
     }
@@ -296,8 +294,7 @@ export const dataService = new OptimizedDataService()
  * 
  * // WebSocket 실시간 구독
  * dataService.subscribeToPrice('BTCUSDT', (data) => {
- *   console.log('실시간 가격:', data.c)
- * })
+ *   * })
  * 
  * // API 호출 (자동 캐싱)
  * const price = await dataService.getPrice('BTCUSDT')

@@ -140,11 +140,9 @@ export default function CoinSelector({ selectedCoin, onSelectCoin }: CoinSelecto
         })
       },
       () => {
-        console.log('WebSocket connected for coin prices')
-      },
+        },
       () => {
-        console.log('WebSocket closed - will auto-reconnect')
-      },
+        },
       (ws) => {
         // 연결 후 구독 메시지 전송
         const subscribeMsg = {
@@ -153,8 +151,7 @@ export default function CoinSelector({ selectedCoin, onSelectCoin }: CoinSelecto
           id: 1
         }
         ws.send(JSON.stringify(subscribeMsg))
-        console.log('Subscribed to coin tickers:', subscribeMsg.params)
-      }
+        }
     )
     
     // 30초마다 REST API로 백업 업데이트

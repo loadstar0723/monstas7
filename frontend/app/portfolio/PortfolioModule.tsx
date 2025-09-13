@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { safeFixed, safePercent } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
-import { config } from '@/lib/config'
 
 interface Asset {
   symbol: string

@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
     
     // symbol이 없으면 모든 심볼 데이터 반환
     if (!symbol) {
-      console.log('Fetching all tickers')
-      
       // 모든 심볼 데이터를 가져오기
       const binanceUrl = `https://api.binance.com/api/v3/ticker/24hr`
       
@@ -40,8 +38,6 @@ export async function GET(request: NextRequest) {
       }
 
       const data = await response.json()
-      console.log(`Successfully fetched all tickers`)
-      
       // USDT 페어만 필터링
       const usdtPairs = data.filter((ticker: any) => ticker.symbol.endsWith('USDT'))
       
@@ -49,8 +45,6 @@ export async function GET(request: NextRequest) {
     }
     
     // 특정 심볼 요청 처리
-    console.log(`Fetching ticker for ${symbol}`)
-    
     const binanceUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
     
     const response = await fetch(binanceUrl, {
@@ -93,8 +87,6 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log(`Successfully fetched ticker for ${symbol}`)
-    
     // Binance API 필드 매핑
     const mappedData = {
       ...data,

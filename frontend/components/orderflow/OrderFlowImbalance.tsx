@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { getBinanceWebSocket } from '@/lib/binanceWebSocket'
 
 interface OrderFlowImbalanceProps {
   symbol: string

@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { safeFixed, safePrice } from '@/lib/safeFormat'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaPlay, FaPause, FaCrosshairs, FaDrawPolygon } from 'react-icons/fa'
-import { config } from '@/lib/config'
 import type { PatternResult, CandleData } from '../../lib/patternDetection'
 
 // 기존 PatternData는 종료 데이터를 위해 유지

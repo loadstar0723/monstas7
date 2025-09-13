@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaHistory, FaChartBar, FaCalendar, FaExclamationTriangle } from 'react-icons/fa'
 import { binanceAPI } from '@/lib/binanceConfig'
 import {

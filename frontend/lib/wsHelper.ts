@@ -6,7 +6,6 @@ export const createWebSocket = (url: string): WebSocket => {
     // 연결 타임아웃 설정
     const timeout = setTimeout(() => {
       if (ws.readyState !== WebSocket.OPEN) {
-        console.warn(`WebSocket timeout for ${url}`)
         ws.close()
       }
     }, 10000)
@@ -37,7 +36,6 @@ export const reconnectWebSocket = (
       ws = createWebSocket(url)
       
       ws.onopen = () => {
-        console.log(`WebSocket connected: ${url}`)
         retryCount = 0
       }
       
@@ -59,7 +57,7 @@ export const reconnectWebSocket = (
         if (retryCount < retries) {
           retryCount++
           const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
-          console.log(`Reconnecting WebSocket in ${delay}ms (attempt ${retryCount})`)
+          `)
           setTimeout(connect, delay)
         }
       }

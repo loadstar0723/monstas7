@@ -89,12 +89,6 @@ const getInitialData = (): SocialSentimentData => {
     }
   })
   
-  console.log('getInitialData - 생성된 히스토리:', {
-    length: history.length,
-    first: history[0],
-    last: history[history.length - 1]
-  })
-
   return {
     sentimentScore: 50,
     sentimentChange: 0,
@@ -113,36 +107,24 @@ const getInitialData = (): SocialSentimentData => {
 
 export default function useSocialData(coin: string) {
   const initialData = getInitialData()
-  console.log('useSocialData - 초기 데이터:', {
-    historyLength: initialData.sentimentHistory.length,
-    firstItem: initialData.sentimentHistory[0],
-    lastItem: initialData.sentimentHistory[initialData.sentimentHistory.length - 1]
-  })
-  
   const [sentimentData, setSentimentData] = useState<SocialSentimentData>(initialData)
   const [loading, setLoading] = useState(false) // false로 시작해서 즉시 렌더링
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchSocialData = async () => {
-      console.log('fetchSocialData 시작, coin:', coin)
-      console.log('API 호출 시작...')
       try {
         // Fear & Greed Index API (전체 시장 감성)
         try {
           const fearGreedResponse = await fetch('https://api.alternative.me/fng/?limit=2')
-          console.log('Fear&Greed API 응답 상태:', fearGreedResponse.status)
           if (fearGreedResponse.ok) {
             const fearGreedData = await fearGreedResponse.json()
-            console.log('Fear&Greed 데이터:', fearGreedData)
             const marketSentiment = fearGreedData?.data?.[0]?.value ? parseInt(fearGreedData.data[0].value) : 50
             
             // Binance 가격 데이터
             const tickerResponse = await fetch(`/api/binance/ticker?symbol=${coin}USDT`)
-            console.log('Ticker API 응답 상태:', tickerResponse.status)
             if (tickerResponse.ok) {
               const ticker = await tickerResponse.json()
-              console.log('Ticker 데이터:', ticker)
               const priceChange = parseFloat(ticker.priceChangePercent || '0')
               const volume = parseFloat(ticker.quoteVolume || '0')
               
@@ -170,17 +152,14 @@ export default function useSocialData(coin: string) {
 
               // 실제 과거 가격 데이터 가져오기
               const klinesResponse = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=24`)
-              console.log('Klines API 호출 완료, status:', klinesResponse.status)
               let history: Array<{ time: string; score: number }> = []
               
               if (klinesResponse.ok) {
                 const klinesData = await klinesResponse.json()
-                console.log('Klines 응답 구조:', Object.keys(klinesData))
+                )
                 
                 // API는 { data: [...], klines: [...] } 형태로 반환
                 const klines = klinesData.data || klinesData.klines || []
-                console.log('추출된 klines 배열:', klines.length, '개')
-                
                 // 기준 가격 (24시간 전)
                 const basePrice = Array.isArray(klines) && klines[0] ? parseFloat(klines[0][4]) : parseFloat(ticker.lastPrice)
                 
@@ -216,10 +195,7 @@ export default function useSocialData(coin: string) {
                 })
               }
 
-              console.log('sentimentHistory 데이터:', history.length, '개')
-              console.log('전체 히스토리:', JSON.stringify(history))
-              console.log('setSentimentData 호출 직전...')
-              
+              )
               const newData = {
                 sentimentScore: Math.floor(finalSentiment),
                 sentimentChange: priceChange,
@@ -235,16 +211,8 @@ export default function useSocialData(coin: string) {
                 influencers: generateInfluencers(coin, marketSentiment, priceChange)
               }
               
-              console.log('새 데이터 생성됨:', {
-                historyLength: newData.sentimentHistory.length,
-                score: newData.sentimentScore,
-                firstHistory: newData.sentimentHistory[0],
-                lastHistory: newData.sentimentHistory[newData.sentimentHistory.length - 1]
-              })
-              
               setSentimentData(newData)
-              console.log('setSentimentData 호출 완료, 현재 state:', newData)
-            }
+              }
           }
         } catch (err) {
           console.error('데이터 가져오기 실패:', err)

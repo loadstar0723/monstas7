@@ -9,19 +9,16 @@ import {
   FaClock, FaGlobe, FaFilter, FaDownload, FaSync, FaCheckCircle,
   FaExclamationTriangle, FaInfoCircle, FaPlay, FaPause, FaStop, FaLightbulb
 } from 'react-icons/fa'
-import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
+import { formatVolume, safeToFixed } from '@/lib/formatters'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
 import dynamic from 'next/dynamic'
 import { config } from '@/lib/config'
 import SystemOverview, { whaleTrackingOverview } from '@/components/signals/SystemOverview'
 import TabGuide, { tabGuides } from '@/components/signals/TabGuide'
-import { getWebSocketUrl, getStreamName } from '@/lib/websocketConfig'
-import { createWebSocket, reconnectWebSocket } from '@/lib/wsHelper'
 import DynamicTabGuide from '@/components/signals/DynamicTabGuide'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
+import { fetchKlines } from '@/lib/hooks/useRealtimePrice'
 import { dataService } from '@/lib/services/finalDataService'
 
 const ComprehensiveAnalysis = dynamic(
@@ -86,7 +83,6 @@ interface BacktestResult {
   worstTrade: number
   monthlyReturns: number[]
 }
-
 
 // 고유 ID 생성 함수
 const generateUniqueId = (prefix: string = '', suffix: string = '') => {
@@ -297,13 +293,7 @@ export default function WhaleTrackerUltimate() {
   
   // 디버깅용 로그
   useEffect(() => {
-    console.log(`📊 ${selectedSymbol} 통계:`, {
-      거래수: stats.totalWhales,
-      매수: stats.buyCount,
-      매도: stats.sellCount,
-      거래량: stats.totalVolume
-    })
-  }, [selectedSymbol, stats.totalWhales])
+    }, [selectedSymbol, stats.totalWhales])
 
   // 패턴 분석
   const [patterns, setPatterns] = useState({
@@ -409,20 +399,16 @@ export default function WhaleTrackerUltimate() {
       default: return 100
     }
   }
-  
 
   // API 데이터 가져오기
   const fetchWhaleData = async () => {
     try {
-      console.log(`🐋 고래 데이터 가져오기: ${selectedSymbol}`)
-      
       // 현재 선택된 심볼의 거래 데이터 가져오기
       const tradesRes = await fetch(`/api/whale/trades?symbol=${selectedSymbol}`)
       const tradesData = await tradesRes.json()
       
       if (tradesData.success && tradesData.trades) {
         // 거래 데이터를 WhaleTransaction 형식으로 변환
-        console.log(`API 거래 데이터: ${tradesData.trades.length}건`)
         const formattedTrades = tradesData.trades
           .map((trade: any) => ({
           id: `${selectedSymbol}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${trade.id }`,
@@ -495,7 +481,7 @@ export default function WhaleTrackerUltimate() {
       const statsData = await statsRes.json()
       
       if (statsData) {
-        console.log(`📊 API 통계 데이터 (${selectedSymbol}):`, statsData)
+        console.log('Whale stats data:', statsData)
         setStatsBySymbol(prev => {
           const currentStats = prev[selectedSymbol] || getDefaultStats()
           const buyVolume = statsData.buyVolume || currentStats.buyVolume || 0
@@ -588,8 +574,6 @@ export default function WhaleTrackerUltimate() {
     if (typeof window === 'undefined') return
     
     // 심볼 변경 시 상태만 초기화
-    console.log(`📊 심볼 변경: ${selectedSymbol}`)
-    
     // 코인 변경 시 상태 초기화
     const savedPrice = allCoinData[selectedSymbol]?.price || 0
     setCurrentPrice(savedPrice)
@@ -605,11 +589,9 @@ export default function WhaleTrackerUltimate() {
       setCurrentPrice(cached.price || 0)
       setPriceChange(cached.change24h || 0)
       setIsConnected(true)
-      console.log(`✅ ${selectedSymbol} 데이터 서비스 연결됨`)
-    } else {
+      } else {
       setIsConnected(false)
-      console.log(`⏳ ${selectedSymbol} 데이터 서비스 연결 대기중...`)
-    }
+      }
     
     setCandleData([])
     // 심볼별 통계는 유지하고 표시만 변경됨
@@ -659,7 +641,8 @@ export default function WhaleTrackerUltimate() {
     if (savedTransactions) {
       try {
         const parsed = JSON.parse(savedTransactions)
-        console.log('📦 localStorage 저장된 거래:', Object.keys(parsed).map(sym => `${sym}: ${parsed[sym]?.length || 0}건`))
+        console.log('저장된 거래 내역:', Object.keys(parsed)
+          .map(sym => `${sym}: ${parsed[sym]?.length || 0}건`))
       } catch (e) {
         console.error('localStorage 파싱 에러:', e)
       }
@@ -780,13 +763,6 @@ export default function WhaleTrackerUltimate() {
           
           // 고래 거래만 저장
           if (quantity >= threshold) {
-            console.log(`🐋 ${symbol} 고래 거래 감지:`, {
-              가격: price,
-              수량: quantity,
-              임계값: threshold,
-              거래금액: price * quantity
-            })
-            
             const trade: WhaleTransaction = {
               id: `${symbol}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${data.a }`,
               symbol: symbol,  // 전체 심볼 유지 (BTCUSDT 형태)
@@ -804,7 +780,6 @@ export default function WhaleTrackerUltimate() {
             
             // 데이터 유효성 검증
             if (!trade.amount || !trade.price || !trade.value || trade.value === 0) {
-              console.warn('Invalid trade data:', trade)
               return
             }
             
@@ -814,8 +789,6 @@ export default function WhaleTrackerUltimate() {
               // 동일한 거래 ID가 있는지 확인
               const exists = existingTrades.some(t => t.id === trade.id)
               if (exists) return prev
-              
-              console.log(`💰 ${symbol} 고래 거래 추가:`, trade.type, trade.amount, trade.symbol)
               
               const updatedTrades = {
                 ...prev,
@@ -875,8 +848,7 @@ export default function WhaleTrackerUltimate() {
           // 콜백 저장 및 구독
           priceCallbacksRef.current.set(symbol, callback)
           dataService.subscribeToPrice(symbol, callback)
-          console.log(`✅ ${symbol} 데이터 서비스 구독 성공`)
-        } catch (error) {
+          } catch (error) {
           console.error(`데이터 서비스 구독 실패 ${symbol}:`, error)
         }
       }, delay)
@@ -897,7 +869,6 @@ export default function WhaleTrackerUltimate() {
   // 15분봉 데이터 가져오기 - useEffect보다 먼저 정의
   const fetchCandleData = useCallback(async () => {
     try {
-      console.log('15분봉 데이터 로드 중...', selectedSymbol)
       const data = await fetchKlines(selectedSymbol, '15m', 20)
       
       if (data && Array.isArray(data)) {
@@ -913,11 +884,9 @@ export default function WhaleTrackerUltimate() {
             price: parseFloat(candle[4]) // LineChart를 위한 price 필드 추가
           }
         })
-        console.log('15분봉 데이터 로드 완료:', formattedData.length, '개')
         setCandleData(formattedData)
       } else {
-        console.log('캔들 데이터 없음')
-      }
+        }
     } catch (error) {
       console.error('Failed to fetch candle data:', error)
     }
@@ -927,9 +896,8 @@ export default function WhaleTrackerUltimate() {
   useEffect(() => {
     // 심볼 변경 시 해당 심볼의 거래 내역으로 업데이트
     const symbolTransactions = transactionsBySymbol[selectedSymbol] || []
-    console.log(`📊 심볼 변경: ${selectedSymbol}, 저장된 거래: ${symbolTransactions.length}개`)
-    console.log('거래 내역 샘플:', symbolTransactions.slice(0, 3))
-    console.log('모든 심볼 거래 수:', Object.keys(transactionsBySymbol).map(sym => `${sym}: ${transactionsBySymbol[sym]?.length || 0}개`))
+    console.log('심볼별 거래 내역:', Object.keys(transactionsBySymbol)
+      .map(sym => `${sym}: ${transactionsBySymbol[sym]?.length || 0}개`))
     setTransactions(symbolTransactions)
     
     // 2초 후에 캔들 데이터 로드 (WebSocket 연결과 동기화)

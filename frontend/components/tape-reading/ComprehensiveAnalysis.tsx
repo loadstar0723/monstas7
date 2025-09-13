@@ -54,8 +54,8 @@ export default function ComprehensiveAnalysis({
       const klines = hourlyKlines
       
       if (Array.isArray(klines) && klines.length > 0) {
-        const prices = klines.map((k: any) => parseFloat(k[4]))
-        const volumes = klines.map((k: any) => parseFloat(k[5]))
+        const prices = klines.map((k: number[]) => parseFloat(k[4]))
+        const volumes = klines.map((k: number[]) => parseFloat(k[5]))
         
         // 시장 단계 분석
         const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length

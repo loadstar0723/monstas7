@@ -66,18 +66,18 @@ const generateInsiderTransaction = (
     value > 100000 ? 'medium' : 'low'
     
   return {
-    id: `tx_${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+    id: 'tx_' + Date.now() + '-' + index + '-' + Math.random().toString(36).substr(2, 9),
     timestamp: new Date(Date.now() - (index * 3600000)), // index * 1시간
     type,
     category,
-    wallet: `0x${symbol.toLowerCase()}${category}${index.toString(16).padStart(4, '0')}...${index.toString(16).padStart(6, '0')}`,
+    wallet: '0x' + symbol.toLowerCase() + category + index.toString(16).padStart(4, '0') + '...' + index.toString(16).padStart(6, '0'),
     amount,
     value,
     price: currentPrice,
     impact,
-    description: type === 'sell' ? `${category === 'team' ? '팀' : category === 'vc' ? 'VC' : category === 'whale' ? '고래' : '거래소'} 대량 매도 감지` :
-                 type === 'buy' ? `${category === 'team' ? '팀' : category === 'vc' ? 'VC' : category === 'whale' ? '고래' : '거래소'} 매수 포지션 증가` :
-                 `대규모 토큰 이동 감지`
+    description: type === 'sell' ? (category === 'team' ? '팀' : category === 'vc' ? 'VC' : category === 'whale' ? '고래' : '거래소') + ' 대량 매도 감지' :
+                 type === 'buy' ? (category === 'team' ? '팀' : category === 'vc' ? 'VC' : category === 'whale' ? '고래' : '거래소') + ' 매수 포지션 증가' :
+                 '대규모 토큰 이동 감지'
   }
 }
 
@@ -146,7 +146,7 @@ export default function InsiderFlowUltimate() {
   // API를 통한 가격 업데이트
   const updatePriceViaAPI = useCallback(async (coin: string) => {
     try {
-      const response = await fetch(`/api/insider/config?symbol=${coin}`)
+      const response = await fetch('/api/insider/config?symbol=' + coin)
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data.marketData) {
@@ -161,8 +161,6 @@ export default function InsiderFlowUltimate() {
   
   // 폴링 대체 함수
   const startPricePolling = useCallback((coin: string) => {
-    console.log('Starting price polling for:', coin)
-    
     // 기존 폴링 정리
     if (pollingInterval) {
       clearInterval(pollingInterval)
@@ -195,10 +193,8 @@ export default function InsiderFlowUltimate() {
       }
 
       // Binance WebSocket 형식에 맞게 수정
-      const symbol = `${coin}USDT`.toLowerCase()
-      const wsUrl = `wss://stream.binance.com:9443/ws/${symbol}@ticker`
-      
-      console.log('Attempting WebSocket connection:', wsUrl)
+      const symbol = (coin + 'USDT').toLowerCase()
+      const wsUrl = 'wss://stream.binance.com:9443/ws/' + symbol + '@ticker'
       
       try {
         wsRef.current = new WebSocket(wsUrl)
@@ -212,7 +208,6 @@ export default function InsiderFlowUltimate() {
       // 연결 타임아웃 설정
       const connectionTimeout = setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.CONNECTING) {
-          console.log('WebSocket connection timeout, closing...')
           wsRef.current.close()
           startPricePolling(coin)
         }
@@ -220,7 +215,6 @@ export default function InsiderFlowUltimate() {
       
       wsRef.current.onopen = () => {
         clearTimeout(connectionTimeout)
-        console.log('✅ WebSocket connected successfully for:', symbol)
         setError(null)
         setWsRetryCount(0)
       }
@@ -242,29 +236,20 @@ export default function InsiderFlowUltimate() {
 
       wsRef.current.onerror = (event) => {
         clearTimeout(connectionTimeout)
-        console.warn('WebSocket error occurred, will use polling instead')
         // 에러 시 폴링으로 전환
         startPricePolling(coin)
       }
       
       wsRef.current.onclose = (event) => {
         clearTimeout(connectionTimeout)
-        console.log('WebSocket closed:', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
-        })
-        
         // 컴포넌트가 언마운트되지 않았고, 재시도 횟수가 남아있으면 재연결
         if (wsRetryCount < maxRetries && !event.wasClean && event.code !== 1000) {
           const retryDelay = Math.min(1000 * Math.pow(2, wsRetryCount), 10000)
-          console.log(`Retrying connection in ${retryDelay}ms (attempt ${wsRetryCount + 1}/${maxRetries})`)
           setWsRetryCount(prev => prev + 1)
           setTimeout(() => {
             connectWebSocket(coin)
           }, retryDelay)
         } else if (wsRetryCount >= maxRetries) {
-          console.log('Max WebSocket retries reached, switching to polling')
           startPricePolling(coin)
         }
       }
@@ -276,8 +261,6 @@ export default function InsiderFlowUltimate() {
   
   // 코인 변경 시 데이터 로드
   useEffect(() => {
-    console.log('useEffect triggered for:', selectedCoin)
-    
     loadCoinData(selectedCoin)
     loadPriceHistory(selectedCoin)
     
@@ -301,7 +284,9 @@ export default function InsiderFlowUltimate() {
   // 과거 가격 데이터 로드
   const loadPriceHistory = async (coin: string) => {
     try {
-      const response = await fetch(`/api/binance/klines?symbol=${coin}USDT&interval=1h&limit=24`)
+      const symbol = coin + 'USDT'
+      const url = '/api/binance/klines?symbol=' + symbol + '&interval=1h&limit=24'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         if (data.success && Array.isArray(data.data)) {
@@ -321,36 +306,32 @@ export default function InsiderFlowUltimate() {
 
   // 코인 데이터 로드
   const loadCoinData = async (coin: string) => {
-    console.log('Loading data for:', coin)
     setLoading(true)
     try {
       // 병렬 API 호출
       const startTime = Date.now()
       const [configRes, onchainRes, walletRes] = await Promise.allSettled([
-        fetch(`/api/insider/config?symbol=${coin}`).then(res => {
+        fetch('/api/insider/config?symbol=' + coin).then(res => {
           console.log('Config API response time:', Date.now() - startTime, 'ms')
           return res
         }),
-        fetch(`/api/insider/onchain?symbol=${coin}`).then(res => {
+        fetch('/api/insider/onchain?symbol=' + coin).then(res => {
           console.log('Onchain API response time:', Date.now() - startTime, 'ms')
           return res
         }),
-        fetch(`/api/insider/wallets?symbol=${coin}`).then(res => {
+        fetch('/api/insider/wallets?symbol=' + coin).then(res => {
           console.log('Wallets API response time:', Date.now() - startTime, 'ms')
           return res
         })
       ])
       
-      console.log('All API responses received:', Date.now() - startTime, 'ms')
-      console.log('API responses:', { configRes, onchainRes, walletRes })
-      
+      console.log('Total API call time:', Date.now() - startTime, 'ms')
       // 과거 데이터도 함께 로드
       await loadPriceHistory(coin)
 
       // 설정 데이터 처리
       if (configRes.status === 'fulfilled' && configRes.value.ok) {
         const configData = await configRes.value.json()
-        console.log('Config data:', configData)
         if (configData.success && configData.data) {
           const price = configData.data.tradingLevels?.currentPrice || configData.data.marketData?.price || 100
           setCurrentPrice(price)
@@ -370,7 +351,6 @@ export default function InsiderFlowUltimate() {
       // 온체인 데이터 처리
       if (onchainRes.status === 'fulfilled' && onchainRes.value.ok) {
         const onchainData = await onchainRes.value.json()
-        console.log('Onchain data:', onchainData)
         if (onchainData.success && onchainData.data) {
           // 온체인 데이터로 거래소 플로우 계산
           const inflow = onchainData.data.metrics?.transactionCount?.value * 0.3 || 0
@@ -397,7 +377,6 @@ export default function InsiderFlowUltimate() {
       // 지갑 데이터 처리
       if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
         const walletData = await walletRes.value.json()
-        console.log('Wallet data:', walletData)
         if (walletData.success && walletData.data) {
           // 지갑 데이터 설정
           if (walletData.data.wallets && Array.isArray(walletData.data.wallets)) {
@@ -442,19 +421,15 @@ export default function InsiderFlowUltimate() {
         setInsiderTransactions(defaultTransactions)
       }
       
-      console.log('Total loading time:', Date.now() - startTime, 'ms')
-      
     } catch (error) {
       console.error('Failed to load coin data:', error)
       // 에러가 발생해도 기본값으로 표시
       setCurrentPrice(100)
       setRiskScore(50)
     } finally {
-      console.log('Loading complete')
       setLoading(false)
     }
   }
-
 
   // 선택된 코인 정보
   const selectedCoinInfo = COINS.find(c => c.symbol === selectedCoin)
@@ -511,7 +486,7 @@ export default function InsiderFlowUltimate() {
               {selectedCoinInfo?.name || selectedCoin}
             </span>
             <span className="text-xl text-gray-400">{selectedCoin}</span>
-            <span className={`text-lg font-medium ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <span className={'text-lg font-medium ' + (priceChange >= 0 ? 'text-green-400' : 'text-red-400')}>
               {priceChange >= 0 ? '+' : ''}{safePrice(priceChange, 2)}%
             </span>
           </div>
@@ -523,11 +498,11 @@ export default function InsiderFlowUltimate() {
             <button
               key={coin.symbol}
               onClick={() => setSelectedCoin(coin.symbol)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={'px-4 py-2 rounded-lg font-medium transition-all ' + (
                 selectedCoin === coin.symbol
                   ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
                   : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
-              }`}
+              )}
             >
               {coin.symbol}
             </button>
@@ -636,7 +611,7 @@ export default function InsiderFlowUltimate() {
               
               <div className="bg-gray-900/50 rounded-lg p-4">
                 <p className="text-sm text-gray-400 mb-1">순 플로우</p>
-                <p className={`text-2xl font-bold ${exchangeFlow.netflow > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p className={'text-2xl font-bold ' + (exchangeFlow.netflow > 0 ? 'text-green-400' : 'text-red-400')}>
                   {exchangeFlow.netflow > 0 ? '+' : ''}{safePercent(exchangeFlow.netflow)}
                 </p>
                 <p className="text-sm text-gray-500">매수 - 매도</p>
@@ -652,10 +627,10 @@ export default function InsiderFlowUltimate() {
               
               <div className="bg-gray-900/50 rounded-lg p-4">
                 <p className="text-sm text-gray-400 mb-1">리스크 점수</p>
-                <p className={`text-2xl font-bold ${
+                <p className={'text-2xl font-bold ' + (
                   riskScore >= 70 ? 'text-red-400' : 
                   riskScore >= 40 ? 'text-yellow-400' : 'text-green-400'
-                }`}>
+                )}>
                   {riskScore}/100
                 </p>
                 <p className="text-sm text-gray-500">
@@ -686,21 +661,21 @@ export default function InsiderFlowUltimate() {
                         {tx.timestamp ? new Date(tx.timestamp).toLocaleTimeString() : '시간 미정'}
                       </td>
                       <td className="py-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                        <span className={'px-2 py-1 rounded text-xs ' + (
                           tx.type === 'sell' ? 'bg-red-500/20 text-red-400' :
                           tx.type === 'buy' ? 'bg-green-500/20 text-green-400' :
                           'bg-yellow-500/20 text-yellow-400'
-                        }`}>
+                        )}>
                           {tx.type === 'sell' ? '매도' : tx.type === 'buy' ? '매수' : '이동'}
                         </span>
                       </td>
                       <td className="py-2">
-                        <span className={`text-xs ${
+                        <span className={'text-xs ' + (
                           tx.category === 'team' ? 'text-purple-400' :
                           tx.category === 'vc' ? 'text-blue-400' :
                           tx.category === 'whale' ? 'text-yellow-400' :
                           'text-gray-400'
-                        }`}>
+                        )}>
                           {tx.category === 'team' ? '팀' :
                            tx.category === 'vc' ? 'VC' :
                            tx.category === 'whale' ? '고래' : '거래소'}
@@ -714,12 +689,12 @@ export default function InsiderFlowUltimate() {
                         ${tx.value.toLocaleString()}
                       </td>
                       <td className="py-2 text-center">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                        <span className={'px-2 py-1 rounded text-xs ' + (
                           tx.impact === 'critical' ? 'bg-red-500/20 text-red-400' :
                           tx.impact === 'high' ? 'bg-orange-500/20 text-orange-400' :
                           tx.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-gray-500/20 text-gray-400'
-                        }`}>
+                        )}>
                           {tx.impact === 'critical' ? '치명적' :
                            tx.impact === 'high' ? '높음' :
                            tx.impact === 'medium' ? '보통' : '낮음'}
@@ -796,22 +771,22 @@ export default function InsiderFlowUltimate() {
                     <div className="pt-2">
                       <div className="flex justify-between mb-1">
                         <span className="text-xs text-gray-400">리스크</span>
-                        <span className={`text-xs ${
+                        <span className={'text-xs ' + (
                           wallet.riskLevel >= 70 ? 'text-red-400' :
                           wallet.riskLevel >= 40 ? 'text-yellow-400' :
                           'text-green-400'
-                        }`}>
+                        )}>
                           {wallet.riskLevel}%
                         </span>
                       </div>
                       <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full ${
+                          className={'h-full ' + (
                             wallet.riskLevel >= 70 ? 'bg-red-500' :
                             wallet.riskLevel >= 40 ? 'bg-yellow-500' :
                             'bg-green-500'
-                          }`}
-                          style={{ width: `${wallet.riskLevel}%` }}
+                          )}
+                          style={{ width: wallet.riskLevel + '%' }}
                         />
                       </div>
                     </div>
@@ -841,7 +816,7 @@ export default function InsiderFlowUltimate() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }: any) => name + ' ' + (percent * 100).toFixed(0) + '%'}
                       outerRadius={80}
                       fill="#8884d8"
                     />
@@ -879,19 +854,19 @@ export default function InsiderFlowUltimate() {
                   <div className="flex-1">
                     <div className="bg-gray-900/50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-sm font-medium ${
+                        <span className={'text-sm font-medium ' + (
                           event.type === 'team' ? 'text-purple-400' :
                           event.type === 'vc' ? 'text-blue-400' :
                           'text-yellow-400'
-                        }`}>
+                        )}>
                           {event.type === 'team' ? '팀 언락' :
                            event.type === 'vc' ? 'VC 언락' : '투자자 언락'}
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded ${
+                        <span className={'text-xs px-2 py-1 rounded ' + (
                           event.impact === 'high' ? 'bg-red-500/20 text-red-400' :
                           event.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-green-500/20 text-green-400'
-                        }`}>
+                        )}>
                           영향도: {event.impact === 'high' ? '높음' :
                                    event.impact === 'medium' ? '보통' : '낮음'}
                         </span>
@@ -959,9 +934,9 @@ export default function InsiderFlowUltimate() {
                     <FaArrowDown className="text-red-400" />
                   }
                 </div>
-                <p className={`text-2xl font-bold ${
+                <p className={'text-2xl font-bold ' + (
                   exchangeFlow.netflow > 0 ? 'text-green-400' : 'text-red-400'
-                }`}>
+                )}>
                   {exchangeFlow.netflow > 0 ? '+' : ''}{exchangeFlow.netflow.toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -985,7 +960,7 @@ export default function InsiderFlowUltimate() {
                   <YAxis stroke="#9ca3af" />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                    formatter={(value: any) => `${value.toLocaleString()} ${selectedCoin}`}
+                    formatter={(value: any) => value.toLocaleString() + ' ' + selectedCoin}
                   />
                   <Bar dataKey="balance" fill="#8b5cf6" />
                 </BarChart>
@@ -1013,7 +988,7 @@ export default function InsiderFlowUltimate() {
                         <YAxis stroke="#9ca3af" domain={['dataMin', 'dataMax']} />
                         <Tooltip 
                           contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                          formatter={(value: any) => `$${value.toLocaleString()}`}
+                          formatter={(value: any) => '$' + value.toLocaleString()}
                         />
                         <Line 
                           type="monotone" 
@@ -1047,7 +1022,7 @@ export default function InsiderFlowUltimate() {
                         <YAxis stroke="#9ca3af" />
                         <Tooltip 
                           contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                          formatter={(value: any) => `${(value / 1000000).toFixed(2)}M`}
+                          formatter={(value: any) => (value / 1000000).toFixed(2) + 'M'}
                         />
                         <Bar dataKey="volume" fill="#8b5cf6" />
                       </BarChart>
@@ -1076,7 +1051,7 @@ export default function InsiderFlowUltimate() {
               <div className="bg-gray-900/50 rounded-lg p-4">
                 <p className="text-sm text-gray-400 mb-1">활성 주소</p>
                 <p className="text-xl font-bold">{onchainMetrics.activeAddresses.toLocaleString()}</p>
-                <p className={`text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p className={'text-sm ' + (priceChange >= 0 ? 'text-green-400' : 'text-red-400')}>
                   {priceChange >= 0 ? '+' : ''}{(priceChange * 0.5).toFixed(1)}%
                 </p>
               </div>
@@ -1085,11 +1060,11 @@ export default function InsiderFlowUltimate() {
                 <p className="text-sm text-gray-400 mb-1">거래 건수</p>
                 <p className="text-xl font-bold">
                   {onchainMetrics.transactionCount > 1000 ? 
-                    `${(onchainMetrics.transactionCount / 1000).toFixed(0)}K` : 
+                    (onchainMetrics.transactionCount / 1000).toFixed(0) + 'K' : 
                     onchainMetrics.transactionCount.toLocaleString()
                   }
                 </p>
-                <p className={`text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p className={'text-sm ' + (priceChange >= 0 ? 'text-green-400' : 'text-red-400')}>
                   {priceChange >= 0 ? '+' : ''}{(priceChange * 0.3).toFixed(1)}%
                 </p>
               </div>
@@ -1117,10 +1092,10 @@ export default function InsiderFlowUltimate() {
               <ResponsiveContainer width="100%" height="100%">
                 <Treemap
                   data={[
-                    { name: `Top 10 (${onchainMetrics.holderDistribution.top10}%)`, size: onchainMetrics.holderDistribution.top10, fill: '#dc2626' },
-                    { name: `11-50 (${onchainMetrics.holderDistribution.top11to50}%)`, size: onchainMetrics.holderDistribution.top11to50, fill: '#f59e0b' },
-                    { name: `51-100 (${onchainMetrics.holderDistribution.top51to100}%)`, size: onchainMetrics.holderDistribution.top51to100, fill: '#3b82f6' },
-                    { name: `Others (${onchainMetrics.holderDistribution.others}%)`, size: onchainMetrics.holderDistribution.others, fill: '#6b7280' }
+                    { name: 'Top 10 (' + onchainMetrics.holderDistribution.top10 + '%)', size: onchainMetrics.holderDistribution.top10, fill: '#dc2626' },
+                    { name: '11-50 (' + onchainMetrics.holderDistribution.top11to50 + '%)', size: onchainMetrics.holderDistribution.top11to50, fill: '#f59e0b' },
+                    { name: '51-100 (' + onchainMetrics.holderDistribution.top51to100 + '%)', size: onchainMetrics.holderDistribution.top51to100, fill: '#3b82f6' },
+                    { name: 'Others (' + onchainMetrics.holderDistribution.others + '%)', size: onchainMetrics.holderDistribution.others, fill: '#6b7280' }
                   ]}
                   dataKey="size"
                   stroke="#000"
@@ -1152,11 +1127,11 @@ export default function InsiderFlowUltimate() {
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className={`text-3xl font-bold ${
+                        <p className={'text-3xl font-bold ' + (
                           riskScore >= 70 ? 'text-red-400' :
                           riskScore >= 40 ? 'text-yellow-400' :
                           'text-green-400'
-                        }`}>
+                        )}>
                           {riskScore}
                         </p>
                         <p className="text-sm text-gray-400">
@@ -1179,7 +1154,7 @@ export default function InsiderFlowUltimate() {
                       <span className="text-sm text-red-400">{Math.min(100, Math.floor(riskScore * 0.8))}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500" style={{ width: `${Math.min(100, Math.floor(riskScore * 0.8))}%` }} />
+                      <div className="h-full bg-red-500" style={{ width: Math.min(100, Math.floor(riskScore * 0.8)) + '%' }} />
                     </div>
                   </div>
                   
@@ -1189,7 +1164,7 @@ export default function InsiderFlowUltimate() {
                       <span className="text-sm text-yellow-400">{Math.min(100, Math.floor(riskScore * 0.6))}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-yellow-500" style={{ width: `${Math.min(100, Math.floor(riskScore * 0.6))}%` }} />
+                      <div className="h-full bg-yellow-500" style={{ width: Math.min(100, Math.floor(riskScore * 0.6)) + '%' }} />
                     </div>
                   </div>
                   
@@ -1199,7 +1174,7 @@ export default function InsiderFlowUltimate() {
                       <span className="text-sm text-green-400">{Math.max(10, Math.floor(100 - exchangeFlow.outflow / 10000))}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500" style={{ width: `${Math.max(10, Math.floor(100 - exchangeFlow.outflow / 10000))}%` }} />
+                      <div className="h-full bg-green-500" style={{ width: Math.max(10, Math.floor(100 - exchangeFlow.outflow / 10000)) + '%' }} />
                     </div>
                   </div>
                   
@@ -1209,7 +1184,7 @@ export default function InsiderFlowUltimate() {
                       <span className="text-sm text-yellow-400">{Math.min(100, Math.floor(riskScore * 0.5))}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-yellow-500" style={{ width: `${Math.min(100, Math.floor(riskScore * 0.5))}%` }} />
+                      <div className="h-full bg-yellow-500" style={{ width: Math.min(100, Math.floor(riskScore * 0.5)) + '%' }} />
                     </div>
                   </div>
                 </div>
@@ -1246,9 +1221,9 @@ export default function InsiderFlowUltimate() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">방향성</span>
-                    <span className={`font-medium ${
+                    <span className={'font-medium ' + (
                       exchangeFlow.netflow > 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
+                    )}>
                       {exchangeFlow.netflow > 0 ? '강세' : '약세'}
                     </span>
                   </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   FaChartBar, FaBell, FaRocket, FaChartLine, FaBrain, FaExchangeAlt, 
   FaHistory, FaCog, FaTelegram, FaFireAlt, FaDatabase, FaClock, 
@@ -10,9 +10,8 @@ import {
   FaChartPie, FaChartArea, FaCrosshairs, FaRulerCombined, FaCube,
   FaExclamationTriangle
 } from 'react-icons/fa'
-import { formatPrice, formatPercentage, formatVolume, safeToFixed } from '@/lib/formatters'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell } from 'recharts'
+import { Area } from 'recharts'
 import { config } from '@/lib/config'
 import dynamic from 'next/dynamic'
 import { detectAllPatterns, PatternResult } from './lib/patternDetection'
@@ -406,7 +405,6 @@ export default function PatternRecognitionUltimate() {
           const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`)
           
           ws.onopen = () => {
-            console.log(`WebSocket connected for ${symbol} with kline stream`)
             if (symbol === selectedSymbol) setIsConnected(true)
           }
 
@@ -463,8 +461,7 @@ export default function PatternRecognitionUltimate() {
                       
                       // 패턴 감지 시 알림
                       if (detectedResults.length > patternResults.length) {
-                        console.log('새로운 패턴 감지!', detectedResults[detectedResults.length - 1])
-                      }
+                        }
                     }, 100)
                   }
                   
@@ -472,24 +469,20 @@ export default function PatternRecognitionUltimate() {
                 })
               }
             } catch (parseError) {
-              console.warn(`Failed to parse WebSocket data for ${symbol}:`, parseError)
-            }
+              }
           }
 
           ws.onerror = (error) => {
-            console.warn(`WebSocket connection issue for ${symbol}. Using fallback data.`)
             if (symbol === selectedSymbol) setIsConnected(false)
           }
 
           ws.onclose = () => {
-            console.log(`WebSocket closed for ${symbol}`)
             if (symbol === selectedSymbol) setIsConnected(false)
           }
 
           wsRefs.current[symbol] = ws
         } catch (error) {
-          console.warn(`Failed to create WebSocket for ${symbol}. Using fallback data.`)
-        }
+          }
       }, index * 500) // 0.5초 간격으로 순차 연결
       
       timeoutIds.push(timeoutId)
@@ -1035,7 +1028,7 @@ export default function PatternRecognitionUltimate() {
                       symbol={selectedSymbol}
                       currentPrice={currentPrice}
                       timeframe={timeframe}
-                      onPatternClick={(pattern) => console.log('Pattern clicked:', pattern)}
+                      onPatternClick={(pattern) => }
                     />
                     {candleData.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -1073,7 +1066,7 @@ export default function PatternRecognitionUltimate() {
                     <PatternHeatmap 
                       data={heatmapData}
                       selectedPattern={detectedPatterns[0]?.type}
-                      onPatternSelect={(pattern) => console.log('Pattern selected:', pattern)}
+                      onPatternSelect={(pattern) => }
                     />
                   </div>
                 </div>
@@ -1097,7 +1090,7 @@ export default function PatternRecognitionUltimate() {
                   <SuccessRateRadar 
                     data={radarData}
                     selectedPattern={detectedPatterns[0]?.type}
-                    onPatternSelect={(pattern) => console.log('Pattern selected:', pattern)}
+                    onPatternSelect={(pattern) => }
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">
@@ -1122,7 +1115,7 @@ export default function PatternRecognitionUltimate() {
                     trades={tradeHistoryData}
                     selectedPattern={detectedPatterns[0]?.type}
                     timeframe="3M"
-                    onDateHover={(date) => console.log('Date hovered:', date)}
+                    onDateHover={(date) => }
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">
@@ -1178,7 +1171,7 @@ export default function PatternRecognitionUltimate() {
                   <PatternTimelineChart 
                     events={timelineEvents}
                     currentTime={Date.now()}
-                    onEventClick={(event) => console.log('Event clicked:', event)}
+                    onEventClick={(event) => }
                   />
                 </div>
                 <div className="mt-2 text-xs text-gray-400 text-center">

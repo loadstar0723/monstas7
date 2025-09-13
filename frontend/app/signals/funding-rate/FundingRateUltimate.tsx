@@ -87,8 +87,7 @@ export default function FundingRateUltimate() {
     const ws = new WebSocket(`wss://fstream.binance.com/ws/${streamName}`)
 
     ws.onopen = () => {
-      console.log('Funding WebSocket connected for', symbol)
-    }
+      }
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -103,7 +102,6 @@ export default function FundingRateUltimate() {
     }
 
     ws.onclose = () => {
-      console.log('WebSocket closed')
       if (autoRefresh) {
         setTimeout(() => connectWebSocket(symbol), 3000)
       }

@@ -11,7 +11,6 @@ export async function fetchInitialPrice(symbol: string): Promise<number> {
         // Binance API는 lastPrice 필드를 사용
         const price = parseFloat(data.lastPrice || data.price || '0')
         if (price > 0) {
-          console.log(`[가격 조회] ${symbol}: $${price}`)
           return price
         }
       } catch (jsonError) {
@@ -20,7 +19,6 @@ export async function fetchInitialPrice(symbol: string): Promise<number> {
     }
     
     // API 실패 시 기본값
-    console.log(`[가격 조회] ${symbol}: API 실패, 기본값 사용`)
     return getDefaultPrice(symbol)
   } catch (error) {
     console.error('가격 조회 실패:', error)

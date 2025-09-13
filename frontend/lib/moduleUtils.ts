@@ -42,7 +42,7 @@ export class ModuleWebSocket {
   connect(url: string, onMessage: (data: any) => void) {
     // 브라우저 환경이 아니면 연결하지 않음 (SSR 방지)
     if (typeof window === 'undefined') {
-      console.log(`[${this.moduleName}] Skipping WebSocket connection (SSR)`)
+      `)
       return
     }
     
@@ -50,7 +50,6 @@ export class ModuleWebSocket {
       this.ws = new WebSocket(url)
       
       this.ws.onopen = () => {
-        console.log(`[${this.moduleName}] WebSocket connected`)
         this.reconnectAttempts = 0
       }
       
@@ -65,11 +64,9 @@ export class ModuleWebSocket {
       
       this.ws.onerror = (error) => {
         // WebSocket 에러는 자동 재연결되므로 로그 레벨을 낮춤
-        console.log(`[${this.moduleName}] WebSocket 재연결 중...`)
-      }
+        }
       
       this.ws.onclose = () => {
-        console.log(`[${this.moduleName}] WebSocket disconnected`)
         this.attemptReconnect(url, onMessage)
       }
     } catch (error) {
@@ -81,8 +78,6 @@ export class ModuleWebSocket {
     if (this.reconnectAttempts < this.maxReconnects) {
       this.reconnectAttempts++
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000)
-      
-      console.log(`[${this.moduleName}] Reconnecting in ${delay}ms...`)
       
       this.reconnectTimeout = setTimeout(() => {
         this.connect(url, onMessage)
@@ -176,7 +171,7 @@ export class ModulePerformance {
       const avg = measurements.reduce((a, b) => a + b, 0) / measurements.length
       
       if (avg > 1000) {
-        console.warn(`[${this.moduleName}] Slow operation '${label}': ${avg.toFixed(2)}ms`)
+        }ms`)
       }
     }
   }
@@ -224,8 +219,6 @@ export async function initializeModule(
   moduleName: string,
   checks: Array<() => Promise<boolean>>
 ): Promise<boolean> {
-  console.log(`[${moduleName}] Initializing...`)
-  
   for (const check of checks) {
     try {
       const result = await check()
@@ -239,6 +232,5 @@ export async function initializeModule(
     }
   }
   
-  console.log(`[${moduleName}] Initialized successfully`)
   return true
 }

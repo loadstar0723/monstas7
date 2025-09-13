@@ -125,7 +125,6 @@ export default function PinBarModule() {
     
     ws.onopen = () => {
       if (!isActive) return
-      console.log('WebSocket 연결됨:', selectedCoin)
       setWsConnected(true)
     }
 
@@ -144,13 +143,11 @@ export default function PinBarModule() {
 
     ws.onerror = (error) => {
       if (!isActive) return
-      console.log('WebSocket 연결 오류')
       setWsConnected(false)
     }
 
     ws.onclose = (event) => {
       if (!isActive) return
-      console.log('WebSocket 연결 종료')
       setWsConnected(false)
       // 정상 종료가 아닌 경우에만 재연결
       if (event.code !== 1000 && event.code !== 1001) {

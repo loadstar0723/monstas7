@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -102,7 +101,6 @@ interface MEVActivity {
   bundleSize: number
 }
 
-
 // 고유 ID 생성 함수
 const generateUniqueId = (prefix: string = '', suffix: string = '') => {
   const timestamp = Date.now();
@@ -197,7 +195,6 @@ export default function DexFlowUltimate() {
         const dexResponse = await dexRes.json()
         if (dexResponse.success && dexResponse.data) {
           const dexData = dexResponse.data
-          console.log('DEX transactions loaded:', dexData.transactions?.length || 0)
           // 데이터 개수 제한으로 무한 증가 방지
           setTransactions((dexData.transactions || []).slice(0, 100))
           setLiquidityPools((dexData.pools || []).slice(0, 20))

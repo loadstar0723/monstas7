@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { formatPrice, formatPercentage, formatVolume } from '@/lib/formatters'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 // 서비스들은 나중에 필요할 때 추가
 // import { NotificationService } from '@/lib/notificationService'
 // import { audioService } from '@/lib/audioService'
@@ -130,7 +128,6 @@ export default function VolumeProfileModule() {
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected')
         setIsConnected(true)
         
         // 초기 order book snapshot 요청
@@ -164,7 +161,6 @@ export default function VolumeProfileModule() {
       }
       
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected')
         setIsConnected(false)
         
         // 자동 재연결
@@ -194,7 +190,6 @@ export default function VolumeProfileModule() {
         return
       }
       const data = await response.json()
-      console.log('Order book data loaded:', data)
       processOrderBookSnapshot(data)
     } catch (error) {
       console.error('Error loading order book snapshot:', error)
@@ -318,7 +313,6 @@ export default function VolumeProfileModule() {
   
   // 볼륨 프로파일 계산 - 최적화된 버전
   const calculateVolumeProfile = useMemo(() => (bids: any[], asks: any[], currentPrice: number) => {
-    console.log('calculateVolumeProfile called:', { bids: bids.length, asks: asks.length, currentPrice })
     if (!currentPrice || (bids.length === 0 && asks.length === 0)) return
     
     // 가격 범위 설정 (현재 가격 기준 ±3%)
@@ -431,7 +425,6 @@ export default function VolumeProfileModule() {
       lvnLevels
     }
     
-    console.log('Volume profile data calculated:', profileData)
     setVolumeProfileData(profileData)
   }, [])
   
@@ -510,9 +503,8 @@ export default function VolumeProfileModule() {
       )
       if (klineResponse.ok) {
         const response = await klineResponse.json()
-        console.log('Kline API response:', response) // 디버그용
-        console.log('Response type:', typeof response)
-        console.log('Response keys:', Object.keys(response))
+        // 디버그용
+        )
         
         // response.klines 또는 response.data에서 kline 데이터 추출
         const klineData = response.klines || response.data || response || []
@@ -535,7 +527,6 @@ export default function VolumeProfileModule() {
           }
         } else {
           console.error('Invalid or empty kline data:', klineData)
-          console.log('Full response was:', response)
           // 빈 응답인 경우 기본 데이터 생성
           const now = Date.now()
           const defaultHistory = []

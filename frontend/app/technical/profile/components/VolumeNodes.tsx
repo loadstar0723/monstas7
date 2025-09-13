@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
 import { 
   FaTh, FaExclamationTriangle, FaCheckCircle, FaArrowRight,
   FaLightbulb, FaShieldAlt, FaBolt, FaChartBar

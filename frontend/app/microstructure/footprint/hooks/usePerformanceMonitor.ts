@@ -125,7 +125,7 @@ export function ProfilerOnRender(
   interactions: Set<any>
 ) {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[Performance] ${id} (${phase})`, {
+    `, {
       actualDuration: `${actualDuration.toFixed(2)}ms`,
       baseDuration: `${baseDuration.toFixed(2)}ms`,
       startTime: `${startTime.toFixed(2)}ms`,

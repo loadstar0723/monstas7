@@ -70,7 +70,6 @@ export function useSpoofingWebSocket(symbol: string) {
         setIsConnected(false)
       },
       () => {
-        console.log('Orderbook WebSocket connected')
         setIsConnected(true)
       },
       () => {

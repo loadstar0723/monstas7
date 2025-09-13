@@ -42,7 +42,6 @@ export class EnhancedFootprintWebSocket {
         this.connectionStartTime = Date.now()
         
         this.ws.onopen = () => {
-          console.log(`[WebSocket] 연결 성공: ${this.config.symbol}`)
           this.reconnectAttempts = 0
           this.isReconnecting = false
           this.config.onStatus(true)
@@ -78,7 +77,6 @@ export class EnhancedFootprintWebSocket {
         }
         
         this.ws.onclose = (event) => {
-          console.log('[WebSocket] 연결 종료:', event.code, event.reason)
           this.stopHeartbeat()
           this.config.onStatus(false)
           
@@ -111,7 +109,6 @@ export class EnhancedFootprintWebSocket {
         // 대신 연결 상태를 주기적으로 체크
         const now = Date.now()
         if (now - this.lastPong > 60000) { // 1분 이상 응답 없음
-          console.warn('[WebSocket] 하트비트 타임아웃')
           this.ws.close()
         }
       }
@@ -142,7 +139,7 @@ export class EnhancedFootprintWebSocket {
       FOOTPRINT_CONFIG.MAX_RECONNECT_DELAY
     )
     
-    console.log(`[WebSocket] ${delay}ms 후 재연결 시도 (${this.reconnectAttempts}/${FOOTPRINT_CONFIG.MAX_RECONNECT_ATTEMPTS})`)
+    `)
     this.config.onReconnect?.(this.reconnectAttempts)
     
     this.reconnectTimer = setTimeout(async () => {
@@ -170,8 +167,7 @@ export class EnhancedFootprintWebSocket {
     } else {
       // 연결이 끊어진 경우 큐에 저장
       this.messageQueue.push(message)
-      console.warn('[WebSocket] 메시지 큐에 저장됨')
-    }
+      }
   }
 
   disconnect() {

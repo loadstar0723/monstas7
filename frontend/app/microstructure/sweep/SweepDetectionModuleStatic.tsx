@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Activity, TrendingUp, BarChart3, History } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -93,11 +91,8 @@ const SweepDetectionModule: React.FC = () => {
   // REST API를 통한 거래 데이터 가져오기 (폴백용)
   const fetchRecentTrades = useCallback(async (symbol: string) => {
     try {
-      console.log(`🔍 거래 데이터 가져오기 시도: ${symbol}`)
       // API 프록시 사용 - CORS 회피
       const response = await fetch(`/api/binance/trades?symbol=${symbol}&limit=50`)
-      console.log(`📊 응답 상태: ${response.status} ${response.statusText}`)
-      
       if (response.ok) {
         const trades = await response.json()
         
@@ -134,8 +129,7 @@ const SweepDetectionModule: React.FC = () => {
         
         if (newSweeps.length > 0) {
           setSweeps(prev => [...newSweeps, ...prev].slice(0, 100))
-          console.log(`📈 ${symbol} REST API로 ${newSweeps.length}개 스윕 로드`)
-        }
+          }
       } else {
         console.error(`❌ API 응답 실패: ${response.status}`)
         const errorText = await response.text()
@@ -178,18 +172,13 @@ const SweepDetectionModule: React.FC = () => {
       // 초기 가격 설정
       setCurrentPrice(initialPrices[symbol] || 0)
 
-      console.log('WebSocket 연결 시도:', symbol)
-      
       // WebSocket URL 구성 - aggTrade 스트림 사용
       const wsUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`
-      console.log('WebSocket URL:', wsUrl)
-      
       const ws = new WebSocket(wsUrl) as ExtendedWebSocket
       
       // 연결 타임아웃 설정 (10초)
       const connectionTimeout = setTimeout(() => {
         if (ws.readyState !== WebSocket.OPEN) {
-          console.log('WebSocket 연결 타임아웃')
           ws.close()
           setConnectionError('연결 시간 초과 - 네트워크를 확인해주세요')
         }
@@ -197,7 +186,6 @@ const SweepDetectionModule: React.FC = () => {
       
       ws.onopen = () => {
         clearTimeout(connectionTimeout)
-        console.log('✅ WebSocket 연결 성공:', symbol)
         setIsConnected(true)
         setConnectionError('')
         
@@ -263,8 +251,6 @@ const SweepDetectionModule: React.FC = () => {
 
       ws.onerror = (event) => {
         clearTimeout(connectionTimeout)
-        console.warn('⚠️ WebSocket 연결 문제 발생 - REST API로 전환')
-        
         // 에러 발생 시 대체 메시지 설정
         if (!isConnected) {
           setConnectionError('실시간 연결 중... REST API 사용 중')
@@ -283,7 +269,6 @@ const SweepDetectionModule: React.FC = () => {
           clearInterval(ws.pingInterval)
         }
         
-        console.log('WebSocket 연결 종료')
         setIsConnected(false)
         
         // 정상 종료가 아닌 경우 REST API 사용
@@ -298,7 +283,6 @@ const SweepDetectionModule: React.FC = () => {
 
       wsRef.current = ws
     } catch (error) {
-      console.warn('WebSocket 사용 불가 - REST API 모드 활성화')
       setConnectionError('REST API 모드로 작동 중')
       
       // REST API만 사용
@@ -310,23 +294,16 @@ const SweepDetectionModule: React.FC = () => {
   // 초기 가격 및 오더북 데이터 가져오기
   const fetchInitialData = async (symbol: string) => {
     try {
-      console.log(`🚀 초기 데이터 가져오기 시작: ${symbol}`)
-      
       // 1. 현재 가격 가져오기
       const priceUrl = `/api/binance/ticker?symbol=${symbol}`
-      console.log(`📍 가격 API 호출: ${priceUrl}`)
-      
       const priceResponse = await fetch(priceUrl)
-      console.log(`💰 가격 API 응답: ${priceResponse.status}`)
-      
       if (priceResponse.ok) {
         const data = await priceResponse.json()
         // Binance ticker/price API는 price 필드를 사용
         const price = data.price
         if (price) {
           setCurrentPrice(parseFloat(price))
-          console.log(`✅ ${symbol} 초기 가격 로드: $${price}`)
-        }
+          }
       }
       
       // 2. 오더북 데이터 가져오기 (선택적)
@@ -334,8 +311,7 @@ const SweepDetectionModule: React.FC = () => {
       if (depthResponse.ok) {
         const depthData = await depthResponse.json()
         setOrderBookData(depthData)
-        console.log(`📊 ${symbol} 오더북 로드 완료`)
-      } else {
+        } else {
         console.error(`❌ 오더북 API 실패: ${depthResponse.status}`)
       }
     } catch (error) {

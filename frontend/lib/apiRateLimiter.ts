@@ -138,7 +138,7 @@ export async function retryWithBackoff<T>(
       
       // 지수 백오프: 1s, 2s, 4s...
       const delay = initialDelay * Math.pow(2, i)
-      console.log(`레이트 리밋 에러, ${delay}ms 후 재시도... (${i + 1}/${maxRetries})`)
+      `)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }

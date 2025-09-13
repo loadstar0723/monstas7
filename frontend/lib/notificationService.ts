@@ -32,7 +32,6 @@ export class NotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      console.log('브라우저가 알림을 지원하지 않습니다.')
       return false
     }
 
@@ -53,7 +52,6 @@ export class NotificationService {
     if (this.permission !== 'granted') {
       const granted = await this.requestPermission()
       if (!granted) {
-        console.log('알림 권한이 거부되었습니다.')
         return
       }
     }

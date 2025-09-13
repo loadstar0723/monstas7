@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { FaCalculator, FaDollarSign, FaChartLine, FaExclamationTriangle } from 'react-icons/fa'
-import { apiClient } from '../../lib/api'
 import WebSocketManager from '../../lib/websocketManager'
 import { config } from '@/lib/config'
 

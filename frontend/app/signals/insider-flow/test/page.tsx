@@ -11,7 +11,6 @@ export default function InsiderFlowTestPage() {
             try {
               const res = await fetch('/api/insider/config?symbol=BTC')
               const data = await res.json()
-              console.log('Config API:', data)
               alert('Config API: ' + JSON.stringify(data, null, 2))
             } catch (e) {
               console.error('Config API Error:', e)
@@ -28,7 +27,6 @@ export default function InsiderFlowTestPage() {
             try {
               const res = await fetch('/api/insider/onchain?symbol=BTC')
               const data = await res.json()
-              console.log('Onchain API:', data)
               alert('Onchain API: ' + JSON.stringify(data, null, 2))
             } catch (e) {
               console.error('Onchain API Error:', e)
@@ -45,7 +43,6 @@ export default function InsiderFlowTestPage() {
             try {
               const res = await fetch('/api/insider/wallets?symbol=BTC')
               const data = await res.json()
-              console.log('Wallets API:', data)
               alert('Wallets API: ' + JSON.stringify(data, null, 2))
             } catch (e) {
               console.error('Wallets API Error:', e)

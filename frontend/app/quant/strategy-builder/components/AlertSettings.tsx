@@ -542,8 +542,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ onAlertTriggered }) => {
         await loadAlertData() // 데이터 재로드
       } else {
         // API 실패 시 로컬 저장으로 폴백
-        console.log('알림 저장 API 실패, 로컬 저장으로 폴백')
-      }
+        }
     } catch (error) {
       console.error('알림 저장 실패:', error)
       // 에러 시 로얻 저장
@@ -589,7 +588,6 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ onAlertTriggered }) => {
         setAlerts(prev => prev.filter(a => a.id !== alertId))
       } else {
         // API 실패 시 로컬 삭제로 폴백
-        console.log('알림 삭제 API 실패, 로컬 삭제로 폴백')
         setAlerts(prev => prev.filter(a => a.id !== alertId))
       }
     } catch (error) {
@@ -616,7 +614,6 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ onAlertTriggered }) => {
         setAlerts(prev => prev.map(a => a.id === alertId ? updatedAlert : a))
       } else {
         // API 실패 시 로컬 토글로 폴백
-        console.log('알림 토글 API 실패, 로컬 토글로 폴백')
         setAlerts(prev => prev.map(a => a.id === alertId ? updatedAlert : a))
       }
     } catch (error) {

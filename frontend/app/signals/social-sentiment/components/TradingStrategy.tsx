@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetchKlines, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaChartLine, FaClock, FaExclamationTriangle, FaCheckCircle, FaArrowUp, FaArrowDown, FaBalanceScale } from 'react-icons/fa'
 import useSocialData from '../hooks/useSocialData'
-import { getTradingConfig } from '@/lib/tradingConfig'
 
 interface TradingStrategyProps {
   coin: string
@@ -217,7 +215,6 @@ export default function TradingStrategy({ coin }: TradingStrategyProps) {
       default: return 'text-green-400'
     }
   }
-
 
   return (
     <div className="space-y-6">

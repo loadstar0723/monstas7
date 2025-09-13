@@ -5,8 +5,7 @@ let prisma: any = null
 try {
   prisma = require('@/lib/prisma').default
 } catch (e) {
-  console.log('Prisma not available, using API only')
-}
+  }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -59,8 +58,7 @@ export async function GET(request: Request) {
           unlockSchedule = dbUnlocks
         }
       } catch (dbError) {
-        console.log('Failed to fetch unlock schedule from DB')
-      }
+        }
     }
     
     // DB에 데이터가 없거나 연결 실패 시 동적 생성

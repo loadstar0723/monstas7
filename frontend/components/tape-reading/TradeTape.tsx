@@ -63,7 +63,7 @@ export default function TradeTape({ symbol, currentPrice }: TradeTapeProps) {
       const data = await response.json()
       
       if (Array.isArray(data)) {
-        const formattedTrades = data.map((trade: any, idx: number) => ({
+        const formattedTrades = data.map((trade: { id: string; time: number; price: string; qty: string; isBuyerMaker: boolean }, idx: number) => ({
           id: trade.id ? String(trade.id) : `${trade.time}-${idx}`,
           time: new Date(trade.time).toLocaleTimeString('ko-KR'),
           price: parseFloat(trade.price),

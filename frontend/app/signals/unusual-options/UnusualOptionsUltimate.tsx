@@ -74,7 +74,6 @@ interface GammaExposure {
   netGamma: number
 }
 
-
 // 고유 ID 생성 함수
 const generateUniqueId = (prefix: string = '', suffix: string = '') => {
   const timestamp = Date.now();

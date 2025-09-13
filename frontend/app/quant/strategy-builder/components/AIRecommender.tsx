@@ -103,8 +103,7 @@ const AIRecommender: React.FC<AIRecommenderProps> = ({
           }
         }
       } catch (e) {
-        console.log('Fear & Greed API 사용 불가, 기본값 사용')
-      }
+        }
       
       try {
         const dominanceData = await fetch('/api/market-dominance')
@@ -115,8 +114,7 @@ const AIRecommender: React.FC<AIRecommenderProps> = ({
           }
         }
       } catch (e) {
-        console.log('Market Dominance API 사용 불가, 기본값 사용')
-      }
+        }
 
       // 트렌드 및 단독성 분석
       const prices = priceResult.data?.map((d: any) => parseFloat(d[4])) || []

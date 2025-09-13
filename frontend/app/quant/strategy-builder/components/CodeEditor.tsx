@@ -136,13 +136,11 @@ class TradingStrategy {
         if (signal === 'BUY') {
             this.position = 'LONG';
             this.entryPrice = price;
-            console.log('Buy executed: $' + price);
             return { action: 'BUY', price };
         }
         
         if (signal === 'SELL') {
             const profit = ((price - this.entryPrice) / this.entryPrice * 100).toFixed(2);
-            console.log('Sell executed: $' + price + ', Profit: ' + profit + '%');
             this.position = null;
             this.entryPrice = 0;
             return { action: 'SELL', price, profit };

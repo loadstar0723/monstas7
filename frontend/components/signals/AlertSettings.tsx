@@ -341,8 +341,7 @@ export default function AlertSettings({
             if (userId) {
               try {
                 await apiClient.saveAlerts(userId, alerts.filter(a => a.enabled))
-                console.log('알림 설정 저장 완료')
-              } catch (err) {
+                } catch (err) {
                 console.error('알림 설정 저장 실패:', err)
               }
             }

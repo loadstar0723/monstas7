@@ -121,8 +121,7 @@ export default function FibonacciModule() {
           setCurrentPrice(parseFloat(ticker.lastPrice || '0'))
         }
       } catch (error) {
-        console.log('Ticker fetch error:', error)
-      }
+        }
       
       // Kline 데이터 가져오기 (프록시 서버 사용)
       const klineResponse = await fetch(`/api/binance/klines?symbol=${symbol}&interval=15m&limit=500`)
@@ -237,8 +236,7 @@ export default function FibonacciModule() {
       const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
       
       ws.onopen = () => {
-        console.log(`WebSocket connected for ${symbol}`)
-      }
+        }
       
       ws.onmessage = (event) => {
         try {
@@ -264,7 +262,6 @@ export default function FibonacciModule() {
       }
       
       ws.onerror = (event) => {
-        console.warn('WebSocket error occurred for', symbol)
         // 에러 발생 시 재연결 시도를 위해 연결 종료
         if (ws.readyState === WebSocket.OPEN) {
           ws.close()
@@ -272,13 +269,11 @@ export default function FibonacciModule() {
       }
       
       ws.onclose = (event) => {
-        console.log(`WebSocket disconnected for ${symbol}, code: ${event.code}, reason: ${event.reason}`)
         // 정상 종료가 아닌 경우에만 재연결
         if (event.code !== 1000 && event.code !== 1001) {
           setError('WebSocket 연결이 끊어졌습니다. 재연결 중...')
           setTimeout(() => {
             if (wsRef.current === ws) {
-              console.log('Attempting to reconnect WebSocket...')
               setError(null)
               connectWebSocket(symbol)
             }

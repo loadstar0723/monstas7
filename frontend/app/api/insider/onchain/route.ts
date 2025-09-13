@@ -5,8 +5,7 @@ let prisma: any = null
 try {
   prisma = require('@/lib/prisma').default
 } catch (e) {
-  console.log('Prisma not available, using API only')
-}
+  }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -55,8 +54,7 @@ export async function GET(request: Request) {
           orderBy: { createdAt: 'desc' }
         })
       } catch (dbError) {
-        console.log('Historical data not found')
-      }
+        }
     }
 
     const onchainData = {
@@ -123,8 +121,7 @@ export async function GET(request: Request) {
           }
         })
       } catch (dbError) {
-        console.log('Failed to save metrics:', dbError)
-      }
+        }
     }
 
     return NextResponse.json({

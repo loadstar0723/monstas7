@@ -47,8 +47,7 @@ export function useOptionsData(selectedCoin: string) {
       const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
       
       ws.onopen = () => {
-        console.log('WebSocket connected for:', symbol)
-      }
+        }
 
       ws.onmessage = (event) => {
         try {
@@ -64,7 +63,6 @@ export function useOptionsData(selectedCoin: string) {
       }
 
       ws.onerror = (error) => {
-        console.warn('WebSocket error occurred, will retry...')
         // 재연결 시도
         setTimeout(() => {
           if (wsRef.current === ws) {
@@ -74,8 +72,7 @@ export function useOptionsData(selectedCoin: string) {
       }
 
       ws.onclose = () => {
-        console.log('WebSocket closed for:', symbol)
-      }
+        }
 
       wsRef.current = ws
     } catch (error) {

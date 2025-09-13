@@ -78,7 +78,6 @@ export default function OptionsStrategyModule() {
           
           // response.ok 체크
           if (!optionsResponse.ok) {
-            console.warn(`Deribit API 응답 오류: ${optionsResponse.status}`)
             // 에러 시 기본 만료일 설정
             const defaultExpiries = ['2024-12-27', '2025-01-03', '2025-01-10']
             setExpiries(defaultExpiries)
@@ -130,7 +129,7 @@ export default function OptionsStrategyModule() {
       } catch (priceError: any) {
         // AbortError는 정상적인 취소이므로 무시
         if (priceError?.name === 'AbortError' || priceError?.message?.includes('aborted')) {
-          console.log('현물 가격 로드 취소됨 (코인 변경 또는 컴포넌트 언마운트)')
+          ')
           return
         }
         
@@ -150,7 +149,7 @@ export default function OptionsStrategyModule() {
     } catch (error: any) {
       // AbortError는 정상적인 취소이므로 무시
       if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
-        console.log('옵션 데이터 로드 취소됨 (코인 변경 또는 컴포넌트 언마운트)')
+        ')
         return
       }
       

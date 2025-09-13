@@ -57,7 +57,6 @@ export function useMarketData(symbol: string = 'BTCUSDT') {
       const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`)
       
       ws.onopen = () => {
-        console.log(`[WebSocket] Connected for ${symbol}`)
         reconnectAttemptsRef.current = 0
         setError(null)
         setLoading(false)
@@ -133,7 +132,6 @@ export function useMarketData(symbol: string = 'BTCUSDT') {
       }
 
       ws.onclose = () => {
-        console.log('[WebSocket] Disconnected')
         wsRef.current = null
         
         // 자동 재연결
@@ -141,7 +139,7 @@ export function useMarketData(symbol: string = 'BTCUSDT') {
           reconnectAttemptsRef.current++
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000)
           
-          console.log(`[WebSocket] Reconnecting in ${delay}ms... (attempt ${reconnectAttemptsRef.current})`)
+          `)
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket()
@@ -265,7 +263,6 @@ export function useMarketData(symbol: string = 'BTCUSDT') {
   // 수동 새로고침
   const refresh = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      console.log('[Market Data] WebSocket is connected, no need to refresh')
       return
     }
     

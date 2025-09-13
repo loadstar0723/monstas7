@@ -309,7 +309,6 @@ export default function MomentumModule() {
       const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`)
 
       ws.onopen = () => {
-        console.log('WebSocket connected for', symbol)
         setError(null)
       }
 
@@ -336,17 +335,14 @@ export default function MomentumModule() {
       }
 
       ws.onerror = (error) => {
-        console.warn('WebSocket connection error, will retry in 5 seconds')
         // WebSocket error 이벤트는 상세 정보를 제공하지 않으므로 warning으로 처리
       }
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected, code:', event.code, 'reason:', event.reason)
         // 정상 종료가 아닌 경우에만 재연결
         if (event.code !== 1000 && event.code !== 1001) {
           reconnectTimeoutRef.current = setTimeout(() => {
             if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-              console.log('Attempting to reconnect WebSocket...')
               connectWebSocket(symbol)
             }
           }, 5000)

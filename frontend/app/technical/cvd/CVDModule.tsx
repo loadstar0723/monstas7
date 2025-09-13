@@ -14,7 +14,6 @@ import {
 import { BiLineChart, BiBarChart } from 'react-icons/bi'
 import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { CVDOverviewTab, CVDAnalysisTab, DeltaHistogramTab, DivergenceTab, StrategyTab, EducationTab } from './CVDCharts'
-import { CVDConceptCard, BuySellPressureGauge, TrendSignals, TradingStrategyCard } from './CVDAnalysis'
 import { useCVDWebSocket } from '@/hooks/useCVDWebSocket'
 
 // 추적할 코인 목록
@@ -40,7 +39,6 @@ const TABS = [
   { id: '전략', label: '전략', icon: <FaCrosshairs className="w-4 h-4" />, description: '트레이딩 전략' },
   { id: '교육', label: '교육', icon: <FaGraduationCap className="w-4 h-4" />, description: 'CVD 학습 가이드' }
 ]
-
 
 export default function CVDModule() {
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')

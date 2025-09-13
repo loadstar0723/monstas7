@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRealtimePrice, useMultipleRealtimePrices, fetchKlines, fetchOrderBook, fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
-import { dataService } from '@/lib/services/finalDataService'
+import { fetch24hrTicker } from '@/lib/hooks/useRealtimePrice'
 import { ModuleWebSocket } from '@/lib/moduleUtils'
 import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
@@ -90,8 +89,7 @@ export default function useFearGreedData(coin: string) {
       // Alternative.me API 호출 (전체 시장)
       const fearGreedResponse = await fetch('/api/fear-greed')
       if (!fearGreedResponse.ok) {
-        console.warn('Fear & Greed API 오류, 기본값 사용')
-      }
+        }
       
       let marketIndex = 50
       let marketClassification = 'Neutral'
@@ -109,11 +107,10 @@ export default function useFearGreedData(coin: string) {
       
       // fetch24hrTicker는 직접 데이터를 반환함
       const stats = await fetch24hrTicker(symbol)
-      console.log('Binance API 응답:', stats) // 디버깅용
+      // 디버깅용
       
       // 데이터가 없으면 기본값 사용
       if (!stats || stats.price === 0) {
-        console.warn('Binance API 데이터 없음, 기본값 사용')
         const defaultData: FearGreedData = {
           value: 50,
           classification: 'Neutral',

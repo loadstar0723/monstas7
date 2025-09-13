@@ -69,14 +69,6 @@ ${symbol} 진입을 확인하시겠습니까?
     
     if (confirm(confirmMessage)) {
       // 실제 구현 시 여기에 주문 API 호출
-      console.log('진입 주문 실행:', {
-        symbol,
-        entryPrice,
-        stopLoss,
-        targets,
-        timeframe
-      })
-      
       alert(`✅ ${symbol} 진입 주문이 접수되었습니다.\n\n진입가: $${entryPrice.toLocaleString()}\n손절가: $${stopLoss.toLocaleString()}`)
       
       // localStorage에 진입 정보 저장

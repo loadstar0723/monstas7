@@ -1,5 +1,4 @@
 import { Html, Head, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 
 export default function Document() {
   return (
@@ -20,8 +19,7 @@ export default function Document() {
                   return '0';
                 }
               };
-              console.log('[SafeNumber] Emergency patch applied');
-            })();
+              })();
           `
         }} />
       </Head>

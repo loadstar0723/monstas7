@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaCog } from 'react-icons/fa'
 
 interface TradingChartProps {
@@ -245,7 +244,6 @@ export default function TradingChart({ symbol }: TradingChartProps) {
       }
       
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected')
         setTimeout(connectWebSocket, 3000)
       }
     }

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { apiRateLimiter, retryWithBackoff, isRateLimitError } from '@/lib/apiRateLimiter'
 
 // 기본 가격 설정
 function getDefaultKlinePrice(symbol: string): number {
@@ -24,8 +23,6 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol') || 'BTCUSDT'
     const interval = searchParams.get('interval') || '1m'
     const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 1000)
-    
-    console.log(`Fetching klines for ${symbol}, interval: ${interval}, limit: ${limit}`)
     
     // Binance API 직접 호출
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
@@ -80,8 +77,6 @@ export async function GET(request: NextRequest) {
     } else {
       data = await response.json()
     }
-    console.log(`Successfully fetched ${data?.length || 0} klines`)
-    
     // CORS 헤더 추가
     const headers = new Headers({
       'Access-Control-Allow-Origin': '*',

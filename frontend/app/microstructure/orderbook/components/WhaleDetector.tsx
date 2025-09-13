@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { FaFish, FaExclamationTriangle } from 'react-icons/fa'
 import { safeFixed, safePrice, safeAmount } from '@/lib/safeFormat'
 

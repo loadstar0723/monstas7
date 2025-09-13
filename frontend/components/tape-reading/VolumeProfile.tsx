@@ -62,7 +62,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
       if (!response.ok) {
         console.error(`API 응답 에러: ${response.status}`)
         // 에러 발생 시 빈 데이터로 처리
-        setVolumeProfile([])
+        setProfileData([])
         setLoading(false)
         return
       }
@@ -76,14 +76,13 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
       } catch (parseError) {
         console.error('JSON 파싱 에러:', parseError)
         console.error('응답 텍스트:', text)
-        setVolumeProfile([])
+        setProfileData([])
         setLoading(false)
         return
       }
       
       // API 응답이 객체 형태로 올 수 있음
       const klinesData = klines?.data || klines?.klines || klines
-      console.log(`VolumeProfile 데이터 로드: ${symbol}`, Array.isArray(klinesData) ? klinesData.length : 0, '개 캔들')
       
       if (Array.isArray(klinesData) && klinesData.length > 0) {
         const klines = klinesData
@@ -93,7 +92,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
         let maxVolume = 0
         let pocPrice = 0
         
-        klines.forEach((kline: any) => {
+        klines.forEach((kline: number[]) => {
           const high = parseFloat(kline[2])
           const low = parseFloat(kline[3])
           const volume = parseFloat(kline[5])
@@ -161,8 +160,8 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
         accumulatedVolume = profileArray[pocIndex].volume
         
         while (accumulatedVolume < targetVolume && (upperIndex < profileArray.length || lowerIndex >= 0)) {
-          let upperVolume = upperIndex < profileArray.length ? profileArray[upperIndex].volume : 0
-          let lowerVolume = lowerIndex >= 0 ? profileArray[lowerIndex].volume : 0
+          const upperVolume = upperIndex < profileArray.length ? profileArray[upperIndex].volume : 0
+          const lowerVolume = lowerIndex >= 0 ? profileArray[lowerIndex].volume : 0
           
           if (upperVolume > lowerVolume) {
             if (upperIndex < profileArray.length) {
@@ -178,20 +177,12 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
             }
           }
         }
-        
-        console.log('프로파일 데이터:', {
-          dataPoints: profileArray.length,
-          poc: pocPrice,
-          vaHigh,
-          vaLow
-        })
-        
+
         setProfileData(profileArray)
         setPoc(pocPrice)
         setValueAreaHigh(vaHigh)
         setValueAreaLow(vaLow)
       } else {
-        console.log('Klines 데이터가 비어있음')
         // 데이터가 없을 때 초기값 유지
         const initPrice = initialPrices[symbol] || 100
         setPoc(initPrice)
@@ -265,7 +256,7 @@ export default function VolumeProfile({ symbol }: VolumeProfileProps) {
                   borderRadius: '8px'
                 }}
                 labelStyle={{ color: '#F3F4F6' }}
-                formatter={(value: any, name: string) => {
+                formatter={(value: number, name: string) => {
                   if (name === 'volume') {
                     return [`${(value / 1000).toFixed(2)}K`, '거래량']
                   }

@@ -12,7 +12,6 @@ import MultiTimeframePlan from './MultiTimeframePlan'
 import ProfitCalculator from './ProfitCalculator'
 import BacktestResults from './BacktestResults'
 import AlertSettings from './AlertSettings'
-import { binanceAPI } from '@/lib/binanceConfig'
 import { config } from '@/lib/config'
 
 interface WhaleMetrics {
@@ -120,8 +119,7 @@ export default function WhaleAnalysis() {
       } catch (error) {
         // 타임아웃이나 취소는 정상적인 동작이므로 에러 로그 생략
         if (error instanceof Error && error.name !== 'AbortError') {
-          console.log('WhaleAnalysis: Using fallback data')
-        }
+          }
         // 오류 시 기본값 설정
         setMetrics({
           netFlow: 0,
@@ -441,7 +439,7 @@ export default function WhaleAnalysis() {
       <AlertSettings
         symbol="BTC"
         currentPrice={currentPrice}
-        onSave={(alerts) => console.log('알림 저장:', alerts)}
+        onSave={(alerts) => }
       />
     </div>
   )

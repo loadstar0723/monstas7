@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { formatPrice, formatPercentage, formatVolume } from '@/lib/formatters'
 
 // 간단한 아이콘 컴포넌트
@@ -91,7 +90,6 @@ export default function StandaloneVolumeProfile() {
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected')
         setIsConnected(true)
         loadOrderBookSnapshot()
       }
@@ -118,7 +116,6 @@ export default function StandaloneVolumeProfile() {
       }
       
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected')
         setIsConnected(false)
         setTimeout(() => connectWebSocket(), 5000)
       }

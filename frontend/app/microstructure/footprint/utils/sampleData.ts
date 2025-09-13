@@ -31,8 +31,7 @@ export async function generateSampleFootprintData(symbol: string, currentPrice: 
         trades = await tradesResponse.json()
       }
     } catch (error) {
-      console.log('거래 데이터 로드 실패, 캔들 데이터만 사용')
-    }
+      }
     
     const data: FootprintCell[] = []
     const priceGrouping = FOOTPRINT_CONFIG.PRICE_GROUPING[symbol] || 1
@@ -136,7 +135,6 @@ export async function generateSampleFootprintData(symbol: string, currentPrice: 
       }
     })
     
-    console.log(`[풋프린트] ${symbol} 데이터 생성 완료 - ${data.length}개 셀`)
     return data
   } catch (error) {
     console.error('풋프린트 데이터 생성 실패:', error)

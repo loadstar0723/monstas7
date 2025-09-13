@@ -24,18 +24,12 @@ import {
 } from 'recharts'
 import WebSocketManager from '@/lib/websocketManager'
 import * as TI from '@/lib/technicalIndicators'
-import { monochromeTheme } from '@/lib/monochromeTheme'
 import { 
   analyzeRSI, analyzeMACD, analyzeBollingerBands, 
   analyzeStochastic, analyzeMultipleIndicators 
 } from '@/lib/dynamicAnalysisEngine'
-import { loadTradingConfig, getStrategyConfig, calculateConfidence } from '@/lib/configLoader'
 
 // 동적 분석 컴포넌트들
-import RSIDynamicAnalysis from '@/components/analysis/RSIDynamicAnalysis'
-import MACDDynamicAnalysis from '@/components/analysis/MACDDynamicAnalysis'
-import BollingerDynamicAnalysis from '@/components/analysis/BollingerDynamicAnalysis'
-import VolumeDynamicAnalysis from '@/components/analysis/VolumeDynamicAnalysis'
 
 // 모노크롬 차트 컴포넌트 동적 임포트
 const MovingAverageRibbonChart = dynamic(() => 
@@ -263,8 +257,7 @@ export default function TechnicalIndicatorsModule() {
           
           // 전략 생성
           generateStrategies(prices, highs, lows, volumes)
-          
-          
+
           // 시장 심리 분석
           analyzeMarketSentiment(prices, volumes)
         }

@@ -50,7 +50,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         
         setLoading(true)
       try {
-        console.log(`📊 ${symbol} 과거 데이터 로드 시작 (${timeframe})`)
+        `)
         
         // Binance API interval 매핑 - 더 많은 데이터 가져오기
         const interval = timeframe === '7d' ? '1h' : timeframe === '30d' ? '2h' : '4h'
@@ -64,8 +64,6 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         }
         
         const klines = await response.json()
-        console.log(`📈 ${symbol} Klines 데이터 수신:`, klines.length, '개')
-        
         // Binance Klines 데이터를 HistoricalData 형식으로 변환
         // [openTime, open, high, low, close, volume, closeTime, quoteAssetVolume, numberOfTrades, ...]
         const data: HistoricalData[] = klines.map((kline: any[]) => {
@@ -124,8 +122,7 @@ export default function HistoricalSweepsV2({ sweeps, currentPrice, symbol = 'BTC
         })
         
         setHistoricalData(data)
-        console.log(`✅ ${symbol} 과거 데이터 로드 완료`)
-      } catch (error) {
+        } catch (error) {
         console.error('Historical data load error:', error)
         // 에러 시 기본 데이터 생성
         const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90

@@ -349,8 +349,7 @@ export default function VolumeProfileChart3D({
         ctx.restore()
       }
     })
-    
-    
+
     // 현재 가격 라인 - 깔끔한 스타일
     const currentPriceY = padding.top + ((maxPrice - currentPrice) / priceRange) * chartHeight
     
@@ -380,8 +379,7 @@ export default function VolumeProfileChart3D({
     ctx.fillText(formatPrice(currentPrice), padding.left + chartWidth + 50, currentPriceY)
     
     ctx.restore()
-    
-    
+
     // 범례
     const legendY = 30
     const legendItems = [

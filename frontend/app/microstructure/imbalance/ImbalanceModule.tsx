@@ -108,7 +108,6 @@ export default function ImbalanceModule() {
       const response = await fetch(`/api/binance/orderbook?symbol=${selectedCoin.symbol}&limit=${tradingConfig.imbalance.dataLimits.orderbookDepth}`)
       
       if (!response.ok) {
-        console.log('Orderbook API returned non-OK status:', response.status)
         setOrderBook({ bids: [], asks: [] })
         return
       }
@@ -162,7 +161,6 @@ export default function ImbalanceModule() {
     try {
       // 기존 연결 완전 정리
       if (wsRef.current) {
-        console.log('기존 WebSocket 연결 종료:', selectedCoin.symbol)
         wsRef.current.close(1000, 'Switching coin')
         wsRef.current = null
         setWsConnected(false)
@@ -176,7 +174,6 @@ export default function ImbalanceModule() {
       const ws = new WebSocket(wsUrl)
       
       ws.onopen = () => {
-        console.log('WebSocket 연결 성공:', selectedCoin.symbol)
         setWsConnected(true)
         setLoading(false)
         fetchOrderBook()
@@ -216,12 +213,10 @@ export default function ImbalanceModule() {
       }
 
       ws.onerror = () => {
-        console.log('WebSocket 에러 발생')
         setWsConnected(false)
       }
 
       ws.onclose = (event) => {
-        console.log('WebSocket 연결 종료')
         setWsConnected(false)
         wsRef.current = null
         

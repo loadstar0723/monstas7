@@ -61,7 +61,6 @@ export default function MultiTimeframePlan({ symbol = 'BTC', userId }: MultiTime
 
   const handleSelectStrategy = (plan: TimeframePlan) => {
     // 전략 선택 로직
-    console.log('선택된 전략:', plan)
     alert(`${plan.label} 전략이 선택되었습니다.\n진입가: $${plan.entry.toLocaleString()}\n손절가: $${plan.stopLoss.toLocaleString()}`)
     
     // 실제 구현 시 여기에 주문 실행 로직 추가

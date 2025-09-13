@@ -188,7 +188,7 @@ export async function fetch24hrTicker(symbol: string) {
     )
     
     if (!response.ok) {
-      console.warn(`Ticker fetch 실패 (${response.status}), 기본값 사용`)
+      console.warn(`API 응답 실패: ${response.status}, 기본값 사용`)
       // 기본값 반환
       return {
         price: 0,

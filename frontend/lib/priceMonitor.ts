@@ -70,13 +70,11 @@ export class PriceMonitorService {
         // 배열인지 확인하고, 배열이 아니면 빈 배열로 초기화
         if (Array.isArray(parsed)) {
           this.alerts = parsed
-          console.log(`${this.alerts.length}개의 알림 설정 로드됨`)
-        } else {
+          } else {
           // 기존 데이터가 배열이 아닌 경우 초기화
           this.alerts = []
           localStorage.setItem('priceAlerts', '[]')
-          console.log('알림 설정 초기화됨')
-        }
+          }
       }
     } catch (error) {
       console.error('알림 설정 로드 실패:', error)
@@ -442,8 +440,7 @@ export class PriceMonitorService {
       if (!response.ok) {
         console.error('텔레그램 알림 전송 실패:', await response.text())
       } else {
-        console.log('텔레그램 알림 전송 성공')
-      }
+        }
     } catch (error) {
       console.error('텔레그램 알림 오류:', error)
     }
@@ -469,8 +466,7 @@ export class PriceMonitorService {
       if (!response.ok) {
         console.error('이메일 알림 전송 실패:', await response.text())
       } else {
-        console.log('이메일 알림 전송 성공')
-      }
+        }
     } catch (error) {
       console.error('이메일 알림 오류:', error)
     }

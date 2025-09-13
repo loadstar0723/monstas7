@@ -11,13 +11,11 @@ Number.prototype.toFixed = function(fractionDigits?: number): string {
   try {
     // this가 null이나 undefined인 경우
     if (this == null || this == undefined) {
-      console.warn('toFixed called on null or undefined');
       return '0';
     }
     
     // NaN인 경우
     if (isNaN(Number(this))) {
-      console.warn('toFixed called on NaN');
       return '0';
     }
     

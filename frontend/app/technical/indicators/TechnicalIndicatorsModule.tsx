@@ -147,7 +147,6 @@ export default function TechnicalIndicatorsModule() {
           setCurrentPrice(parseFloat(ticker.lastPrice || '0'))
         }
       } catch (error) {
-        console.log('Ticker fetch error:', error)
         // 폴백: historical API 사용
         const tickerResponse = await fetch(`/api/binance/historical?symbol=${symbol}&timeframe=1h`)
         if (tickerResponse.ok) {
@@ -361,7 +360,6 @@ export default function TechnicalIndicatorsModule() {
       const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`)
       
       ws.onopen = () => {
-        console.log('WebSocket 연결됨:', symbol)
         setLoading(false)
       }
 
@@ -451,12 +449,10 @@ export default function TechnicalIndicatorsModule() {
       }
 
       ws.onerror = (event) => {
-        console.warn('WebSocket 연결 에러 - 재연결 시도 예정')
         setLoading(false)
       }
 
       ws.onclose = () => {
-        console.log('WebSocket 연결 종료')
         // 더 빠른 재연결 (2초)
         setTimeout(() => {
           if (wsRef.current === ws) {

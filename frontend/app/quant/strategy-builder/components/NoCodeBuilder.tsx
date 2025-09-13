@@ -120,7 +120,6 @@ export default function NoCodeBuilder({ symbol }: NoCodeBuilderProps) {
       blocks: strategyBlocks,
       createdAt: new Date().toISOString()
     }
-    console.log('저장할 전략:', strategy)
     // 실제 저장은 API 호출
   }
   

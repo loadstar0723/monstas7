@@ -36,8 +36,6 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
         }
         
         const data = await response.json()
-        console.log('API response data:', data)
-        
         const newPrices: Record<string, number> = {}
         const newChanges: Record<string, number> = {}
         
@@ -53,9 +51,6 @@ export default function CoinSelector({ selectedCoin, onCoinSelect, coins }: Coin
             newChanges[symbol] = parseFloat(change)
           }
         })
-        
-        console.log('Parsed prices:', newPrices)
-        console.log('Parsed changes:', newChanges)
         
         // 데이터가 있는 경우에만 업데이트
         if (Object.keys(newPrices).length > 0) {

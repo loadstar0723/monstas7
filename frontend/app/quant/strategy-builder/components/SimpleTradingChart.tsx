@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaExpand, FaCompress, FaCog } from 'react-icons/fa'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
 interface TradingChartProps {
   symbol: string
@@ -138,11 +137,9 @@ export default function SimpleTradingChart({ symbol }: TradingChartProps) {
       
       wsRef.current.onerror = (error) => {
         // WebSocket 에러는 자동 재연결되므로 로그 레벨을 낮춤
-        console.log('WebSocket 재연결 중...')
-      }
+        }
       
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected')
         setTimeout(connectWebSocket, 3000)
       }
     }

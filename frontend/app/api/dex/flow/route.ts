@@ -6,12 +6,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const coin = searchParams.get('coin') || 'ETH'
     
-    console.log('DEX flow API called for coin:', coin)
-    
     // Binance에서 실제 시장 데이터 가져오기 (직접 호출)
     const symbol = `${coin}USDT`
-    
-    console.log('Fetching Binance data for symbol:', symbol)
     
     const [tickerRes, tradesRes, depthRes] = await Promise.all([
       fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`),
@@ -19,8 +15,6 @@ export async function GET(request: Request) {
       fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=10`)
     ])
 
-    console.log('Binance response status:', tickerRes.status, tradesRes.status, depthRes.status)
-    
     if (!tickerRes.ok || !tradesRes.ok || !depthRes.ok) {
       throw new Error('Binance API response not ok')
     }
@@ -29,8 +23,6 @@ export async function GET(request: Request) {
     const trades = await tradesRes.json()
     const depth = await depthRes.json()
     
-    console.log('Data fetched successfully')
-
     const currentPrice = parseFloat(ticker.lastPrice || 0)
     const volume24h = parseFloat(ticker.volume || 0) * currentPrice
     const priceChange = parseFloat(ticker.priceChangePercent || 0)

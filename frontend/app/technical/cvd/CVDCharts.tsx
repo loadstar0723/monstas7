@@ -7,7 +7,6 @@ import {
   ReferenceLine, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, ScatterChart, Scatter
 } from 'recharts'
-import { motion } from 'framer-motion'
 import { HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
 import { FaExclamationTriangle, FaCrosshairs, FaBook } from 'react-icons/fa'
 import { BiPulse } from 'react-icons/bi'

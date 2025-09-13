@@ -2,9 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaBalanceScale, FaArrowUp, FaArrowDown, FaExclamationTriangle } from 'react-icons/fa'
-import { config } from '@/lib/config'
 
 interface OrderbookLevel {
   price: number

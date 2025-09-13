@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
 
 // 동적 임포트로 성능 최적화
 const StrategyAnalyzer = dynamic(() => import('./StrategyAnalyzer'), {
@@ -148,8 +147,7 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
         const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol.toLowerCase()}@kline_1m`)
         
         ws.onopen = () => {
-          console.log(`WebSocket 연결됨: ${coin.symbol}`)
-        }
+          }
 
         ws.onmessage = (event) => {
           try {
@@ -164,7 +162,6 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
         }
 
         ws.onerror = (error) => {
-          console.warn('WebSocket 연결 에러, 재연결 시도...')
           // 5초 후 재연결 시도
           setTimeout(() => {
             if (wsRef.current?.readyState === WebSocket.CLOSED) {
@@ -174,7 +171,6 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
         }
 
         ws.onclose = () => {
-          console.log('WebSocket 연결 종료')
           wsRef.current = null
         }
 
@@ -202,7 +198,6 @@ export default function BacktestDashboard({ coin, onError, onLoadingChange }: Ba
   const processBacktestData = (klines: any[], strategy: string) => {
     // 실제 백테스팅 로직 구현
     if (!Array.isArray(klines)) {
-      console.warn('klines is not an array')
       return {
         metrics: {
           totalTrades: 0,

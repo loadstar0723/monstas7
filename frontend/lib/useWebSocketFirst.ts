@@ -37,7 +37,6 @@ export function useWebSocketFirst({
         const ws = new WebSocket(wsUrl)
         
         ws.onopen = () => {
-          console.log('WebSocket 연결 성공:', symbol)
           setIsConnected(true)
           reconnectAttemptsRef.current = 0
         }
@@ -58,7 +57,6 @@ export function useWebSocketFirst({
         }
         
         ws.onclose = () => {
-          console.log('WebSocket 연결 종료')
           setIsConnected(false)
           wsRef.current = null
           
@@ -66,7 +64,6 @@ export function useWebSocketFirst({
           if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
             reconnectAttemptsRef.current++
             const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
-            console.log(`재연결 시도 ${reconnectAttemptsRef.current}/${maxReconnectAttempts}, ${delay}ms 후...`)
             reconnectTimeout = setTimeout(connect, delay)
           }
         }
@@ -104,7 +101,6 @@ export async function fetchWithFallback(url: string, options?: RequestInit) {
     })
     
     if (response.status === 429) {
-      console.warn('레이트 리밋 도달, WebSocket 데이터 사용')
       throw new Error('RATE_LIMIT')
     }
     

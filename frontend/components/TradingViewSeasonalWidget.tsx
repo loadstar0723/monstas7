@@ -136,7 +136,6 @@ export default function TradingViewSeasonalWidget({
       await fetchBinanceData()
       
     } catch (error) {
-      console.warn('데이터 로드 실패, 기본 데이터 사용:', error)
       setDefaultRealData()
     } finally {
       setIsLoading(false)
@@ -181,7 +180,6 @@ export default function TradingViewSeasonalWidget({
       }
       
     } catch (error) {
-      console.warn('Binance API 접근 실패, 기본 데이터 사용:', error)
       setDefaultRealData()
     }
   }

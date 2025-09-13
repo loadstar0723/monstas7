@@ -11,11 +11,10 @@ import {
   FaCheckCircle, FaLightbulb, FaDatabase, FaClock, FaGlobe,
   FaFish, FaTachometerAlt, FaBalanceScale, FaCoins
 } from 'react-icons/fa'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, HeatMapGrid } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { NotificationService } from '@/lib/notificationService'
 import { audioService } from '@/lib/audioService'
 import dynamic from 'next/dynamic'
-import { config } from '@/lib/config'
 import SystemOverview from '@/components/signals/SystemOverview'
 import TabGuide from '@/components/signals/TabGuide'
 
@@ -199,7 +198,6 @@ export default function LiquidationUltimate() {
     'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
     'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'MATICUSDT', 'DOTUSDT'
   ]
-
 
   // 상태 관리
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
@@ -438,11 +436,9 @@ export default function LiquidationUltimate() {
     const wsUrl = `wss://fstream.binance.com/ws/${symbol}@forceOrder`
 
     try {
-      console.log('Connecting to liquidation WebSocket:', wsUrl)
       wsRef.current = new WebSocket(wsUrl)
 
       wsRef.current.onopen = () => {
-        console.log('Liquidation WebSocket connected')
         setIsConnected(true)
       }
 
@@ -498,7 +494,7 @@ export default function LiquidationUltimate() {
       }
 
       wsRef.current.onerror = (error) => {
-        console.warn('WebSocket error (this is normal if no liquidations):', error)
+        :', error)
         setIsConnected(false)
         
         // 청산 데이터가 없을 때 시뮬레이션 생성
@@ -506,7 +502,6 @@ export default function LiquidationUltimate() {
       }
 
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected')
         setIsConnected(false)
 
         // 자동 재연결
@@ -525,7 +520,6 @@ export default function LiquidationUltimate() {
   // 실제 청산 데이터만 사용 (시뮬레이션 완전 제거)
   const generateSimulatedLiquidation = useCallback(() => {
     // 시뮬레이션 사용하지 않음 - 실제 데이터만 표시
-    console.log('Waiting for real liquidation data from Binance...')
     // 시뮬레이션 없이 대기
   }, [selectedSymbol])
 
@@ -728,7 +722,6 @@ export default function LiquidationUltimate() {
             }
           } else {
             // 데이터가 없을 때 빈 상태 표시
-            console.log('No liquidations currently available for', selectedSymbol)
             setLiquidations([])
           }
         }

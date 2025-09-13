@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  console.log('API Route called: /api/binance/ticker24hr')
-  
   try {
     const { searchParams } = new URL(request.url)
     const symbol = searchParams.get('symbol') || 'BTCUSDT'
-    console.log('Requested symbol:', symbol)
-    
     // Binance API에서 24시간 티커 통계 가져오기
     const binanceUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
-    console.log('Calling Binance API:', binanceUrl)
-    
     const response = await fetch(binanceUrl, {
       method: 'GET',
       headers: {
@@ -20,8 +14,6 @@ export async function GET(request: NextRequest) {
       }
     })
     
-    console.log('Binance API response status:', response.status)
-    
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Binance API error:', errorText)
@@ -29,8 +21,6 @@ export async function GET(request: NextRequest) {
     }
     
     const data = await response.json()
-    console.log('Binance API data:', data)
-    
     // 24시간 데이터 직접 반환 (VolumeProfileModule에서 사용하는 형식)
     return NextResponse.json({
       symbol: data.symbol,

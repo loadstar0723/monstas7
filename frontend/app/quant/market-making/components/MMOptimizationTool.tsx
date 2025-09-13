@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaBrain, FaRocket, FaCog, FaChartLine, FaLightbulb, FaCheckCircle, FaSyncAlt } from 'react-icons/fa'
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
-import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
 interface CoinInfo {
   symbol: string

@@ -50,8 +50,6 @@ export async function GET(request: NextRequest) {
       const symbol = searchParams.get('symbol') || 'BTCUSDT'
       const limit = parseInt(searchParams.get('limit') || '20')
       
-      console.log(`Generating simulated order book data for ${symbol}`)
-      
       // 기본 가격 설정
       const basePrices: Record<string, number> = {
         'BTCUSDT': 98000,

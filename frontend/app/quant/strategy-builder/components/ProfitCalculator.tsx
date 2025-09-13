@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiAlertCircle, FiInfo } from 'react-icons/fi'
 import { FaCalculator } from 'react-icons/fa'
 

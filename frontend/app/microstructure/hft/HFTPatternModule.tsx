@@ -290,8 +290,7 @@ export default function HFTPatternModule() {
     // 새 코인 설정
     setSelectedCoin(coin)
   }, [selectedCoin])
-  
-  
+
   // 초기 데이터 로드 및 WebSocket 연결
   useEffect(() => {
     loadInitialData()
@@ -303,8 +302,7 @@ export default function HFTPatternModule() {
       wsManager.current.disconnect(`depth-${selectedCoin}`)
     }
   }, [selectedCoin, loadInitialData, connectWebSocket])
-  
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* 헤더 */}

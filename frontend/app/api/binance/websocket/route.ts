@@ -15,8 +15,6 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       // 실제 환경에서는 WebSocket 연결을 서버에서 관리
       // 여기서는 시뮬레이션 데이터를 스트리밍
-      console.log(`[SSE] 스트림 시작: ${stream}`)
-      
       // 초기 연결 메시지
       controller.enqueue(
         encoder.encode(`data: ${JSON.stringify({ type: 'connected', stream })}\n\n`)

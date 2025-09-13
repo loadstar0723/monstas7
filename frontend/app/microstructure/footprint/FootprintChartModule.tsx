@@ -167,7 +167,6 @@ export default function FootprintChartModule() {
   
   // 시뮬레이션 모드 시작 함수 - 실제 과거 거래 데이터 사용
   const startSimulationMode = useCallback(async () => {
-    console.log('[시뮬레이션] 모드 시작 - 과거 거래 데이터 로드')
     setIsSimulationMode(true)
     
     // 기존 시뮬레이션 정리
@@ -184,16 +183,13 @@ export default function FootprintChartModule() {
         const data = await response.json()
         if (data && data.length > 0) {
           trades = data
-          console.log(`[시뮬레이션] ${trades.length}개 실제 거래 데이터 로드 완료`)
-        }
+          }
       }
     } catch (error) {
-      console.warn('[시뮬레이션] API 호출 실패, 샘플 데이터 사용:', error)
-    }
+      }
     
     // API 실패 시 샘플 데이터 생성
     if (trades.length === 0) {
-      console.log('[시뮬레이션] 샘플 데이터로 시뮬레이션 시작')
       const basePrice = marketMetrics.price || 98000
       // 샘플 거래 데이터 생성
       for (let i = 0; i < 50; i++) {
@@ -224,14 +220,12 @@ export default function FootprintChartModule() {
       tradeIndex = (tradeIndex + 1) % trades.length
     }, 1000) // 1초마다 재생
     
-    console.log('[시뮬레이션] 모드 시작 성공')
-  }, [selectedSymbol, marketMetrics.price, processTradeData])
+    }, [selectedSymbol, marketMetrics.price, processTradeData])
 
   // SSE 연결 (WebSocket 대체)
   const connectSSE = useCallback(() => {
     // 기존 SSE 연결 정리
     if (sseRef.current) {
-      console.log('[SSE] 기존 연결 종료')
       sseRef.current.close()
       sseRef.current = null
     }
@@ -239,12 +233,9 @@ export default function FootprintChartModule() {
     try {
       const symbol = selectedSymbol.toLowerCase()
       const sseUrl = `/api/binance/websocket?stream=${symbol}@aggTrade`
-      console.log(`[SSE] 연결 시도: ${sseUrl}`)
-      
       sseRef.current = new EventSource(sseUrl)
       
       sseRef.current.onopen = () => {
-        console.log('[SSE] 연결 성공:', selectedSymbol)
         setIsConnected(true)
         reconnectAttemptsRef.current = 0
       }
@@ -254,8 +245,7 @@ export default function FootprintChartModule() {
           const data = JSON.parse(event.data)
           
           if (data.type === 'connected') {
-            console.log('[SSE] 스트림 연결됨:', data.stream)
-          } else {
+            } else {
             processTradeData(data)
           }
         } catch (error) {
@@ -264,11 +254,9 @@ export default function FootprintChartModule() {
       }
       
       sseRef.current.onerror = (error) => {
-        console.warn('[SSE] 연결 오류 - 시뮬레이션 모드로 전환')
         setIsConnected(false)
         
         if (reconnectAttemptsRef.current === 0) {
-          console.log('[SSE] 연결 실패 - 시뮬레이션 모드 활성화')
           reconnectAttemptsRef.current = 5
           startSimulationMode()
         }
@@ -287,7 +275,6 @@ export default function FootprintChartModule() {
     // 기존 연결이 열려있거나 연결 중인 경우 정리
     if (wsRef.current) {
       if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
-        console.log('[WebSocket] 기존 연결 종료')
         wsRef.current.close(1000)
         wsRef.current = null
       }
@@ -296,12 +283,9 @@ export default function FootprintChartModule() {
     try {
       const symbol = selectedSymbol.toLowerCase()
       const wsUrl = `wss://stream.binance.com:9443/ws/${symbol}@aggTrade`
-      console.log(`[WebSocket] 연결 시도: ${wsUrl}`)
-      
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
-        console.log('[WebSocket] 연결 성공:', selectedSymbol)
         setIsConnected(true)
         reconnectAttemptsRef.current = 0
       }
@@ -316,22 +300,16 @@ export default function FootprintChartModule() {
       }
       
       wsRef.current.onerror = (error) => {
-        console.warn('[WebSocket] 연결 오류 발생 - 시뮬레이션 모드로 전환')
         setIsConnected(false)
         
         // CORS나 네트워크 오류로 즉시 실패한 경우 빠르게 시뮬레이션 모드로 전환
         if (reconnectAttemptsRef.current === 0) {
-          console.log('[WebSocket] 로컬 환경에서 Binance WebSocket 직접 연결 불가 - 시뮬레이션 모드 활성화')
           reconnectAttemptsRef.current = 5 // 재시도 건너뛰기
           startSimulationMode()
         }
       }
       
       wsRef.current.onclose = (event) => {
-        console.log('[WebSocket] 연결 종료')
-        console.log('종료 코드:', event.code)
-        console.log('종료 이유:', event.reason || 'unknown')
-        console.log('정상 종료:', event.wasClean)
         setIsConnected(false)
         
         // 정상 종료가 아닌 경우에만 재연결
@@ -356,13 +334,11 @@ export default function FootprintChartModule() {
       reconnectAttemptsRef.current += 1
       const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
       
-      console.log(`[WebSocket] ${delay}ms 후 재연결 시도 예정 (${reconnectAttemptsRef.current}/5)`)
+      `)
       reconnectTimeoutRef.current = setTimeout(() => {
-        console.log(`[WebSocket] 재연결 시도 ${reconnectAttemptsRef.current}/5`)
         connectWebSocket()
       }, delay)
     } else {
-      console.log('[WebSocket] 재연결 시도 초과, 시뮬레이션 모드 활성화')
       startSimulationMode()
     }
   }, [connectWebSocket, startSimulationMode])
@@ -384,8 +360,6 @@ export default function FootprintChartModule() {
     try {
       // 현재 가격 가져오기
       currentPrice = await fetchInitialPrice(selectedSymbol)
-      console.log(`[풋프린트] ${selectedSymbol} 초기 가격:`, currentPrice)
-      
       // 시장 메트릭 업데이트
       setMarketMetrics(prev => ({
         ...prev,
@@ -398,8 +372,6 @@ export default function FootprintChartModule() {
         if (response.ok) {
           const result = await response.json()
           const klines = result.data || result.klines || [] // API 응답 구조에 맞게 수정
-          console.log(`[풋프린트] ${selectedSymbol} 캔들 데이터 수신:`, klines.length)
-          
           // 캔들 데이터를 풋프린트 데이터로 변환 (최근 50개만 실시간처럼 처리)
           const recentKlines = Array.isArray(klines) ? klines.slice(-50) : [] // 배열 확인 후 처리
           recentKlines.forEach((kline: any) => {
@@ -463,15 +435,11 @@ export default function FootprintChartModule() {
     
     // 초기 풋프린트 데이터 설정 (실제 과거 데이터 사용)
     const price = currentPrice || marketMetrics.price || getDefaultPrice(selectedSymbol)
-    console.log(`[풋프린트] 과거 데이터 로드 중... 기준 가격:`, price)
-    
     const historicalData = await generateSampleFootprintData(selectedSymbol, price)
-    console.log(`[풋프린트] 과거 풋프린트 데이터 로드 완료:`, historicalData.length)
     setFootprintData(historicalData)
     
     // 초기 마켓 프로파일 생성 (실제 오더북 데이터 사용)
     const realProfile = await generateSampleMarketProfile(price, selectedSymbol)
-    console.log(`[풋프린트] 실제 마켓 프로파일 로드 완료:`, realProfile.length)
     setMarketProfile(realProfile)
     
     setIsLoading(false)
@@ -481,13 +449,11 @@ export default function FootprintChartModule() {
   useEffect(() => {
     // 기존 연결 정리
     if (wsRef.current) {
-      console.log(`[WebSocket] ${selectedSymbol}로 전환 - 기존 연결 종료`)
       wsRef.current.close(1000) // 정상 종료
       wsRef.current = null
     }
     
     if (sseRef.current) {
-      console.log(`[SSE] ${selectedSymbol}로 전환 - 기존 연결 종료`)
       sseRef.current.close()
       sseRef.current = null
     }
@@ -514,7 +480,6 @@ export default function FootprintChartModule() {
     
     // SSE 연결 시도 (약간의 지연 후) - WebSocket 대신 SSE 사용
     const connectTimeout = setTimeout(() => {
-      console.log(`[SSE] ${selectedSymbol} 연결 시작`)
       connectSSE() // WebSocket 대신 SSE 사용
     }, 500)
     

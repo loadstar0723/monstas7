@@ -122,7 +122,7 @@ export default function CommandPalette() {
       title: '새 시그널 생성',
       description: '시그널 만들기',
       icon: FaRocket,
-      action: () => console.log('Create signal'),
+      action: () => ,
       category: '액션',
       shortcut: '⌘+N',
       keywords: ['new', 'create', '생성', '만들기']
@@ -141,7 +141,7 @@ export default function CommandPalette() {
       id: 'action-logout',
       title: '로그아웃',
       icon: FaSignOutAlt,
-      action: () => console.log('Logout'),
+      action: () => ,
       category: '설정',
       keywords: ['logout', 'signout', '로그아웃']
     }

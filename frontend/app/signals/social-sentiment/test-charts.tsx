@@ -29,8 +29,7 @@ export default function TestCharts() {
     ]
     setPieData(testPieData)
 
-    console.log('Test data generated:', { lineData: testLineData, pieData: testPieData })
-  }, [])
+    }, [])
 
   return (
     <div className="p-8 space-y-8">

@@ -3,7 +3,6 @@
  * CoinGecko Pro를 메인으로, Binance WebSocket을 실시간용으로 사용
  */
 
-import { apiRateLimiter } from '@/lib/apiRateLimiter'
 
 interface MarketDataProvider {
   getPrice(symbol: string): Promise<number>

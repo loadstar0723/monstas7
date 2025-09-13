@@ -73,7 +73,6 @@ export default function BacktestResults({
         setError(null)
       } catch (apiError) {
         // API 오류 시 기본값 사용
-        console.warn('백테스트 API 호출 실패, 기본값 사용:', apiError)
         if (!stats) {
           // 초기 데이터도 없고 API도 실패한 경우만 오류 표시
           setError('백테스트 데이터를 불러올 수 없습니다.')

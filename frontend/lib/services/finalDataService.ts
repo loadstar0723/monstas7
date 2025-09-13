@@ -90,7 +90,6 @@ export class BinanceRealtimeService {
     
     // 브라우저 환경에서만 WebSocket 연결
     if (typeof window === 'undefined') {
-      console.log('Server-side rendering, skipping WebSocket connection')
       return
     }
     
@@ -121,12 +120,10 @@ export class BinanceRealtimeService {
     }
     
     ws.onerror = (error) => {
-      console.warn(`WebSocket connection issue for ${stream}, will retry in 5s`)
       // 에러 발생 시 재연결 시도
       setTimeout(() => {
         this.connections.delete(stream)
         if (this.subscribers.get(stream)?.size > 0) {
-          console.log(`Reconnecting WebSocket for ${stream}...`)
           this.connect(stream)
         }
       }, 5000)
@@ -174,7 +171,6 @@ export class CryptoCompareService {
     if (cached) return cached as any[]
     
     if (this.callCount >= this.monthlyLimit) {
-      console.warn('CryptoCompare 월 한도 도달')
       return []
     }
     
@@ -208,7 +204,6 @@ export class CryptoCompareService {
     if (cached) return cached
     
     if (this.callCount >= this.monthlyLimit) {
-      console.warn('CryptoCompare 월 한도 도달')
       return null
     }
     
@@ -256,7 +251,6 @@ export class CryptoCompareService {
     this.wsConnection = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${apiKey}`)
     
     this.wsConnection.onopen = () => {
-      console.log('CryptoCompare WebSocket 연결됨')
       // 구독 메시지 전송
       this.wsConnection!.send(JSON.stringify({
         action: 'SubAdd',
@@ -286,7 +280,6 @@ export class CryptoCompareService {
     }
     
     this.wsConnection.onclose = () => {
-      console.log('CryptoCompare WebSocket 연결 종료')
       this.wsConnection = null
       // 5초 후 재연결
       setTimeout(() => this.connectWebSocket(symbols), 5000)
@@ -308,7 +301,6 @@ export class CryptoCompareService {
     if (cached) return cached
     
     if (this.callCount >= this.monthlyLimit) {
-      console.warn('CryptoCompare 월 한도 도달')
       return {}
     }
     
@@ -372,8 +364,7 @@ export class FinalDataService {
       // Binance 보조 (폴백용)
       this.binance.subscribe(symbol, (binanceData) => {
         // CryptoCompare가 실패할 경우를 대비한 폴백
-        console.log('Binance 보조 데이터:', binanceData)
-      })
+        })
     } else {
       // 폴백: Binance만 사용
       this.binance.subscribe(symbol, callback)
@@ -455,8 +446,7 @@ export const dataService = new FinalDataService()
  * 
  * // 1. 실시간 가격 (CryptoCompare WebSocket 메인 + Binance 보조)
  * dataService.subscribeToPrice('BTCUSDT', (data) => {
- *   console.log('가격:', data.price)
- *   console.log('소스:', data.source) // 'CryptoCompare' or 'Binance'
+ *   *   // 'CryptoCompare' or 'Binance'
  * })
  * 
  * // 2. 뉴스 (CryptoCompare - 캐싱 1시간)
@@ -470,5 +460,4 @@ export const dataService = new FinalDataService()
  * 
  * // 5. 사용량 확인
  * const stats = dataService.getStats()
- * console.log('CryptoCompare 남은 호출:', stats.cryptoCompare.remaining)
- */
+ * */

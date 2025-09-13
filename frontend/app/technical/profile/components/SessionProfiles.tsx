@@ -1,13 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
 import { 
   FaClock, FaGlobeAsia, FaGlobeEurope, FaGlobeAmericas,
   FaChartArea, FaInfoCircle, FaExchangeAlt, FaTachometerAlt
 } from 'react-icons/fa'
 import { formatPrice, formatVolume, formatPercentage } from '@/lib/formatters'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell, BarChart, Bar } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell, BarChart, Bar } from 'recharts'
 
 interface SessionData {
   id: string
@@ -34,16 +33,9 @@ export default function SessionProfiles({ priceHistory, currentPrice, volumeProf
   const [selectedSession, setSelectedSession] = useState<string>('asia')
   const [compareMode, setCompareMode] = useState(false)
   
-  console.log('SessionProfiles props:', { 
-    priceHistory: priceHistory?.length || 0, 
-    currentPrice,
-    volumeProfileData: volumeProfileData ? 'exists' : 'null'
-  })
-  
   // 세션별 데이터 분석
   const sessionAnalysis = useMemo(() => {
     if (!priceHistory || priceHistory.length === 0) {
-      console.log('SessionProfiles: No priceHistory data available')
       return {
         asia: null,
         europe: null,

@@ -361,8 +361,7 @@ const TradingGuide: React.FC<TradingGuideProps> = ({
         }
       } else {
         // API 실패 시 로컬 업데이트로 폴백
-        console.log('진도 업데이트 API 실패, 로컬 업데이트로 폴백')
-      }
+        }
     } catch (error) {
       console.error('단계 완료 실패:', error)
       // 에러 시 로얻 업데이트

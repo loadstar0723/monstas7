@@ -38,8 +38,6 @@ export async function POST(request: NextRequest) {
       text: convertHtmlToText(htmlContent), // 텍스트 버전
     })
 
-    console.log('이메일 발송 성공:', info.messageId)
-
     return NextResponse.json({
       success: true,
       messageId: info.messageId,

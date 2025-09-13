@@ -154,7 +154,6 @@ export default function SweepDetectionModule() {
       wsRef.current = new WebSocket(wsUrl)
       
       wsRef.current.onopen = () => {
-        console.log('WebSocket 연결 성공:', symbol)
         setIsConnected(true)
         reconnectAttemptsRef.current = 0
       }
@@ -181,7 +180,6 @@ export default function SweepDetectionModule() {
       }
       
       wsRef.current.onclose = () => {
-        console.log('WebSocket 연결 종료')
         setIsConnected(false)
         handleReconnect(symbol)
       }
@@ -196,8 +194,6 @@ export default function SweepDetectionModule() {
     if (reconnectAttemptsRef.current < 5) {
       reconnectAttemptsRef.current++
       const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
-      
-      console.log(`재연결 시도 ${reconnectAttemptsRef.current}/5, ${delay}ms 후 재시도`)
       
       reconnectTimeoutRef.current = setTimeout(() => {
         connectWebSocket(symbol)

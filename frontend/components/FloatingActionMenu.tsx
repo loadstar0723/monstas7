@@ -49,8 +49,7 @@ export default function FloatingActionMenu() {
       icon: FaBell,
       label: '알림',
       color: 'from-red-500 to-red-600',
-      action: () => console.log('Notifications')
-    },
+      action: () => },
     {
       icon: FaCog,
       label: '설정',

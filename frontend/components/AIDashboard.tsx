@@ -41,8 +41,7 @@ export default function AIDashboard() {
       setWsData(data)
       if (data.type === 'ai_signal') {
         // 새로운 AI 시그널 받음
-        console.log('New AI Signal:', data)
-      }
+        }
     })
 
     return () => {
@@ -59,7 +58,6 @@ export default function AIDashboard() {
       const result = await apiClient.getBatchPredictions(symbols) as { predictions: Prediction[] }
       setPredictions(result.predictions)
     } catch (error) {
-      console.warn('AI 예측 API 연결 실패, 기본 데이터 사용:', error)
       // 기본 예측 데이터 설정
       setPredictions([
         { symbol: 'BTC', prediction: 'BUY', confidence: config.decimals.value7, timeframe: '24h', target_price: 45000, stop_loss: 42000, models_agree: 8, timestamp: new Date().toISOString() },
@@ -77,7 +75,6 @@ export default function AIDashboard() {
       const analysis = await apiClient.getMarketAnalysis(symbol) as MarketAnalysis
       setMarketAnalysis(analysis)
     } catch (error) {
-      console.warn('시장 분석 API 연결 실패:', error)
       // 기본 분석 데이터는 null로 유지
     }
   }

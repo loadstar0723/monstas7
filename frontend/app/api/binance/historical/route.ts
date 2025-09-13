@@ -45,8 +45,6 @@ export async function GET(request: Request) {
   const symbol = searchParams.get('symbol') || 'BTCUSDT'
   const timeframe = searchParams.get('timeframe') || '1h'
   
-  console.log(`[Historical API] Request: symbol=${symbol}, timeframe=${timeframe}`)
-  
   try {
     // 단순화: 하나의 시간대 데이터만 가져오기
     let interval = '1h'
@@ -83,11 +81,7 @@ export async function GET(request: Request) {
         break
     }
     
-    console.log(`[Historical API] Fetching: interval=${interval}, limit=${limit}`)
-    
     const historicalData = await fetchHistoricalData(symbol, interval, limit)
-    
-    console.log(`[Historical API] Retrieved ${historicalData.length} data points`)
     
     // 현재 가격 정보 가져오기 (단순화)
     let currentPrice = 0

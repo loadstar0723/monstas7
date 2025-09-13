@@ -121,7 +121,6 @@ export function useCVDWebSocket(symbol: string) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log(`CVD WebSocket connected for ${symbol}`);
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
@@ -170,7 +169,6 @@ export function useCVDWebSocket(symbol: string) {
       };
 
       ws.onclose = () => {
-        console.log('CVD WebSocket closed');
         setIsConnected(false);
         
         // Clear aggregation interval
@@ -183,7 +181,7 @@ export function useCVDWebSocket(symbol: string) {
         if (wsRef.current === ws && reconnectAttempts.current < 5) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-          console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current})`);
+          `);
           
           reconnectTimeout.current = setTimeout(() => {
             connect();
@@ -271,7 +269,6 @@ export function useCVDWebSocket(symbol: string) {
         eventSource = new EventSource(`/api/binance/stream?symbol=${symbol}`);
         
         eventSource.onopen = () => {
-          console.log(`CVD stream connected for ${symbol}`);
           setIsConnected(true);
           setError(null);
           reconnectAttempts.current = 0;
@@ -391,7 +388,7 @@ export function useCVDWebSocket(symbol: string) {
           if (reconnectAttempts.current < 5) {
             reconnectAttempts.current++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-            console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current})`);
+            `);
             
             eventSource?.close();
             reconnectTimeout.current = setTimeout(connectToSymbol, delay);

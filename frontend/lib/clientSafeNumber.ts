@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
     try {
       // null/undefined 체크
       if (this == null || this == undefined) {
-        console.warn('[SafeNumber] toFixed called on null/undefined:', new Error().stack);
+        .stack);
         return '0';
       }
       
@@ -22,13 +22,11 @@ if (typeof window !== 'undefined') {
       
       // NaN 체크
       if (isNaN(num)) {
-        console.warn('[SafeNumber] toFixed called on NaN:', this);
         return '0';
       }
       
       // Infinity 체크
       if (!isFinite(num)) {
-        console.warn('[SafeNumber] toFixed called on Infinity:', this);
         return '0';
       }
       
@@ -55,5 +53,4 @@ if (typeof window !== 'undefined') {
     return num.toFixed(decimals);
   };
   
-  console.log('[SafeNumber] Client-side number safety initialized');
-}
+  }

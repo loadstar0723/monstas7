@@ -8,8 +8,6 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol') || 'BTCUSDT'
     const limit = searchParams.get('limit') || '20'
     
-    console.log(`Fetching orderbook for ${symbol} with limit ${limit}`)
-    
     // Binance 오더북 API
     const response = await fetch(
       `${BINANCE_API_BASE}/api/v3/depth?symbol=${symbol}&limit=${limit}`,

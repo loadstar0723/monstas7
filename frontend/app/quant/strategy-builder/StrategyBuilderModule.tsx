@@ -9,9 +9,7 @@ import {
   FaBook, FaBrain, FaShieldAlt, FaCalculator, FaBriefcase,
   FaBell, FaLightbulb, FaCogs, FaRocket
 } from 'react-icons/fa'
-import { ModuleWebSocket, safeApiCall, ModulePerformance } from '@/lib/moduleUtils'
-import { BINANCE_CONFIG, binanceAPI } from '@/lib/binanceConfig'
-import { config } from '@/lib/config'
+import { ModulePerformance } from '@/lib/moduleUtils'
 import dynamic from 'next/dynamic'
 
 // 동적 임포트로 성능 최적화
@@ -137,7 +135,6 @@ export default function StrategyBuilderModule() {
     
     // 기존 연결 완전 종료
     if (wsRef.current) {
-      console.log(`기존 WebSocket 연결 종료`)
       wsRef.current.close(1000, 'Switching symbol')
       wsRef.current = null
     }
@@ -147,8 +144,6 @@ export default function StrategyBuilderModule() {
       if (!isActive) return // 이미 cleanup된 경우 중단
       
       const wsUrl = `wss://stream.binance.com:9443/ws/${selectedCoin.toLowerCase()}@ticker`
-      console.log(`새 WebSocket 연결 시도: ${selectedCoin}`)
-      
       try {
         const ws = new WebSocket(wsUrl)
         
@@ -163,7 +158,6 @@ export default function StrategyBuilderModule() {
         
         ws.onopen = () => {
           clearTimeout(connectionTimeout)
-          console.log(`WebSocket 연결 성공: ${selectedCoin}`)
           setError(null)
         }
         
@@ -175,7 +169,6 @@ export default function StrategyBuilderModule() {
             
             // 데이터 유효성 검사
             if (!data || !data.s || !data.c) {
-              console.warn('Invalid WebSocket data:', data)
               return
             }
             
@@ -191,7 +184,6 @@ export default function StrategyBuilderModule() {
               })
               setError(null) // 성공시 에러 해제
             } else {
-              console.warn(`심볼 불일치 - 받은: ${data.s}, 기대: ${selectedCoin}`)
               // 잘못된 심볼 데이터를 받으면 연결 재시작
               ws.close(1000, 'Wrong symbol')
             }
@@ -224,14 +216,13 @@ export default function StrategyBuilderModule() {
         
         ws.onclose = (event) => {
           clearTimeout(connectionTimeout)
-          console.log(`WebSocket 연결 종료: ${selectedCoin} (코드: ${event.code})`)
+          `)
           wsRef.current = null
           
           // 비정상 종료 시 재연결 시도
           if (event.code !== 1000 && event.code !== 1001 && isActive) {
             setTimeout(() => {
               if (isActive) {
-                console.log(`WebSocket 재연결 시도: ${selectedCoin}`)
                 // 재귀 호출 대신 플래그로 제어
               }
             }, 3000)
@@ -265,7 +256,6 @@ export default function StrategyBuilderModule() {
       isActive = false
       clearTimeout(connectionTimer)
       if (wsRef.current) {
-        console.log(`Cleanup - WebSocket 종료: ${selectedCoin}`)
         wsRef.current.close(1000, 'Component unmount or symbol change')
         wsRef.current = null
       }
@@ -533,7 +523,6 @@ export default function StrategyBuilderModule() {
           </div>
           <TemplateLibrary 
             onSelectTemplate={(template) => {
-              console.log('Template selected:', template)
               // 템플릿 선택 시 처리 로직
             }} 
           />

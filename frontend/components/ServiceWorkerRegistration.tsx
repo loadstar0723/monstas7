@@ -9,8 +9,6 @@ export default function ServiceWorkerRegistration() {
         navigator.serviceWorker
           .register('/sw.js')
           .then((registration) => {
-            console.log('서비스 워커 등록 성공:', registration.scope)
-
             // 업데이트 체크
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing

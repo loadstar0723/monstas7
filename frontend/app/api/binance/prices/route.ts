@@ -30,11 +30,8 @@ export async function GET(request: NextRequest) {
       try {
         symbols = JSON.parse(symbolsParam)
       } catch (e) {
-        console.log('Failed to parse symbols, using defaults')
-      }
+        }
     }
-    
-    console.log('Fetching prices for symbols:', symbols)
     
     // Binance API에서 24시간 티커 정보 가져오기 (가격 + 변동률 포함)
     const response = await fetch('https://api.binance.com/api/v3/ticker/24hr')
@@ -59,7 +56,6 @@ export async function GET(request: NextRequest) {
       volume: item.volume
     }))
     
-    console.log('Returning prices:', prices.length, 'items')
     return NextResponse.json(prices, { headers })
   } catch (error: any) {
     console.error('Binance API error:', error.message || error)
@@ -76,8 +72,7 @@ export async function GET(request: NextRequest) {
         try {
           symbols = JSON.parse(symbolsParam)
         } catch (e) {
-          console.log('Failed to parse symbols, using defaults')
-        }
+          }
       }
       
       // 기본 가격 데이터
@@ -108,7 +103,6 @@ export async function GET(request: NextRequest) {
         }
       })
       
-      console.log('Returning simulated prices for development')
       return NextResponse.json(simulatedPrices, { headers })
     }
     

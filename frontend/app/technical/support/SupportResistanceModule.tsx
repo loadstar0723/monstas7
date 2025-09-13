@@ -96,8 +96,7 @@ export default function SupportResistanceModule() {
           const volumeValue = parseFloat(ticker.quoteVolume || ticker.volume || '0')
           setVolume24h(volumeValue > 1000000 ? volumeValue / 1000000 : volumeValue) // M 단위로 변환
           setCurrentPrice(parseFloat(ticker.lastPrice || ticker.price || '0'))
-          console.log('Ticker loaded:', ticker, 'Volume:', volumeValue)
-        } else {
+          } else {
           // 폴백: 기본값 설정
           const defaultPrice = TRACKED_SYMBOLS.find(s => s.symbol === symbol)?.initialPrice || 100000
           setCurrentPrice(defaultPrice)
@@ -105,7 +104,6 @@ export default function SupportResistanceModule() {
           setVolume24h(2500)
         }
       } catch (error) {
-        console.log('Ticker fetch error:', error)
         // 에러 시 기본값
         const defaultPrice = TRACKED_SYMBOLS.find(s => s.symbol === symbol)?.initialPrice || 100000
         setCurrentPrice(defaultPrice)
@@ -142,8 +140,7 @@ export default function SupportResistanceModule() {
         } catch (error) {
           console.error('CORS proxy error:', error)
           // 빈 데이터 대신 최소한의 실시간 데이터라도 유지
-          console.log('Using WebSocket data only')
-        }
+          }
       } else {
         const data = await response.json()
         
@@ -157,9 +154,7 @@ export default function SupportResistanceModule() {
             volume: candle.volume
           }))
           
-          console.log('Processed candles:', processedData.slice(0, 5))
-          console.log('First candle:', processedData[0])
-          
+          )
           setCandles(processedData)
           setPriceHistory(processedData.map((d: any) => d.close))
           
@@ -187,11 +182,9 @@ export default function SupportResistanceModule() {
 
       // Binance WebSocket 연결 - 단일 스트림으로 시작
       const streamUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_1m`
-      console.log('Connecting to WebSocket:', streamUrl)
       const ws = new WebSocket(streamUrl)
 
       ws.onopen = () => {
-        console.log('WebSocket connected for S/R analysis:', symbol)
         setIsConnected(true)
       }
 
@@ -244,12 +237,11 @@ export default function SupportResistanceModule() {
       }
 
       ws.onerror = (error) => {
-        console.log('WebSocket error (normal during connection):', error.type || 'Connection error')
+        :', error.type || 'Connection error')
         setIsConnected(false)
       }
 
       ws.onclose = () => {
-        console.log('WebSocket disconnected')
         setIsConnected(false)
         
         // 자동 재연결

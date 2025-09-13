@@ -24,7 +24,6 @@ class BinanceWebSocketManager {
       this.ws = new WebSocket(wsUrl)
       
       this.ws.onopen = () => {
-        console.log('Binance WebSocket 연결됨')
         this.reconnectAttempts = 0
         
         // 구독 재설정
@@ -75,7 +74,6 @@ class BinanceWebSocketManager {
       }
       
       this.ws.onclose = () => {
-        console.log('WebSocket 연결 종료')
         this.attemptReconnect()
       }
     } catch (error) {
@@ -88,7 +86,6 @@ class BinanceWebSocketManager {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
       this.reconnectTimer = setTimeout(() => {
-        console.log(`재연결 시도 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`)
         this.connect()
       }, 3000 * this.reconnectAttempts)
     }

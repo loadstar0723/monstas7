@@ -914,7 +914,6 @@ export default function SidebarNew() {
               </div>
             )}
 
-
             {/* 헤더 접기/펼치기 버튼 */}
             {!isCollapsed && (
               <button

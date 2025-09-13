@@ -65,9 +65,7 @@ export default function PWAInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      console.log('PWA 설치 승인')
-    } else {
-      console.log('PWA 설치 거절')
+      } else {
       localStorage.setItem('pwa_install_dismissed', Date.now().toString())
     }
 

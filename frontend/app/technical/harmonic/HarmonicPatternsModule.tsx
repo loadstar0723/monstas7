@@ -89,8 +89,7 @@ export default function HarmonicPatternsModule() {
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`)
     
     ws.onopen = () => {
-      console.log(`WebSocket connected for ${symbol}`)
-    }
+      }
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -104,7 +103,6 @@ export default function HarmonicPatternsModule() {
     }
     
     ws.onclose = () => {
-      console.log('WebSocket disconnected')
       // 재연결 로직
       setTimeout(() => {
         if (wsRef.current === ws) {
@@ -167,13 +165,9 @@ export default function HarmonicPatternsModule() {
       setHistoricalData(formattedData)
       
       // 패턴 감지
-      console.log('Detecting patterns for', formattedData.length, 'data points')
       const patterns = HP.detectHarmonicPatterns(formattedData)
-      console.log('Detected patterns:', patterns.length)
-      
       // 패턴이 없으면 샘플 패턴 생성
       if (patterns.length === 0) {
-        console.log('No patterns found, generating sample patterns')
         const samplePatterns = HP.generateSamplePatterns(formattedData)
         setDetectedPatterns(samplePatterns)
         if (samplePatterns.length > 0) {

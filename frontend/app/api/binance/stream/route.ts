@@ -20,8 +20,7 @@ export async function GET(request: NextRequest) {
         ws = new WebSocketLib(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@aggTrade`);
         
         ws.on('open', () => {
-          console.log(`Binance WebSocket connected for ${symbol}`);
-        });
+          });
         
         ws.on('message', (data: any) => {
           try {
@@ -40,7 +39,6 @@ export async function GET(request: NextRequest) {
         });
         
         ws.on('close', () => {
-          console.log('WebSocket closed');
           if (intervalId) clearInterval(intervalId);
           controller.close();
         });

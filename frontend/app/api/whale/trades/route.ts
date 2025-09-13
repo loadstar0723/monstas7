@@ -31,7 +31,6 @@ class BinanceWhaleTracker {
       this.ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${symbols}`);
 
       this.ws.onopen = () => {
-        console.log('Binance WebSocket connected for whale tracking');
         this.reconnectAttempts = 0;
       };
 
@@ -51,7 +50,6 @@ class BinanceWhaleTracker {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket disconnected');
         this.handleReconnect();
       };
     } catch (error) {
@@ -62,7 +60,6 @@ class BinanceWhaleTracker {
   private handleReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
       setTimeout(() => this.initializeWebSocket(), 3000);
     }
   }

@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { FaArrowUp, FaArrowDown, FaInfoCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
-import { BINANCE_CONFIG } from '@/lib/binanceConfig'
 
 interface CoinInfo {
   symbol: string
@@ -61,7 +60,6 @@ export default function CoinSelector({ coins, selectedCoin, onSelectCoin }: Prop
           setLoading(false)
           return
         }
-        console.warn('예상치 못한 데이터 형식, 빈 배열로 처리')
         setLoading(false)
         return
       }

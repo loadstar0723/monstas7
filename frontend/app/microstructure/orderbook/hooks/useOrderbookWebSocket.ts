@@ -123,8 +123,6 @@ export function useOrderbookWebSocket(symbol: string, depth: number = 20) {
       wsRef.current = ws
       
       ws.onopen = () => {
-        console.log(`Orderbook WebSocket connected successfully for ${symbol}`)
-        console.log('WebSocket URL:', wsUrl)
         setIsConnected(true)
         reconnectCountRef.current = 0
         // 연결 후 스냅샷 가져오기
@@ -166,15 +164,13 @@ export function useOrderbookWebSocket(symbol: string, depth: number = 20) {
       }
       
       ws.onclose = (event: CloseEvent) => {
-        console.log(`Orderbook WebSocket closed - Code: ${event.code}, Reason: ${event.reason}`)
-        console.log('Clean close:', event.wasClean)
         setIsConnected(false)
         wsRef.current = null
         
         // 재연결 로직 (정상 종료가 아닌 경우에만)
         if (!event.wasClean && reconnectCountRef.current < 5) {
           const timeout = Math.min(1000 * Math.pow(2, reconnectCountRef.current), 30000)
-          console.log(`Reconnecting in ${timeout}ms... (attempt ${reconnectCountRef.current + 1}/5)`)
+          `)
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectCountRef.current++
             connect()

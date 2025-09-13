@@ -100,7 +100,6 @@ class WebSocketOptimizer {
     }
 
     ws.onopen = () => {
-      console.log(`WebSocket 연결됨: ${streamName}`)
       connection.reconnectAttempts = 0
       connection.lastHeartbeat = Date.now()
     }
@@ -123,22 +122,21 @@ class WebSocketOptimizer {
       // WebSocket 에러는 주로 연결 종료 시 발생하므로 warn 레벨로 로깅
       if (ws.readyState === WebSocket.CLOSED) {
         // 정상적인 종료 과정에서의 에러는 디버그 레벨로
-        console.debug(`WebSocket 연결 종료됨 (${streamName})`)
+        `)
       } else if (ws.readyState === WebSocket.CLOSING) {
-        console.debug(`WebSocket 연결 종료 중 (${streamName})`)
+        `)
       } else {
         // 실제 연결 문제인 경우만 경고로 표시
-        console.warn(`WebSocket 연결 문제 (${streamName}): 재연결 시도 중...`)
+        : 재연결 시도 중...`)
         
         // 재연결 시도 정보 추가
         if (connection.reconnectAttempts > 0) {
-          console.info(`→ 재연결 시도: ${connection.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS}`)
-        }
+          }
       }
     }
 
     ws.onclose = (event) => {
-      console.log(`WebSocket 연결 종료 (${streamName}):`, event.code, event.reason)
+      :`, event.code, event.reason)
       
       // 정상 종료가 아니고 재연결 시도가 남아있으면 재연결
       if (event.code !== 1000 && connection.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
@@ -159,8 +157,6 @@ class WebSocketOptimizer {
     if (!connection) return
 
     connection.reconnectAttempts++
-    console.log(`재연결 시도 ${connection.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS}: ${streamName}`)
-
     // 기존 WebSocket 정리
     if (connection.ws) {
       connection.ws.close()
@@ -179,7 +175,6 @@ class WebSocketOptimizer {
 
       const now = Date.now()
       if (now - connection.lastHeartbeat > this.HEARTBEAT_INTERVAL * 2) {
-        console.warn(`하트비트 타임아웃: ${streamName}`)
         this.reconnect(streamName, 'heartbeat')
       }
     }, this.HEARTBEAT_INTERVAL)
@@ -258,8 +253,7 @@ class WebSocketOptimizer {
     if (connection) {
       connection.ws.close(1000)
       this.connections.delete(streamName)
-      console.log(`WebSocket 연결 해제: ${streamName}`)
-    }
+      }
   }
 
   /**

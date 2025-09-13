@@ -98,7 +98,6 @@ export const findSwingPoints = (
   const points: PricePoint[] = []
   
   if (!data || data.length < lookback * 2 + 1) {
-    console.log('Not enough data for swing points')
     return []
   }
   
@@ -256,20 +255,14 @@ export const detectHarmonicPatterns = (
 ): HarmonicPattern[] => {
   const patterns: HarmonicPattern[] = []
   
-  console.log('[detectHarmonicPatterns] Data length:', data?.length)
-  
   // 데이터가 충분하지 않으면 샘플 패턴 생성
   if (!data || data.length < 50) {  // 100에서 50으로 줄임
-    console.log('[detectHarmonicPatterns] Not enough data, generating sample patterns')
     return generateSamplePatterns(data)
   }
   
   const swingPoints = findSwingPoints(data)
-  console.log('[detectHarmonicPatterns] Swing points found:', swingPoints.length)
-  
   // 최소 5개의 스윙 포인트가 필요
   if (swingPoints.length < 5) {
-    console.log('[detectHarmonicPatterns] Not enough swing points, generating sample patterns')
     // 스윙 포인트가 부족하면 샘플 패턴 반환
     return generateSamplePatterns(data)
   }

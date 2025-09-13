@@ -8,8 +8,6 @@ if (typeof window !== 'undefined') {
   
   window.fetch = async function(...args) {
     const [url, options] = args;
-    console.log('🔍 Fetch 호출:', url);
-    
     try {
       const response = await originalFetch.apply(this, args);
       
@@ -20,8 +18,7 @@ if (typeof window !== 'undefined') {
       const contentType = clonedResponse.headers.get('content-type');
       
       if (!response.ok) {
-        console.warn(`⚠️ HTTP 에러: ${url} - Status: ${response.status}`);
-      }
+        }
       
       // JSON 파싱을 시도하는 경우를 감지하기 위해 json 메서드를 래핑
       const originalJson = response.json.bind(response);
@@ -55,7 +52,6 @@ if (typeof window !== 'undefined') {
     }
   };
   
-  console.log('✅ Fetch 디버깅 활성화됨');
-}
+  }
 
 export {};

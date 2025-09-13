@@ -439,8 +439,7 @@ export default function PortfolioManager({
             if (userId) {
               try {
                 await apiClient.rebalancePortfolio(userId, assets)
-                console.log('리밸런싱 실행 완료')
-              } catch (err) {
+                } catch (err) {
                 console.error('리밸런싱 실패:', err)
               }
             }

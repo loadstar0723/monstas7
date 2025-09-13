@@ -10,7 +10,7 @@ interface PriceActionProps {
 }
 
 export default function PriceAction({ symbol, currentPrice }: PriceActionProps) {
-  const [priceData, setPriceData] = useState<any[]>([])
+  const [priceData, setPriceData] = useState<{ time: string; price: number; high: number; low: number; volume: number }[]>([])
   const [support, setSupport] = useState(0)
   const [resistance, setResistance] = useState(0)
   const [trend, setTrend] = useState<'up' | 'down' | 'sideways'>('sideways')
@@ -25,7 +25,7 @@ export default function PriceAction({ symbol, currentPrice }: PriceActionProps) 
       const klines = await response.json()
       
       if (Array.isArray(klines)) {
-        const data = klines.map((k: any) => ({
+        const data = klines.map((k: number[]) => ({
           time: new Date(k[0]).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
           price: parseFloat(k[4]),
           high: parseFloat(k[2]),

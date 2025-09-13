@@ -40,19 +40,6 @@ export default function TradingStrategy({
     let newStrategy = { ...strategy }
     
     // 디버깅 로그
-    console.log(`🎯 ${symbol} 트레이딩 전략 분석:`, {
-      symbol,
-      currentPrice,
-      priceChange,
-      stats: {
-        buyCount: stats?.buyCount || 0,
-        sellCount: stats?.sellCount || 0,
-        netFlow: stats?.netFlow || 0,
-        totalWhales: stats?.totalWhales || 0
-      },
-      activeTab
-    })
-    
     // stats가 없거나 초기값인 경우 기본 전략 설정
     if (!stats || (!stats.buyCount && !stats.sellCount && !stats.netFlow)) {
       // 가격 변화 기반 간단한 전략

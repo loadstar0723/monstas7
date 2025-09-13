@@ -190,15 +190,13 @@ export default function WyckoffModule() {
       .then(data => {
         const klineData = data.klines || data.data || []
         if (klineData.length > 0) {
-          console.log('Real data loaded, updating...')
           setHistoricalData(klineData)
           const lastPrice = klineData[klineData.length - 1].close
           setCurrentPrice(lastPrice)
         }
       })
       .catch(error => {
-        console.log('API error, keeping sample data:', error)
-      })
+        })
   }, [generateSampleData, performAnalysis])
   
   // WebSocket 연결
@@ -212,8 +210,7 @@ export default function WyckoffModule() {
     wsRef.current = new WebSocket(wsUrl)
     
     wsRef.current.onopen = () => {
-      console.log('Wyckoff WebSocket connected:', symbol)
-    }
+      }
     
     wsRef.current.onmessage = (event) => {
       const trade = JSON.parse(event.data)
@@ -224,12 +221,10 @@ export default function WyckoffModule() {
     }
     
     wsRef.current.onerror = (error) => {
-      console.log('WebSocket 연결 실패 - 샘플 데이터 사용 중')
-    }
+      }
     
     wsRef.current.onclose = () => {
-      console.log('WebSocket disconnected')
-    }
+      }
   }, [])
   
   // 데이터와 가격이 있을 때 분석 실행 (디바운스 적용)

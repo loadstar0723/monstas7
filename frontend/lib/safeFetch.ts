@@ -10,14 +10,12 @@ export async function safeFetch<T = any>(
     
     // 응답 상태 확인
     if (!response.ok) {
-      console.log(`API 호출 실패: ${url} - Status: ${response.status}`)
       return { data: null, error: new Error(`HTTP ${response.status}`) }
     }
     
     // Content-Type 확인
     const contentType = response.headers.get('content-type')
     if (!contentType || !contentType.includes('application/json')) {
-      console.log(`JSON이 아닌 응답: ${url} - Content-Type: ${contentType}`)
       return { data: null, error: new Error('Invalid response format') }
     }
     
@@ -46,7 +44,6 @@ export async function safeFetchWithDefault<T>(
   const { data, error } = await safeFetch<T>(url, options)
   
   if (error) {
-    console.log(`기본값 사용: ${url}`)
     return defaultValue
   }
   

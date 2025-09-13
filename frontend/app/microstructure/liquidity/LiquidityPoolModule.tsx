@@ -51,7 +51,6 @@ export default function LiquidityPoolModule() {
       // 오더북 데이터
       const orderbookResponse = await fetch(`/api/binance/orderbook?symbol=${selectedCoin}&limit=100`)
       if (!orderbookResponse.ok) {
-        console.warn('오더북 데이터 로드 실패, depth API 사용')
         // Depth API 시도
         const depthResponse = await fetch(`/api/binance/depth?symbol=${selectedCoin}&limit=20`)
         if (depthResponse.ok) {
@@ -78,7 +77,6 @@ export default function LiquidityPoolModule() {
       // 24시간 통계
       const ticker24hrResponse = await fetch(`/api/binance/ticker/24hr?symbol=${selectedCoin}`)
       if (!ticker24hrResponse.ok) {
-        console.warn('티커 데이터 로드 실패, 기본값 사용')
         // 기본값 설정
         setCurrentPrice(98000)
         setVolume24h(1000000)
@@ -177,8 +175,7 @@ export default function LiquidityPoolModule() {
       wsManager.current.disconnect(`ticker-${selectedCoin}`)
     }
   }, [selectedCoin, loadInitialData, connectWebSocket])
-  
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
       {/* 헤더 */}

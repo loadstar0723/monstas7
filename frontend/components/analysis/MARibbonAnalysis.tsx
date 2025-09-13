@@ -374,13 +374,7 @@ export default function MARibbonAnalysis({
     
     // 디버깅 로그 추가
     if (typeof window !== 'undefined') {
-      console.log('MA Ribbon Debug:', {
-        ma5, ma20, ma50, ma200,
-        crossData,
-        hasRelations: crossData?.relations?.length > 0,
-        relationData: crossData?.relations
-      })
-    }
+      }
     
     // 주요 지지/저항 레벨
     const supportResistance = {

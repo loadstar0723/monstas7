@@ -129,7 +129,6 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
             })
             
             if (!response.ok) {
-              console.warn(`Failed to fetch ${symbol}: ${response.status}`)
               return {
                 symbol,
                 price: defaultPrices[symbol]?.price || 0,
@@ -149,8 +148,7 @@ export default function CoinSelector({ symbols, selectedSymbol, onSelectSymbol, 
           } catch (error: any) {
             // 네트워크 오류 등은 경고로만 처리
             if (error?.name !== 'AbortError') {
-              console.warn(`Error fetching ${symbol}:`, error?.message || error)
-            }
+              }
             // 에러 시 기본값 반환
             return {
               symbol,

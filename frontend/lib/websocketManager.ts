@@ -27,10 +27,8 @@ class WebSocketManager {
     const existing = this.connections.get(key)
     if (existing) {
       if (existing.readyState === WebSocket.OPEN) {
-        console.log(`WebSocket ${key} already connected, reusing`)
         return existing
       } else if (existing.readyState === WebSocket.CONNECTING) {
-        console.log(`WebSocket ${key} is connecting, waiting...`)
         return existing
       } else {
         // 닫히거나 닫히는 중인 연결은 정리
@@ -39,11 +37,9 @@ class WebSocketManager {
     }
     
     // 새 연결 생성
-    console.log(`Creating new WebSocket connection for ${key}`)
     const ws = new WebSocket(url)
     
     ws.onopen = () => {
-      console.log(`WebSocket ${key} connected`)
       this.reconnectAttempts.set(key, 0)
       onOpen?.()
       onConnect?.(ws)
@@ -64,7 +60,6 @@ class WebSocketManager {
     }
     
     ws.onclose = () => {
-      console.log(`WebSocket ${key} closed`)
       this.connections.delete(key)
       onClose?.()
       
@@ -73,7 +68,7 @@ class WebSocketManager {
       if (attempts < this.maxReconnectAttempts) {
         const delay = Math.min(1000 * Math.pow(2, attempts), 30000)
         setTimeout(() => {
-          console.log(`Reconnecting WebSocket ${key} (attempt ${attempts + 1})`)
+          `)
           this.reconnectAttempts.set(key, attempts + 1)
           this.connect(key, url, onMessage, onError, onOpen, onClose, onConnect)
         }, delay)

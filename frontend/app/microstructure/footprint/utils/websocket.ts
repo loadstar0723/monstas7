@@ -23,7 +23,6 @@ export class FootprintWebSocket {
       this.ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}@aggTrade`)
       
       this.ws.onopen = () => {
-        console.log(`풋프린트 WebSocket 연결됨: ${this.symbol}`)
         this.reconnectAttempts = 0
         this.onStatusCallback?.(true)
       }
@@ -43,7 +42,6 @@ export class FootprintWebSocket {
       }
       
       this.ws.onclose = () => {
-        console.log('WebSocket 연결 종료')
         this.onStatusCallback?.(false)
         this.handleReconnect()
       }
@@ -59,7 +57,6 @@ export class FootprintWebSocket {
       const delay = Math.min(FOOTPRINT_CONFIG.RECONNECT_BASE_DELAY * Math.pow(2, this.reconnectAttempts), FOOTPRINT_CONFIG.MAX_RECONNECT_DELAY)
       
       this.reconnectTimeout = setTimeout(() => {
-        console.log(`재연결 시도 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`)
         this.connect()
       }, delay)
     }

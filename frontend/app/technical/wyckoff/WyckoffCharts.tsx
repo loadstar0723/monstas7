@@ -147,7 +147,6 @@ export function WyckoffCandlestickChart({
   )
 }
 
-
 // 볼륨 프로파일 차트
 export function VolumeProfileChart({ 
   data,

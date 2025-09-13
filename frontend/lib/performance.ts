@@ -38,7 +38,7 @@ export class PerformanceMonitor {
         
         // 콘솔에 출력 (개발 모드에서만)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`⚡ Performance [${name}]: ${duration.toFixed(2)}ms`)
+          }ms`)
         }
         
         return duration
@@ -85,7 +85,7 @@ export class PerformanceMonitor {
     const paintObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (entry.name === 'first-contentful-paint') {
-          console.log(`📊 FCP: ${entry.startTime.toFixed(2)}ms`)
+          }ms`)
         }
       }
     })
@@ -95,7 +95,7 @@ export class PerformanceMonitor {
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries()
       const lastEntry = entries[entries.length - 1]
-      console.log(`📊 LCP: ${lastEntry.startTime.toFixed(2)}ms`)
+      }ms`)
     })
     lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
 
@@ -103,7 +103,7 @@ export class PerformanceMonitor {
     const fidObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         const delay = entry.processingStart - entry.startTime
-        console.log(`📊 FID: ${delay.toFixed(2)}ms`)
+        }ms`)
       }
     })
     fidObserver.observe({ entryTypes: ['first-input'] })
@@ -114,7 +114,7 @@ export class PerformanceMonitor {
       for (const entry of list.getEntries()) {
         if (!(entry as any).hadRecentInput) {
           clsValue += (entry as any).value
-          console.log(`📊 CLS: ${clsValue.toFixed(3)}`)
+          }`)
         }
       }
     })

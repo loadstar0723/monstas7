@@ -35,8 +35,8 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
       const klines = await response.json()
       
       if (Array.isArray(klines) && klines.length > 0) {
-        const prices = klines.map((k: any) => parseFloat(k[4]))
-        const volumes = klines.map((k: any) => parseFloat(k[5]))
+        const prices = klines.map((k: number[]) => parseFloat(k[4]))
+        const volumes = klines.map((k: number[]) => parseFloat(k[5]))
         
         // 간단한 추세 분석
         const sma5 = prices.slice(-5).reduce((a, b) => a + b, 0) / 5
@@ -97,8 +97,8 @@ export default function TradingSignals({ symbol, currentPrice }: TradingSignalsP
     }
   }
 
-  const calculateATR = (klines: any[]) => {
-    const trs = klines.slice(1).map((k: any, i: number) => {
+  const calculateATR = (klines: number[][]) => {
+    const trs = klines.slice(1).map((k: number[], i: number) => {
       const high = parseFloat(k[2])
       const low = parseFloat(k[3])
       const prevClose = parseFloat(klines[i][4])

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { safeFixed, safePercent, safeMillion } from '@/lib/safeFormat'
-import { motion } from 'framer-motion'
 import { FaTrophy, FaChartLine, FaExclamationTriangle, FaInfoCircle, FaCalendarAlt } from 'react-icons/fa'
 
 interface TradeResult {
