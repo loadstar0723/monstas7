@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - monsta-network
+
+  lstm:
+    build:
+      context: ./ai-models/lstm
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+  gru:
+    build:
+      context: ./ai-models/gru
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8091"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+  arima:
+    build:
+      context: ./ai-models/arima
+      dockerfile: Dockerfile
+    ports:
+      - "8092:8092"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+  randomforest:
+    build:
+      context: ./ai-models/randomforest
+      dockerfile: Dockerfile
+    ports:
+      - "8093:8093"
+    environment:
+      - REDIS_HOST=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - monsta-network
+
+networks:
+  monsta-network:
+    driver: bridge

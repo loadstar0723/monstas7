@@ -9,11 +9,11 @@ export default function MainContent({ children }: { children: React.ReactNode })
   // 사이드바가 열릴 때 메인 콘텐츠가 함께 이동
   return (
     <main 
-      className="min-h-screen transition-all duration-300 dark:bg-gray-900 bg-gray-50"
+      className="min-h-screen transition-all duration-300 bg-gray-900 dark:bg-gray-900"
       style={{ marginLeft: isOpen ? '320px' : '0' }}
     >
       {/* 헤더 */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900">
+      <header className="sticky top-0 z-40 bg-gray-900 dark:bg-gray-900 border-b border-gray-800">
         <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* 헤더의 햄버거 버튼 제거 - SidebarNew의 보라색 버튼만 사용 */}
@@ -25,7 +25,7 @@ export default function MainContent({ children }: { children: React.ReactNode })
         </div>
       </header>
       
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 text-white">
         {children}
       </div>
     </main>

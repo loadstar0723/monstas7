@@ -31,7 +31,7 @@ import {
   FaDiscord, FaSlack, FaWhatsapp, FaYoutube, FaTwitter,
   FaVoteYea, FaCalendar, FaCertificate, FaChalkboardTeacher, 
   FaUserGraduate, FaAd, FaBullhorn, FaRoute, FaReceipt, 
-  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronUp, FaBan, FaClock, FaQuestionCircle
+  FaShare, FaMoon, FaFilter, FaCreditCard, FaChevronDown, FaChevronUp, FaBan, FaClock, FaQuestionCircle, FaTree
 } from 'react-icons/fa'
 import { 
   BiBot, BiAnalyse, BiTrendingUp, BiCoinStack, BiData,
@@ -262,19 +262,35 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
     ]
   },
   ai: {
-    title: '🤖 AI 분석',
+    title: '🤖 AI 트레이딩 봇',
     items: [
-      { icon: FaBrain, label: 'GPT 예측', path: '/ai/gpt', category: 'ai', isHot: true },
-      { icon: BiAnalyse, label: '패턴 인식 AI', path: '/ai/pattern-recognition', category: 'ai' },
-      { icon: FaAtom, label: '신경망 예측', path: '/ai/neural', category: 'ai' },
-      { icon: MdAutoGraph, label: '감성 분석', path: '/ai/sentiment', category: 'ai' },
-      { icon: FaDna, label: '가격 예측', path: '/ai/predictions', category: 'ai', minTier: 'Platinum' },
-      { icon: BiData, label: '앙상블 모델', path: '/ai/ensemble', category: 'ai' },
-      { icon: FaFlask, label: '강화학습', path: '/ai/reinforcement', category: 'ai' },
-      { icon: BiScatterChart, label: '클러스터링', path: '/ai/clustering', category: 'ai' },
-      { icon: FaLightbulb, label: '이상 탐지', path: '/ai/anomaly', category: 'ai' },
-      { icon: FaMagic, label: '자연어 처리', path: '/ai/nlp', category: 'ai' },
-      { icon: FaSpaceShuttle, label: '양자 컴퓨팅', path: '/ai/quantum', category: 'ai', minTier: 'Infinity' }
+      { icon: FaBrain, label: 'GPT 시그널 봇', path: '/ai/gpt', category: 'ai', isHot: true },
+      { icon: BiAnalyse, label: '패턴 인식 봇', path: '/ai/pattern-recognition', category: 'ai' },
+      { icon: FaAtom, label: '신경망 거래 봇', path: '/ai/neural', category: 'ai' },
+      { icon: MdAutoGraph, label: '감성 분석 봇', path: '/ai/sentiment', category: 'ai' },
+      { icon: FaDna, label: '가격 예측 봇', path: '/ai/predictions', category: 'ai', minTier: 'Platinum' },
+      { icon: BiData, label: '앙상블 봇', path: '/ai/ensemble', category: 'ai' },
+      { icon: FaFlask, label: '강화학습 봇', path: '/ai/reinforcement', category: 'ai' },
+      { icon: BiScatterChart, label: '클러스터 봇', path: '/ai/clustering', category: 'ai' },
+      { icon: FaLightbulb, label: '이상거래 탐지', path: '/ai/anomaly', category: 'ai' },
+      { icon: FaMagic, label: 'NLP 분석 봇', path: '/ai/nlp', category: 'ai' },
+      { icon: FaSpaceShuttle, label: '양자 거래 봇', path: '/ai/quantum', category: 'ai', minTier: 'Infinity' }
+    ]
+  },
+  aiModels: {
+    title: '🧬 AI 예측 모델',
+    items: [
+      { icon: FaBrain, label: 'LSTM 시계열', path: '/ai/lstm', category: 'aiModels', isHot: true },
+      { icon: FaMicrochip, label: 'GRU 딥러닝', path: '/ai/gru', category: 'aiModels', isNew: true },
+      { icon: FaChartBar, label: 'ARIMA 통계', path: '/ai/arima', category: 'aiModels' },
+      { icon: FaTree, label: 'Random Forest', path: '/ai/randomforest', category: 'aiModels', isHot: true },
+      { icon: FaRocket, label: 'XGBoost 부스팅', path: '/ai/xgboost', category: 'aiModels', minTier: 'Advance' },
+      { icon: FaLightbulb, label: 'LightGBM 속도', path: '/ai/lightgbm', category: 'aiModels' },
+      { icon: FaAtom, label: 'BERT 언어모델', path: '/ai/bert', category: 'aiModels', minTier: 'Platinum' },
+      { icon: MdAutoGraph, label: 'Transformer', path: '/ai/transformer', category: 'aiModels' },
+      { icon: FaDna, label: 'GAN 생성모델', path: '/ai/gan', category: 'aiModels', minTier: 'Signature' },
+      { icon: FaMagic, label: 'GPT-4 최신', path: '/ai/gpt4', category: 'aiModels', minTier: 'Master' },
+      { icon: FaCrown, label: 'Claude 3.5', path: '/ai/claude', category: 'aiModels', minTier: 'Infinity' }
     ]
   },
   automation: {

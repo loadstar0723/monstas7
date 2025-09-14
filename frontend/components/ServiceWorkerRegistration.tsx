@@ -4,6 +4,20 @@ import { useEffect } from 'react'
 
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
+    // 개발 환경에서는 Service Worker 비활성화
+    if (process.env.NODE_ENV === 'development') {
+      // 기존 Service Worker 제거
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister()
+            console.log('Service Worker unregistered in development')
+          }
+        })
+      }
+      return
+    }
+    
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker

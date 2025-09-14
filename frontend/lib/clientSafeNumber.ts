@@ -4,7 +4,7 @@
  */
 
 // 브라우저 환경에서만 실행
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof Number !== 'undefined' && Number.prototype) {
   // 원래 toFixed 저장
   const originalToFixed = Number.prototype.toFixed;
   
@@ -13,7 +13,6 @@ if (typeof window !== 'undefined') {
     try {
       // null/undefined 체크
       if (this == null || this == undefined) {
-        .stack);
         return '0';
       }
       
@@ -52,5 +51,4 @@ if (typeof window !== 'undefined') {
     const num = (window as any).safeNumber(value);
     return num.toFixed(decimals);
   };
-  
-  }
+}

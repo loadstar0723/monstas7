@@ -38,6 +38,16 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     scrollRestoration: true,
+    // HMR 관련 설정 추가
+    webVitalsAttribution: ['CLS', 'LCP'],
+  },
+  
+  // HMR 설정 추가
+  onDemandEntries: {
+    // 페이지를 메모리에 유지하는 기간 (ms)
+    maxInactiveAge: 25 * 1000,
+    // 동시에 유지할 페이지 수
+    pagesBufferLength: 2,
   },
   
   // Webpack 설정 - ChunkLoadError 해결
