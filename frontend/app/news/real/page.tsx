@@ -69,6 +69,9 @@ export default function UltimateCryptoNewsPage() {
   const [autoTranslate, setAutoTranslate] = useState(true) // 기본값 true로 자동 번역 활성화
   const [showTranslated, setShowTranslated] = useState(true) // 번역/원문 토글 상태
   const [expandedNews, setExpandedNews] = useState<Set<string>>(new Set())
+  const [showAllCoins, setShowAllCoins] = useState(false)
+  const [coinsWithNews, setCoinsWithNews] = useState<Set<string>>(new Set())
+  const [recentUpdateCoins, setRecentUpdateCoins] = useState<Set<string>>(new Set())
 
   // 실시간 대시보드 통계
   const [dashboardStats, setDashboardStats] = useState({
@@ -110,6 +113,27 @@ export default function UltimateCryptoNewsPage() {
     const interval = setInterval(loadAllNews, 60000) // 1분마다 업데이트
     return () => clearInterval(interval)
   }, [selectedCoin]) // selectedCoin 변경 시 다시 로드
+
+  // 뉴스가 있는 코인과 최근 업데이트 코인 추적
+  useEffect(() => {
+    const coinsSet = new Set<string>()
+    const recentSet = new Set<string>()
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+
+    allNews.forEach(news => {
+      news.relatedCoins.forEach(coin => {
+        coinsSet.add(coin)
+        // 1시간 이내 뉴스가 있는 코인은 최근 업데이트로 표시
+        if (new Date(news.publishedAt) > oneHourAgo) {
+          recentSet.add(coin)
+        }
+      })
+    })
+
+    setCoinsWithNews(coinsSet)
+    setRecentUpdateCoins(recentSet)
+  }, [allNews])
 
   useEffect(() => {
     filterNews()
@@ -464,30 +488,83 @@ export default function UltimateCryptoNewsPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-400">코인 선택 (60+ 지원)</h3>
-            <button
-              onClick={() => setAutoTranslate(!autoTranslate)}
-              className={`px-3 py-1 rounded-lg text-sm ${
-                autoTranslate ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400'
-              }`}
-            >
-              🌐 자동 번역 {autoTranslate ? 'ON' : 'OFF'}
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {coins.map(coin => (
+            <div className="flex gap-2">
               <button
-                key={coin}
-                onClick={() => setSelectedCoin(coin)}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all text-sm ${
-                  selectedCoin === coin
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                onClick={() => setShowAllCoins(!showAllCoins)}
+                className="px-3 py-1 rounded-lg text-sm bg-gray-800 text-gray-400 hover:bg-gray-700 flex items-center gap-1"
+              >
+                {showAllCoins ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                    접기
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    모든 코인 보기
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setAutoTranslate(!autoTranslate)}
+                className={`px-3 py-1 rounded-lg text-sm ${
+                  autoTranslate ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400'
                 }`}
               >
-                {coin === 'ALL' ? '🌍' : coinSymbols[coin] || '●'} {coin}
+                🌐 자동 번역 {autoTranslate ? 'ON' : 'OFF'}
               </button>
-            ))}
+            </div>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {/* 최근 업데이트 또는 뉴스가 있는 코인들 우선 표시 */}
+            {coins
+              .filter(coin => {
+                if (showAllCoins) return true
+                if (coin === 'ALL') return true
+                return coinsWithNews.has(coin) || recentUpdateCoins.has(coin)
+              })
+              .sort((a, b) => {
+                // ALL을 항상 맨 앞에
+                if (a === 'ALL') return -1
+                if (b === 'ALL') return 1
+                // 최근 업데이트 코인 우선
+                if (recentUpdateCoins.has(a) && !recentUpdateCoins.has(b)) return -1
+                if (!recentUpdateCoins.has(a) && recentUpdateCoins.has(b)) return 1
+                // 뉴스가 있는 코인 다음
+                if (coinsWithNews.has(a) && !coinsWithNews.has(b)) return -1
+                if (!coinsWithNews.has(a) && coinsWithNews.has(b)) return 1
+                return 0
+              })
+              .map(coin => (
+                <button
+                  key={coin}
+                  onClick={() => setSelectedCoin(coin)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-sm relative ${
+                    selectedCoin === coin
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                      : coinsWithNews.has(coin)
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-800 text-gray-500 hover:bg-gray-700'
+                  }`}
+                >
+                  {recentUpdateCoins.has(coin) && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded animate-pulse">
+                      NEW
+                    </span>
+                  )}
+                  {coin === 'ALL' ? '🌍' : coinSymbols[coin] || '●'} {coin}
+                </button>
+              ))}
+          </div>
+          {!showAllCoins && coins.filter(coin => coin !== 'ALL' && !coinsWithNews.has(coin) && !recentUpdateCoins.has(coin)).length > 0 && (
+            <div className="mt-2 text-xs text-gray-500">
+              {coins.filter(coin => coin !== 'ALL' && !coinsWithNews.has(coin) && !recentUpdateCoins.has(coin)).length}개의 코인이 숨겨져 있습니다
+            </div>
+          )}
         </div>
 
         {/* 번역/원문 전체 토글 */}
