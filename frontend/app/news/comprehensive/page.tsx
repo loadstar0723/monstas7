@@ -20,7 +20,7 @@ export default function ComprehensiveNewsPage() {
 
   useEffect(() => {
     loadAllData()
-    const interval = setInterval(loadAllData, 60000) // 1분마다 갱신
+    const interval = setInterval(loadAllData, 60000) // 1분마??갱신
     return () => clearInterval(interval)
   }, [selectedCoin])
 
@@ -28,7 +28,7 @@ export default function ComprehensiveNewsPage() {
     try {
       setLoading(true)
 
-      // 병렬로 모든 데이터 로드 (에러가 나도 계속 진행)
+      // 병렬�?모든 ?�이??로드 (?�러가 ?�도 계속 진행)
       const results = await Promise.allSettled([
         dataService.getMarketSentiment(selectedCoin),
         dataService.getLatestNews(10),
@@ -38,12 +38,12 @@ export default function ComprehensiveNewsPage() {
         dataService.getGithubActivity(selectedCoin)
       ])
 
-      // 성공한 결과만 처리
+      // ?�공??결과�?처리
       if (results[0].status === 'fulfilled') setMarketSentiment(results[0].value)
       if (results[1].status === 'fulfilled') setLatestNews(results[1].value)
       if (results[2].status === 'fulfilled') setOnchainData(results[2].value)
 
-      // CoinPaprika와 CoinCap 데이터 병합
+      // CoinPaprika?� CoinCap ?�이??병합
       const coinDataResult: any = {}
       if (results[3].status === 'fulfilled') {
         coinDataResult.paprika = results[3].value
@@ -66,23 +66,23 @@ export default function ComprehensiveNewsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900">
       <div className="container mx-auto px-4 py-8">
-        {/* 헤더 */}
+        {/* ?�더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            📊 종합 암호화폐 정보 센터
+            ?�� 종합 ?�호?�폐 ?�보 ?�터
           </h1>
           <p className="text-gray-400">
-            10개 무료 API를 통합한 실시간 뉴스, 소셜, 온체인 데이터 분석
+            10�?무료 API�??�합???�시�??�스, ?�셜, ?�체???�이??분석
           </p>
         </motion.div>
 
-        {/* 코인 선택 - TOP 30 코인 */}
+        {/* 코인 ?�택 - TOP 30 코인 */}
         <div className="mb-6">
-          <div className="text-sm text-gray-400 mb-3">📈 TOP 30 암호화폐 선택</div>
+          <div className="text-sm text-gray-400 mb-3">?�� TOP 30 ?�호?�폐 ?�택</div>
           <div className="flex gap-2 flex-wrap">
             {[
               'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'AVAX', 'TRX', 'LINK',
@@ -103,7 +103,7 @@ export default function ComprehensiveNewsPage() {
             ))}
           </div>
           <div className="mt-2 text-xs text-gray-500">
-            💡 선택한 코인: <span className="text-purple-400 font-bold">{selectedCoin}</span> - 실시간 뉴스, 소셜, 온체인 데이터 분석
+            ?�� ?�택??코인: <span className="text-purple-400 font-bold">{selectedCoin}</span> - ?�시�??�스, ?�셜, ?�체???�이??분석
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export default function ComprehensiveNewsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* 1. 시장 심리 종합 점수 */}
+            {/* 1. ?�장 ?�리 종합 ?�수 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -121,12 +121,12 @@ export default function ComprehensiveNewsPage() {
             >
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <FaBrain className="mr-2 text-purple-400" />
-                시장 심리 종합 분석
+                ?�장 ?�리 종합 분석
               </h2>
 
               {marketSentiment && (
                 <div className="space-y-4">
-                  {/* 종합 점수 게이지 */}
+                  {/* 종합 ?�수 게이지 */}
                   <div className="relative h-32">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
@@ -179,19 +179,19 @@ export default function ComprehensiveNewsPage() {
                     </div>
                   </div>
 
-                  {/* 추천 전략 */}
+                  {/* 추천 ?�략 */}
                   <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-                    <div className="text-sm text-purple-400 mb-1">추천 전략</div>
+                    <div className="text-sm text-purple-400 mb-1">추천 ?�략</div>
                     <div className="font-bold">{marketSentiment.analysis.action}</div>
                     <div className="text-sm text-gray-400 mt-1">
-                      리스크: {marketSentiment.analysis.risk}
+                      리스?? {marketSentiment.analysis.risk}
                     </div>
                   </div>
                 </div>
               )}
             </motion.div>
 
-            {/* 2. 실시간 뉴스 피드 */}
+            {/* 2. ?�시�??�스 ?�드 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -200,7 +200,7 @@ export default function ComprehensiveNewsPage() {
             >
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <FaNewspaper className="mr-2 text-blue-400" />
-                최신 뉴스 (RSS 피드)
+                최신 ?�스 (RSS ?�드)
               </h2>
 
               <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -236,7 +236,7 @@ export default function ComprehensiveNewsPage() {
               </div>
             </motion.div>
 
-            {/* 3. 온체인 데이터 */}
+            {/* 3. ?�체???�이??*/}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -245,32 +245,31 @@ export default function ComprehensiveNewsPage() {
             >
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <FaCubes className="mr-2 text-orange-400" />
-                온체인 데이터
-              </h2>
+                ?�체???�이??              </h2>
 
               {onchainData && (
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">해시레이트</span>
+                    <span className="text-gray-400">?�시?�이??/span>
                     <span className="font-mono">{(onchainData.hashRate / 1e18).toFixed(2)} EH/s</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">난이도</span>
+                    <span className="text-gray-400">?�이??/span>
                     <span className="font-mono">{(onchainData.difficulty / 1e12).toFixed(2)}T</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">멤풀 크기</span>
+                    <span className="text-gray-400">멤�? ?�기</span>
                     <span className="font-mono">{onchainData.mempoolSize?.toLocaleString()} txs</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">평균 블록 크기</span>
+                    <span className="text-gray-400">?�균 블록 ?�기</span>
                     <span className="font-mono">{(onchainData.blockSize / 1024).toFixed(2)} KB</span>
                   </div>
                 </div>
               )}
             </motion.div>
 
-            {/* 4. 마켓 데이터 (CoinPaprika + CoinCap) */}
+            {/* 4. 마켓 ?�이??(CoinPaprika + CoinCap) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -279,15 +278,14 @@ export default function ComprehensiveNewsPage() {
             >
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <FaChartLine className="mr-2 text-green-400" />
-                마켓 데이터
-              </h2>
+                마켓 ?�이??              </h2>
 
               {coinData && (
                 <div className="space-y-3">
                   {coinData.paprika && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">시가총액 순위</span>
+                        <span className="text-gray-400">?��?총액 ?�위</span>
                         <span className="font-bold">#{coinData.paprika.rank}</span>
                       </div>
                       <div className="flex justify-between">
@@ -295,7 +293,7 @@ export default function ComprehensiveNewsPage() {
                         <span className="font-mono">${coinData.paprika.ath?.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">ATH 대비</span>
+                        <span className="text-gray-400">ATH ?��?/span>
                         <span className={`font-bold ${
                           coinData.paprika.percentFromATH < -50 ? 'text-red-400' : 'text-yellow-400'
                         }`}>
@@ -308,7 +306,7 @@ export default function ComprehensiveNewsPage() {
                     <>
                       {coinData.coincap.supply > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-gray-400">공급량</span>
+                          <span className="text-gray-400">공급??/span>
                           <span className="font-mono">
                             {(coinData.coincap.supply / 1e6).toFixed(2)}M
                           </span>
@@ -324,7 +322,7 @@ export default function ComprehensiveNewsPage() {
                       )}
                       {coinData.coincap.volumeUsd24Hr > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-gray-400">거래량 24h</span>
+                          <span className="text-gray-400">거래??24h</span>
                           <span className="font-mono">
                             ${(coinData.coincap.volumeUsd24Hr / 1e9).toFixed(2)}B
                           </span>
@@ -336,7 +334,7 @@ export default function ComprehensiveNewsPage() {
               )}
             </motion.div>
 
-            {/* 5. GitHub 개발 활동 */}
+            {/* 5. GitHub 개발 ?�동 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -345,25 +343,25 @@ export default function ComprehensiveNewsPage() {
             >
               <h2 className="text-xl font-bold mb-4 flex items-center">
                 <FaGithub className="mr-2 text-gray-400" />
-                개발 활동
+                개발 ?�동
               </h2>
 
               {githubActivity && (
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">⭐ Stars</span>
+                    <span className="text-gray-400">�?Stars</span>
                     <span className="font-bold">{githubActivity.stars?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">🍴 Forks</span>
+                    <span className="text-gray-400">?�� Forks</span>
                     <span className="font-bold">{githubActivity.forks?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">📝 Open Issues</span>
+                    <span className="text-gray-400">?�� Open Issues</span>
                     <span className="font-bold">{githubActivity.openIssues}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">👀 Watchers</span>
+                    <span className="text-gray-400">?? Watchers</span>
                     <span className="font-bold">{githubActivity.watchers?.toLocaleString()}</span>
                   </div>
                 </div>
@@ -372,15 +370,15 @@ export default function ComprehensiveNewsPage() {
           </div>
         )}
 
-        {/* 데이터 소스 표시 */}
+        {/* ?�이???�스 ?�시 */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="mt-8 text-center text-gray-500 text-sm"
         >
-          <p>📊 데이터 제공: Binance • Alternative.me • CoinPaprika • CoinGecko • Blockchain.com</p>
-          <p>뉴스 생성: Binance Market Data • GitHub API • CryptoCompare • Etherscan</p>
+          <p>?�� ?�이???�공: Binance ??Alternative.me ??CoinPaprika ??CoinGecko ??Blockchain.com</p>
+          <p>?�스 ?�성: Binance Market Data ??GitHub API ??CryptoCompare ??Etherscan</p>
         </motion.div>
       </div>
     </div>

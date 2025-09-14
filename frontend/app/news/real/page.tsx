@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { realNewsService, RealNewsItem } from '@/lib/services/realNewsService'
 
-// AI 트레이딩 시그널 타입
+// AI ?�레?�딩 ?�그???�??
 interface TradingSignal {
   direction: 'LONG' | 'SHORT' | 'NEUTRAL'
   confidence: number
@@ -15,7 +15,7 @@ interface TradingSignal {
   timeframe: string
 }
 
-// 경제 상관관계 타입
+// 경제 ?��?관�??�??
 interface EconomicCorrelation {
   sp500: number
   dxy: number
@@ -24,7 +24,7 @@ interface EconomicCorrelation {
   bondYield: number
 }
 
-// 소셜 센티먼트 타입
+// ?�셜 ?�티먼트 ?�??
 interface SocialSentiment {
   twitter: number
   reddit: number
@@ -33,7 +33,7 @@ interface SocialSentiment {
   viralPotential: 'LOW' | 'MEDIUM' | 'HIGH'
 }
 
-// 커뮤니티 투표 타입
+// 커�??�티 ?�표 ?�??
 interface CommunityVote {
   bullish: number
   neutral: number
@@ -41,7 +41,7 @@ interface CommunityVote {
   total: number
 }
 
-// 뉴스 확장 타입
+// ?�스 ?�장 ?�??
 interface EnhancedNewsItem extends RealNewsItem {
   tradingSignal?: TradingSignal
   economicCorrelation?: EconomicCorrelation
@@ -66,14 +66,14 @@ export default function UltimateCryptoNewsPage() {
   const [translating, setTranslating] = useState<string | null>(null)
   const [translations, setTranslations] = useState<Record<string, { title: string; description: string }>>({})
   const [showDashboard, setShowDashboard] = useState(true)
-  const [autoTranslate, setAutoTranslate] = useState(true) // 기본값 true로 자동 번역 활성화
-  const [showTranslated, setShowTranslated] = useState(true) // 번역/원문 토글 상태
+  const [autoTranslate, setAutoTranslate] = useState(true) // 기본�?true�??�동 번역 ?�성??
+  const [showTranslated, setShowTranslated] = useState(true) // 번역/?�문 ?��? ?�태
   const [expandedNews, setExpandedNews] = useState<Set<string>>(new Set())
   const [showAllCoins, setShowAllCoins] = useState(false)
   const [coinsWithNews, setCoinsWithNews] = useState<Set<string>>(new Set())
   const [recentUpdateCoins, setRecentUpdateCoins] = useState<Set<string>>(new Set())
 
-  // 실시간 대시보드 통계
+  // ?�시�??�?�보???�계
   const [dashboardStats, setDashboardStats] = useState({
     totalNews: 0,
     bullishSignals: 0,
@@ -83,7 +83,7 @@ export default function UltimateCryptoNewsPage() {
     marketSentiment: 'NEUTRAL' as 'BULLISH' | 'NEUTRAL' | 'BEARISH'
   })
 
-  // 코인 심볼 맵
+  // 코인 ?�볼 �?
   const coinSymbols = realNewsService.getAllCoinSymbols()
 
   // TOP 60+ 코인 목록
@@ -97,24 +97,24 @@ export default function UltimateCryptoNewsPage() {
   ]
 
   const categories = [
-    { id: 'all', name: '전체', icon: '📰' },
-    { id: 'breaking', name: '속보', icon: '🚨' },
-    { id: 'regulatory', name: '규제', icon: '⚖️' },
-    { id: 'defi', name: 'DeFi', icon: '🔷' },
-    { id: 'technical', name: '기술', icon: '📊' },
-    { id: 'market', name: '시장', icon: '📈' },
-    { id: 'security', name: '보안', icon: '🔐' },
-    { id: 'exchange', name: '거래소', icon: '🏦' },
-    { id: 'macro', name: '매크로', icon: '🌍' }
+    { id: 'all', name: '?�체', icon: '?��' },
+    { id: 'breaking', name: '?�보', icon: '?��' },
+    { id: 'regulatory', name: '규제', icon: '?�️' },
+    { id: 'defi', name: 'DeFi', icon: '?��' },
+    { id: 'technical', name: '기술', icon: '?��' },
+    { id: 'market', name: '?�장', icon: '?��' },
+    { id: 'security', name: '보안', icon: '?��' },
+    { id: 'exchange', name: '거래??, icon: '?��' },
+    { id: 'macro', name: '매크�?, icon: '?��' }
   ]
 
   useEffect(() => {
     loadAllNews()
-    const interval = setInterval(loadAllNews, 60000) // 1분마다 업데이트
+    const interval = setInterval(loadAllNews, 60000) // 1분마???�데?�트
     return () => clearInterval(interval)
-  }, [selectedCoin]) // selectedCoin 변경 시 다시 로드
+  }, [selectedCoin]) // selectedCoin 변�????�시 로드
 
-  // 뉴스가 있는 코인과 최근 업데이트 코인 추적
+  // ?�스가 ?�는 코인�?최근 ?�데?�트 코인 추적
   useEffect(() => {
     const coinsSet = new Set<string>()
     const recentSet = new Set<string>()
@@ -124,7 +124,7 @@ export default function UltimateCryptoNewsPage() {
     allNews.forEach(news => {
       news.relatedCoins.forEach(coin => {
         coinsSet.add(coin)
-        // 1시간 이내 뉴스가 있는 코인은 최근 업데이트로 표시
+        // 1?�간 ?�내 ?�스가 ?�는 코인?� 최근 ?�데?�트�??�시
         if (new Date(news.publishedAt) > oneHourAgo) {
           recentSet.add(coin)
         }
@@ -143,11 +143,11 @@ export default function UltimateCryptoNewsPage() {
     calculateDashboardStats()
   }, [filteredNews])
 
-  // AI 트레이딩 시그널 분석 (강화된 버전)
+  // AI ?�레?�딩 ?�그??분석 (강화??버전)
   const analyzeTraidingSignal = useCallback((news: RealNewsItem): TradingSignal => {
     const text = (news.title + ' ' + news.description).toLowerCase()
 
-    // 강화된 키워드 분석
+    // 강화???�워??분석
     const strongBullish = ['breakout', 'institutional buying', 'etf approval', 'mass adoption', 'all-time high']
     const bullish = ['surge', 'rally', 'bullish', 'partnership', 'upgrade', 'gains', 'rise', 'soar', 'pump']
     const bearish = ['crash', 'dump', 'plunge', 'bearish', 'ban', 'hack', 'sell', 'drop', 'fall', 'decline']
@@ -159,12 +159,12 @@ export default function UltimateCryptoNewsPage() {
     bearish.forEach(word => { if (text.includes(word)) score -= 1 })
     strongBearish.forEach(word => { if (text.includes(word)) score -= 3 })
 
-    // 방향성 결정
+    // 방향??결정
     const direction = score > 2 ? 'LONG' : score < -2 ? 'SHORT' : 'NEUTRAL'
     const confidence = Math.min(Math.abs(score) * 15, 95)
 
-    // 실제 진입가/손절가/목표가 계산 (신뢰도 기반)
-    const basePrice = 50000 // BTC 기준 가격 (실제 구현 시 API에서 가져옴)
+    // ?�제 진입가/?�절가/목표가 계산 (?�뢰??기반)
+    const basePrice = 50000 // BTC 기�? 가�?(?�제 구현 ??API?�서 가?�옴)
     const volatility = confidence > 70 ? 0.05 : confidence > 40 ? 0.03 : 0.02
 
     const entry = basePrice
@@ -180,41 +180,41 @@ export default function UltimateCryptoNewsPage() {
     const riskReward = direction !== 'NEUTRAL' ?
       `1:${(rewardAmount / riskAmount).toFixed(1)}` : 'N/A'
 
-    // 시간대 분석
-    const timeframe = confidence > 80 ? '단기 (1-24시간)' :
-                     confidence > 60 ? '중기 (1-7일)' :
-                     '장기 (1개월+)'
+    // ?�간?� 분석
+    const timeframe = confidence > 80 ? '?�기 (1-24?�간)' :
+                     confidence > 60 ? '중기 (1-7??' :
+                     '?�기 (1개월+)'
 
     return { direction, confidence, entry, stopLoss, target, riskReward, timeframe }
   }, [])
 
-  // 경제 상관관계 분석
+  // 경제 ?��?관�?분석
   const analyzeEconomicCorrelation = useCallback((): EconomicCorrelation => {
-    // 시간대별 동적 상관관계 (시간에 따라 변동)
+    // ?�간?��??�적 ?��?관�?(?�간???�라 변??
     const hour = new Date().getHours()
-    const dayFactor = Math.sin((hour / 24) * Math.PI * 2) // 시간대별 변동
+    const dayFactor = Math.sin((hour / 24) * Math.PI * 2) // ?�간?��?변??
 
     return {
-      sp500: 0.65 + (dayFactor * 0.1), // 0.55 ~ 0.75 변동
-      dxy: -0.45 + (dayFactor * 0.1), // -0.55 ~ -0.35 변동
-      gold: 0.35 + (dayFactor * 0.05), // 0.30 ~ 0.40 변동
-      oil: 0.15 + (dayFactor * 0.1), // 0.05 ~ 0.25 변동
-      bondYield: -0.25 + (dayFactor * 0.05) // -0.30 ~ -0.20 변동
+      sp500: 0.65 + (dayFactor * 0.1), // 0.55 ~ 0.75 변??
+      dxy: -0.45 + (dayFactor * 0.1), // -0.55 ~ -0.35 변??
+      gold: 0.35 + (dayFactor * 0.05), // 0.30 ~ 0.40 변??
+      oil: 0.15 + (dayFactor * 0.1), // 0.05 ~ 0.25 변??
+      bondYield: -0.25 + (dayFactor * 0.05) // -0.30 ~ -0.20 변??
     }
   }, [])
 
-  // 소셜 센티먼트 분석
+  // ?�셜 ?�티먼트 분석
   const analyzeSocialSentiment = useCallback((news: RealNewsItem): SocialSentiment => {
-    // 뉴스 텍스트 기반 센티먼트 분석
+    // ?�스 ?�스??기반 ?�티먼트 분석
     const text = (news.title + ' ' + news.description).toLowerCase()
     const viralKeywords = ['breaking', 'urgent', 'exclusive', 'massive', 'unprecedented']
     const viralCount = viralKeywords.filter(word => text.includes(word)).length
 
-    // 텍스트 길이와 키워드 기반 버즈 스코어 계산
+    // ?�스??길이?� ?�워??기반 버즈 ?�코??계산
     const buzzScore = Math.min(95, (text.length / 10) + (viralCount * 20))
 
     return {
-      twitter: Math.floor(text.length * 2.5), // 텍스트 길이 기반
+      twitter: Math.floor(text.length * 2.5), // ?�스??길이 기반
       reddit: Math.floor(text.length * 1.5),
       telegram: Math.floor(text.length * 0.8),
       buzzScore: Math.floor(buzzScore),
@@ -222,7 +222,7 @@ export default function UltimateCryptoNewsPage() {
     }
   }, [])
 
-  // 중요도 분석
+  // 중요??분석
   const analyzeImportance = useCallback((news: RealNewsItem): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' => {
     const text = (news.title + ' ' + news.description).toLowerCase()
     if (text.includes('breaking') || text.includes('urgent')) return 'CRITICAL'
@@ -231,7 +231,7 @@ export default function UltimateCryptoNewsPage() {
     return 'LOW'
   }, [])
 
-  // 뉴스 데이터 로드 및 강화
+  // ?�스 ?�이??로드 �?강화
   const loadAllNews = async () => {
     setLoading(true)
     setError(null)
@@ -239,7 +239,7 @@ export default function UltimateCryptoNewsPage() {
       const symbols = selectedCoin === 'ALL' ? ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'] : [selectedCoin]
       const news = await realNewsService.fetchRealNews(symbols)
 
-      // 뉴스 강화
+      // ?�스 강화
       const enhancedNews: EnhancedNewsItem[] = news.map(item => {
         const tradingSignal = analyzeTraidingSignal(item)
         const confidence = tradingSignal.confidence
@@ -249,9 +249,9 @@ export default function UltimateCryptoNewsPage() {
           economicCorrelation: analyzeEconomicCorrelation(),
           socialSentiment: analyzeSocialSentiment(item),
           communityVote: {
-            bullish: Math.floor(confidence * 0.8), // 신뢰도 기반
-            neutral: 30, // 기본값
-            bearish: Math.floor((100 - confidence) * 0.8), // 역신뢰도
+            bullish: Math.floor(confidence * 0.8), // ?�뢰??기반
+            neutral: 30, // 기본�?
+            bearish: Math.floor((100 - confidence) * 0.8), // ??��뢰도
             total: 175
           },
           importance: analyzeImportance(item)
@@ -261,24 +261,24 @@ export default function UltimateCryptoNewsPage() {
       setAllNews(enhancedNews)
       setFilteredNews(enhancedNews)
 
-      // 자동 번역이 활성화되어 있으면 모든 뉴스 번역 시작
+      // ?�동 번역???�성?�되???�으�?모든 ?�스 번역 ?�작
       if (autoTranslate) {
         enhancedNews.forEach((news, index) => {
-          // 순차적으로 번역 (서버 부하 방지)
+          // ?�차?�으�?번역 (?�버 부??방�?)
           setTimeout(() => {
             translateNews(news.id, news.title, news.description)
           }, index * 100)
         })
       }
     } catch (error) {
-      console.error('뉴스 로딩 에러:', error)
-      setError('뉴스를 불러오는 중 오류가 발생했습니다.')
+      console.error('?�스 로딩 ?�러:', error)
+      setError('?�스�?불러?�는 �??�류가 발생?�습?�다.')
     } finally {
       setLoading(false)
     }
   }
 
-  // 필터링
+  // ?�터�?
   const filterNews = () => {
     let filtered = [...allNews]
 
@@ -306,20 +306,20 @@ export default function UltimateCryptoNewsPage() {
     setFilteredNews(filtered)
   }
 
-  // 한국어 번역
+  // ?�국??번역
   const translateNews = async (newsId: string, title: string, description: string) => {
     if (translations[newsId]) return
 
     setTranslating(newsId)
     try {
-      // 제목과 설명을 각각 번역
+      // ?�목�??�명??각각 번역
       const [titleRes, descRes] = await Promise.all([
         fetch('/api/translate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: title, targetLang: 'ko' })
         }).catch(err => {
-          console.error('제목 번역 실패:', err)
+          console.error('?�목 번역 ?�패:', err)
           return { ok: false }
         }),
         fetch('/api/translate', {
@@ -327,7 +327,7 @@ export default function UltimateCryptoNewsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: description, targetLang: 'ko' })
         }).catch(err => {
-          console.error('설명 번역 실패:', err)
+          console.error('?�명 번역 ?�패:', err)
           return { ok: false }
         })
       ])
@@ -343,19 +343,19 @@ export default function UltimateCryptoNewsPage() {
         }
       }))
     } catch (error) {
-      console.error('번역 실패:', error)
+      console.error('번역 ?�패:', error)
     } finally {
       setTranslating(null)
     }
   }
 
-  // 대시보드 통계 계산
+  // ?�?�보???�계 계산
   const calculateDashboardStats = () => {
     const bullish = filteredNews.filter(n => n.tradingSignal?.direction === 'LONG').length
     const bearish = filteredNews.filter(n => n.tradingSignal?.direction === 'SHORT').length
     const avgConf = filteredNews.reduce((acc, n) => acc + (n.tradingSignal?.confidence || 0), 0) / (filteredNews.length || 1)
 
-    // 가장 많이 언급된 코인
+    // 가??많이 ?�급??코인
     const coinCounts: Record<string, number> = {}
     filteredNews.forEach(news => {
       news.relatedCoins.forEach(coin => {
@@ -380,7 +380,7 @@ export default function UltimateCryptoNewsPage() {
     })
   }
 
-  // 커뮤니티 투표
+  // 커�??�티 ?�표
   const handleVote = (newsId: string, vote: 'bullish' | 'neutral' | 'bearish') => {
     setAllNews(prev => prev.map(news => {
       if (news.id === newsId && news.communityVote) {
@@ -393,7 +393,7 @@ export default function UltimateCryptoNewsPage() {
     }))
   }
 
-  // 뉴스 확장/축소 토글
+  // ?�스 ?�장/축소 ?��?
   const toggleNewsExpanded = (newsId: string) => {
     setExpandedNews(prev => {
       const newSet = new Set(prev)
@@ -411,21 +411,21 @@ export default function UltimateCryptoNewsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* 헤더 */}
+        {/* ?�더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-2">
-            🗞️ AI 암호화폐 뉴스 분석 센터
+            ?���?AI ?�호?�폐 ?�스 분석 ?�터
           </h1>
           <p className="text-gray-400">
-            실시간 뉴스 • AI 트레이딩 시그널 • 경제 상관관계 • 소셜 센티먼트
+            ?�시�??�스 ??AI ?�레?�딩 ?�그????경제 ?��?관�????�셜 ?�티먼트
           </p>
         </motion.div>
 
-        {/* 실시간 대시보드 */}
+        {/* ?�시�??�?�보??*/}
         {showDashboard && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -433,31 +433,31 @@ export default function UltimateCryptoNewsPage() {
             className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mb-6 border border-purple-500/30"
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">📊 실시간 대시보드</h2>
+              <h2 className="text-xl font-bold text-white">?�� ?�시�??�?�보??/h2>
               <button
                 onClick={() => setShowDashboard(false)}
                 className="text-gray-400 hover:text-white"
               >
-                ✕
+                ??
               </button>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{dashboardStats.totalNews}</div>
-                <div className="text-xs text-gray-400">전체 뉴스</div>
+                <div className="text-xs text-gray-400">?�체 ?�스</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">🟢 {dashboardStats.bullishSignals}</div>
-                <div className="text-xs text-gray-400">강세 시그널</div>
+                <div className="text-2xl font-bold text-green-400">?�� {dashboardStats.bullishSignals}</div>
+                <div className="text-xs text-gray-400">강세 ?�그??/div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">🔴 {dashboardStats.bearishSignals}</div>
-                <div className="text-xs text-gray-400">약세 시그널</div>
+                <div className="text-2xl font-bold text-red-400">?�� {dashboardStats.bearishSignals}</div>
+                <div className="text-xs text-gray-400">?�세 ?�그??/div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-400">{dashboardStats.avgConfidence}%</div>
-                <div className="text-xs text-gray-400">평균 신뢰도</div>
+                <div className="text-xs text-gray-400">?�균 ?�뢰??/div>
               </div>
               <div className="text-center">
                 <div className={`text-2xl font-bold ${
@@ -465,10 +465,10 @@ export default function UltimateCryptoNewsPage() {
                   dashboardStats.marketSentiment === 'BEARISH' ? 'text-red-400' :
                   'text-yellow-400'
                 }`}>
-                  {dashboardStats.marketSentiment === 'BULLISH' ? '📈' :
-                   dashboardStats.marketSentiment === 'BEARISH' ? '📉' : '➡️'}
+                  {dashboardStats.marketSentiment === 'BULLISH' ? '?��' :
+                   dashboardStats.marketSentiment === 'BEARISH' ? '?��' : '?�️'}
                 </div>
-                <div className="text-xs text-gray-400">시장 센티먼트</div>
+                <div className="text-xs text-gray-400">?�장 ?�티먼트</div>
               </div>
               <div className="text-center">
                 <div className="text-xs">
@@ -478,16 +478,16 @@ export default function UltimateCryptoNewsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-xs text-gray-400">인기 코인</div>
+                <div className="text-xs text-gray-400">?�기 코인</div>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* 코인 선택 */}
+        {/* 코인 ?�택 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-400">코인 선택 (60+ 지원)</h3>
+            <h3 className="text-sm font-semibold text-gray-400">코인 ?�택 (60+ 지??</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAllCoins(!showAllCoins)}
@@ -498,7 +498,7 @@ export default function UltimateCryptoNewsPage() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     </svg>
-                    접기
+                    ?�기
                   </>
                 ) : (
                   <>
@@ -515,12 +515,12 @@ export default function UltimateCryptoNewsPage() {
                   autoTranslate ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400'
                 }`}
               >
-                🌐 자동 번역 {autoTranslate ? 'ON' : 'OFF'}
+                ?�� ?�동 번역 {autoTranslate ? 'ON' : 'OFF'}
               </button>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {/* 최근 업데이트 또는 뉴스가 있는 코인들 우선 표시 */}
+            {/* 최근 ?�데?�트 ?�는 ?�스가 ?�는 코인???�선 ?�시 */}
             {coins
               .filter(coin => {
                 if (showAllCoins) return true
@@ -528,13 +528,13 @@ export default function UltimateCryptoNewsPage() {
                 return coinsWithNews.has(coin) || recentUpdateCoins.has(coin)
               })
               .sort((a, b) => {
-                // ALL을 항상 맨 앞에
+                // ALL????�� �??�에
                 if (a === 'ALL') return -1
                 if (b === 'ALL') return 1
-                // 최근 업데이트 코인 우선
+                // 최근 ?�데?�트 코인 ?�선
                 if (recentUpdateCoins.has(a) && !recentUpdateCoins.has(b)) return -1
                 if (!recentUpdateCoins.has(a) && recentUpdateCoins.has(b)) return 1
-                // 뉴스가 있는 코인 다음
+                // ?�스가 ?�는 코인 ?�음
                 if (coinsWithNews.has(a) && !coinsWithNews.has(b)) return -1
                 if (!coinsWithNews.has(a) && coinsWithNews.has(b)) return 1
                 return 0
@@ -556,18 +556,18 @@ export default function UltimateCryptoNewsPage() {
                       NEW
                     </span>
                   )}
-                  {coin === 'ALL' ? '🌍' : coinSymbols[coin] || '●'} {coin}
+                  {coin === 'ALL' ? '?��' : coinSymbols[coin] || '??} {coin}
                 </button>
               ))}
           </div>
           {!showAllCoins && coins.filter(coin => coin !== 'ALL' && !coinsWithNews.has(coin) && !recentUpdateCoins.has(coin)).length > 0 && (
             <div className="mt-2 text-xs text-gray-500">
-              {coins.filter(coin => coin !== 'ALL' && !coinsWithNews.has(coin) && !recentUpdateCoins.has(coin)).length}개의 코인이 숨겨져 있습니다
+              {coins.filter(coin => coin !== 'ALL' && !coinsWithNews.has(coin) && !recentUpdateCoins.has(coin)).length}개의 코인???�겨???�습?�다
             </div>
           )}
         </div>
 
-        {/* 번역/원문 전체 토글 */}
+        {/* 번역/?�문 ?�체 ?��? */}
         <div className="flex justify-center mb-4">
           <button
             onClick={() => setShowTranslated(!showTranslated)}
@@ -578,14 +578,14 @@ export default function UltimateCryptoNewsPage() {
             }`}
           >
             {showTranslated ? (
-              <>🇬🇧 영어 원문으로 보기</>
+              <>?��?�� ?�어 ?�문?�로 보기</>
             ) : (
-              <>🇰🇷 한국어로 번역해서 보기</>
+              <>?��?�� ?�국?�로 번역?�서 보기</>
             )}
           </button>
         </div>
 
-        {/* 필터 컨트롤 */}
+        {/* ?�터 컨트�?*/}
         <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* 카테고리 */}
           <div className="md:col-span-2">
@@ -607,9 +607,9 @@ export default function UltimateCryptoNewsPage() {
             </div>
           </div>
 
-          {/* 날짜 선택 */}
+          {/* ?�짜 ?�택 */}
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">날짜 검색</label>
+            <label className="text-sm text-gray-400 mb-2 block">?�짜 검??/label>
             <input
               type="date"
               value={selectedDate}
@@ -631,7 +631,7 @@ export default function UltimateCryptoNewsPage() {
                     : 'bg-gray-800 text-gray-400'
                 }`}
               >
-                📊 분석
+                ?�� 분석
               </button>
               <button
                 onClick={() => setViewMode('grid')}
@@ -641,7 +641,7 @@ export default function UltimateCryptoNewsPage() {
                     : 'bg-gray-800 text-gray-400'
                 }`}
               >
-                📱 그리드
+                ?�� 그리??
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -651,21 +651,21 @@ export default function UltimateCryptoNewsPage() {
                     : 'bg-gray-800 text-gray-400'
                 }`}
               >
-                📋 리스트
+                ?�� 리스??
               </button>
             </div>
           </div>
         </div>
 
-        {/* 로딩 상태 */}
+        {/* 로딩 ?�태 */}
         {loading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-            <p className="text-gray-400 mt-4">실제 뉴스 데이터 로딩 중...</p>
+            <p className="text-gray-400 mt-4">?�제 ?�스 ?�이??로딩 �?..</p>
           </div>
         )}
 
-        {/* 뉴스 목록 - 뷰 모드별 렌더링 */}
+        {/* ?�스 목록 - �?모드�??�더�?*/}
         {!loading && filteredNews.length > 0 && (
           <div className={`grid gap-4 ${
             viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
@@ -682,7 +682,7 @@ export default function UltimateCryptoNewsPage() {
                   viewMode === 'analysis' ? 'p-6' : 'p-4'
                 }`}
               >
-                {/* 중요도 표시 */}
+                {/* 중요???�시 */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -703,65 +703,65 @@ export default function UltimateCryptoNewsPage() {
                       news.tradingSignal.direction === 'SHORT' ? 'bg-red-600/20 text-red-400' :
                       'bg-gray-600/20 text-gray-400'
                     }`}>
-                      {news.tradingSignal.direction === 'LONG' ? '🟢 LONG' :
-                       news.tradingSignal.direction === 'SHORT' ? '🔴 SHORT' :
-                       '⚪ NEUTRAL'} {news.tradingSignal.confidence}%
+                      {news.tradingSignal.direction === 'LONG' ? '?�� LONG' :
+                       news.tradingSignal.direction === 'SHORT' ? '?�� SHORT' :
+                       '??NEUTRAL'} {news.tradingSignal.confidence}%
                     </span>
                   )}
                 </div>
 
-                {/* 제목 (번역 포함) */}
+                {/* ?�목 (번역 ?�함) */}
                 <h3 className="text-white font-semibold mb-2">
                   {showTranslated && translations[news.id]?.title
                     ? translations[news.id].title
                     : news.title}
-                  {translating === news.id && ' 번역중...'}
+                  {translating === news.id && ' 번역�?..'}
                 </h3>
 
-                {/* 설명 - 항상 표시 (접기/펼치기와 관계없이) */}
+                {/* ?�명 - ??�� ?�시 (?�기/?�치기�? 관계없?? */}
                 <p className="text-gray-400 text-sm mb-3 line-clamp-2">
                   {showTranslated && translations[news.id]?.description
                     ? translations[news.id].description
                     : news.description}
                 </p>
 
-                {/* 트레이딩 참고사항 - 간략한 아이콘과 정보 */}
+                {/* ?�레?�딩 참고?�항 - 간략???�이콘과 ?�보 */}
                 <div className="flex items-center gap-3 mb-3 text-xs">
                   {news.tradingSignal && (
                     <>
-                      {/* 방향성 */}
+                      {/* 방향??*/}
                       <span className={`flex items-center gap-1 px-2 py-1 rounded ${
                         news.tradingSignal.direction === 'LONG' ? 'bg-green-600/20 text-green-400' :
                         news.tradingSignal.direction === 'SHORT' ? 'bg-red-600/20 text-red-400' :
                         'bg-gray-600/20 text-gray-400'
                       }`}>
-                        {news.tradingSignal.direction === 'LONG' ? '📈' :
-                         news.tradingSignal.direction === 'SHORT' ? '📉' : '➡️'}
+                        {news.tradingSignal.direction === 'LONG' ? '?��' :
+                         news.tradingSignal.direction === 'SHORT' ? '?��' : '?�️'}
                         {news.tradingSignal.direction}
                       </span>
 
-                      {/* 신뢰도 */}
+                      {/* ?�뢰??*/}
                       <span className="flex items-center gap-1">
-                        🎯 {news.tradingSignal.confidence}%
+                        ?�� {news.tradingSignal.confidence}%
                       </span>
 
-                      {/* 중요도 */}
+                      {/* 중요??*/}
                       <span className={`px-2 py-1 rounded ${
                         news.importance === 'CRITICAL' ? 'bg-red-600/20 text-red-400' :
                         news.importance === 'HIGH' ? 'bg-orange-600/20 text-orange-400' :
                         news.importance === 'MEDIUM' ? 'bg-yellow-600/20 text-yellow-400' :
                         'bg-gray-600/20 text-gray-400'
                       }`}>
-                        {news.importance === 'CRITICAL' ? '🚨' :
-                         news.importance === 'HIGH' ? '⚠️' :
-                         news.importance === 'MEDIUM' ? '💡' : 'ℹ️'}
+                        {news.importance === 'CRITICAL' ? '?��' :
+                         news.importance === 'HIGH' ? '?�️' :
+                         news.importance === 'MEDIUM' ? '?��' : '?�️'}
                         {news.importance}
                       </span>
                     </>
                   )}
                 </div>
 
-                {/* 펼치기 버튼 */}
+                {/* ?�치�?버튼 */}
                 <div className="flex justify-end mb-3">
                   <button
                     onClick={() => toggleNewsExpanded(news.id)}
@@ -772,26 +772,26 @@ export default function UltimateCryptoNewsPage() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                         </svg>
-                        접기
+                        ?�기
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
-                        상세보기
+                        ?�세보기
                       </>
                     )}
                   </button>
                 </div>
 
-                {/* 확장 시 추가 정보 표시 */}
+                {/* ?�장 ??추�? ?�보 ?�시 */}
                 {expandedNews.has(news.id) && (
                   <>
-                    {/* 전체 내용 */}
+                    {/* ?�체 ?�용 */}
                     {news.content && (
                       <div className="bg-gray-900/50 rounded-lg p-3 mb-3">
-                        <h4 className="text-xs font-semibold text-purple-400 mb-2">📄 전체 내용</h4>
+                        <h4 className="text-xs font-semibold text-purple-400 mb-2">?�� ?�체 ?�용</h4>
                         <p className="text-gray-400 text-xs">
                           {showTranslated && translations[news.id]?.description
                             ? translations[news.id].description
@@ -802,89 +802,89 @@ export default function UltimateCryptoNewsPage() {
                   </>
                 )}
 
-                {/* 분석 뷰에서만 표시되는 상세 정보 - 확장 시에만 */}
+                {/* 분석 뷰에?�만 ?�시?�는 ?�세 ?�보 - ?�장 ?�에�?*/}
                 {viewMode === 'analysis' && expandedNews.has(news.id) && (
                   <>
-                    {/* AI 트레이딩 시그널 */}
+                    {/* AI ?�레?�딩 ?�그??*/}
                     {news.tradingSignal && (
                       <div className="bg-gray-900/50 rounded-lg p-3 mb-3">
-                        <h4 className="text-xs font-semibold text-purple-400 mb-2">🤖 AI 트레이딩 시그널</h4>
+                        <h4 className="text-xs font-semibold text-purple-400 mb-2">?�� AI ?�레?�딩 ?�그??/h4>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>방향: {news.tradingSignal.direction}</div>
-                          <div>신뢰도: {news.tradingSignal.confidence}%</div>
-                          <div>시간대: {news.tradingSignal.timeframe}</div>
+                          <div>?�뢰?? {news.tradingSignal.confidence}%</div>
+                          <div>?�간?�: {news.tradingSignal.timeframe}</div>
                           <div>R:R: {news.tradingSignal.riskReward}</div>
                         </div>
                       </div>
                     )}
 
-                    {/* 소셜 센티먼트 */}
+                    {/* ?�셜 ?�티먼트 */}
                     {news.socialSentiment && (
                       <div className="bg-gray-900/50 rounded-lg p-3 mb-3">
-                        <h4 className="text-xs font-semibold text-purple-400 mb-2">💬 소셜 센티먼트</h4>
+                        <h4 className="text-xs font-semibold text-purple-400 mb-2">?�� ?�셜 ?�티먼트</h4>
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div>Twitter: {news.socialSentiment.twitter.toLocaleString()}</div>
                           <div>Reddit: {news.socialSentiment.reddit.toLocaleString()}</div>
-                          <div>버즈: {news.socialSentiment.buzzScore}점</div>
+                          <div>버즈: {news.socialSentiment.buzzScore}??/div>
                         </div>
                         <div className={`mt-2 text-xs ${
                           news.socialSentiment.viralPotential === 'HIGH' ? 'text-red-400' :
                           news.socialSentiment.viralPotential === 'MEDIUM' ? 'text-yellow-400' :
                           'text-gray-400'
                         }`}>
-                          바이럴 가능성: {news.socialSentiment.viralPotential}
+                          바이??가?�성: {news.socialSentiment.viralPotential}
                         </div>
                       </div>
                     )}
 
-                    {/* 커뮤니티 투표 */}
+                    {/* 커�??�티 ?�표 */}
                     {news.communityVote && (
                       <div className="bg-gray-900/50 rounded-lg p-3 mb-3">
-                        <h4 className="text-xs font-semibold text-purple-400 mb-2">🗳️ 커뮤니티 투표</h4>
+                        <h4 className="text-xs font-semibold text-purple-400 mb-2">?���?커�??�티 ?�표</h4>
                         <div className="flex gap-2 mb-2">
                           <button
                             onClick={() => handleVote(news.id, 'bullish')}
                             className="flex-1 py-1 bg-green-600/20 text-green-400 rounded text-xs hover:bg-green-600/30"
                           >
-                            📈 강세 ({news.communityVote.bullish})
+                            ?�� 강세 ({news.communityVote.bullish})
                           </button>
                           <button
                             onClick={() => handleVote(news.id, 'neutral')}
                             className="flex-1 py-1 bg-gray-600/20 text-gray-400 rounded text-xs hover:bg-gray-600/30"
                           >
-                            ➡️ 중립 ({news.communityVote.neutral})
+                            ?�️ 중립 ({news.communityVote.neutral})
                           </button>
                           <button
                             onClick={() => handleVote(news.id, 'bearish')}
                             className="flex-1 py-1 bg-red-600/20 text-red-400 rounded text-xs hover:bg-red-600/30"
                           >
-                            📉 약세 ({news.communityVote.bearish})
+                            ?�� ?�세 ({news.communityVote.bearish})
                           </button>
                         </div>
                         <div className="text-xs text-gray-500 text-center">
-                          총 {news.communityVote.total}명 참여
+                          �?{news.communityVote.total}�?참여
                         </div>
                       </div>
                     )}
                   </>
                 )}
 
-                {/* 관련 코인 */}
+                {/* 관??코인 */}
                 <div className="flex flex-wrap gap-1 mb-3">
                   {news.relatedCoins.slice(0, 5).map(coin => (
                     <span
                       key={coin}
                       className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs"
                     >
-                      {coinSymbols[coin] || '●'} {coin}
+                      {coinSymbols[coin] || '??} {coin}
                     </span>
                   ))}
                 </div>
 
-                {/* 액션 버튼 */}
+                {/* ?�션 버튼 */}
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">
-                    📰 {news.source.name}
+                    ?�� {news.source.name}
                   </span>
                   <div className="flex gap-2">
                     <a
@@ -893,7 +893,7 @@ export default function UltimateCryptoNewsPage() {
                       rel="noopener noreferrer"
                       className="text-purple-400 hover:text-purple-300 text-sm px-2 py-1 bg-purple-600/20 rounded"
                     >
-                      📰 기사 원문 보기 →
+                      ?�� 기사 ?�문 보기 ??
                     </a>
                   </div>
                 </div>
@@ -902,10 +902,10 @@ export default function UltimateCryptoNewsPage() {
           </div>
         )}
 
-        {/* 뉴스 없음 */}
+        {/* ?�스 ?�음 */}
         {!loading && filteredNews.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400">선택한 조건에 맞는 뉴스가 없습니다.</p>
+            <p className="text-gray-400">?�택??조건??맞는 ?�스가 ?�습?�다.</p>
           </div>
         )}
       </div>
