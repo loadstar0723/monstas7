@@ -1,9 +1,7 @@
 const CACHE_NAME = 'monsta-v1.0.0';
 const urlsToCache = [
-  '/',
-  '/dashboard',
-  '/globals.css',
-  '/favicon.ico'
+  '/'
+  // 다른 URL은 동적으로 캐시
 ];
 
 // 서비스 워커 설치
@@ -12,10 +10,16 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('캐시 열기 완료');
-        return cache.addAll(urlsToCache);
+        // 개별적으로 캐시 추가 (실패해도 계속 진행)
+        const cachePromises = urlsToCache.map(url => {
+          return cache.add(url).catch(err => {
+            console.warn(`캐시 추가 실패 (${url}):`, err.message);
+          });
+        });
+        return Promise.all(cachePromises);
       })
       .catch((error) => {
-        console.error('캐시 추가 실패:', error);
+        console.error('캐시 열기 실패:', error);
       })
   );
   self.skipWaiting();
@@ -40,17 +44,29 @@ self.addEventListener('activate', (event) => {
 
 // 네트워크 요청 가로채기
 self.addEventListener('fetch', (event) => {
-  // API 요청은 항상 네트워크 우선
+  // POST 요청은 캐시하지 않음
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // API 요청은 항상 네트워크 우선 (외부 API는 캐시하지 않음)
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // 성공적인 응답은 캐시에 저장
-          if (response && response.status === 200) {
+          // 외부 API 프록시 요청은 캐시하지 않음
+          const doNotCache = ['/api/coingecko', '/api/binance', '/api/fear-greed'];
+          const shouldCache = !doNotCache.some(path => event.request.url.includes(path));
+
+          // 성공적인 응답만 캐시에 저장 (GET 요청만, 외부 API 제외)
+          if (response && response.status === 200 && event.request.method === 'GET' && shouldCache) {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME)
               .then((cache) => {
-                cache.put(event.request, responseToCache);
+                cache.put(event.request, responseToCache).catch(() => {
+                  // 캐시 실패 무시
+                });
               });
           }
           return response;

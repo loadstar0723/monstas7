@@ -371,7 +371,9 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
   news: {
     title: '📰 뉴스 & 리서치',
     items: [
-      { icon: FaNewspaper, label: '실시간 뉴스', path: '/news/realtime', category: 'news' },
+      { icon: FaGlobe, label: '📊 종합 정보센터', path: '/news/comprehensive', category: 'news', isNew: true, isHot: true },
+      { icon: FaNewspaper, label: '🌏 실시간 뉴스', path: '/news/real', category: 'news', isNew: true, isHot: true },
+      { icon: FaTwitter, label: '💬 소셜 분석', path: '/news/social', category: 'news', isNew: true },
       { icon: BiAnalyse, label: 'AI 요약', path: '/news/ai-summary', category: 'news', isHot: true },
       { icon: FaSearch, label: '리서치 보고서', path: '/news/research', category: 'news' },
       { icon: FaVolumeUp, label: '감성 분석', path: '/news/sentiment', category: 'news' },
