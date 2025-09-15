@@ -1,8 +1,24 @@
 'use client'
 
-import React from 'react'
-import LightGBMModule from './LightGBMModule'
+import dynamic from 'next/dynamic'
+import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
 
-export default function LightGBMPage() {
-  return <LightGBMModule />
+const LightgbmModule = dynamic(() => import('./LightgbmModuleEnhanced'), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+        <p className="text-white text-lg">LightGBM 로딩 중...</p>
+      </div>
+    </div>
+  )
+})
+
+export default function LightgbmPage() {
+  return (
+    <ModuleErrorBoundary moduleName="LightGBM">
+      <LightgbmModule />
+    </ModuleErrorBoundary>
+  )
 }

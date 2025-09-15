@@ -427,7 +427,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section - 최상단 위치 */}
-      <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center pt-16 sm:pt-20 border-b-2 border-gray-800/60 shadow-xl shadow-purple-500/10">
+      <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center pt-16 sm:pt-20 shadow-xl shadow-purple-500/10">
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -573,29 +573,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 실시간 암호화폐 뉴스 */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-purple-900/10 border-b border-gray-800/50 relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span>📰 <span className="gradient-text">실시간 암호화폐 뉴스</span></span>
-            </h2>
-            <p className="text-gray-400 text-lg">시장을 움직이는 핫한 소식들을 실시간으로 확인하세요</p>
-          </motion.div>
-
-          {/* NewsSection 컴포넌트 사용 */}
-          <NewsSection />
+      {/* 섹션 간격 및 구분선 */}
+      <div className="py-12 md:py-16 lg:py-20 relative">
+        <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2">
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent max-w-4xl mx-auto"></div>
         </div>
-      </section>
-
+      </div>
 
       {/* 커뮤니티 소셜 피드 */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-purple-900/10 to-black border-b border-gray-800/50 relative overflow-hidden">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-purple-900/10 relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
         <div className="max-w-7xl mx-auto">
           <motion.div

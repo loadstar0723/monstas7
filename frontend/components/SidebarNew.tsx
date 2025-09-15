@@ -109,7 +109,7 @@ type MenuCategory =
   'signals' | 'quant' | 'microstructure' | 'technical' | 'ai' | 
   'automation' | 'telegram' | 'gaming' | 'macro' | 'crypto' | 
   'news' | 'events' | 'risk' | 'portfolio' | 'members' | 
-  'payment' | 'marketing' | 'analytics' | 'education' | 'system' | 'subscription'
+  'payment' | 'marketing' | 'analytics' | 'education' | 'system' | 'subscription' | 'premiumFeatures'
 
 // 메뉴 아이템 타입
 interface MenuItem {
@@ -128,7 +128,7 @@ interface MenuItem {
 }
 
 // 카테고리 그룹 정의 (새로운 그룹핑)
-type CategoryGroup = 'trading' | 'analysis' | 'community' | 'management'
+type CategoryGroup = 'trading' | 'analysis' | 'community' | 'management' | 'premium'
 
 // 카테고리별 색상 테마 - 미니멀하고 통일된 디자인
 const categoryThemes = {
@@ -152,7 +152,8 @@ const categoryThemes = {
   analytics: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: MdAnalytics, iconColor: 'text-blue-500' },
   education: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaGraduationCap, iconColor: 'text-rose-500' },
   system: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCog, iconColor: 'text-gray-500' },
-  subscription: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCrown, iconColor: 'text-yellow-500' }
+  subscription: { color: 'from-gray-800 to-gray-900', bgColor: 'bg-gray-800/20', borderColor: 'border-gray-700/20', icon: FaCrown, iconColor: 'text-yellow-500' },
+  premiumFeatures: { color: 'from-purple-800 to-purple-900', bgColor: 'bg-purple-800/20', borderColor: 'border-purple-700/20', icon: FaRocket, iconColor: 'text-purple-500' }
 }
 
 // 카테고리 그룹 정의 - 구분된 색상
@@ -192,6 +193,15 @@ const categoryGroups = {
     iconEmoji: '⚙️',
     accentColor: 'text-amber-400',
     hoverColor: 'hover:bg-amber-800/30'
+  },
+  premium: {
+    title: '프리미엄',
+    categories: ['premiumFeatures'],
+    color: 'from-purple-600/20 to-purple-700/10',
+    borderColor: 'border-purple-500/30',
+    iconEmoji: '🚀',
+    accentColor: 'text-purple-400',
+    hoverColor: 'hover:bg-purple-800/30'
   }
 }
 
@@ -539,6 +549,24 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaQuestionCircle, label: '등급 가이드', path: '/subscription/guide', category: 'subscription' },
       { icon: FaStar, label: 'VIP 전용', path: '/subscription/vip', category: 'subscription', minTier: 'Master' }
     ]
+  },
+  premiumFeatures: {
+    title: '🚀 신규 고급 기능',
+    items: [
+      { icon: FaBrain, label: 'LSTM Enhanced', path: '/ai/lstm', category: 'premiumFeatures', isNew: true },
+      { icon: FaMicrochip, label: 'GRU Enhanced', path: '/ai/gru', category: 'premiumFeatures', isNew: true },
+      { icon: FaChartBar, label: 'ARIMA Enhanced', path: '/ai/arima', category: 'premiumFeatures', isNew: true },
+      { icon: FaTree, label: 'Random Forest Enhanced', path: '/ai/randomforest', category: 'premiumFeatures', isNew: true },
+      { icon: FaRocket, label: 'XGBoost Enhanced', path: '/ai/xgboost', category: 'premiumFeatures', isNew: true },
+      { icon: FaLightbulb, label: 'LightGBM Enhanced', path: '/ai/lightgbm', category: 'premiumFeatures', isNew: true },
+      { icon: FaAtom, label: 'Neural Enhanced', path: '/ai/neural', category: 'premiumFeatures', isNew: true },
+      { icon: BiData, label: 'Ensemble Enhanced', path: '/ai/ensemble', category: 'premiumFeatures', isNew: true },
+      { icon: BiAnalyse, label: 'Pattern Recognition', path: '/ai/pattern-recognition', category: 'premiumFeatures', isNew: true },
+      { icon: FaChartPie, label: '포트폴리오 옵티마이저', path: '/portfolio-optimizer', category: 'premiumFeatures', isHot: true },
+      { icon: FaRobot, label: 'AI 전략 빌더 3.0', path: '/ai/strategy-builder', category: 'premiumFeatures', isHot: true },
+      { icon: FaCreditCard, label: '구독 시스템', path: '/subscription', category: 'premiumFeatures', isNew: true },
+      { icon: FaShieldAlt, label: '보안 강화 (KYC/2FA)', path: '/security', category: 'premiumFeatures', isNew: true }
+    ]
   }
 }
 
@@ -697,7 +725,8 @@ export default function SidebarNew() {
           'analytics': 'management',
           'education': 'community',
           'system': 'management',
-          'subscription': 'management'
+          'subscription': 'management',
+          'premiumFeatures': 'premium'
         }
         
         const group = categoryToGroup[firstSegment]
@@ -1195,7 +1224,8 @@ export default function SidebarNew() {
                           trading: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20',
                           analysis: 'bg-blue-900/10 border-blue-700/20 hover:bg-blue-800/20',
                           community: 'bg-emerald-900/10 border-emerald-700/20 hover:bg-emerald-800/20',
-                          management: 'bg-amber-900/10 border-amber-700/20 hover:bg-amber-800/20'
+                          management: 'bg-amber-900/10 border-amber-700/20 hover:bg-amber-800/20',
+                          premium: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20'
                         }
                         
                         return (
