@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 import { TrendingUp, AlertCircle, BarChart3, Activity } from 'lucide-react'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
-export default function MarketAnalysisPage() {
+export default function AnalysisNewsModule() {
   const [activeTab, setActiveTab] = useState('overview')
 
   // 시장 개요 데이터
@@ -37,12 +39,13 @@ export default function MarketAnalysisPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <NewsModuleWrapper moduleName="AnalysisNewsModule">
+      <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">시장 분석</h1>
-          <p className="text-gray-400">종합적인 암호화폐 시장 분석 및 인사이트</p>
+          <h1 className="text-4xl font-bold mb-2">{translateToKorean("시장 분석")}</h1>
+          <p className="text-gray-400">{translateNewsBody("종합적인 암호화폐 시장 분석 및 인사이트")}</p>
         </div>
 
         {/* 탭 네비게이션 */}
@@ -292,5 +295,5 @@ export default function MarketAnalysisPage() {
         </Card>
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}

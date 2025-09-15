@@ -15,6 +15,7 @@ export const config = {
     value95: 0.95,
   },
   percentage: {
+    value0: 0,
     value5: 5,
     value10: 10,
     value20: 20,

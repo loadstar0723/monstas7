@@ -23,11 +23,11 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol') || 'BTCUSDT'
     const interval = searchParams.get('interval') || '1m'
     const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 1000)
-    
+
     // Binance API 직접 호출
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    
-    // Binance API 직접 호출 (레이트 리밋 문제 때문에 직접 처리)
+
+    // Binance API 직접 호출
     const response = await fetch(binanceUrl, {
       method: 'GET',
       headers: {
@@ -38,42 +38,12 @@ export async function GET(request: NextRequest) {
     })
 
     let data: any
-    
+
     if (!response.ok) {
       console.error('Binance API error:', response.status, response.statusText)
-      
-      // Rate limit 에러 시 실시간 WebSocket 데이터만 사용하도록 안내
-      const basePrice = getDefaultKlinePrice(symbol)
-      const now = Date.now()
-      const sampleKlines = []
-      
-      // 최소한의 초기 데이터 생성 (100개)
-      for (let i = 99; i >= 0; i--) {
-        const time = now - (i * 60 * 60 * 1000) // 1시간 간격
-        const variation = Math.sin(i * 0.1) * basePrice * 0.02 // 사인파 패턴
-        const open = basePrice + variation
-        const close = basePrice + Math.sin((i + 0.5) * 0.1) * basePrice * 0.02
-        const high = Math.max(open, close) * 1.005
-        const low = Math.min(open, close) * 0.995
-        const volume = 500 + Math.sin(i * 0.05) * 300
-        
-        sampleKlines.push([
-          time,
-          open.toString(),
-          high.toString(),
-          low.toString(),
-          close.toString(),
-          volume.toString(),
-          time + 3599999,
-          volume.toString(),
-          0,
-          volume.toString(),
-          volume.toString(),
-          '0'
-        ])
-      }
-      
-      data = sampleKlines
+
+      // API 에러 시 빈 배열 반환 (WebSocket으로 실시간 데이터 받기)
+      data = []
     } else {
       data = await response.json()
     }

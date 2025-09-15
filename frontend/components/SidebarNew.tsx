@@ -865,8 +865,8 @@ export default function SidebarNew() {
             animate={{ x: 0 }}
             exit={{ x: -320 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={`fixed left-0 top-0 h-full bg-gradient-to-b from-gray-950 via-gray-900 to-black 
-                       border-r border-gray-800 shadow-2xl z-50 overflow-hidden flex flex-col
+            className={`fixed left-0 top-0 h-full bg-gradient-to-b from-gray-950 via-gray-900 to-black
+                       border-r border-gray-800 shadow-2xl z-50 overflow-hidden flex flex-col notranslate
                        ${isCollapsed ? 'w-20' : 'w-80'}`}
           >
         <div className="flex flex-col h-full">

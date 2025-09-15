@@ -3,7 +3,7 @@
  * FastAPI 백엔드와 통신
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://13.209.84.93:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export class APIClient {
   private baseURL: string
@@ -14,19 +14,46 @@ export class APIClient {
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-    })
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      })
+
+      if (!response.ok) {
+        console.warn(`API Error: ${response.status} ${response.statusText} for ${endpoint}`)
+        throw new Error(`API Error: ${response.statusText}`)
+      }
+
+      // Check if response has content
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn(`Non-JSON response from ${endpoint}`)
+        return {} as T
+      }
+
+      // Safely parse JSON
+      const text = await response.text()
+      if (!text) {
+        return {} as T
+      }
+
+      try {
+        return JSON.parse(text)
+      } catch (parseError) {
+        console.error(`Failed to parse JSON from ${endpoint}:`, parseError)
+        console.error('Response text:', text.substring(0, 200))
+        return {} as T
+      }
+    } catch (error) {
+      // Network error or backend not running
+      console.warn(`Backend unavailable for ${endpoint}:`, error)
+      return {} as T
     }
-
-    return response.json()
   }
 
   // AI 예측

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +21,7 @@ import {
   ScatterChart, Scatter, ComposedChart, Treemap, FunnelChart, Funnel, LabelList
 } from 'recharts'
 import { hacksAlertService, HackIncident, SecurityAlert, VulnerabilityReport } from '@/lib/services/hacksAlert'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
 // 차트 색상 팔레트
 const COLORS = ['#ff4444', '#ff8844', '#ffaa44', '#ffdd44', '#44ff44', '#4444ff', '#ff44ff', '#44ffff']
@@ -30,7 +32,7 @@ const SEVERITY_COLORS = {
   low: '#00aa00'
 }
 
-export default function HacksAlertPage() {
+export default function HacksNewsModule() {
   const [selectedCoin, setSelectedCoin] = useState('ALL')
   const [recentHacks, setRecentHacks] = useState<HackIncident[]>([])
   const [securityAlerts, setSecurityAlerts] = useState<SecurityAlert[]>([])
@@ -132,14 +134,13 @@ export default function HacksAlertPage() {
   })) || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
+    <NewsModuleWrapper moduleName="HacksNewsModule">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4 text-white">
-            🚨 해킹 & 보안 알림
-          </h1>
-          <p className="text-gray-400">실시간 해킹 사건, 보안 위협, 취약점 모니터링</p>
+          <h1 className="text-4xl font-bold mb-4 text-white">{translateToKorean("🚨 해킹 & 보안 알림")}</h1>
+          <p className="text-gray-400">{translateNewsBody("실시간 해킹 사건, 보안 위협, 취약점 모니터링")}</p>
         </div>
 
         {/* 코인 선택 */}
@@ -355,7 +356,7 @@ export default function HacksAlertPage() {
             {/* 심각도 분포 차트 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-gray-800/30 rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4">심각도별 분포</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("심각도별 분포")}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -378,7 +379,7 @@ export default function HacksAlertPage() {
               </div>
 
               <div className="bg-gray-800/30 rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4">24시간 추세</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("24시간 추세")}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={hourlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -543,7 +544,7 @@ export default function HacksAlertPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 공격 벡터별 분석 */}
               <div className="bg-gray-800/30 rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4">공격 벡터별 분석</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("공격 벡터별 분석")}</h3>
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart data={attackVectorData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -558,7 +559,7 @@ export default function HacksAlertPage() {
 
               {/* 플랫폼별 피해 규모 */}
               <div className="bg-gray-800/30 rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4">플랫폼별 피해 규모</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("플랫폼별 피해 규모")}</h3>
                 <ResponsiveContainer width="100%" height={350}>
                   <Treemap
                     data={platformLossData}
@@ -575,7 +576,7 @@ export default function HacksAlertPage() {
 
             {/* 보안 점수 */}
             <div className="bg-gray-800/30 rounded-lg p-6">
-              <h3 className="text-xl font-bold mb-4">플랫폼 보안 점수</h3>
+              <h3 className="text-xl font-bold mb-4">{translateToKorean("플랫폼 보안 점수")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {securityScores.map((score) => (
                   <div key={score.platform} className="bg-gray-900/50 rounded-lg p-4">
@@ -697,7 +698,7 @@ export default function HacksAlertPage() {
                 ].map((item) => (
                   <div key={item.step} className="bg-gray-900/50 rounded-lg p-4">
                     <div className="text-3xl font-bold text-purple-500 mb-2">{item.step}</div>
-                    <div className="font-semibold mb-1">{item.title}</div>
+                    <div className="font-semibold mb-1">{translateToKorean(item.title)}</div>
                     <div className="text-sm text-gray-400">{item.desc}</div>
                   </div>
                 ))}
@@ -707,5 +708,5 @@ export default function HacksAlertPage() {
         </Tabs>
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}

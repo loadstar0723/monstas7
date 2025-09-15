@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { regulatoryNewsService, type Regulation, type PolicyUpdate, type ComplianceRequirement, type RegulatoryTrend, type GlobalRegulatoryIndex } from '@/lib/services/regulatoryNews'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -9,6 +10,7 @@ import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -26,7 +28,7 @@ const COLORS = ['#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#3B82F6'
 const REGIONS = ['전체', '북미', '유럽', '아시아', '중동', '남미']
 const IMPACT_LEVELS = ['전체', 'critical', 'high', 'medium', 'low']
 
-export default function RegulationPage() {
+export default function RegulationNewsModule() {
   const [selectedRegion, setSelectedRegion] = useState('전체')
   const [selectedImpact, setSelectedImpact] = useState('전체')
   const [regulations, setRegulations] = useState<Regulation[]>([])
@@ -168,12 +170,8 @@ export default function RegulationPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-bold mb-4 text-white">
-          🏛️ 암호화폐 규제 뉴스
-        </h1>
-        <p className="text-muted-foreground">
-          전 세계 암호화폐 규제 동향, 정책 변화, 컴플라이언스 요구사항을 실시간으로 추적합니다
-        </p>
+        <h1 className="text-4xl font-bold mb-4 text-white">{translateToKorean("🏛️ 암호화폐 규제 뉴스")}</h1>
+        <p className="text-muted-foreground">{translateNewsBody("전 세계 암호화폐 규제 동향, 정책 변화, 컴플라이언스 요구사항을 실시간으로 추적합니다")}</p>
       </motion.div>
 
       {/* 필터 섹션 */}
@@ -206,7 +204,7 @@ export default function RegulationPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">글로벌 규제 지수</p>
+                  <p className="text-sm text-muted-foreground">{translateNewsBody("글로벌 규제 지수")}</p>
                   <p className="text-2xl font-bold">{globalIndex.score}/100</p>
                 </div>
                 <div className={`flex items-center ${
@@ -294,7 +292,7 @@ export default function RegulationPage() {
                 <CardContent className="space-y-4">
                   {/* 영향도 분석 */}
                   <div>
-                    <h4 className="font-semibold mb-2">영향도 분석</h4>
+                    <h4 className="font-semibold mb-2">{translateToKorean("영향도 분석")}</h4>
                     <ResponsiveContainer width="100%" height={200}>
                       <RadarChart data={selectedRegulation.impact.affectedAreas.map(area => ({
                         area,
@@ -310,7 +308,7 @@ export default function RegulationPage() {
 
                   {/* 타임라인 */}
                   <div>
-                    <h4 className="font-semibold mb-2">타임라인</h4>
+                    <h4 className="font-semibold mb-2">{translateToKorean("타임라인")}</h4>
                     <div className="space-y-2">
                       {selectedRegulation.timeline.announced && (
                         <div className="flex items-center gap-2">
@@ -335,7 +333,7 @@ export default function RegulationPage() {
 
                   {/* 영향 받는 주체 */}
                   <div>
-                    <h4 className="font-semibold mb-2">영향 받는 주체</h4>
+                    <h4 className="font-semibold mb-2">{translateToKorean("영향 받는 주체")}</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedRegulation.entities.affectedExchanges?.map(exchange => (
                         <Badge key={exchange} variant="outline">{exchange}</Badge>
@@ -349,10 +347,10 @@ export default function RegulationPage() {
                   {/* 시장 반응 */}
                   {selectedRegulation.marketReaction && (
                     <div>
-                      <h4 className="font-semibold mb-2">시장 반응</h4>
+                      <h4 className="font-semibold mb-2">{translateToKorean("시장 반응")}</h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="text-center">
-                          <p className="text-sm text-muted-foreground">가격 변동</p>
+                          <p className="text-sm text-muted-foreground">{translateNewsBody("가격 변동")}</p>
                           <p className={`text-lg font-bold ${
                             selectedRegulation.marketReaction.priceChange > 0 ? 'text-green-500' : 'text-red-500'
                           }`}>
@@ -360,7 +358,7 @@ export default function RegulationPage() {
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm text-muted-foreground">거래량 변동</p>
+                          <p className="text-sm text-muted-foreground">{translateNewsBody("거래량 변동")}</p>
                           <p className={`text-lg font-bold ${
                             selectedRegulation.marketReaction.volumeChange > 0 ? 'text-green-500' : 'text-red-500'
                           }`}>
@@ -368,7 +366,7 @@ export default function RegulationPage() {
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm text-muted-foreground">감성 지수</p>
+                          <p className="text-sm text-muted-foreground">{translateNewsBody("감성 지수")}</p>
                           <p className={`text-lg font-bold ${
                             selectedRegulation.marketReaction.sentiment > 0 ? 'text-green-500' : 'text-red-500'
                           }`}>
@@ -446,7 +444,7 @@ export default function RegulationPage() {
                       </span>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">변경사항:</p>
+                      <p className="text-sm font-medium">{translateNewsBody("변경사항:")}</p>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         {update.changes.map((change, i) => (
                           <li key={i} className="flex items-start gap-1">
@@ -676,7 +674,8 @@ export default function RegulationPage() {
                         content={({ active, payload }) => {
                           if (active && payload && payload[0]) {
                             return (
-                              <div className="bg-background border rounded p-2">
+    <NewsModuleWrapper moduleName="RegulationNewsModule">
+      <div className="bg-background border rounded p-2">
                                 <p className="font-semibold">{payload[0].payload.country}</p>
                                 <p className="text-sm">변화: {payload[0].value}점</p>
                                 <p className="text-sm text-muted-foreground">{payload[0].payload.reason}</p>
@@ -726,5 +725,5 @@ export default function RegulationPage() {
         </TabsContent>
       </Tabs>
     </div>
+      </NewsModuleWrapper>
   )
-}

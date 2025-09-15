@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts'
 import { DollarSign, TrendingUp, Building2, Briefcase, PiggyBank, Rocket, AlertCircle, ChevronUp, ChevronDown, ExternalLink, Calendar, Users, Globe, Award } from 'lucide-react'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
 interface FundingRound {
   id: string
@@ -32,7 +34,7 @@ interface Investor {
   portfolio: string[]
 }
 
-export default function FundingNewsPage() {
+export default function FundingNewsModule() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '90d'>('7d')
   const [viewMode, setViewMode] = useState<'rounds' | 'investors' | 'trends'>('rounds')
@@ -157,12 +159,13 @@ export default function FundingNewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <NewsModuleWrapper moduleName="FundingNewsModule">
+      <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">펀딩 뉴스</h1>
-          <p className="text-gray-400">크립토 프로젝트 투자 및 펀딩 라운드 실시간 추적</p>
+          <h1 className="text-4xl font-bold mb-2">{translateToKorean("펀딩 뉴스")}</h1>
+          <p className="text-gray-400">{translateNewsBody("크립토 프로젝트 투자 및 펀딩 라운드 실시간 추적")}</p>
         </div>
 
         {/* 뷰 모드 선택 */}
@@ -570,5 +573,5 @@ export default function FundingNewsPage() {
         </Card>
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}

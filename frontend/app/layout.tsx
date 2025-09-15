@@ -12,6 +12,7 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+// Chrome 브라우저 자동 번역 사용 - GoogleTranslate 컴포넌트 제거
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+
         {/* 모든 스크립트보다 먼저 실행되는 긴급 패치 */}
         <script
           dangerouslySetInnerHTML={{
@@ -65,6 +67,7 @@ export default function RootLayout({
             <SafeNumberInit />
             <ServiceWorkerRegistration />
             <PWAInstallPrompt />
+            {/* Chrome 브라우저의 자동 번역 기능 사용 - 마우스 우클릭 > 한국어로 번역 */}
             <div className="min-h-screen">
               <SidebarNew />
               <MainContent>{children}</MainContent>

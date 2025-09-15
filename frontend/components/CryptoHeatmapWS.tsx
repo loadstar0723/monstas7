@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { safeFixed, safePrice, safeAmount, safePercent, safeMillion, safeThousand } from '@/lib/safeFormat'
 import { motion } from 'framer-motion'
 import { config } from '@/lib/config'
@@ -14,103 +14,90 @@ interface HeatmapItem {
   marketCap: number
 }
 
-export default function CryptoHeatmap() {
+export default function CryptoHeatmapWS() {
   const [heatmapData, setHeatmapData] = useState<HeatmapItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [usdToKrw, setUsdToKrw] = useState(1350) // USD/KRW 환율
+  const [usdToKrw, setUsdToKrw] = useState(1350)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+  const tickerDataRef = useRef<Map<string, any>>(new Map())
 
   useEffect(() => {
-    // 환율 설정 (실제로는 API에서 가져와야 함)
     setUsdToKrw(1350)
-    fetchHeatmapData()
-    // 업데이트 주기를 30초로 늘려서 rate limit 회피
-    const interval = setInterval(fetchHeatmapData, 30000) // 30초마다 업데이트
-    return () => clearInterval(interval)
+
+    // WebSocket 연결
+    connectWebSocket()
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+    }
   }, [])
 
-  const fetchHeatmapData = async () => {
+  const connectWebSocket = () => {
     try {
-      setError(null)
+      // Binance WebSocket - 모든 티커 스트림
+      const ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr')
 
-      // localStorage에서 캐시된 데이터 확인
-      const cached = localStorage.getItem('heatmapData')
-      const cacheTime = localStorage.getItem('heatmapTime')
-
-      if (cached && cacheTime) {
-        const cacheAge = Date.now() - parseInt(cacheTime)
-        // 20초 이내의 캐시는 재사용
-        if (cacheAge < 20000) {
-          setHeatmapData(JSON.parse(cached))
-          setLoading(false)
-          return
-        }
-      }
-
-      // Binance API는 CORS를 허용하므로 직접 호출 가능
-      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr')
-
-      if (!response.ok) {
-        // Rate limit 에러 처리
-        if (response.status === 429) {
-          console.warn('Binance API rate limit 도달. 1분 후 재시도...')
-          setError('API 호출 제한. 잠시 후 자동 재시도됩니다.')
-
-          // 기존 캐시 데이터가 있으면 사용
-          if (cached) {
-            setHeatmapData(JSON.parse(cached))
-          }
-
-          // 1분 후 재시도
-          setTimeout(fetchHeatmapData, 60000)
-          setLoading(false)
-          return
-        }
-
-        console.error('Binance API 응답 에러:', response.status)
-        setError(`API 에러: ${response.status}`)
+      ws.onopen = () => {
+        console.log('WebSocket 연결됨')
+        setIsConnected(true)
         setLoading(false)
-        return
       }
 
-      const data = await response.json()
+      ws.onmessage = (event) => {
+        try {
+          const tickers = JSON.parse(event.data)
 
-      // 배열인지 확인
-      const allTickers = Array.isArray(data) ? data : []
+          // 티커 데이터를 Map에 저장
+          tickers.forEach((ticker: any) => {
+            if (ticker.s && ticker.s.endsWith('USDT')) {
+              tickerDataRef.current.set(ticker.s, ticker)
+            }
+          })
 
-      // USDT 페어만 필터링하고 거래량 기준 정렬
-      const usdtPairs = allTickers
-        .filter((ticker: Record<string, string>) => ticker.symbol && ticker.symbol.endsWith('USDT'))
-        .sort((a: Record<string, string>, b: Record<string, string>) => parseFloat(b.quoteVolume || '0') - parseFloat(a.quoteVolume || '0'))
-        .slice(0, 30)
-        .map((ticker: Record<string, string>) => ({
-          symbol: ticker.symbol,
-          name: ticker.symbol.replace('USDT', ''),
-          price: parseFloat(ticker.lastPrice || '0'),
-          change: parseFloat(ticker.priceChangePercent || '0'),
-          volume: parseFloat(ticker.quoteVolume || '0'),
-          marketCap: parseFloat(ticker.quoteVolume || '0')
-        }))
-      
-      setHeatmapData(usdtPairs)
-      setLastUpdate(new Date())
+          // USDT 페어만 필터링하고 거래량 기준 정렬
+          const usdtPairs = Array.from(tickerDataRef.current.values())
+            .filter(ticker => ticker.s && ticker.s.endsWith('USDT'))
+            .sort((a, b) => parseFloat(b.q || '0') - parseFloat(a.q || '0'))
+            .slice(0, 30)
+            .map(ticker => ({
+              symbol: ticker.s,
+              name: ticker.s.replace('USDT', ''),
+              price: parseFloat(ticker.c || '0'),
+              change: parseFloat(ticker.P || '0'),
+              volume: parseFloat(ticker.q || '0'),
+              marketCap: parseFloat(ticker.q || '0')
+            }))
 
-      // 캐시에 저장
-      localStorage.setItem('heatmapData', JSON.stringify(usdtPairs))
-      localStorage.setItem('heatmapTime', Date.now().toString())
+          setHeatmapData(usdtPairs)
+          setLastUpdate(new Date())
+        } catch (error) {
+          console.error('WebSocket 메시지 처리 오류:', error)
+        }
+      }
 
-      setLoading(false)
+      ws.onerror = (error) => {
+        console.error('WebSocket 에러:', error)
+        setIsConnected(false)
+      }
+
+      ws.onclose = () => {
+        console.log('WebSocket 연결 종료')
+        setIsConnected(false)
+
+        // 5초 후 재연결 시도
+        setTimeout(() => {
+          connectWebSocket()
+        }, 5000)
+      }
+
+      wsRef.current = ws
     } catch (error) {
-      console.error('히트맵 데이터 로드 실패:', error)
-      setError('데이터 로드 실패')
-
-      // 캐시된 데이터가 있으면 사용
-      const cached = localStorage.getItem('heatmapData')
-      if (cached) {
-        setHeatmapData(JSON.parse(cached))
-      }
-
+      console.error('WebSocket 연결 실패:', error)
+      setIsConnected(false)
       setLoading(false)
     }
   }
@@ -179,7 +166,7 @@ export default function CryptoHeatmap() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="relative"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
@@ -187,7 +174,7 @@ export default function CryptoHeatmap() {
     >
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold mb-4">
-          <span className="gradient-text">실시간 암호화폐 히트맵</span>
+          <span className="gradient-text">실시간 암호화폐 히트맵 (WebSocket)</span>
         </h2>
         <p className="text-gray-400 text-lg">거래량 기준 상위 30개 코인의 실시간 현황</p>
       </div>
@@ -196,19 +183,24 @@ export default function CryptoHeatmap() {
         <div className="gradient-border-content bg-gray-900/95">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-600/20 to-emerald-600/10 border border-emerald-500/30">
-                <span className="animate-pulse w-2 h-2 bg-emerald-400 rounded-full"></span>
-                <span className="text-sm font-medium text-emerald-400">LIVE</span>
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                isConnected
+                  ? 'bg-gradient-to-r from-emerald-600/20 to-emerald-600/10 border-emerald-500/30'
+                  : 'bg-gradient-to-r from-red-600/20 to-red-600/10 border-red-500/30'
+              }`}>
+                <span className={`animate-pulse w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-emerald-400' : 'bg-red-400'
+                }`}></span>
+                <span className={`text-sm font-medium ${
+                  isConnected ? 'text-emerald-400' : 'text-red-400'
+                }`}>
+                  {isConnected ? 'LIVE' : 'RECONNECTING'}
+                </span>
               </div>
-              <span className="text-gray-500 text-sm">30초마다 업데이트</span>
+              <span className="text-gray-500 text-sm">WebSocket 실시간 스트리밍</span>
               {lastUpdate && (
                 <span className="text-gray-600 text-xs">
                   마지막 업데이트: {lastUpdate.toLocaleTimeString()}
-                </span>
-              )}
-              {error && (
-                <span className="text-yellow-500 text-xs">
-                  {error}
                 </span>
               )}
             </div>
@@ -221,7 +213,7 @@ export default function CryptoHeatmap() {
               </div>
             </div>
           </div>
-      
+
           <div className="grid grid-cols-12 gap-2 auto-rows-min">
             {heatmapData.map((coin, index) => (
               <motion.div
@@ -289,7 +281,7 @@ export default function CryptoHeatmap() {
                 </div>
               </div>
             </div>
-            
+
             <div className="glass-card p-4">
               <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">거래량 크기</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">

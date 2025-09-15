@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 import { Twitter, Users, TrendingUp, AlertCircle, Eye, MessageCircle, Heart, Share2, Target, ChevronUp, ChevronDown, ExternalLink, Verified, Bell, Star, Filter, Search } from 'lucide-react'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
 interface Influencer {
   id: string
@@ -44,7 +46,7 @@ interface CoinMention {
   impact: number
 }
 
-export default function InfluencersPage() {
+export default function InfluencersNewsModule() {
   const [selectedInfluencer, setSelectedInfluencer] = useState<string | null>(null)
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'followers' | 'engagement' | 'accuracy'>('followers')
@@ -148,12 +150,13 @@ export default function InfluencersPage() {
   const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6']
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <NewsModuleWrapper moduleName="InfluencersNewsModule">
+      <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">인플루언서 추적</h1>
-          <p className="text-gray-400">주요 크립토 인플루언서들의 실시간 동향과 영향력 분석</p>
+          <h1 className="text-4xl font-bold mb-2">{translateToKorean("인플루언서 추적")}</h1>
+          <p className="text-gray-400">{translateNewsBody("주요 크립토 인플루언서들의 실시간 동향과 영향력 분석")}</p>
         </div>
 
         {/* 필터 및 정렬 */}
@@ -467,5 +470,5 @@ export default function InfluencersPage() {
         </Card>
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}

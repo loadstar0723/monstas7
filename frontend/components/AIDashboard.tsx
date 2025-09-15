@@ -32,22 +32,50 @@ export default function AIDashboard() {
   const [wsData, setWsData] = useState<any>(null)
 
   useEffect(() => {
-    // 초기 데이터 로드
-    loadPredictions()
-    loadMarketAnalysis(selectedSymbol)
+    // 초기 데이터 로드 - 백엔드 서버 연결 비활성화
+    // loadPredictions()
+    // loadMarketAnalysis(selectedSymbol)
 
-    // WebSocket 연결
-    const ws = apiClient.connectWebSocket((data) => {
-      setWsData(data)
-      if (data.type === 'ai_signal') {
-        // 새로운 AI 시그널 받음
-        }
+    // 샘플 데이터 설정
+    setPredictions([
+      { symbol: 'BTCUSDT', price: 97500, prediction: 'UP', confidence: 85, target: 98500, stopLoss: 96500 },
+      { symbol: 'ETHUSDT', price: 3750, prediction: 'UP', confidence: 78, target: 3850, stopLoss: 3650 },
+      { symbol: 'BNBUSDT', price: 680, prediction: 'NEUTRAL', confidence: 65, target: 690, stopLoss: 670 },
+      { symbol: 'SOLUSDT', price: 240, prediction: 'UP', confidence: 82, target: 250, stopLoss: 235 },
+      { symbol: 'ADAUSDT', price: 1.05, prediction: 'DOWN', confidence: 70, target: 1.00, stopLoss: 1.08 }
+    ])
+
+    setMarketAnalysis({
+      trend: 'bullish',
+      sentiment: 75,
+      volume: 'high',
+      support: 95000,
+      resistance: 100000,
+      recommendation: 'BUY',
+      technical_indicators: {
+        rsi: 55.5,
+        macd: { value: 245, signal: 230, histogram: 15 },
+        bollinger: { upper: 99000, middle: 97500, lower: 96000 }
+      },
+      volume_analysis: {
+        buy_volume: 1250000,
+        sell_volume: 950000,
+        whale_activity: 'MEDIUM'
+      }
     })
 
+    // WebSocket 연결 비활성화 (백엔드 서버 없음)
+    // const ws = apiClient.connectWebSocket((data) => {
+    //   setWsData(data)
+    //   if (data.type === 'ai_signal') {
+    //     // 새로운 AI 시그널 받음
+    //   }
+    // })
+
     return () => {
-      if (ws) {
-        ws.close()
-      }
+      // if (ws) {
+      //   ws.close()
+      // }
     }
   }, [selectedSymbol])
 
@@ -231,15 +259,15 @@ export default function AIDashboard() {
                 <FaChartLine className="text-purple-400" />
               </div>
               <div className="text-4xl font-bold mb-2 gradient-text">
-                {safeToFixed(marketAnalysis.technical_indicators.rsi, 2)}
+                {marketAnalysis.technical_indicators?.rsi ? safeToFixed(marketAnalysis.technical_indicators.rsi, 2) : '50.00'}
               </div>
               <div className={`text-sm font-medium ${
-                marketAnalysis.technical_indicators.rsi > 70 ? 'text-red-400' : 
-                marketAnalysis.technical_indicators.rsi < 30 ? 'text-emerald-400' : 
+                marketAnalysis.technical_indicators?.rsi > 70 ? 'text-red-400' :
+                marketAnalysis.technical_indicators?.rsi < 30 ? 'text-emerald-400' :
                 'text-gray-400'
               }`}>
-                {marketAnalysis.technical_indicators.rsi > 70 ? '⚠️ 과매수 구간' : 
-                 marketAnalysis.technical_indicators.rsi < 30 ? '🟢 과매도 구간' : 
+                {marketAnalysis.technical_indicators?.rsi > 70 ? '⚠️ 과매수 구간' :
+                 marketAnalysis.technical_indicators?.rsi < 30 ? '🟢 과매도 구간' :
                  '🟡 중립 구간'}
               </div>
             </motion.div>

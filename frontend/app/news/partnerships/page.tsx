@@ -1,5 +1,8 @@
 'use client'
 
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
+
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +14,7 @@ import {
   Cell
 } from 'recharts'
 
-export default function PartnershipsPage() {
+export default function PartnershipsNewsModule() {
   const [activeTab, setActiveTab] = useState('latest')
   const [selectedCoin, setSelectedCoin] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -133,14 +136,13 @@ export default function PartnershipsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 p-4">
+    <NewsModuleWrapper moduleName="PartnershipsNewsModule">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold text-white">
-              🤝 파트너십 & 협업 뉴스
-            </h1>
+            <h1 className="text-4xl font-bold text-white">{translateToKorean("🤝 파트너십 & 협업 뉴스")}</h1>
             <div className="flex items-center gap-4">
               <Badge variant="outline" className="border-green-500">
                 실시간 업데이트
@@ -150,9 +152,7 @@ export default function PartnershipsPage() {
               </span>
             </div>
           </div>
-          <p className="text-gray-400">
-            기업 제휴, 투자, M&A, 전략적 협력 등 블록체인 파트너십 소식을 실시간으로 전달합니다
-          </p>
+          <p className="text-gray-400">{translateNewsBody("기업 제휴, 투자, M&A, 전략적 협력 등 블록체인 파트너십 소식을 실시간으로 전달합니다")}</p>
         </div>
 
         {/* 필터 */}
@@ -181,25 +181,25 @@ export default function PartnershipsPage() {
         {/* 메트릭스 개요 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4">
-            <p className="text-gray-400 text-sm">총 파트너십</p>
+            <p className="text-gray-400 text-sm">{translateNewsBody("총 파트너십")}</p>
             <p className="text-2xl font-bold text-white">
               {mounted ? 1234 + new Date().getHours() * 3 : 0}
             </p>
-            <p className="text-xs text-green-400 mt-1">+15% 이번 달</p>
+            <p className="text-xs text-green-400 mt-1">{translateNewsBody("+15% 이번 달")}</p>
           </div>
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4">
-            <p className="text-gray-400 text-sm">총 투자금</p>
-            <p className="text-2xl font-bold text-white">$12.5B</p>
-            <p className="text-xs text-green-400 mt-1">+25% YoY</p>
+            <p className="text-gray-400 text-sm">{translateNewsBody("총 투자금")}</p>
+            <p className="text-2xl font-bold text-white">{translateNewsBody("$12.5B")}</p>
+            <p className="text-xs text-green-400 mt-1">{translateNewsBody("+25% YoY")}</p>
           </div>
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4">
-            <p className="text-gray-400 text-sm">평균 거래 규모</p>
-            <p className="text-2xl font-bold text-white">$250M</p>
-            <p className="text-xs text-yellow-400 mt-1">안정적</p>
+            <p className="text-gray-400 text-sm">{translateNewsBody("평균 거래 규모")}</p>
+            <p className="text-2xl font-bold text-white">{translateNewsBody("$250M")}</p>
+            <p className="text-xs text-yellow-400 mt-1">{translateNewsBody("안정적")}</p>
           </div>
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4">
-            <p className="text-gray-400 text-sm">성공률</p>
-            <p className="text-2xl font-bold text-white">87%</p>
+            <p className="text-gray-400 text-sm">{translateNewsBody("성공률")}</p>
+            <p className="text-2xl font-bold text-white">{translateNewsBody("87%")}</p>
             <Progress value={87} className="h-1 mt-2" />
           </div>
         </div>
@@ -276,7 +276,7 @@ export default function PartnershipsPage() {
             {/* 파트너십 유형 분포 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">파트너십 유형 분포</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("파트너십 유형 분포")}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -299,7 +299,7 @@ export default function PartnershipsPage() {
               </div>
 
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">상위 파트너 기업</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("상위 파트너 기업")}</h3>
                 {getTopPartners().map((partner, i) => (
                   <div key={i} className="mb-3">
                     <div className="flex items-center justify-between mb-1">
@@ -323,7 +323,7 @@ export default function PartnershipsPage() {
         {activeTab === 'investment' && (
           <div className="space-y-6">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">투자 라운드 현황</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("투자 라운드 현황")}</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <ComposedChart data={getInvestmentRounds()}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
@@ -367,7 +367,7 @@ export default function PartnershipsPage() {
         {activeTab === 'ma' && (
           <div className="space-y-6">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">M&A 활동 타임라인</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("M&A 활동 타임라인")}</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <AreaChart data={getMAActivity()}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
@@ -381,20 +381,20 @@ export default function PartnershipsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                <p className="text-yellow-400 text-sm">진행 중인 거래</p>
+                <p className="text-yellow-400 text-sm">{translateNewsBody("진행 중인 거래")}</p>
                 <p className="text-2xl font-bold text-white">
                   {mounted ? 5 + new Date().getHours() % 3 : 0}
                 </p>
               </div>
               <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                <p className="text-green-400 text-sm">완료된 거래</p>
+                <p className="text-green-400 text-sm">{translateNewsBody("완료된 거래")}</p>
                 <p className="text-2xl font-bold text-white">
                   {mounted ? 28 + new Date().getDate() : 0}
                 </p>
               </div>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <p className="text-blue-400 text-sm">총 거래 가치</p>
-                <p className="text-2xl font-bold text-white">$8.5B</p>
+                <p className="text-blue-400 text-sm">{translateNewsBody("총 거래 가치")}</p>
+                <p className="text-2xl font-bold text-white">{translateNewsBody("$8.5B")}</p>
               </div>
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function PartnershipsPage() {
         {activeTab === 'analysis' && (
           <div className="space-y-6">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">파트너십 트렌드 분석</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("파트너십 트렌드 분석")}</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={getMAActivity()}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
@@ -420,7 +420,7 @@ export default function PartnershipsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">핵심 인사이트</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("핵심 인사이트")}</h3>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400">•</span>
@@ -442,7 +442,7 @@ export default function PartnershipsPage() {
               </div>
 
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">예상 전망</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{translateToKorean("예상 전망")}</h3>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-yellow-400">→</span>
@@ -467,5 +467,5 @@ export default function PartnershipsPage() {
         )}
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}

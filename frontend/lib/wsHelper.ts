@@ -57,7 +57,7 @@ export const reconnectWebSocket = (
         if (retryCount < retries) {
           retryCount++
           const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
-          `)
+          console.log(`WebSocket reconnecting... attempt ${retryCount}/${retries}`)
           setTimeout(connect, delay)
         }
       }

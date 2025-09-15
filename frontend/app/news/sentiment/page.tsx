@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { translateToKorean, translateNewsBody } from '@/lib/translateService'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react'
 import { sentimentService, type SentimentData, type SocialMetrics, type EmotionBreakdown } from '@/lib/services/sentimentAnalysis'
 import { cn } from '@/lib/utils'
+import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
 const MAJOR_COINS = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'AVAX', 'DOT', 'MATIC']
 
@@ -37,7 +39,7 @@ const SENTIMENT_COLORS = {
   'declining': '#F59E0B'
 }
 
-export default function SentimentAnalysisPage() {
+export default function SentimentNewsModule() {
   const [selectedCoin, setSelectedCoin] = useState('BTC')
   const [sentimentData, setSentimentData] = useState<Record<string, SentimentData>>({})
   const [socialMetrics, setSocialMetrics] = useState<SocialMetrics | null>(null)
@@ -49,12 +51,12 @@ export default function SentimentAnalysisPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [mounted, setMounted] = useState(false)
 
-  // ?�라?�언??마운???�인
+  // ?�라?�언??마운???�인
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // ?�시�?감성 ?�이???�트리밍
+  // ?�시�?감성 ?�이???�트리밍
   useEffect(() => {
     let cleanup: (() => void) | null = null
 
@@ -72,14 +74,14 @@ export default function SentimentAnalysisPage() {
         }
       )
 
-      // 초기 ?�이??로드
+      // 초기 ?�이??로드
       await loadInitialData()
       setIsLoading(false)
     }
 
     startStreaming()
 
-    // 30초마???�셜 메트�??�데?�트
+    // 30초마???�셜 메트�??�데?�트
     const interval = setInterval(() => {
       loadSocialMetrics()
       loadFearGreedIndex()
@@ -92,7 +94,7 @@ export default function SentimentAnalysisPage() {
     }
   }, [])
 
-  // ?�택??코인 변�????�세 ?�이??로드
+  // ?�택??코인 변�????�세 ?�이??로드
   useEffect(() => {
     if (selectedCoin) {
       loadCoinDetails(selectedCoin)
@@ -143,42 +145,42 @@ export default function SentimentAnalysisPage() {
   }
 
   const getSentimentEmoji = (value: number) => {
-    if (value >= 50) return '?��'
-    if (value >= 25) return '?��'
-    if (value >= -25) return '?��'
-    if (value >= -50) return '?��'
-    return '?��'
+    if (value >= 50) return '?��'
+    if (value >= 25) return '?��'
+    if (value >= -25) return '?��'
+    if (value >= -50) return '?��'
+    return '?��'
   }
 
   const getSentimentLabel = (value: number) => {
-    if (value >= 50) return '극도???��?'
-    if (value >= 25) return '?��?'
+    if (value >= 50) return '극도???��?'
+    if (value >= 25) return '?��?'
     if (value >= -25) return '중립'
-    if (value >= -50) return '비�?'
-    return '극도??비�?'
+    if (value >= -50) return '비�?'
+    return '극도??비�?'
   }
 
-  // 감정 ?�이?��? 차트?�으�?변??  const emotionChartData = emotionBreakdown ? [
+  // 감정 ?�이?��? 차트?�으�?변??  const emotionChartData = emotionBreakdown ? [
     { emotion: '공포', value: emotionBreakdown.fear, color: '#FF4444' },
-    { emotion: '?�욕', value: emotionBreakdown.greed, color: '#44FF44' },
+    { emotion: '?�욕', value: emotionBreakdown.greed, color: '#44FF44' },
     { emotion: '기쁨', value: emotionBreakdown.joy, color: '#FFD700' },
-    { emotion: '?�뢰', value: emotionBreakdown.trust, color: '#4169E1' },
-    { emotion: '기�?', value: emotionBreakdown.anticipation, color: '#FF69B4' },
-    { emotion: '?�??, value: emotionBreakdown.surprise, color: '#FFA500' },
-    { emotion: '?�픔', value: emotionBreakdown.sadness, color: '#708090' },
-    { emotion: '?�오', value: emotionBreakdown.disgust, color: '#8B4513' },
+    { emotion: '?�뢰', value: emotionBreakdown.trust, color: '#4169E1' },
+    { emotion: '기�?', value: emotionBreakdown.anticipation, color: '#FF69B4' },
+    { emotion: '?�??, value: emotionBreakdown.surprise, color: '#FFA500' },
+    { emotion: '?�픔', value: emotionBreakdown.sadness, color: '#708090' },
+    { emotion: '?�오', value: emotionBreakdown.disgust, color: '#8B4513' },
     { emotion: '분노', value: emotionBreakdown.anger, color: '#DC143C' }
   ] : []
 
-  // ?�셜 메트�??�이??차트 ?�이??  const socialRadarData = socialMetrics ? [
-    { metric: 'Twitter ?�급', value: Math.min(100, socialMetrics.twitter.mentions / 100) },
-    { metric: 'Reddit ?�동', value: Math.min(100, socialMetrics.reddit.activeUsers / 100) },
-    { metric: 'Telegram ?�장', value: Math.min(100, socialMetrics.telegram.growth + 50) },
-    { metric: '?�플루언???�수', value: socialMetrics.twitter.influencerScore },
-    { metric: '커�??�티 감성', value: (socialMetrics.reddit.sentiment + 100) / 2 }
+  // ?�셜 메트�??�이??차트 ?�이??  const socialRadarData = socialMetrics ? [
+    { metric: 'Twitter ?�급', value: Math.min(100, socialMetrics.twitter.mentions / 100) },
+    { metric: 'Reddit ?�동', value: Math.min(100, socialMetrics.reddit.activeUsers / 100) },
+    { metric: 'Telegram ?�장', value: Math.min(100, socialMetrics.telegram.growth + 50) },
+    { metric: '?�플루언???�수', value: socialMetrics.twitter.influencerScore },
+    { metric: '커�??�티 감성', value: (socialMetrics.reddit.sentiment + 100) / 2 }
   ] : []
 
-  // 코인�?감성 ?�트�??�이??  const heatmapData = MAJOR_COINS.map(coin => {
+  // 코인�?감성 ?�트�??�이??  const heatmapData = MAJOR_COINS.map(coin => {
     const data = sentimentData[coin]
     return {
       coin,
@@ -193,22 +195,19 @@ export default function SentimentAnalysisPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* ?�더 ?�션 */}
+        {/* ?�더 ?�션 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            ?�� 감성 분석 ?�?�보??          </h1>
-          <p className="text-gray-400 text-lg">
-            ?�시�??�장 감성 · ?�셜 미디??분석 · AI 감정 ?�식
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{translateToKorean("?�� 감성 분석 ?�?�보??")}</h1>
+          <p className="text-gray-400 text-lg">{translateNewsBody("?�시�??�장 감성 · ?�셜 미디??분석 · AI 감정 ?�식")}</p>
 
-          {/* 마�?�??�데?�트 */}
+          {/* 마�?�??�데?�트 */}
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
             <Activity className="w-4 h-4 text-green-400 animate-pulse" />
-            <span>?�시�??�데?�트: {mounted ? lastUpdate.toLocaleTimeString('ko-KR') : '로딩�?..'}</span>
+            <span>?�시�??�데?�트: {mounted ? lastUpdate.toLocaleTimeString('ko-KR') : '로딩�?..'}</span>
             <Button
               size="sm"
               variant="ghost"
@@ -230,9 +229,9 @@ export default function SentimentAnalysisPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Brain className="w-6 h-6 text-purple-400" />
-                공포 & ?�욕 지??              </h2>
+                공포 & ?�욕 지??              </h2>
               <Badge variant="outline" className="text-lg px-3 py-1">
-                {fearGreedIndex?.label || '로딩�?..'}
+                {fearGreedIndex?.label || '로딩�?..'}
               </Badge>
             </div>
 
@@ -264,15 +263,15 @@ export default function SentimentAnalysisPage() {
                   <span>극도??공포</span>
                   <span className="text-center">공포</span>
                   <span className="text-center">중립</span>
-                  <span className="text-center">?�욕</span>
-                  <span className="text-right">극도???�욕</span>
+                  <span className="text-center">?�욕</span>
+                  <span className="text-right">극도???�욕</span>
                 </div>
               </div>
             )}
           </Card>
         </motion.div>
 
-        {/* 코인 ?�택 버튼 */}
+        {/* 코인 ?�택 버튼 */}
         <div className="flex gap-2 flex-wrap justify-center">
           {MAJOR_COINS.map(coin => {
             const data = sentimentData[coin]
@@ -313,14 +312,14 @@ export default function SentimentAnalysisPage() {
           })}
         </div>
 
-        {/* 메인 ??컨텐�?*/}
+        {/* 메인 ??컨텐�?*/}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid grid-cols-5 w-full bg-gray-800/50">
             <TabsTrigger value="overview">종합</TabsTrigger>
-            <TabsTrigger value="social">?�셜</TabsTrigger>
+            <TabsTrigger value="social">?�셜</TabsTrigger>
             <TabsTrigger value="emotion">감정</TabsTrigger>
             <TabsTrigger value="trends">추세</TabsTrigger>
-            <TabsTrigger value="heatmap">?�트�?/TabsTrigger>
+            <TabsTrigger value="heatmap">?�트�?/TabsTrigger>
           </TabsList>
 
           {/* 종합 ??*/}
@@ -339,10 +338,10 @@ export default function SentimentAnalysisPage() {
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {Object.entries({
                       '종합': sentimentData[selectedCoin].overall,
-                      '?�스': sentimentData[selectedCoin].news,
-                      '?�셜': sentimentData[selectedCoin].social,
+                      '?�스': sentimentData[selectedCoin].news,
+                      '?�셜': sentimentData[selectedCoin].social,
                       '기술??: sentimentData[selectedCoin].technical,
-                      '?�체??: sentimentData[selectedCoin].onchain
+                      '?�체??: sentimentData[selectedCoin].onchain
                     }).map(([label, value]) => (
                       <div key={label} className="text-center p-4 bg-gray-900/50 rounded-lg">
                         <div className="text-3xl mb-2">{getSentimentEmoji(value)}</div>
@@ -360,11 +359,11 @@ export default function SentimentAnalysisPage() {
                     ))}
                   </div>
 
-                  {/* ?�뢰??�?추세 */}
+                  {/* ?�뢰??�?추세 */}
                   <div className="mt-4 pt-4 border-t border-gray-700 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div>
-                        <span className="text-sm text-gray-400">?�뢰?? </span>
+                        <span className="text-sm text-gray-400">?�뢰?? </span>
                         <span className="font-bold text-purple-400">
                           {sentimentData[selectedCoin].confidence}%
                         </span>
@@ -378,21 +377,21 @@ export default function SentimentAnalysisPage() {
                             'secondary'
                           }
                         >
-                          {sentimentData[selectedCoin].trend === 'improving' ? '개선�??��' :
-                           sentimentData[selectedCoin].trend === 'declining' ? '?�락�??��' :
-                           '?�정 ?�️'}
+                          {sentimentData[selectedCoin].trend === 'improving' ? '개선�??��' :
+                           sentimentData[selectedCoin].trend === 'declining' ? '?�락�??��' :
+                           '?�정 ?�️'}
                         </Badge>
                       </div>
                     </div>
 
                     <Badge className="animate-pulse bg-purple-600">
-                      ?�시�?분석�?                    </Badge>
+                      ?�시�?분석�?                    </Badge>
                   </div>
                 </Card>
 
                 {/* 감성 추세 차트 */}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                  <h3 className="text-xl font-bold mb-4">24?�간 감성 추세</h3>
+                  <h3 className="text-xl font-bold mb-4">{translateToKorean("24?�간 감성 추세")}</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={sentimentTrends}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -422,7 +421,7 @@ export default function SentimentAnalysisPage() {
             )}
           </TabsContent>
 
-          {/* ?�셜 미디????*/}
+          {/* ?�셜 미디????*/}
           <TabsContent value="social" className="space-y-4">
             {socialMetrics && (
               <motion.div
@@ -430,7 +429,7 @@ export default function SentimentAnalysisPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {/* Twitter 메트�?*/}
+                {/* Twitter 메트�?*/}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-blue-500/20">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Twitter className="w-5 h-5 text-blue-400" />
@@ -438,13 +437,13 @@ export default function SentimentAnalysisPage() {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">?�급 ?�수</span>
+                      <span className="text-gray-400">?�급 ?�수</span>
                       <span className="font-bold text-blue-400">
                         {socialMetrics.twitter.mentions.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">감성 ?�수</span>
+                      <span className="text-gray-400">감성 ?�수</span>
                       <span
                         className="font-bold"
                         style={{ color: getSentimentColor(socialMetrics.twitter.sentiment) }}
@@ -454,14 +453,14 @@ export default function SentimentAnalysisPage() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">?�플루언???�수</span>
+                      <span className="text-gray-400">?�플루언???�수</span>
                       <span className="font-bold text-purple-400">
                         {socialMetrics.twitter.influencerScore.toFixed(1)}/100
                       </span>
                     </div>
                     {socialMetrics.twitter.trendingRank && (
                       <div className="flex justify-between">
-                        <span className="text-gray-400">?�렌???�위</span>
+                        <span className="text-gray-400">?�렌???�위</span>
                         <Badge variant="outline" className="text-yellow-400 border-yellow-400">
                           #{socialMetrics.twitter.trendingRank}
                         </Badge>
@@ -470,7 +469,7 @@ export default function SentimentAnalysisPage() {
                   </div>
                 </Card>
 
-                {/* Reddit 메트�?*/}
+                {/* Reddit 메트�?*/}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-orange-500/20">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-orange-400" />
@@ -478,25 +477,25 @@ export default function SentimentAnalysisPage() {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">게시�???/span>
+                      <span className="text-gray-400">게시�???/span>
                       <span className="font-bold text-orange-400">
                         {socialMetrics.reddit.posts.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">?��? ??/span>
+                      <span className="text-gray-400">?��? ??/span>
                       <span className="font-bold text-orange-400">
                         {socialMetrics.reddit.comments.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">?�성 ?�용??/span>
+                      <span className="text-gray-400">?�성 ?�용??/span>
                       <span className="font-bold text-green-400">
                         {socialMetrics.reddit.activeUsers.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">감성 ?�수</span>
+                      <span className="text-gray-400">감성 ?�수</span>
                       <span
                         className="font-bold"
                         style={{ color: getSentimentColor(socialMetrics.reddit.sentiment) }}
@@ -508,16 +507,16 @@ export default function SentimentAnalysisPage() {
                   </div>
                 </Card>
 
-                {/* ?�셜 ?�이??차트 */}
+                {/* ?�셜 ?�이??차트 */}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20 md:col-span-2">
-                  <h3 className="text-xl font-bold mb-4">?�셜 미디??종합 지??/h3>
+                  <h3 className="text-xl font-bold mb-4">?�셜 미디??종합 지??/h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <RadarChart data={socialRadarData}>
                       <PolarGrid stroke="#374151" />
                       <PolarAngleAxis dataKey="metric" stroke="#9CA3AF" />
                       <PolarRadiusAxis stroke="#9CA3AF" domain={[0, 100]} />
                       <Radar
-                        name="?�셜 지??
+                        name="?�셜 지??
                         dataKey="value"
                         stroke="#8B5CF6"
                         fill="#8B5CF6"
@@ -541,9 +540,9 @@ export default function SentimentAnalysisPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {/* 감정 ?�이 차트 */}
+                {/* 감정 ?�이 차트 */}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                  <h3 className="text-xl font-bold mb-4">감정 분포</h3>
+                  <h3 className="text-xl font-bold mb-4">{translateToKorean("감정 분포")}</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -565,9 +564,9 @@ export default function SentimentAnalysisPage() {
                   </ResponsiveContainer>
                 </Card>
 
-                {/* 감정 막�? 차트 */}
+                {/* 감정 막�? 차트 */}
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                  <h3 className="text-xl font-bold mb-4">감정 강도</h3>
+                  <h3 className="text-xl font-bold mb-4">{translateToKorean("감정 강도")}</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={emotionChartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -590,12 +589,12 @@ export default function SentimentAnalysisPage() {
                   <h3 className="text-xl font-bold mb-4">주요 감정 지??/h3>
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                     {[
-                      { label: '공포', value: emotionBreakdown.fear, emoji: '?��' },
-                      { label: '?�욕', value: emotionBreakdown.greed, emoji: '?��' },
-                      { label: '기쁨', value: emotionBreakdown.joy, emoji: '?��' },
-                      { label: '?�뢰', value: emotionBreakdown.trust, emoji: '?��' },
-                      { label: '기�?', value: emotionBreakdown.anticipation, emoji: '?��' },
-                      { label: '?�??, value: emotionBreakdown.surprise, emoji: '?��' }
+                      { label: '공포', value: emotionBreakdown.fear, emoji: '?��' },
+                      { label: '?�욕', value: emotionBreakdown.greed, emoji: '?��' },
+                      { label: '기쁨', value: emotionBreakdown.joy, emoji: '?��' },
+                      { label: '?�뢰', value: emotionBreakdown.trust, emoji: '?��' },
+                      { label: '기�?', value: emotionBreakdown.anticipation, emoji: '?��' },
+                      { label: '?�??, value: emotionBreakdown.surprise, emoji: '?��' }
                     ].map((emotion) => (
                       <div key={emotion.label} className="text-center p-3 bg-gray-900/50 rounded-lg">
                         <div className="text-2xl mb-1">{emotion.emoji}</div>
@@ -618,7 +617,7 @@ export default function SentimentAnalysisPage() {
               animate={{ opacity: 1, y: 0 }}
             >
               <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                <h3 className="text-xl font-bold mb-4">감성 추세 분석</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("감성 추세 분석")}</h3>
                 <ResponsiveContainer width="100%" height={400}>
                   <ComposedChart data={sentimentTrends}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -633,7 +632,7 @@ export default function SentimentAnalysisPage() {
                       yAxisId="left"
                       type="monotone"
                       dataKey="value"
-                      name="감성 ?�수"
+                      name="감성 ?�수"
                       stroke="#8B5CF6"
                       fill="#8B5CF6"
                       fillOpacity={0.3}
@@ -649,7 +648,7 @@ export default function SentimentAnalysisPage() {
                       yAxisId="left"
                       type="monotone"
                       dataKey="momentum"
-                      name="모멘?�"
+                      name="모멘?�"
                       stroke="#F59E0B"
                       strokeWidth={2}
                       dot={false}
@@ -658,12 +657,12 @@ export default function SentimentAnalysisPage() {
                 </ResponsiveContainer>
               </Card>
 
-              {/* 추세 ?�계 */}
+              {/* 추세 ?�계 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-4 bg-gray-800/50 backdrop-blur-sm border-green-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-400">24?�간 최고</p>
+                      <p className="text-sm text-gray-400">{translateNewsBody("24?�간 최고")}</p>
                       <p className="text-2xl font-bold text-green-400">
                         +{Math.max(...sentimentTrends.map(t => t.value)).toFixed(1)}
                       </p>
@@ -675,7 +674,7 @@ export default function SentimentAnalysisPage() {
                 <Card className="p-4 bg-gray-800/50 backdrop-blur-sm border-red-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-400">24?�간 최�?</p>
+                      <p className="text-sm text-gray-400">{translateNewsBody("24?�간 최�?")}</p>
                       <p className="text-2xl font-bold text-red-400">
                         {Math.min(...sentimentTrends.map(t => t.value)).toFixed(1)}
                       </p>
@@ -687,7 +686,7 @@ export default function SentimentAnalysisPage() {
                 <Card className="p-4 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-400">?�균 감성</p>
+                      <p className="text-sm text-gray-400">{translateNewsBody("?�균 감성")}</p>
                       <p className="text-2xl font-bold text-purple-400">
                         {(sentimentTrends.reduce((a, b) => a + b.value, 0) / sentimentTrends.length).toFixed(1)}
                       </p>
@@ -699,24 +698,24 @@ export default function SentimentAnalysisPage() {
             </motion.div>
           </TabsContent>
 
-          {/* ?�트�???*/}
+          {/* ?�트�???*/}
           <TabsContent value="heatmap" className="space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                <h3 className="text-xl font-bold mb-4">코인�?감성 ?�트�?/h3>
+                <h3 className="text-xl font-bold mb-4">코인�?감성 ?�트�?/h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-700">
                         <th className="text-left p-2 text-gray-400">코인</th>
                         <th className="text-center p-2 text-gray-400">종합</th>
-                        <th className="text-center p-2 text-gray-400">?�스</th>
-                        <th className="text-center p-2 text-gray-400">?�셜</th>
+                        <th className="text-center p-2 text-gray-400">?�스</th>
+                        <th className="text-center p-2 text-gray-400">?�셜</th>
                         <th className="text-center p-2 text-gray-400">기술??/th>
-                        <th className="text-center p-2 text-gray-400">?�체??/th>
+                        <th className="text-center p-2 text-gray-400">?�체??/th>
                       </tr>
                     </thead>
                     <tbody>
@@ -748,11 +747,11 @@ export default function SentimentAnalysisPage() {
                   </table>
                 </div>
 
-                {/* ?�트�?범�? */}
+                {/* ?�트�?범�? */}
                 <div className="mt-4 flex items-center justify-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-red-500"></div>
-                    <span className="text-gray-400">극도??비�? (-100)</span>
+                    <span className="text-gray-400">극도??비�? (-100)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-yellow-500"></div>
@@ -760,14 +759,14 @@ export default function SentimentAnalysisPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-500"></div>
-                    <span className="text-gray-400">극도???��? (+100)</span>
+                    <span className="text-gray-400">극도???��? (+100)</span>
                   </div>
                 </div>
               </Card>
 
-              {/* ?�리�?차트 */}
+              {/* ?�리�?차트 */}
               <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                <h3 className="text-xl font-bold mb-4">감성 강도 ?�리�?/h3>
+                <h3 className="text-xl font-bold mb-4">감성 강도 ?�리�?/h3>
                 <ResponsiveContainer width="100%" height={400}>
                   <Treemap
                     data={heatmapData.map(coin => ({
@@ -786,7 +785,7 @@ export default function SentimentAnalysisPage() {
           </TabsContent>
         </Tabs>
 
-        {/* ?�레?�딩 ?�략 ?�안 */}
+        {/* ?�레?�딩 ?�략 ?�안 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -795,37 +794,37 @@ export default function SentimentAnalysisPage() {
           <Card className="p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border-purple-500/20">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-400" />
-              AI ?�레?�딩 ?�략 ?�안
+              AI ?�레?�딩 ?�략 ?�안
             </h3>
 
             {sentimentData[selectedCoin] && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-gray-800/50 rounded-lg">
-                    <h4 className="font-medium mb-2 text-purple-400">?�기 ?�략 (1-24?�간)</h4>
+                    <h4 className="font-medium mb-2 text-purple-400">?�기 ?�략 (1-24?�간)</h4>
                     <p className="text-sm text-gray-300">
                       {sentimentData[selectedCoin].overall > 25
-                        ? "??�??��???권장 - 긍정??감성???�세?�니??"
+                        ? "??�??��???권장 - 긍정??감성???�세?�니??"
                         : sentimentData[selectedCoin].overall < -25
-                        ? "?�️ ???��???고려 - 부?�적 감성??감�??�니??"
-                        : "?�️ 관�?권장 - 명확??방향?�이 ?�습?�다."}
+                        ? "?�️ ???��???고려 - 부?�적 감성??감�??�니??"
+                        : "?�️ 관�?권장 - 명확??방향?�이 ?�습?�다."}
                     </p>
                     <div className="mt-2 text-xs text-gray-400">
-                      권장 ?�버리�?: {Math.max(1, Math.min(3, 4 - Math.abs(sentimentData[selectedCoin].overall) / 25))}x
+                      권장 ?�버리�?: {Math.max(1, Math.min(3, 4 - Math.abs(sentimentData[selectedCoin].overall) / 25))}x
                     </div>
                   </div>
 
                   <div className="p-4 bg-gray-800/50 rounded-lg">
-                    <h4 className="font-medium mb-2 text-purple-400">중장�??�략 (1�?)</h4>
+                    <h4 className="font-medium mb-2 text-purple-400">중장�??�략 (1�?)</h4>
                     <p className="text-sm text-gray-300">
                       {sentimentData[selectedCoin].trend === 'improving'
-                        ? "?�� ?�립??매수 권장 - 감성??개선?�고 ?�습?�다."
+                        ? "?�� ?�립??매수 권장 - 감성??개선?�고 ?�습?�다."
                         : sentimentData[selectedCoin].trend === 'declining'
-                        ? "?�� ?��???축소 권장 - 감성???�화?�고 ?�습?�다."
-                        : "?�️ ?�재 ?��????��? - ?�정?�인 ?�태?�니??"}
+                        ? "?�� ?��???축소 권장 - 감성???�화?�고 ?�습?�다."
+                        : "?�️ ?�재 ?��????��? - ?�정?�인 ?�태?�니??"}
                     </p>
                     <div className="mt-2 text-xs text-gray-400">
-                      ?�본 배분: ?�체 ?�본??{Math.min(20, Math.max(5, sentimentData[selectedCoin].confidence / 5))}%
+                      ?�본 배분: ?�체 ?�본??{Math.min(20, Math.max(5, sentimentData[selectedCoin].confidence / 5))}%
                     </div>
                   </div>
                 </div>
@@ -834,7 +833,7 @@ export default function SentimentAnalysisPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm font-medium">리스???�벨</span>
+                      <span className="text-sm font-medium">리스???�벨</span>
                     </div>
                     <Badge
                       variant={
@@ -843,26 +842,24 @@ export default function SentimentAnalysisPage() {
                         'secondary'
                       }
                     >
-                      {Math.abs(sentimentData[selectedCoin].overall) > 50 ? '?�음' :
+                      {Math.abs(sentimentData[selectedCoin].overall) > 50 ? '?�음' :
                        Math.abs(sentimentData[selectedCoin].overall) > 25 ? '중간' :
-                       '??��'}
+                       '??��'}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    * ???�안?� AI 분석??기반?�며, ?�자 조언???�닙?�다. ??�� 본인???�단?�로 ?�자?�세??
-                  </p>
+                  <p className="text-xs text-gray-400 mt-2">{translateNewsBody("* ???�안?� AI 분석??기반?�며, ?�자 조언???�닙?�다. ??�� 본인???�단?�로 ?�자?�세??")}</p>
                 </div>
               </div>
             )}
           </Card>
         </motion.div>
 
-        {/* ?�터 ?�보 */}
+        {/* ?�터 ?�보 */}
         <div className="text-center text-sm text-gray-500 pb-4">
-          <p>?�이???�공: Binance, CryptoCompare, Alternative.me</p>
-          <p>감성 분석 ?�진: MONSTA AI v2.0</p>
+          <p>{translateNewsBody("?�이???�공: Binance, CryptoCompare, Alternative.me")}</p>
+          <p>{translateNewsBody("감성 분석 ?�진: MONSTA AI v2.0")}</p>
         </div>
       </div>
     </div>
+      </NewsModuleWrapper>
   )
-}
