@@ -574,7 +574,7 @@ export default function SidebarNew() {
   const pathname = usePathname()
   const { isOpen, setIsOpen } = useSidebar()
   const [searchTerm, setSearchTerm] = useState('')
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['trading'])
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [favorites, setFavorites] = useState<string[]>([])
@@ -644,6 +644,23 @@ export default function SidebarNew() {
     if (savedHeaderCollapsed) {
       setIsHeaderCollapsed(JSON.parse(savedHeaderCollapsed))
     }
+    
+    // 펼쳐진 카테고리 상태 불러오기
+    const savedExpandedCategories = localStorage.getItem('monsta_expanded_categories')
+    if (savedExpandedCategories) {
+      setExpandedCategories(JSON.parse(savedExpandedCategories))
+    }
+    
+    // 펼쳐진 그룹 상태 불러오기
+    const savedExpandedGroups = localStorage.getItem('monsta_expanded_groups')
+    if (savedExpandedGroups) {
+      const groups = JSON.parse(savedExpandedGroups)
+      // 아무 그룹도 펼쳐져 있지 않으면 trading 그룹을 기본으로 펼침
+      setExpandedGroups(groups.length > 0 ? groups : ['trading'])
+    } else {
+      // 처음 방문 시 trading 그룹을 기본으로 펼침
+      setExpandedGroups(['trading'])
+    }
   }, [])
 
   // 모바일 감지 및 자동 헤더 접기
@@ -698,7 +715,10 @@ export default function SidebarNew() {
         // expandedCategories에 없으면 추가
         setExpandedCategories(prev => {
           if (!prev.includes(firstSegment)) {
-            return [...prev, firstSegment]
+            const newCategories = [...prev, firstSegment]
+            // localStorage에 저장
+            localStorage.setItem('monsta_expanded_categories', JSON.stringify(newCategories))
+            return newCategories
           }
           return prev
         })
@@ -733,7 +753,10 @@ export default function SidebarNew() {
         if (group) {
           setExpandedGroups(prev => {
             if (!prev.includes(group)) {
-              return [...prev, group]
+              const newGroups = [...prev, group]
+              // localStorage에 저장
+              localStorage.setItem('monsta_expanded_groups', JSON.stringify(newGroups))
+              return newGroups
             }
             return prev
           })
@@ -833,20 +856,28 @@ export default function SidebarNew() {
 
   // 그룹 토글
   const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => 
-      prev.includes(group) 
+    setExpandedGroups(prev => {
+      const newGroups = prev.includes(group) 
         ? prev.filter(g => g !== group)
         : [...prev, group]
-    )
+      
+      // localStorage에 저장
+      localStorage.setItem('monsta_expanded_groups', JSON.stringify(newGroups))
+      return newGroups
+    })
   }
 
   // 카테고리 토글
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(category) 
+    setExpandedCategories(prev => {
+      const newCategories = prev.includes(category) 
         ? prev.filter(c => c !== category)
         : [...prev, category]
-    )
+      
+      // localStorage에 저장
+      localStorage.setItem('monsta_expanded_categories', JSON.stringify(newCategories))
+      return newCategories
+    })
   }
 
   return (
