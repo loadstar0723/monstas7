@@ -281,7 +281,9 @@
       "Bash(start http://localhost:35000/news/social)",
       "Bash(start http://localhost:35000/news/ultimate)",
       "Bash(start http://localhost:35000/news/comprehensive)",
-      "Bash(start http://localhost:35000/news/diverse)"
+      "Bash(start http://localhost:35000/news/diverse)",
+      "Bash(start http://localhost:4000)",
+      "Bash(start http://localhost:4100)"
     ],
     "deny": [],
     "ask": []
