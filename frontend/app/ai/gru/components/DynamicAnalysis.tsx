@@ -146,9 +146,9 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
           return {
             gateActivity: Array.from({ length: 20 }, (_, i) => ({
               time: `${i}:00`,
-              reset: 20 + Math.random() * 40,
-              update: 50 + Math.random() * 40,
-              efficiency: 60 + Math.random() * 30
+              reset: 20 + Math.sin(i / 3) * 20 + Math.cos(i / 5) * 20,  // 결정론적 변동
+              update: 50 + Math.cos(i / 4) * 20 + Math.sin(i / 6) * 20,  // 다른 주기 패턴
+              efficiency: 60 + Math.sin(i / 5) * 15 + Math.cos(i / 7) * 15  // 효율성 패턴
             })),
             gateBalance: [
               { name: 'Reset Gate', value: 35, fill: '#ef4444' },
@@ -165,16 +165,16 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
             ],
             efficiency: Array.from({ length: 24 }, (_, i) => ({
               hour: `${i}:00`,
-              GRU: 85 + Math.random() * 10,
-              LSTM: 80 + Math.random() * 10
+              GRU: 85 + Math.sin(i / 4) * 5 + Math.cos(i / 6) * 5,  // GRU 효율성 패턴
+              LSTM: 80 + Math.cos(i / 4) * 5 + Math.sin(i / 6) * 5  // LSTM 효율성 패턴
             }))
           }
         case 'hyperparameter':
           return {
             optimization: Array.from({ length: 30 }, (_, i) => ({
               trial: i + 1,
-              accuracy: 70 + Math.random() * 20,
-              loss: 0.5 - i * 0.01 + Math.random() * 0.05
+              accuracy: 70 + Math.sin(i / 5) * 10 + Math.cos(i / 7) * 10,  // 정확도 패턴
+              loss: 0.5 - i * 0.01 + Math.sin(i * 0.7) * 0.025 + Math.cos(i * 0.9) * 0.025  // 손실 패턴
             })),
             paramImportance: [
               { param: '학습률', importance: 95, optimal: 88 },
@@ -190,9 +190,9 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
                 hour: '2-digit', 
                 minute: '2-digit' 
               }),
-              actual: 50000 + Math.sin(i / 10) * 1000 + Math.random() * 500,
-              predicted: 50000 + Math.sin(i / 10) * 1000 + Math.random() * 700,
-              confidence: 75 + Math.random() * 20
+              actual: 50000 + Math.sin(i / 10) * 1000 + Math.sin(i * 1.3) * 250 + Math.cos(i * 1.7) * 250,  // 실제값
+              predicted: 50000 + Math.sin(i / 10) * 1000 + Math.sin(i * 1.1) * 350 + Math.cos(i * 1.5) * 350,  // 예측값
+              confidence: 75 + Math.sin(i / 7) * 10 + Math.cos(i / 9) * 10  // 신뢰도
             })),
             signals: [
               { signal: 'BUY', strength: 87, count: 45 },
@@ -204,8 +204,8 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
           return {
             trainingProgress: Array.from({ length: 50 }, (_, i) => ({
               epoch: i * 4,
-              trainLoss: 0.5 * Math.exp(-i * 0.05) + Math.random() * 0.02,
-              valLoss: 0.5 * Math.exp(-i * 0.04) + Math.random() * 0.03
+              trainLoss: 0.5 * Math.exp(-i * 0.05) + Math.sin(i * 2.3) * 0.01 + Math.cos(i * 2.7) * 0.01,  // 훈련 손실
+              valLoss: 0.5 * Math.exp(-i * 0.04) + Math.sin(i * 2.1) * 0.015 + Math.cos(i * 2.5) * 0.015  // 검증 손실
             })),
             metrics: [
               { metric: '정확도', value: 89.5, target: 90, status: 'good' },

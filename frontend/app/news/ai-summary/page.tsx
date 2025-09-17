@@ -208,7 +208,8 @@ export default function AISummaryModule() {
   }
 
   const generateChartData = (analysis: XAIAnalysis) => {
-    // 가�?차트 데이??    const prices = Array.from({ length: 24 }, (_, i) => ({
+    // 가격 차트 데이터
+    const prices = Array.from({ length: 24 }, (_, i) => ({
       time: `${i}:00`,
       price: 50000 + Math.random() * 5000,
       ma7: 51000 + Math.random() * 2000,
@@ -216,7 +217,8 @@ export default function AISummaryModule() {
     }))
     setPriceData(prices)
 
-    // 거래??데이??    const volumes = Array.from({ length: 24 }, (_, i) => ({
+    // 거래량 데이터
+    const volumes = Array.from({ length: 24 }, (_, i) => ({
       time: `${i}:00`,
       volume: Math.random() * 1000000,
       buy: Math.random() * 600000,

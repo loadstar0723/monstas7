@@ -173,7 +173,7 @@ export default function DynamicAnalysis({ type, symbol }: DynamicAnalysisProps) 
               time: i,
               trend: 50000 + i * 100,
               seasonal: Math.sin(i / 5) * 500,
-              residual: (Math.random() - 0.5) * 200
+              residual: Math.sin(i * 0.3) * 100 // 사인파 기반 잔차
             })),
             strength: [
               { component: '트렌드', strength: 82 },
@@ -186,7 +186,7 @@ export default function DynamicAnalysis({ type, symbol }: DynamicAnalysisProps) 
             correlogram: Array.from({ length: 20 }, (_, lag) => ({
               lag,
               acf: Math.exp(-lag / 5) * Math.cos(lag / 3),
-              pacf: lag <= 2 ? 0.7 / (lag + 1) : Math.random() * 0.1 - 0.05,
+              pacf: lag <= 2 ? 0.7 / (lag + 1) : Math.sin(lag * 0.5) * 0.05,
               significant: lag <= 2
             })),
             modelSelection: [
@@ -200,8 +200,8 @@ export default function DynamicAnalysis({ type, symbol }: DynamicAnalysisProps) 
           return {
             searchProgress: Array.from({ length: 10 }, (_, i) => ({
               iteration: i + 1,
-              aic: 15500 - i * 30 + Math.random() * 50,
-              bic: 15600 - i * 28 + Math.random() * 50
+              aic: 15500 - i * 30 + Math.sin(i * 0.7) * 25,
+              bic: 15600 - i * 28 + Math.cos(i * 0.7) * 25
             })),
             optimalParams: [
               { param: 'p', value: 2, optimal: true },

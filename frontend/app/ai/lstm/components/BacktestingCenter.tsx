@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
-  ComposedChart, Scatter, XAxis, YAxis, CartesianGrid, 
+  ComposedChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, ReferenceLine,
   Brush, Cell
 } from 'recharts'
+import { useGoBacktest } from '@/lib/hooks/useGoBacktest'
 import { motion } from 'framer-motion'
 import { 
   FaHistory, FaChartLine, FaCalendar, FaFilter,
@@ -36,37 +37,31 @@ interface MarketCondition {
   sharpeRatio: number
 }
 
-export default function BacktestingCenter() {
+export default function BacktestingCenter({ symbol = 'BTCUSDT' }: { symbol?: string }) {
   const [selectedPeriod, setSelectedPeriod] = useState('6M')
   const [startDate, setStartDate] = useState(new Date(Date.now() - 180 * 24 * 60 * 60 * 1000))
   const [endDate, setEndDate] = useState(new Date())
   const [marketFilter, setMarketFilter] = useState('all')
-  const [isRunning, setIsRunning] = useState(false)
-  
-  // 백테스트 결과 데이터 (실제로는 API에서 가져옴)
-  const backtestResults: BacktestResult[] = Array.from({ length: 180 }, (_, i) => {
-    const date = new Date(Date.now() - (180 - i) * 24 * 60 * 60 * 1000)
-    const actual = 50000 + Math.random() * 20000 + i * 100
-    const predicted = actual + (Math.random() - 0.5) * 1000
-    const profit = (Math.random() - 0.45) * 1000
-    return {
-      date: date.toISOString().split('T')[0],
-      actual,
-      predicted,
-      profit,
-      cumProfit: i > 0 ? profit : profit,
-      drawdown: Math.max(-Math.random() * 10, -15),
-      signal: Math.random() > 0.6 ? 'BUY' : Math.random() > 0.3 ? 'SELL' : 'HOLD',
-      confidence: 60 + Math.random() * 40
-    }
+
+  // Go 엔진 백테스트 훅 사용
+  const {
+    results: backtestResults,
+    metrics,
+    isLoading: isRunning,
+    error,
+    runBacktest: executeBacktest,
+    analyzeByMarketCondition
+  } = useGoBacktest({
+    symbol,
+    startDate,
+    endDate,
+    model: 'lstm'
   })
 
-  // 누적 수익 계산
-  backtestResults.forEach((result, i) => {
-    if (i > 0) {
-      result.cumProfit = backtestResults[i - 1].cumProfit + result.profit
-    }
-  })
+  // 초기 백테스트 실행
+  useEffect(() => {
+    executeBacktest()
+  }, [symbol, startDate, endDate])
 
   // 시장 상황별 성과
   const marketConditions: MarketCondition[] = [
@@ -96,8 +91,8 @@ export default function BacktestingCenter() {
     }
   ]
 
-  // 거래 통계
-  const tradeStats = {
+  // 거래 통계 (Go 엔진에서 가져온 메트릭스 사용)
+  const tradeStats = metrics || {
     totalTrades: 342,
     winningTrades: 234,
     losingTrades: 108,
@@ -120,12 +115,8 @@ export default function BacktestingCenter() {
     { profit: '500 ~ 1000', count: 54, color: '#10b981' }
   ]
 
-  const runBacktest = () => {
-    setIsRunning(true)
-    // 실제로는 API 호출
-    setTimeout(() => {
-      setIsRunning(false)
-    }, 3000)
+  const handleRunBacktest = () => {
+    executeBacktest()
   }
 
   return (
@@ -161,7 +152,7 @@ export default function BacktestingCenter() {
 
             {/* 백테스트 실행 버튼 */}
             <button
-              onClick={runBacktest}
+              onClick={handleRunBacktest}
               disabled={isRunning}
               className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 isRunning

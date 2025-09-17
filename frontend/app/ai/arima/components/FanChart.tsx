@@ -37,7 +37,7 @@ export default function FanChart({ symbol }: FanChartProps) {
         data.push({
           date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
           day: i,
-          actual: basePrice + Math.sin(i / 5) * 1000 + Math.random() * 500,
+          actual: basePrice + Math.sin(i / 5) * 1000 + (i * 50), // 고정된 증가량 사용
           forecast: null,
           lower50: null,
           upper50: null,

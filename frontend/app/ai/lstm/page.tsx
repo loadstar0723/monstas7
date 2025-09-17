@@ -1,15 +1,16 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
+import AIModuleWrapper from '@/components/ai/AIModuleWrapper'
 
-const LSTMModule = dynamic(() => import('./LSTMModuleEnhanced'), {
+// Go 하이브리드 LSTM으로 통합
+const GoLSTMModule = dynamic(() => import('./LSTMModuleEnhanced'), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-white text-lg">LSTM 모델 로딩 중...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4"></div>
+        <p className="text-white text-lg">Go 하이브리드 LSTM 로딩 중...</p>
       </div>
     </div>
   )
@@ -17,8 +18,8 @@ const LSTMModule = dynamic(() => import('./LSTMModuleEnhanced'), {
 
 export default function LSTMPredictionPage() {
   return (
-    <ModuleErrorBoundary moduleName="LSTM 예측 모델">
-      <LSTMModule />
-    </ModuleErrorBoundary>
+    <AIModuleWrapper moduleName="LSTM" showEngineStatus={true}>
+      <GoLSTMModule />
+    </AIModuleWrapper>
   )
 }

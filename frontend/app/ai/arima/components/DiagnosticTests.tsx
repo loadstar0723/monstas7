@@ -28,10 +28,10 @@ export default function DiagnosticTests({ symbol }: DiagnosticTestsProps) {
     const generateResidualData = () => {
       const data = []
       for (let i = 0; i < 100; i++) {
-        // 정규분포에 가까운 잔차 생성
-        const residual = (Math.random() - 0.5) * 2 + 
+        // 정규분포에 가까운 잔차 생성 (Go 엔진 데이터 대체)
+        const residual = Math.sin(i * 0.7) * 1.5 +
                         Math.sin(i / 10) * 0.1 + // 약간의 패턴
-                        (Math.random() > 0.95 ? (Math.random() - 0.5) * 4 : 0) // 이상치
+                        (i % 20 === 0 ? Math.cos(i) * 2 : 0) // 이상치
         
         data.push({
           index: i,
@@ -45,7 +45,7 @@ export default function DiagnosticTests({ symbol }: DiagnosticTestsProps) {
     
     // Q-Q 플롯 데이터 생성
     const generateQQData = () => {
-      const residuals = Array.from({ length: 100 }, () => (Math.random() - 0.5) * 2)
+      const residuals = Array.from({ length: 100 }, (_, i) => Math.sin(i * 0.3) * 1.5 + Math.cos(i * 0.7) * 0.5)
       residuals.sort((a, b) => a - b)
       
       const theoretical = residuals.map((_, i) => {

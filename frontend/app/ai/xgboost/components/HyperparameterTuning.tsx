@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   FaCogs, FaPlay, FaPause, FaRedo, FaChartLine,
-  FaMagic, FaBolt, FaAdjust, FaChartBar
+  FaMagic, FaBolt, FaAdjust, FaChartBar, FaLightbulb
 } from 'react-icons/fa'
 import { 
   LineChart, Line, AreaChart, Area, BarChart, Bar,

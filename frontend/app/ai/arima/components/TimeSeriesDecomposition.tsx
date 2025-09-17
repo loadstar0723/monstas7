@@ -2,63 +2,47 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
+import {
   FaWaveSquare, FaChartLine, FaClock, FaChartArea,
   FaArrowUp, FaArrowDown, FaBalanceScale
 } from 'react-icons/fa'
-import { 
+import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Brush, Cell
 } from 'recharts'
+import { useGoARIMA } from '@/lib/hooks/useGoARIMA'
 
 interface TimeSeriesDecompositionProps {
   symbol: string
 }
 
 export default function TimeSeriesDecomposition({ symbol }: TimeSeriesDecompositionProps) {
-  const [decompositionData, setDecompositionData] = useState<any[]>([])
   const [selectedComponent, setSelectedComponent] = useState<'all' | 'trend' | 'seasonal' | 'residual'>('all')
-  
-  // 시계열 분해 데이터 생성
+
+  // Go 엔진에서 ARIMA 분해 데이터 가져오기
+  const { decomposition, fetchDecomposition, isLoading, error } = useGoARIMA({
+    symbol,
+    period: '1h'
+  })
+
+  // 시계열 분해 데이터 가져오기
   useEffect(() => {
-    const generateDecompositionData = () => {
-      const basePrice = symbol === 'BTCUSDT' ? 50000 : symbol === 'ETHUSDT' ? 3500 : 700
-      const data = []
-      
-      for (let i = 0; i < 200; i++) {
-        const time = new Date(Date.now() - (200 - i) * 3600000).toLocaleTimeString('ko-KR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        })
-        
-        // 트렌드 성분: 장기적인 상승/하락 추세
-        const trend = basePrice + (i - 100) * 50 + Math.sin(i / 50) * 1000
-        
-        // 계절성 성분: 24시간 주기의 패턴
-        const seasonal = Math.sin(i * Math.PI / 12) * 500 + Math.cos(i * Math.PI / 6) * 300
-        
-        // 잔차 성분: 랜덤 노이즈
-        const residual = (Math.random() - 0.5) * 200
-        
-        // 원본 시계열 = 트렌드 + 계절성 + 잔차
-        const original = trend + seasonal + residual
-        
-        data.push({
-          time,
-          index: i,
-          original,
-          trend,
-          seasonal,
-          residual
-        })
-      }
-      
-      return data
-    }
-    
-    setDecompositionData(generateDecompositionData())
-  }, [symbol])
+    fetchDecomposition()
+  }, [symbol, fetchDecomposition])
+
+  // 데이터 포맷팅
+  const decompositionData = decomposition.map((item, index) => ({
+    time: new Date(item.timestamp).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    index,
+    original: item.value,
+    trend: item.trend,
+    seasonal: item.seasonal,
+    residual: item.residual
+  }))
 
   // 컴포넌트별 통계
   const componentStats = {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useGoDynamicAnalysis } from '@/lib/hooks/useGoDynamicAnalysis'
 import {
   FaChartLine, FaBrain, FaExclamationCircle, FaCheckCircle,
   FaArrowUp, FaArrowDown, FaClock, FaSignal, FaLightbulb,
@@ -21,11 +22,28 @@ interface AnalysisProps {
 
 export default function DynamicAnalysis({ type, data }: AnalysisProps) {
   const [currentInsight, setCurrentInsight] = useState(0)
+  const [selectedSymbol] = useState('BTCUSDT')
   const [analysisData, setAnalysisData] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
 
-  // 분석 타입별 인사이트
-  const insights = {
+  // Go 엔진 동적 분석 훅 사용
+  const {
+    insights: goInsights,
+    marketAnalysis,
+    isLoading: loading,
+    error,
+    getUrgentAlerts,
+    getRecommendedActions
+  } = useGoDynamicAnalysis({
+    symbol: selectedSymbol,
+    type,
+    autoRefresh: true,
+    refreshInterval: 5000
+  })
+
+  // Go 엔진에서 가져온 인사이트 사용 (폴백으로 기본값)
+  const insights = goInsights.length > 0 ? {
+    [type]: goInsights
+  } : {
     architecture: [
       {
         title: "게이트 활성화 패턴",
@@ -110,6 +128,8 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
 
   // 인사이트 로테이션
   useEffect(() => {
+    if (!insights[type] || insights[type].length === 0) return
+
     const interval = setInterval(() => {
       setCurrentInsight((prev) => (prev + 1) % insights[type].length)
     }, 5000)
@@ -143,8 +163,8 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
             ],
             trend: Array.from({ length: 24 }, (_, i) => ({
               hour: `${i}:00`,
-              accuracy: 80 + Math.random() * 10,
-              profit: -5 + Math.random() * 15
+              accuracy: marketAnalysis?.strength || 85,
+              profit: marketAnalysis?.trend === 'UP' ? 10 : marketAnalysis?.trend === 'DOWN' ? -5 : 2
             }))
           }
         case 'backtesting':
@@ -165,9 +185,9 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
           return {
             predictions: Array.from({ length: 20 }, (_, i) => ({
               time: new Date(Date.now() - (20 - i) * 60000).toLocaleTimeString(),
-              price: 50000 + Math.random() * 2000,
-              predicted: 50000 + Math.random() * 2000 + 500,
-              confidence: 70 + Math.random() * 20
+              price: 50000,
+              predicted: marketAnalysis?.resistance || 51000,
+              confidence: goInsights[0]?.confidence || 75
             })),
             signals: [
               { type: 'BUY', strength: 87, time: '2분 전' },
@@ -223,23 +243,23 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`p-4 rounded-lg border ${getSeverityColor(insights[type][currentInsight].severity)}`}
+            className={`p-4 rounded-lg border ${getSeverityColor(insights[type] && insights[type][currentInsight] ? insights[type][currentInsight].severity : 'info')}`}
           >
             <div className="flex items-start gap-3">
               <div className="text-2xl mt-1">
-                {getSeverityIcon(insights[type][currentInsight].severity)}
+                {getSeverityIcon(insights[type] && insights[type][currentInsight] ? insights[type][currentInsight].severity : 'info')}
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-white mb-1">
-                  {insights[type][currentInsight].title}
+                  {insights[type] && insights[type][currentInsight] ? insights[type][currentInsight].title : '로딩 중...'}
                 </h4>
                 <p className="text-gray-300 text-sm mb-2">
-                  {insights[type][currentInsight].description}
+                  {insights[type] && insights[type][currentInsight] ? insights[type][currentInsight].description : ''}
                 </p>
                 <p className="text-sm flex items-center gap-2">
                   <FaLightbulb className="text-yellow-400" />
                   <span className="text-gray-400">
-                    권장사항: {insights[type][currentInsight].recommendation}
+                    권장사항: {insights[type] && insights[type][currentInsight] ? insights[type][currentInsight].recommendation : ''}
                   </span>
                 </p>
               </div>
@@ -249,7 +269,7 @@ export default function DynamicAnalysis({ type, data }: AnalysisProps) {
 
         {/* 인사이트 인디케이터 */}
         <div className="flex justify-center gap-2 mt-4">
-          {insights[type].map((_, index) => (
+          {insights[type] && insights[type].map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentInsight(index)}

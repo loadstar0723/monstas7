@@ -2,66 +2,50 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
+import {
   FaChartArea, FaInfoCircle, FaCheckCircle, FaExclamationTriangle
 } from 'react-icons/fa'
-import { 
+import {
   BarChart, Bar, LineChart, Line, ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Cell, Legend
 } from 'recharts'
+import { useGoARIMA } from '@/lib/hooks/useGoARIMA'
 
 interface ACFPACFAnalysisProps {
   symbol: string
 }
 
 export default function ACFPACFAnalysis({ symbol }: ACFPACFAnalysisProps) {
-  const [acfData, setAcfData] = useState<any[]>([])
-  const [pacfData, setPacfData] = useState<any[]>([])
   const [selectedLag, setSelectedLag] = useState<number | null>(null)
-  
-  // ACF/PACF 데이터 생성
+
+  // Go 엔진에서 ACF/PACF 데이터 가져오기
+  const { acfData: goAcfData, pacfData: goPacfData, fetchACFPACF, isLoading } = useGoARIMA({
+    symbol,
+    period: '1h'
+  })
+
+  // ACF/PACF 데이터 가져오기
   useEffect(() => {
-    const generateCorrelationData = () => {
-      const acf = []
-      const pacf = []
-      const confidence = 1.96 / Math.sqrt(200) // 95% 신뢰구간
-      
-      for (let lag = 0; lag <= 40; lag++) {
-        // ACF: 지수적 감소 패턴 (MA 특성)
-        const acfValue = lag === 0 ? 1 : Math.exp(-lag / 10) * Math.cos(lag / 5) * (1 - lag / 50)
-        
-        // PACF: 특정 lag에서 절단 (AR 특성)
-        let pacfValue = 0
-        if (lag === 0) pacfValue = 1
-        else if (lag === 1) pacfValue = 0.7
-        else if (lag === 2) pacfValue = 0.4
-        else pacfValue = Math.random() * 0.2 - 0.1
-        
-        acf.push({
-          lag,
-          correlation: acfValue,
-          upperBound: confidence,
-          lowerBound: -confidence,
-          significant: Math.abs(acfValue) > confidence
-        })
-        
-        pacf.push({
-          lag,
-          correlation: pacfValue,
-          upperBound: confidence,
-          lowerBound: -confidence,
-          significant: Math.abs(pacfValue) > confidence
-        })
-      }
-      
-      return { acf, pacf }
-    }
-    
-    const { acf, pacf } = generateCorrelationData()
-    setAcfData(acf)
-    setPacfData(pacf)
-  }, [symbol])
+    fetchACFPACF()
+  }, [symbol, fetchACFPACF])
+
+  // 데이터 포맷팅
+  const acfData = goAcfData.map(item => ({
+    lag: item.lag,
+    correlation: item.acf,
+    upperBound: item.confidence,
+    lowerBound: -item.confidence,
+    significant: Math.abs(item.acf) > item.confidence
+  }))
+
+  const pacfData = goPacfData.map(item => ({
+    lag: item.lag,
+    correlation: item.pacf,
+    upperBound: item.confidence,
+    lowerBound: -item.confidence,
+    significant: Math.abs(item.pacf) > item.confidence
+  }))
 
   // ARIMA 파라미터 추천
   const getARIMARecommendation = () => {

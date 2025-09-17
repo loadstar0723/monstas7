@@ -15,96 +15,72 @@ import {
   ReferenceLine, ReferenceArea
 } from 'recharts'
 import CountUp from 'react-countup'
+import { useGoGRU } from '@/lib/hooks/useGoGRU'
 
 interface RealtimePredictionProps {
   symbol: string
 }
 
 export default function RealtimePrediction({ symbol }: RealtimePredictionProps) {
-  const [currentPrice, setCurrentPrice] = useState(50000)
-  const [priceHistory, setPriceHistory] = useState<any[]>([])
-  const [predictions, setPredictions] = useState({
-    '1m': { price: 50100, confidence: 92, direction: 'UP' as 'UP' | 'DOWN' | 'NEUTRAL' },
-    '5m': { price: 50300, confidence: 88, direction: 'UP' as 'UP' | 'DOWN' | 'NEUTRAL' },
-    '15m': { price: 50500, confidence: 82, direction: 'UP' as 'UP' | 'DOWN' | 'NEUTRAL' },
-    '1h': { price: 50800, confidence: 75, direction: 'UP' as 'UP' | 'DOWN' | 'NEUTRAL' },
-    '4h': { price: 51200, confidence: 68, direction: 'UP' as 'UP' | 'DOWN' | 'NEUTRAL' }
-  })
-  const [signal, setSignal] = useState<'BUY' | 'SELL' | 'HOLD'>('HOLD')
-  const [signalStrength, setSignalStrength] = useState(65)
   const [riskLevel, setRiskLevel] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM')
-
   const wsRef = useRef<WebSocket | null>(null)
 
-  // 실시간 가격 업데이트
+  // Go 엔진 GRU 훅 사용
+  const {
+    predictions,
+    currentPrediction,
+    getPrediction,
+    isConnected,
+    error
+  } = useGoGRU({ symbol, interval: '1m' })
+
+  // 현재 가격과 신호 계산
+  const currentPrice = currentPrediction?.price || 50000
+  const signal = currentPrediction?.signal || 'HOLD'
+  const signalStrength = currentPrediction ? currentPrediction.confidence * 100 : 65
+
+  // 가격 히스토리 포맷
+  const priceHistory = predictions.map((pred, index) => ({
+    time: new Date(pred.timestamp).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }),
+    price: pred.price,
+    predicted: pred.prediction,
+    confidence: pred.confidence * 100,
+    volume: pred.price * 20 // 볼륨은 Go 엔진에서 추가 구현 필요
+  }))
+
+  // 시간대별 예측 데이터 포맷
+  const formattedPredictions = {
+    '1m': currentPrediction ? {
+      price: currentPrediction.prediction,
+      confidence: currentPrediction.confidence * 100,
+      direction: currentPrediction.signal === 'BUY' ? 'UP' as const : currentPrediction.signal === 'SELL' ? 'DOWN' as const : 'NEUTRAL' as const
+    } : { price: 50100, confidence: 92, direction: 'UP' as const },
+    '5m': { price: currentPrice * 1.002, confidence: 88, direction: 'UP' as const },
+    '15m': { price: currentPrice * 1.005, confidence: 82, direction: 'UP' as const },
+    '1h': { price: currentPrice * 1.01, confidence: 75, direction: 'UP' as const },
+    '4h': { price: currentPrice * 1.024, confidence: 68, direction: 'UP' as const }
+  }
+
+  // 리스크 레벨 계산
   useEffect(() => {
-    const updatePrice = () => {
-      const change = (Math.random() - 0.5) * 100
-      const newPrice = currentPrice + change
-      setCurrentPrice(newPrice)
-
-      // 가격 히스토리 업데이트
-      setPriceHistory(prev => {
-        const now = new Date()
-        const newData = [...prev, {
-          time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          price: newPrice,
-          predicted: newPrice + (Math.random() - 0.5) * 200,
-          volume: Math.random() * 1000000
-        }].slice(-60)
-        return newData
-      })
-
-      // 예측 업데이트
-      setPredictions({
-        '1m': { 
-          price: newPrice + (Math.random() - 0.3) * 100, 
-          confidence: 85 + Math.random() * 10,
-          direction: Math.random() > 0.5 ? 'UP' : 'DOWN'
-        },
-        '5m': { 
-          price: newPrice + (Math.random() - 0.3) * 200, 
-          confidence: 80 + Math.random() * 10,
-          direction: Math.random() > 0.5 ? 'UP' : 'DOWN'
-        },
-        '15m': { 
-          price: newPrice + (Math.random() - 0.3) * 300, 
-          confidence: 75 + Math.random() * 10,
-          direction: Math.random() > 0.5 ? 'UP' : 'DOWN'
-        },
-        '1h': { 
-          price: newPrice + (Math.random() - 0.3) * 500, 
-          confidence: 70 + Math.random() * 10,
-          direction: Math.random() > 0.5 ? 'UP' : 'DOWN'
-        },
-        '4h': { 
-          price: newPrice + (Math.random() - 0.3) * 800, 
-          confidence: 65 + Math.random() * 10,
-          direction: Math.random() > 0.4 ? 'UP' : 'DOWN'
-        }
-      })
-
-      // 시그널 업데이트
-      const rand = Math.random()
-      if (rand > 0.7) setSignal('BUY')
-      else if (rand < 0.3) setSignal('SELL')
-      else setSignal('HOLD')
-
-      setSignalStrength(50 + Math.random() * 50)
-
-      // 리스크 레벨
-      const risk = Math.random()
-      if (risk > 0.7) setRiskLevel('HIGH')
-      else if (risk > 0.3) setRiskLevel('MEDIUM')
-      else setRiskLevel('LOW')
+    if (currentPrediction) {
+      // 신뢰도 기반 리스크 계산
+      if (currentPrediction.confidence < 0.5) {
+        setRiskLevel('HIGH')
+      } else if (currentPrediction.confidence < 0.7) {
+        setRiskLevel('MEDIUM')
+      } else {
+        setRiskLevel('LOW')
+      }
     }
-
-    const interval = setInterval(updatePrice, 1000)
-    return () => clearInterval(interval)
-  }, [currentPrice])
+  }, [currentPrediction])
 
   // 예측 시간대별 데이터
-  const timeframePredictions = Object.entries(predictions).map(([timeframe, pred]) => ({
+  const timeframePredictions = Object.entries(formattedPredictions).map(([timeframe, pred]) => ({
     timeframe,
     current: currentPrice,
     predicted: pred.price,

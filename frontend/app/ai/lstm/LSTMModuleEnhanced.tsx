@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FaBitcoin, FaEthereum, FaBrain, FaChartLine, 
+import {
+  FaBitcoin, FaEthereum, FaBrain, FaChartLine,
   FaHistory, FaRobot, FaChartBar, FaCog,
-  FaExclamationTriangle, FaInfoCircle
+  FaExclamationTriangle, FaInfoCircle, FaBolt,
+  FaStream, FaMemory, FaTachometerAlt
 } from 'react-icons/fa'
 import { SiBinance, SiCardano, SiDogecoin, SiPolkadot } from 'react-icons/si'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+// Tabs removed - using button navigation instead
 import { DarkWaveBackground3D } from '@/components/backgrounds/DarkWaveBackground3D'
 
 // 컴포넌트 임포트
@@ -19,6 +20,16 @@ import PerformanceMetrics from './components/PerformanceMetrics'
 import BacktestingCenter from './components/BacktestingCenter'
 import RealtimePrediction from './components/RealtimePrediction'
 import DynamicAnalysis from './components/DynamicAnalysis'
+
+// Go 하이브리드 엔진 연동
+import { useGoLSTM } from '@/lib/hooks/useGoLSTM'
+import GoEngineStatus from '@/components/GoEngineStatus'
+
+// Go 전용 컴포넌트
+import GoParallelProcessing from './components/GoParallelProcessing'
+import GoStreamProcessing from './components/GoStreamProcessing'
+import GoMemoryManagement from './components/GoMemoryManagement'
+import GoPerformanceBenchmark from './components/GoPerformanceBenchmark'
 
 // 코인 정보
 const COINS = [
@@ -60,6 +71,18 @@ export default function LSTMModuleEnhanced() {
   const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(false)
 
+  // Go 하이브리드 엔진 연동
+  const {
+    prediction,
+    isLoading: goPredictionLoading,
+    error: goError,
+    isConnected: goConnected,
+    performance: goPerformance,
+    getTradingSignal,
+    getBacktestMetrics,
+    refresh: refreshGoPrediction
+  } = useGoLSTM({ symbol: selectedCoin })
+
   // 로딩 상태 관리
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -86,8 +109,13 @@ export default function LSTMModuleEnhanced() {
         {/* 어두운 3D 배경 */}
         <DarkWaveBackground3D />
         
-        <div className="relative z-10 p-6">
+        <div className="relative z-10 p-4">
           <div className="max-w-7xl mx-auto">
+          {/* Go 엔진 상태 표시 */}
+          <div className="mb-4">
+            <GoEngineStatus />
+          </div>
+
           {/* 헤더 */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -131,49 +159,172 @@ export default function LSTMModuleEnhanced() {
             </div>
           </motion.div>
 
-          {/* 메인 컨텐츠 탭 */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-5 w-full bg-gray-800/50 backdrop-blur-sm p-1 rounded-xl">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">
-                <FaInfoCircle className="mr-2" />
-                개요
-              </TabsTrigger>
-              <TabsTrigger value="architecture" className="data-[state=active]:bg-purple-600">
-                <FaBrain className="mr-2" />
-                아키텍처
-              </TabsTrigger>
-              <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600">
-                <FaChartBar className="mr-2" />
-                성능
-              </TabsTrigger>
-              <TabsTrigger value="backtesting" className="data-[state=active]:bg-purple-600">
-                <FaHistory className="mr-2" />
-                백테스팅
-              </TabsTrigger>
-              <TabsTrigger value="realtime" className="data-[state=active]:bg-purple-600">
-                <FaRobot className="mr-2" />
-                실시간
-              </TabsTrigger>
-            </TabsList>
+          {/* 탭 네비게이션 - 버튼 형태로 변경 */}
+          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-8">
+            <motion.button
+              onClick={() => setActiveTab('overview')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'overview'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaInfoCircle className="text-xl" />
+                <span className="text-xs">개요</span>
+              </div>
+            </motion.button>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <TabsContent value="overview" className="space-y-6 mt-6">
+            <motion.button
+              onClick={() => setActiveTab('architecture')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'architecture'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaBrain className="text-xl" />
+                <span className="text-xs">아키텍처</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('performance')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'performance'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaChartBar className="text-xl" />
+                <span className="text-xs">성능</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('backtesting')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'backtesting'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaHistory className="text-xl" />
+                <span className="text-xs">백테스팅</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('realtime')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'realtime'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaRobot className="text-xl" />
+                <span className="text-xs">실시간</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('go-parallel')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'go-parallel'
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaBolt className="text-xl" />
+                <span className="text-xs">Go병렬</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('go-stream')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'go-stream'
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaStream className="text-xl" />
+                <span className="text-xs">Go스트림</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('go-memory')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'go-memory'
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaMemory className="text-xl" />
+                <span className="text-xs">Go메모리</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setActiveTab('go-bench')}
+              className={`relative p-3 rounded-xl backdrop-blur-sm transition-all ${
+                activeTab === 'go-bench'
+                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <FaTachometerAlt className="text-xl" />
+                <span className="text-xs">Go벤치</span>
+              </div>
+            </motion.button>
+          </div>
+
+          {/* 탭 컨텐츠 */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === 'overview' && (
                   <ModuleSection
                     title="LSTM 모델 완전 가이드"
                     description="Long Short-Term Memory 신경망의 모든 것을 상세히 알아봅니다"
                   >
                     <ModelOverview />
                   </ModuleSection>
-                </TabsContent>
+              )}
 
-                <TabsContent value="architecture" className="space-y-6 mt-6">
+              {activeTab === 'architecture' && (
                   <ModuleSection
                     title="LSTM 아키텍처 & 작동 원리"
                     description="게이트 메커니즘과 메모리 셀의 상호작용을 3D로 시각화합니다"
@@ -232,9 +383,9 @@ export default function LSTMModuleEnhanced() {
                       </div>
                     </div>
                   </ModuleSection>
-                </TabsContent>
+              )}
 
-                <TabsContent value="performance" className="space-y-6 mt-6">
+              {activeTab === 'performance' && (
                   <ModuleSection
                     title="고급 성능 메트릭 대시보드"
                     description="모델의 실시간 성능을 다각도로 분석하고 추적합니다"
@@ -246,9 +397,9 @@ export default function LSTMModuleEnhanced() {
                       <DynamicAnalysis type="performance" />
                     </div>
                   </ModuleSection>
-                </TabsContent>
+              )}
 
-                <TabsContent value="backtesting" className="space-y-6 mt-6">
+              {activeTab === 'backtesting' && (
                   <ModuleSection
                     title="백테스팅 & 과거 성과 분석"
                     description="과거 데이터를 통해 전략의 유효성을 검증합니다"
@@ -260,9 +411,9 @@ export default function LSTMModuleEnhanced() {
                       <DynamicAnalysis type="backtesting" />
                     </div>
                   </ModuleSection>
-                </TabsContent>
+              )}
 
-                <TabsContent value="realtime" className="space-y-6 mt-6">
+              {activeTab === 'realtime' && (
                   <ModuleSection
                     title="실시간 AI 예측 엔진"
                     description="LSTM 모델의 실시간 예측과 거래 신호를 제공합니다"
@@ -274,10 +425,45 @@ export default function LSTMModuleEnhanced() {
                       <DynamicAnalysis type="realtime" />
                     </div>
                   </ModuleSection>
-                </TabsContent>
-              </motion.div>
-            </AnimatePresence>
-          </Tabs>
+              )}
+
+              {activeTab === 'go-parallel' && (
+                  <ModuleSection
+                    title="Go 병렬 처리 엔진"
+                    description="Goroutines를 활용한 초고속 LSTM 병렬 처리"
+                  >
+                    <GoParallelProcessing />
+                  </ModuleSection>
+              )}
+
+              {activeTab === 'go-stream' && (
+                  <ModuleSection
+                    title="Go 실시간 스트리밍"
+                    description="무한 스트림 처리와 백프레셔 제어"
+                  >
+                    <GoStreamProcessing />
+                  </ModuleSection>
+              )}
+
+              {activeTab === 'go-memory' && (
+                  <ModuleSection
+                    title="Go 메모리 최적화"
+                    description="GC 튜닝과 제로카피 메모리 관리"
+                  >
+                    <GoMemoryManagement />
+                  </ModuleSection>
+              )}
+
+              {activeTab === 'go-bench' && (
+                  <ModuleSection
+                    title="Go 성능 벤치마크"
+                    description="Python/PyTorch/TensorFlow 대비 성능 비교"
+                  >
+                    <GoPerformanceBenchmark />
+                  </ModuleSection>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* 하단 정보 */}
           <motion.div

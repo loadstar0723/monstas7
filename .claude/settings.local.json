@@ -283,7 +283,18 @@
       "Bash(start http://localhost:35000/news/comprehensive)",
       "Bash(start http://localhost:35000/news/diverse)",
       "Bash(start http://localhost:4000)",
-      "Bash(start http://localhost:4100)"
+      "Bash(start http://localhost:4100)",
+      "Bash(start http://localhost:3000/ai/xgboost)",
+      "Bash(start http://localhost:3500/ai/xgboost)",
+      "Bash(start http://localhost:3500/ai/lstm)",
+      "Bash(start http://localhost:3600/ai/lstm)",
+      "Bash(start http://localhost:3600/ai/gru)",
+      "Bash(start http://localhost:3700/ai/gru)",
+      "Bash(start http://localhost:3800/ai/gru)",
+      "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\ai\\gru\\GRUModule.tsx\")",
+      "Bash(start http://localhost:3900/ai/gru)",
+      "Bash(start http://localhost:4000/ai/gru)",
+      "Bash(start http://localhost:4100/ai/gru)"
     ],
     "deny": [],
     "ask": []

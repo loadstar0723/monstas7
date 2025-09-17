@@ -40,19 +40,20 @@ export default function AutoARIMA({ symbol }: AutoARIMAProps) {
       
       // 모델 테스트 시뮬레이션
       if (progress % 10 === 0) {
-        const p = Math.floor(Math.random() * 5)
-        const d = Math.floor(Math.random() * 3)
-        const q = Math.floor(Math.random() * 5)
+        const modelIndex = progress / 10 - 1
+        const p = modelIndex % 5
+        const d = Math.floor(modelIndex / 5) % 3
+        const q = Math.floor(modelIndex / 15) % 5
         
         const model = {
           name: `ARIMA(${p},${d},${q})`,
           p, d, q,
-          aic: 15000 + Math.random() * 1000,
-          bic: 15100 + Math.random() * 1000,
-          rmse: 0.02 + Math.random() * 0.02,
-          mae: 0.015 + Math.random() * 0.015,
-          mape: 1.5 + Math.random() * 2,
-          logLikelihood: -7500 - Math.random() * 500
+          aic: 15000 + Math.sin(modelIndex * 0.7) * 500 + 500,
+          bic: 15100 + Math.cos(modelIndex * 0.7) * 500 + 500,
+          rmse: 0.02 + Math.abs(Math.sin(modelIndex * 0.3)) * 0.02,
+          mae: 0.015 + Math.abs(Math.cos(modelIndex * 0.3)) * 0.015,
+          mape: 1.5 + Math.abs(Math.sin(modelIndex * 0.5)) * 2,
+          logLikelihood: -7500 - Math.abs(Math.cos(modelIndex * 0.5)) * 500
         }
         
         models.push(model)

@@ -42,7 +42,7 @@ function TreeVisualization() {
         {[...Array(12)].map((_, i) => {
           const angle = (i / 12) * Math.PI * 2
           const radius = 1.5
-          const height = Math.random() * 3 - 0.5
+          const height = Math.sin(i * 0.8) * 1.5 + Math.cos(i * 1.2) * 1.5 - 0.5  // 결정론적 높이
           return (
             <Sphere key={i} args={[0.1]} position={[
               Math.cos(angle) * radius,
@@ -75,15 +75,18 @@ function AnimatedBackground() {
         <TreeVisualization />
         
         {/* 배경 입자들 */}
-        {[...Array(50)].map((_, i) => (
-          <Float key={i} speed={Math.random() * 2 + 1} floatIntensity={Math.random() + 0.5}>
+        {[...Array(50)].map((_, i) => {
+          // 결정론적 위치와 속도 계산
+          const speed = ((i * 37) % 20) / 10 + 1  // 1-3 범위
+          const intensity = ((i * 61) % 10) / 10 + 0.5  // 0.5-1.5 범위
+          const x = Math.sin(i * 1.3) * 10  // -10 to 10
+          const y = Math.cos(i * 1.7) * 10  // -10 to 10
+          const z = Math.sin(i * 2.1) * 5 - 5  // -10 to 0
+          return (
+          <Float key={i} speed={speed} floatIntensity={intensity}>
             <Box
               args={[0.1, 0.1, 0.1]}
-              position={[
-                (Math.random() - 0.5) * 20,
-                (Math.random() - 0.5) * 20,
-                (Math.random() - 0.5) * 10 - 5
-              ]}
+              position={[x, y, z]}
             >
               <meshStandardMaterial 
                 color="#10b981" 
@@ -94,6 +97,7 @@ function AnimatedBackground() {
               />
             </Box>
           </Float>
+          )
         ))}
       </Canvas>
     </div>
@@ -115,17 +119,25 @@ function LoadingComponent() {
 
 // 플로팅 카드 효과
 function FloatingCards() {
+  // 결정론적 카드 위치 배열
+  const cardPositions = Array.from({ length: 30 }, (_, i) => ({
+    left: ((i * 37) % 100),
+    top: ((i * 61) % 100),
+    delay: (i * 0.67) % 20,
+    duration: 30 + (i * 0.83) % 20
+  }))
+
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
+      {cardPositions.map((pos, i) => (
         <div
           key={i}
           className="absolute animate-float-slow"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 20}s`,
-            animationDuration: `${30 + Math.random() * 20}s`
+            left: `${pos.left}%`,
+            top: `${pos.top}%`,
+            animationDelay: `${pos.delay}s`,
+            animationDuration: `${pos.duration}s`
           }}
         >
           <div className={`
@@ -270,8 +282,8 @@ export default function XGBoostModule() {
       predicted4H: coin === 'BTCUSDT' ? 98500 : coin === 'ETHUSDT' ? 3550 : 710,
       predicted1D: coin === 'BTCUSDT' ? 99000 : coin === 'ETHUSDT' ? 3600 : 720,
       predicted1W: coin === 'BTCUSDT' ? 102000 : coin === 'ETHUSDT' ? 3800 : 750,
-      confidence: 75 + Math.random() * 15,
-      direction: Math.random() > 0.5 ? 'UP' : 'DOWN'
+      confidence: 75 + Math.sin(coins.indexOf(coin) * 1.3) * 7.5 + Math.cos(coins.indexOf(coin) * 1.7) * 7.5,
+      direction: (coins.indexOf(coin) % 2 === 0) ? 'UP' : 'DOWN'  // 짝수 인덱스는 UP
     }))
   }
 
@@ -306,14 +318,14 @@ export default function XGBoostModule() {
       tree_id: i,
       nodes: [...Array(15)].map((_, j) => ({
         feature: ['price_change_1h', 'volume_ratio', 'rsi', 'momentum'][j % 4],
-        threshold: Math.random() * 100,
-        gain: Math.random() * 0.1,
+        threshold: 50 + Math.sin(j * 0.7 + i) * 25 + Math.cos(j * 0.9 + i) * 25,
+        gain: 0.05 + Math.sin(j * 1.1 + i) * 0.025 + Math.cos(j * 1.3 + i) * 0.025,
         is_leaf: j > 10,
-        value: j > 10 ? Math.random() * 0.01 - 0.005 : 0
+        value: j > 10 ? Math.sin(j * 1.5 + i) * 0.005 : 0
       })),
       max_depth: 6,
       num_leaves: 8,
-      score: 0.85 + Math.random() * 0.1
+      score: 0.85 + Math.sin(i * 2.1) * 0.05 + Math.cos(i * 2.3) * 0.05
     }))
   }
 
@@ -326,26 +338,26 @@ export default function XGBoostModule() {
     
     return features.map(feature => ({
       feature,
-      importance: Math.random() * 0.8 + 0.2,
-      gain: Math.random() * 0.7 + 0.3,
-      cover: Math.random() * 0.6 + 0.4,
-      frequency: Math.random() * 0.5 + 0.5
+      importance: 0.6 + Math.sin(features.indexOf(feature) * 0.8) * 0.2 + Math.cos(features.indexOf(feature) * 1.2) * 0.2,
+      gain: 0.5 + Math.sin(features.indexOf(feature) * 1.1) * 0.2 + Math.cos(features.indexOf(feature) * 1.3) * 0.2,
+      cover: 0.5 + Math.sin(features.indexOf(feature) * 1.3) * 0.15 + Math.cos(features.indexOf(feature) * 1.5) * 0.15,
+      frequency: 0.5 + Math.sin(features.indexOf(feature) * 1.5) * 0.125 + Math.cos(features.indexOf(feature) * 1.7) * 0.125
     })).sort((a, b) => b.importance - a.importance)
   }
 
   const generateLearningCurve = () => {
     return [...Array(10)].map((_, i) => ({
       iteration: i * 10,
-      train_score: 0.5 + i * 0.04 + Math.random() * 0.02,
-      valid_score: 0.48 + i * 0.035 + Math.random() * 0.03,
+      train_score: 0.5 + i * 0.04 + Math.sin(i * 2.1) * 0.01 + Math.cos(i * 2.3) * 0.01,
+      valid_score: 0.48 + i * 0.035 + Math.sin(i * 2.5) * 0.015 + Math.cos(i * 2.7) * 0.015,
       time: new Date(Date.now() - (10 - i) * 60000).toLocaleTimeString()
     }))
   }
 
   const generateValidationCurve = () => {
-    return [...Array(50)].map(() => {
-      const actual = Math.random() * 0.1 - 0.05
-      const predicted = actual + (Math.random() - 0.5) * 0.02
+    return [...Array(50)].map((_, i) => {
+      const actual = Math.sin(i * 0.5) * 0.05
+      const predicted = actual + Math.sin(i * 1.7) * 0.01
       return {
         actual,
         predicted,
