@@ -1,0 +1,63 @@
+name: Health Check
+
+on:
+  schedule:
+    # 매 30분마다 실행
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Server Health
+        run: |
+          echo "🏥 Checking server health..."
+
+          # HTTP 상태 코드 확인
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://15.165.105.250:3000)
+
+          if [ "$STATUS_CODE" = "200" ]; then
+            echo "✅ Server is healthy! (Status: $STATUS_CODE)"
+          else
+            echo "❌ Server is not responding! (Status: $STATUS_CODE)"
+            exit 1
+          fi
+
+          # 응답 시간 체크
+          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://15.165.105.250:3000)
+          echo "⏱️ Response time: ${RESPONSE_TIME}s"
+
+          # 응답 시간이 10초 이상이면 경고
+          if (( $(echo "$RESPONSE_TIME > 10" | bc -l) )); then
+            echo "⚠️ Warning: Server response is slow!"
+          fi
+
+      - name: Restart if Down
+        if: failure()
+        env:
+          DEPLOY_KEY: ${{ secrets.AWS_SERVER_KEY }}
+        run: |
+          echo "🔄 Attempting to restart server..."
+
+          # SSH 키 설정
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 15.165.105.250 >> ~/.ssh/known_hosts
+
+          # 서버 재시작
+          ssh -i ~/.ssh/deploy_key ubuntu@15.165.105.250 << 'EOF'
+            cd ~/monstas7/frontend
+
+            # PM2 프로세스 재시작
+            pm2 restart all || {
+              # 재시작 실패 시 완전 재배포
+              pm2 delete all
+              pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+              pm2 save
+            }
+
+            pm2 list
+          EOF

@@ -1,0 +1,79 @@
+# SSH 접속 후 실행할 명령어들
+# AWS Server: 15.165.105.250
+
+# 1. SSH 접속 (Windows PowerShell 또는 터미널에서)
+ssh -i "C:\Users\dhk49\Pictures\monsta aws\monsta-ai-trading-key.pem" ubuntu@15.165.105.250
+
+# 또는 (경로에 공백이 있는 경우)
+ssh -i "C:/Users/dhk49/Pictures/monsta aws/monsta-ai-trading-key.pem" ubuntu@15.165.105.250
+
+# ==========================================
+# 서버 접속 후 실행할 명령어
+# ==========================================
+
+# 2. 프로젝트 디렉토리로 이동
+cd /home/ubuntu/monstas7
+
+# 3. 최신 코드 가져오기
+git pull origin master
+
+# 4. Frontend 디렉토리로 이동
+cd frontend
+
+# 5. PM2 프로세스 정리
+pm2 stop monsta-frontend
+pm2 delete monsta-frontend
+
+# 6. 캐시 및 빌드 파일 삭제
+rm -rf .next
+rm -rf node_modules/.cache
+
+# 7. 패키지 설치
+npm install --legacy-peer-deps
+
+# 8. PM2로 개발 서버 실행
+pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+
+# 9. PM2 설정 저장
+pm2 save
+
+# 10. 상태 확인
+pm2 status
+pm2 logs monsta-frontend --lines 30
+
+# ==========================================
+# 대안: 직접 실행 (PM2 없이)
+# ==========================================
+
+# PM2 없이 직접 실행하려면:
+cd /home/ubuntu/monstas7/frontend
+nohup npx next dev -H 0.0.0.0 -p 3000 > app.log 2>&1 &
+
+# 프로세스 확인
+ps aux | grep next
+
+# 로그 확인
+tail -f app.log
+
+# ==========================================
+# 문제 해결 명령어
+# ==========================================
+
+# 포트 사용 확인
+sudo netstat -tlnp | grep :3000
+
+# 프로세스 강제 종료 (포트가 사용중일 때)
+sudo kill -9 $(sudo lsof -t -i:3000)
+
+# 메모리 확인
+free -h
+
+# 디스크 공간 확인
+df -h
+
+# Node.js 버전 확인
+node --version
+npm --version
+
+# 서버 접속 테스트 (서버 내부에서)
+curl http://localhost:3000

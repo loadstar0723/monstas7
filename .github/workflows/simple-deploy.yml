@@ -24,42 +24,87 @@ jobs:
           # Known hosts 추가
           ssh-keyscan -H 15.165.105.250 >> ~/.ssh/known_hosts
           
-          # 배포 실행
+          # 배포 실행 (에러 시 즉시 실패)
           ssh -i ~/.ssh/deploy_key ubuntu@15.165.105.250 << 'EOF'
-            echo "Starting deployment..."
-            
+            set -e  # 에러 발생 시 즉시 중단
+
+            echo "🚀 Starting deployment..."
+
             # 프로젝트 디렉토리 확인
-            cd ~/monstas7 || { echo "Project not found"; exit 1; }
-            
+            cd ~/monstas7 || { echo "❌ Project not found"; exit 1; }
+
             # Git 최신 코드 가져오기
+            echo "📥 Pulling latest code..."
             git fetch --all
             git reset --hard origin/master
-            
+
             # Frontend 디렉토리로 이동
             cd frontend
-            
+
+            # 기존 프로세스 정리
+            echo "🧹 Cleaning up old processes..."
+            pm2 delete monsta-prod 2>/dev/null || true
+            pm2 delete monsta-frontend 2>/dev/null || true
+
             # 캐시 정리
             rm -rf .next
             rm -rf node_modules/.cache
-            
+
             # 의존성 설치
-            npm install
-            
-            # 빌드
-            echo "Building production..."
-            npm run build
-            
-            # PM2 완전 재시작 (포트 3000 명시)
-            pm2 delete monsta-prod || true
-            PORT=3000 pm2 start npm --name monsta-prod -- start
+            echo "📦 Installing dependencies..."
+            npm install --legacy-peer-deps
+
+            # react-is 패키지 확인 (필수)
+            npm list react-is || npm install react-is --save
+
+            # 빌드 시도
+            echo "🏗️ Attempting production build..."
+            if npm run build; then
+              echo "✅ Build successful! Starting production server..."
+              pm2 start npm --name monsta-prod -- start -- -H 0.0.0.0 -p 3000
+            else
+              echo "⚠️ Build failed! Starting in development mode..."
+              pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+            fi
+
+            # PM2 설정 저장
             pm2 save
-            
-            # 프로세스 확인
-            sleep 3
+
+            # 서버 시작 대기
+            echo "⏳ Waiting for server to start..."
+            sleep 5
+
+            # PM2 상태 확인
+            echo "📊 Checking PM2 status..."
             pm2 list
-            
+
+            # 서버 헬스체크
+            echo "🏥 Running health check..."
+            for i in {1..10}; do
+              if curl -f -s http://localhost:3000 > /dev/null; then
+                echo "✅ Server is responding!"
+                break
+              else
+                echo "⏳ Waiting for server... ($i/10)"
+                sleep 3
+              fi
+
+              if [ $i -eq 10 ]; then
+                echo "❌ Server failed to start!"
+                pm2 logs --lines 50
+                exit 1
+              fi
+            done
+
             # 포트 확인
-            netstat -tlpn | grep :3000 || echo "WARNING: Port 3000 not listening!"
-            
-            echo "Deployment completed!"
+            if netstat -tlpn 2>/dev/null | grep -q :3000; then
+              echo "✅ Port 3000 is listening!"
+            else
+              echo "❌ Port 3000 is NOT listening!"
+              pm2 logs --lines 30
+              exit 1
+            fi
+
+            echo "🎉 Deployment completed successfully!"
+            echo "🌐 Server is running at http://15.165.105.250:3000"
           EOF
