@@ -1,0 +1,88 @@
+name: Memory Optimized Deploy
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build Locally and Upload
+      run: |
+        # 로컬에서 빌드 (GitHub Actions 러너는 메모리가 충분함)
+        cd frontend
+        npm ci
+        NODE_OPTIONS="--max-old-space-size=2048" npm run build
+
+        # 빌드된 파일만 압축
+        tar -czf build.tar.gz .next package.json package-lock.json
+
+    - name: Transfer Build to Server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+        source: "frontend/build.tar.gz"
+        target: "/home/ubuntu/monstas7"
+
+    - name: Deploy Optimized Build
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          # 메모리 정리
+          sudo sync
+          echo 3 | sudo tee /proc/sys/vm/drop_caches
+
+          # 기존 프로세스 종료
+          pm2 stop all || true
+          pm2 delete all || true
+
+          # 빌드 파일 압축 해제
+          cd /home/ubuntu/monstas7/frontend
+          tar -xzf build.tar.gz
+          rm build.tar.gz
+
+          # production 의존성만 설치
+          npm ci --production
+
+          # PM2 ecosystem 파일 생성
+          cat > ecosystem.config.js << 'EOF'
+          module.exports = {
+            apps: [{
+              name: 'frontend',
+              script: 'npm',
+              args: 'start',
+              instances: 1,
+              exec_mode: 'fork',
+              max_memory_restart: '400M',
+              env: {
+                PORT: 3000,
+                NODE_ENV: 'production',
+                NODE_OPTIONS: '--max-old-space-size=512'
+              }
+            }]
+          }
+          EOF
+
+          # PM2로 실행
+          pm2 start ecosystem.config.js
+          pm2 save
+
+          # Go 엔진 실행 (매우 가벼움)
+          cd /home/ubuntu/monstas7/go-trading-engine
+          if [ -f go.mod ]; then
+            go build -o server cmd/server/main.go
+            nohup ./server > /dev/null 2>&1 &
+          fi
+
+          echo "✅ Deployment completed with optimized memory usage"
