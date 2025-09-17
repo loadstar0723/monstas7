@@ -24,6 +24,9 @@ const nextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+
+  // SWC 최적화 설정 (인코딩 문제 해결)
+  swcMinify: true,
   
   // 번들 분석 (필요시 활성화)
   // analyzeBundle: process.env.ANALYZE === 'true',

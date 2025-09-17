@@ -23,9 +23,9 @@ import { cn } from '@/lib/utils'
 import NewsModuleWrapper from '../components/NewsModuleWrapper'
 
 const REPORT_CATEGORIES = [
-  { value: 'all', label: '?�체', icon: BookOpen },
+  { value: 'all', label: '전체', icon: BookOpen },
   { value: 'technical', label: '기술??분석', icon: BarChart3 },
-  { value: 'fundamental', label: '?�?�멘??, icon: FileText },
+  { value: 'fundamental', label: '멘??, icon: FileText },
   { value: 'macro', label: '매크�?, icon: TrendingUp },
   { value: 'defi', label: 'DeFi', icon: Building },
   { value: 'nft', label: 'NFT', icon: Award },
@@ -123,15 +123,15 @@ export default function ResearchNewsModule() {
     const hours = Math.floor(diff / 3600000)
 
     if (hours < 1) return '방금 ??
-    if (hours < 24) return `${hours}?�간 ??
+    if (hours < 24) return `${hours}간 ??
     const days = Math.floor(hours / 24)
     if (days < 7) return `${days}????
     return new Date(date).toLocaleDateString('ko-KR')
   }
 
-  // 차트 ?�이??  const categoryDistribution = metrics ? [
+  // 차트 데이??  const categoryDistribution = metrics ? [
     { name: '기술??분석', value: 35, color: '#8B5CF6' },
-    { name: '?�?�멘??, value: 25, color: '#10B981' },
+    { name: '멘??, value: 25, color: '#10B981' },
     { name: '매크�?, value: 15, color: '#F59E0B' },
     { name: 'DeFi', value: 12, color: '#3B82F6' },
     { name: 'NFT', value: 8, color: '#EC4899' },
@@ -147,17 +147,17 @@ export default function ResearchNewsModule() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* ?�더 */}
+        {/* 더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{translateToKorean("?�� 리서�?보고??")}</h1>
-          <p className="text-gray-400 text-lg">{translateNewsBody("?�문 기�? 분석 · ?�자 ?�략 · ?�층 리포??")}</p>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{translateToKorean("�� 리서�?보고??")}</h1>
+          <p className="text-gray-400 text-lg">{translateNewsBody("문 기�? 분석 · 자 략 · 층 리포??")}</p>
         </motion.div>
 
-        {/* ?�계 카드 */}
+        {/* 계 카드 */}
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <motion.div
@@ -216,7 +216,7 @@ export default function ResearchNewsModule() {
               <Card className="p-4 bg-gray-800/50 backdrop-blur-sm border-blue-500/20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">?�균 ?�확??/p>
+                    <p className="text-sm text-gray-400">균 확??/p>
                     <p className="text-2xl font-bold text-blue-400">{metrics.avgAccuracy}%</p>
                   </div>
                   <Target className="w-8 h-8 text-blue-400" />
@@ -226,7 +226,7 @@ export default function ResearchNewsModule() {
           </div>
         )}
 
-        {/* 카테고리 ?�터 */}
+        {/* 카테고리 터 */}
         <div className="flex gap-2 flex-wrap justify-center">
           {REPORT_CATEGORIES.map(category => {
             const Icon = category.icon
@@ -255,7 +255,7 @@ export default function ResearchNewsModule() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid grid-cols-4 w-full bg-gray-800/50">
             <TabsTrigger value="reports">보고??/TabsTrigger>
-            <TabsTrigger value="trending">?�기</TabsTrigger>
+            <TabsTrigger value="trending">기</TabsTrigger>
             <TabsTrigger value="institutions">기�?</TabsTrigger>
             <TabsTrigger value="analytics">분석</TabsTrigger>
           </TabsList>
@@ -298,7 +298,7 @@ export default function ResearchNewsModule() {
                         {report.summary}
                       </p>
 
-                      {/* ?�심 ?�인??*/}
+                      {/* 심 인??*/}
                       <div className="space-y-1 mb-4">
                         {report.keyPoints.slice(0, 2).map((point, idx) => (
                           <div key={idx} className="flex items-start gap-2 text-xs text-gray-400">
@@ -308,7 +308,7 @@ export default function ResearchNewsModule() {
                         ))}
                       </div>
 
-                      {/* 메�? ?�보 */}
+                      {/* 메�? 보 */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-700">
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <div className="flex items-center gap-1">
@@ -329,7 +329,7 @@ export default function ResearchNewsModule() {
                         </span>
                       </div>
 
-                      {/* ?�그 */}
+                      {/* 그 */}
                       <div className="flex gap-2 mt-3 flex-wrap">
                         {report.tags.slice(0, 3).map((tag, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
@@ -338,7 +338,7 @@ export default function ResearchNewsModule() {
                         ))}
                       </div>
 
-                      {/* 목표가 (?�는 경우) */}
+                      {/* 목표가 (는 경우) */}
                       {report.targetPrice && (
                         <div className="mt-3 p-3 bg-purple-900/20 rounded-lg">
                           <div className="flex items-center justify-between">
@@ -348,7 +348,7 @@ export default function ResearchNewsModule() {
                             </span>
                           </div>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="text-xs text-gray-500">?�뢰??/span>
+                            <span className="text-xs text-gray-500">뢰??/span>
                             <div className="flex items-center gap-2">
                               <div className="w-20 h-2 bg-gray-700 rounded-full">
                                 <div
@@ -368,7 +368,7 @@ export default function ResearchNewsModule() {
             )}
           </TabsContent>
 
-          {/* ?�기 보고????*/}
+          {/* 기 보고????*/}
           <TabsContent value="trending" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               {trendingReports.map((report, idx) => (
@@ -407,7 +407,7 @@ export default function ResearchNewsModule() {
                         size="sm"
                         onClick={() => setSelectedReport(report)}
                       >
-                        ?�세??보기
+                        세??보기
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>
@@ -446,11 +446,11 @@ export default function ResearchNewsModule() {
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">?�확??/span>
+                        <span className="text-gray-400">확??/span>
                         <span className="font-bold text-green-400">{institution.accuracy}%</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">?�문 분야</span>
+                        <span className="text-gray-400">문 분야</span>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {institution.specialization.map((spec, idx) => (
@@ -504,7 +504,7 @@ export default function ResearchNewsModule() {
 
               {/* 추천 분포 */}
               <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20">
-                <h3 className="text-xl font-bold mb-4">{translateToKorean("?�자 추천 분포")}</h3>
+                <h3 className="text-xl font-bold mb-4">{translateToKorean("자 추천 분포")}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={ratingDistribution}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -522,10 +522,10 @@ export default function ResearchNewsModule() {
                 </ResponsiveContainer>
               </Card>
 
-              {/* 최고 ?�??*/}
+              {/* 최고 ??*/}
               {metrics && (
                 <Card className="p-6 bg-gray-800/50 backdrop-blur-sm border-purple-500/20 md:col-span-2">
-                  <h3 className="text-xl font-bold mb-4">최고 ?�널리스??/h3>
+                  <h3 className="text-xl font-bold mb-4">최고 널리스??/h3>
                   <div className="space-y-3">
                     {metrics.topAuthors.map((author: any, idx: number) => (
                       <div
@@ -542,7 +542,7 @@ export default function ResearchNewsModule() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-400">?�확??/p>
+                          <p className="text-sm text-gray-400">확??/p>
                           <p className="text-lg font-bold text-green-400">{author.accuracy}%</p>
                         </div>
                       </div>
@@ -554,7 +554,7 @@ export default function ResearchNewsModule() {
           </TabsContent>
         </Tabs>
 
-        {/* 보고???�세 모달 */}
+        {/* 보고??세 모달 */}
         <AnimatePresence>
           {selectedReport && (
             <motion.div
@@ -592,12 +592,12 @@ export default function ResearchNewsModule() {
 
                 <div className="prose prose-invert max-w-none">
                   <div className="mb-6 p-4 bg-purple-900/20 rounded-lg">
-                    <h3 className="text-lg font-bold mb-2">{translateToKorean("?�약")}</h3>
+                    <h3 className="text-lg font-bold mb-2">{translateToKorean("약")}</h3>
                     <p className="text-gray-300">{selectedReport.summary}</p>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="text-lg font-bold mb-3">?�심 ?�인??/h3>
+                    <h3 className="text-lg font-bold mb-3">심 인??/h3>
                     <ul className="space-y-2">
                       {selectedReport.keyPoints.map((point, idx) => (
                         <li key={idx} className="flex items-start gap-2">
@@ -645,7 +645,7 @@ export default function ResearchNewsModule() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm">
                       <Download className="w-4 h-4 mr-2" />
-                      PDF ?�운로드
+                      PDF 운로드
                     </Button>
                     <Button variant="outline" size="sm">
                       <Share2 className="w-4 h-4 mr-2" />
@@ -658,12 +658,12 @@ export default function ResearchNewsModule() {
           )}
         </AnimatePresence>
 
-        {/* ?�터 */}
+        {/* 터 */}
         <div className="text-center text-sm text-gray-500 pb-4">
-          <p>{translateNewsBody("리서�??�공: Messari, Delphi Digital, Glassnode, The Block")}</p>
-          <p>{translateNewsBody("분석 ?�진: MONSTA Research v2.0")}</p>
+          <p>{translateNewsBody("리서�?공: Messari, Delphi Digital, Glassnode, The Block")}</p>
+          <p>{translateNewsBody("분석 진: MONSTA Research v2.0")}</p>
         </div>
       </div>
     </div>
       </NewsModuleWrapper>
-  )
+  )}

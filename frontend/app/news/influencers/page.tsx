@@ -471,4 +471,4 @@ export default function InfluencersNewsModule() {
       </div>
     </div>
       </NewsModuleWrapper>
-  )
+  )}

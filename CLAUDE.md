@@ -862,3 +862,8 @@ Binance WebSocket (무료) + CryptoCompare Free (무료) = 완벽한 솔루션
 - 무료 API
 - Fear & Greed Index
   
+   ✅ 앞으로의 개발 원칙:
+
+  성능 중요 → Go로 개발
+  AI/ML → Python 유지
+  UI/UX → TypeScript/Next.js

@@ -709,4 +709,4 @@ export default function HacksNewsModule() {
       </div>
     </div>
       </NewsModuleWrapper>
-  )
+  )}

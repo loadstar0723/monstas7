@@ -226,7 +226,7 @@ export default function PortfolioOptimizerModule() {
           MATIC: 0.05
         }
         result.expectedReturn = 47.8
-        result.volatility: 63.5
+        result.volatility = 63.5
         result.sharpeRatio = 0.75
       }
 

@@ -468,4 +468,4 @@ export default function PartnershipsNewsModule() {
       </div>
     </div>
       </NewsModuleWrapper>
-  )
+  )}

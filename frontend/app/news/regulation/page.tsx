@@ -726,4 +726,4 @@ export default function RegulationNewsModule() {
       </Tabs>
     </div>
       </NewsModuleWrapper>
-  )
+  )}

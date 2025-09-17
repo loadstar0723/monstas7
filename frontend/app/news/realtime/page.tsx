@@ -207,4 +207,4 @@ export default function RealtimeNewsModule() {
       </div>
     </div>
       </NewsModuleWrapper>
-  )
+  )}
