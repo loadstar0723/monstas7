@@ -158,6 +158,15 @@ const categoryThemes = {
 
 // 카테고리 그룹 정의 - 구분된 색상
 const categoryGroups = {
+  premium: {
+    title: '🤖 AI TRADING',
+    categories: ['premiumFeatures'],
+    color: 'from-cyan-600/20 to-cyan-700/10',
+    borderColor: 'border-cyan-500/30',
+    iconEmoji: '',
+    accentColor: 'text-cyan-400',
+    hoverColor: 'hover:bg-cyan-800/30'
+  },
   trading: {
     title: '트레이딩',
     categories: ['signals', 'quant', 'microstructure', 'technical', 'automation'],
@@ -193,15 +202,6 @@ const categoryGroups = {
     iconEmoji: '⚙️',
     accentColor: 'text-amber-400',
     hoverColor: 'hover:bg-amber-800/30'
-  },
-  premium: {
-    title: '프리미엄',
-    categories: ['premiumFeatures'],
-    color: 'from-purple-600/20 to-purple-700/10',
-    borderColor: 'border-purple-500/30',
-    iconEmoji: '🚀',
-    accentColor: 'text-purple-400',
-    hoverColor: 'hover:bg-purple-800/30'
   }
 }
 
@@ -1240,61 +1240,167 @@ export default function SidebarNew() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: config.decimals.value2 }}
                     >
-                      {group.categories.map(categoryKey => {
-                        const category = menuStructure[categoryKey as MenuCategory]
-                        const theme = categoryThemes[categoryKey as MenuCategory]
-                        const isExpanded = expandedCategories.includes(categoryKey)
-                        
-                        // 카테고리 등급 확인
-                        const categoryMinTier = categoryMinTiers[categoryKey]
-                        const categoryTierInfo = categoryMinTier ? tierConfig[categoryMinTier] : null
-                        const canAccessCategory = categoryMinTier ? tierLevels[userTier] >= tierLevels[categoryMinTier] : true
-                        
-                        // 그룹별 카테고리 스타일
-                        const categoryStyle = {
-                          trading: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20',
-                          analysis: 'bg-blue-900/10 border-blue-700/20 hover:bg-blue-800/20',
-                          community: 'bg-emerald-900/10 border-emerald-700/20 hover:bg-emerald-800/20',
-                          management: 'bg-amber-900/10 border-amber-700/20 hover:bg-amber-800/20',
-                          premium: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20'
-                        }
-                        
-                        return (
-                          <div key={categoryKey} className="mb-2 ml-2">
-                            {/* 카테고리 헤더 */}
-                            <button
-                              onClick={() => toggleCategory(categoryKey)}
-                              className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg
-                                        border transition-all text-left
-                                        ${categoryStyle[groupKey as keyof typeof categoryStyle]}
-                                        ${!canAccessCategory ? 'opacity-60' : ''}`}
-                              title={!canAccessCategory ? `${categoryMinTier} 등급 이상 필요 (현재: ${userTier})` : undefined}
-                            >
-                              <div className="flex items-center gap-2 flex-1">
-                                <theme.icon className={`text-xs ${!canAccessCategory ? 'text-gray-500' : theme.iconColor || 'text-gray-400'}`} />
-                                <span className={`text-xs font-medium ${!canAccessCategory ? 'text-gray-500' : 'text-gray-300'}`}>{category.title}</span>
-                                <span className={`text-[10px] ${!canAccessCategory ? 'text-gray-600' : group.accentColor} opacity-50`}>
-                                  {category.items.length}
-                                </span>
-                                {/* 카테고리 등급 배지 */}
-                                {categoryMinTier && categoryMinTier !== 'Starter' && (
-                                  <span className={`text-[9px] px-1.5 py-config.decimals.value5 rounded-md font-bold ml-auto
-                                                ${!canAccessCategory 
-                                                  ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50' 
-                                                  : `${categoryTierInfo?.bgColor} ${categoryTierInfo?.color}`}`}>
-                                    {categoryTierInfo?.icon} {categoryMinTier.toUpperCase()}
-                                  </span>
-                                )}
-                              </div>
-                              {isExpanded ? 
-                                <FaChevronDown className={`text-[10px] ${group.accentColor} opacity-60`} /> : 
-                                <FaChevronRight className={`text-[10px] ${group.accentColor} opacity-60`} />
-                              }
-                            </button>
+                      {/* 프리미엄 그룹은 카테고리 버튼 없이 바로 아이템 표시 */}
+                      {groupKey === 'premium' ? (
+                        <div className="ml-2">
+                          {menuStructure['premiumFeatures'].items.map((item, idx) => {
+                            const theme = categoryThemes['premiumFeatures']
+                            const canAccess = canAccessMenu(item)
+                            // 실제 필요한 등급 확인
+                            const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category]
+                            const requiredTierInfo = requiredTier ? tierConfig[requiredTier] : null
 
-                            {/* 카테고리 아이템 */}
-                            <AnimatePresence>
-                              {isExpanded && (
+                            // 등급별 배경색 설정
+                            const getTierBackground = () => {
+                              if (!requiredTier || requiredTier === 'Starter') return ''
+                              if (!canAccess) return 'bg-gradient-to-r from-gray-800/50 to-gray-900/50'
+
+                              switch(requiredTier) {
+                                case 'Advance': return 'bg-gradient-to-r from-blue-900/20 to-transparent'
+                                case 'Platinum': return 'bg-gradient-to-r from-purple-900/20 to-transparent'
+                                case 'Signature': return 'bg-gradient-to-r from-amber-900/20 to-transparent'
+                                case 'Master': return 'bg-gradient-to-r from-red-900/20 to-transparent'
+                                case 'Infinity': return 'bg-gradient-to-r from-purple-900/20 via-pink-900/10 to-transparent'
+                                default: return ''
+                              }
+                            }
+
+                            return (
+                              <div key={idx} className="flex items-center gap-1 group relative mb-1">
+                                <Link
+                                  href={canAccess ? item.path : '#'}
+                                  className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
+                                            transition-all relative ${getTierBackground()}
+                                            ${!canAccess ? 'opacity-60 cursor-not-allowed border border-gray-700/50' : 'hover:bg-gray-800/50'}
+                                            ${pathname === item.path ? 'bg-gray-800/30 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-gray-200'}`}
+                                  onClick={(e) => {
+                                    if (!canAccess) {
+                                      e.preventDefault()
+                                      const requiredTier = menuTierOverrides[item.path] || item.minTier || categoryMinTiers[item.category] || 'Starter'
+                                      // 간단한 모달 대신 confirm으로 선택 옵션 제공
+                                      const goToUpgrade = confirm(
+                                        `이 메뉴는 ${requiredTier} 등급 이상 사용 가능합니다.\n\n현재 등급: ${userTier}\n필요 등급: ${requiredTier}\n\n등급 비교 페이지로 이동하시겠습니까?`
+                                      )
+                                      if (goToUpgrade) {
+                                        window.location.href = '/subscription/benefits'
+                                      }
+                                    } else {
+                                      // 페이지 이동이 완료된 후에 사이드바를 닫도록 setTimeout 사용
+                                      setTimeout(() => {
+                                        setIsOpen(false)
+                                      }, 100)
+                                    }
+                                  }}
+                                  title={!canAccess
+                                    ? `${requiredTier} 등급 이상 필요 (현재: ${userTier})`
+                                    : requiredTier && requiredTier !== 'Starter'
+                                      ? `${requiredTier} 등급부터 사용 가능`
+                                      : undefined}
+                                >
+                                  <item.icon className={`text-[10px] ${theme.iconColor || 'text-gray-500'}`} />
+                                  <span className="flex-1">{item.label}</span>
+
+                                  {/* 등급 표시 - 더 크고 명확하게 */}
+                                  {requiredTier && requiredTier !== 'Starter' && (
+                                    <div className="flex items-center gap-1">
+                                      {!canAccess && (
+                                        <FaLock className="text-gray-500 text-[10px]" />
+                                      )}
+                                      <span className={`text-[10px] px-1.5 py-config.decimals.value5 rounded-md font-bold
+                                                    ${!canAccess
+                                                      ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50'
+                                                      : `${requiredTierInfo?.bgColor} ${requiredTierInfo?.color}`}`}>
+                                        {requiredTierInfo?.icon} {requiredTier.slice(0, 3).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {item.isHot && (
+                                    <span className="text-[10px] px-1.5 py-config.decimals.value5 bg-red-500/20 text-red-400 rounded-full border border-red-500/30">
+                                      HOT
+                                    </span>
+                                  )}
+                                  {item.isNew && (
+                                    <span className="text-[10px] px-1.5 py-config.decimals.value5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                                      NEW
+                                    </span>
+                                  )}
+                                </Link>
+                                <button
+                                  onClick={(e) => toggleFavorite(item.path, e)}
+                                  className={`p-1 hover:bg-gray-700/50 rounded transition-all ${
+                                    favorites.includes(item.path) ? 'opacity-100' : 'opacity-30 group-hover:opacity-100'
+                                  }`}
+                                  title={favorites.includes(item.path) ? "즐겨찾기 제거" : "즐겨찾기 추가"}
+                                >
+                                  <FaStar
+                                    className={`text-[11px] transition-all ${
+                                      favorites.includes(item.path)
+                                        ? 'text-yellow-400 drop-shadow-lg'
+                                        : 'text-gray-400 hover:text-yellow-400 hover:scale-110'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        // 다른 그룹들은 기존 3단계 구조 유지
+                        group.categories.map(categoryKey => {
+                          const category = menuStructure[categoryKey as MenuCategory]
+                          const theme = categoryThemes[categoryKey as MenuCategory]
+                          const isExpanded = expandedCategories.includes(categoryKey)
+
+                          // 카테고리 등급 확인
+                          const categoryMinTier = categoryMinTiers[categoryKey]
+                          const categoryTierInfo = categoryMinTier ? tierConfig[categoryMinTier] : null
+                          const canAccessCategory = categoryMinTier ? tierLevels[userTier] >= tierLevels[categoryMinTier] : true
+
+                          // 그룹별 카테고리 스타일
+                          const categoryStyle = {
+                            trading: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20',
+                            analysis: 'bg-blue-900/10 border-blue-700/20 hover:bg-blue-800/20',
+                            community: 'bg-emerald-900/10 border-emerald-700/20 hover:bg-emerald-800/20',
+                            management: 'bg-amber-900/10 border-amber-700/20 hover:bg-amber-800/20',
+                            premium: 'bg-purple-900/10 border-purple-700/20 hover:bg-purple-800/20'
+                          }
+
+                          return (
+                            <div key={categoryKey} className="mb-2 ml-2">
+                              {/* 카테고리 헤더 */}
+                              <button
+                                onClick={() => toggleCategory(categoryKey)}
+                                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg
+                                          border transition-all text-left
+                                          ${categoryStyle[groupKey as keyof typeof categoryStyle]}
+                                          ${!canAccessCategory ? 'opacity-60' : ''}`}
+                                title={!canAccessCategory ? `${categoryMinTier} 등급 이상 필요 (현재: ${userTier})` : undefined}
+                              >
+                                <div className="flex items-center gap-2 flex-1">
+                                  <theme.icon className={`text-xs ${!canAccessCategory ? 'text-gray-500' : theme.iconColor || 'text-gray-400'}`} />
+                                  <span className={`text-xs font-medium ${!canAccessCategory ? 'text-gray-500' : 'text-gray-300'}`}>{category.title}</span>
+                                  <span className={`text-[10px] ${!canAccessCategory ? 'text-gray-600' : group.accentColor} opacity-50`}>
+                                    {category.items.length}
+                                  </span>
+                                  {/* 카테고리 등급 배지 */}
+                                  {categoryMinTier && categoryMinTier !== 'Starter' && (
+                                    <span className={`text-[9px] px-1.5 py-config.decimals.value5 rounded-md font-bold ml-auto
+                                                  ${!canAccessCategory
+                                                    ? 'bg-gray-700/50 text-gray-500 border border-gray-600/50'
+                                                    : `${categoryTierInfo?.bgColor} ${categoryTierInfo?.color}`}`}>
+                                      {categoryTierInfo?.icon} {categoryMinTier.toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                {isExpanded ?
+                                  <FaChevronDown className={`text-[10px] ${group.accentColor} opacity-60`} /> :
+                                  <FaChevronRight className={`text-[10px] ${group.accentColor} opacity-60`} />
+                                }
+                              </button>
+
+                              {/* 카테고리 아이템 */}
+                              <AnimatePresence>
+                                {isExpanded && (
                                 <motion.div
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
@@ -1406,7 +1512,8 @@ export default function SidebarNew() {
                             </AnimatePresence>
                           </div>
                         )
-                      })}
+                      })
+                    )}
                     </motion.div>
                   )}
                 </AnimatePresence>
