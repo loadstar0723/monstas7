@@ -60,7 +60,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} dark:bg-black dark:text-white bg-white text-gray-900 antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         {/* AuthProvider 제거 - next-auth 비활성화 */}
         <ThemeProvider>
           <SidebarProvider>
