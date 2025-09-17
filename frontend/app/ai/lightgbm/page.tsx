@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
 
-const LightgbmModule = dynamic(() => import('./LightgbmModuleEnhanced'), {
+const LightgbmModule = dynamic(() => import('./LightGBMModuleEnhanced'), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
