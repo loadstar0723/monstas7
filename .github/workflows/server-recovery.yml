@@ -1,0 +1,195 @@
+name: 🚨 Emergency Server Recovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Recovery action'
+        required: true
+        default: 'restart'
+        type: choice
+        options:
+          - restart
+          - full-recovery
+          - check-status
+
+jobs:
+  server-recovery:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: Check Instance Status
+      id: check
+      run: |
+        INSTANCE_ID="${{ secrets.EC2_INSTANCE_ID }}"
+
+        # 인스턴스 상태 확인
+        STATE=$(aws ec2 describe-instances \
+          --instance-ids $INSTANCE_ID \
+          --query 'Reservations[0].Instances[0].State.Name' \
+          --output text)
+
+        echo "Instance state: $STATE"
+        echo "state=$STATE" >> $GITHUB_OUTPUT
+
+        # 인스턴스 정보 출력
+        aws ec2 describe-instances \
+          --instance-ids $INSTANCE_ID \
+          --query 'Reservations[0].Instances[0].{ID:InstanceId,Type:InstanceType,State:State.Name,IP:PublicIpAddress}'
+
+    - name: Start Instance if Stopped
+      if: steps.check.outputs.state == 'stopped'
+      run: |
+        echo "🔴 Instance is stopped. Starting..."
+        aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+
+        # 인스턴스 시작 대기 (최대 5분)
+        aws ec2 wait instance-running \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+          --no-cli-pager || true
+
+        echo "✅ Instance started successfully"
+
+        # IP 주소 확인
+        aws ec2 describe-instances \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+          --query 'Reservations[0].Instances[0].PublicIpAddress' \
+          --output text
+
+    - name: Reboot Instance if Running
+      if: steps.check.outputs.state == 'running' && github.event.inputs.action == 'restart'
+      run: |
+        echo "🔄 Rebooting instance..."
+        aws ec2 reboot-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        sleep 60
+        echo "✅ Instance rebooted"
+
+    - name: Wait for SSH
+      if: github.event.inputs.action != 'check-status'
+      run: |
+        echo "⏳ Waiting for SSH to be available..."
+        for i in {1..30}; do
+          if nc -zv ${{ secrets.EC2_HOST }} 22 2>/dev/null; then
+            echo "✅ SSH is available"
+            break
+          fi
+          echo "Attempt $i/30: SSH not ready, waiting..."
+          sleep 10
+        done
+
+    - name: Deploy and Start Services
+      if: github.event.inputs.action != 'check-status'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          echo "🚀 Starting server recovery..."
+
+          # 시스템 정보 확인
+          echo "📊 System Information:"
+          free -h
+          df -h
+
+          # 메모리 정리
+          sudo sync
+          echo 3 | sudo tee /proc/sys/vm/drop_caches
+
+          # 스왑 메모리 확인/생성
+          if [ ! -f /swapfile ]; then
+            echo "📦 Creating swap file..."
+            sudo fallocate -l 2G /swapfile
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+            echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+          fi
+
+          # 기존 프로세스 정리
+          echo "🧹 Cleaning old processes..."
+          sudo pkill -f node || true
+          sudo pkill -f npm || true
+          pm2 delete all || true
+
+          # Git 업데이트
+          cd /home/ubuntu/monstas7
+          git fetch origin
+          git reset --hard origin/master
+
+          # Frontend 시작 (가벼운 모드)
+          cd frontend
+
+          # .env 파일 생성
+          cat > .env.local << 'EOF'
+          NEXT_PUBLIC_API_URL=http://15.165.105.250:8000
+          NODE_ENV=production
+          EOF
+
+          # PM2 ecosystem 설정
+          cat > ecosystem.config.js << 'EOF'
+          module.exports = {
+            apps: [{
+              name: 'monstas-frontend',
+              script: 'node_modules/.bin/next',
+              args: 'start -p 3000',
+              instances: 1,
+              exec_mode: 'fork',
+              max_memory_restart: '400M',
+              env: {
+                PORT: 3000,
+                NODE_ENV: 'production',
+                NODE_OPTIONS: '--max-old-space-size=512'
+              },
+              error_file: '/home/ubuntu/logs/frontend-error.log',
+              out_file: '/home/ubuntu/logs/frontend-out.log',
+              merge_logs: true,
+              time: true
+            }]
+          }
+          EOF
+
+          # 로그 디렉토리 생성
+          mkdir -p /home/ubuntu/logs
+
+          # Production 의존성만 설치
+          echo "📦 Installing production dependencies..."
+          npm ci --production --silent
+
+          # 빌드 파일 확인
+          if [ ! -d ".next" ]; then
+            echo "🔨 Building application..."
+            NODE_OPTIONS="--max-old-space-size=512" npm run build
+          fi
+
+          # PM2 시작
+          echo "🚀 Starting application with PM2..."
+          pm2 start ecosystem.config.js
+          pm2 save
+          pm2 startup systemd -u ubuntu --hp /home/ubuntu
+
+          # Nginx 설정 확인
+          sudo nginx -t
+          sudo systemctl restart nginx
+
+          # 상태 확인
+          echo "✅ Services Status:"
+          pm2 list
+          pm2 monit --lines 10
+
+          # 포트 확인
+          echo "🔍 Port Status:"
+          sudo netstat -tlpn | grep -E ":(3000|80|443)"
+
+          # 최종 확인
+          curl -I http://localhost:3000 || echo "Frontend not responding"
+
+          echo "✨ Server recovery completed!"
+          echo "🌐 Access URL: http://15.165.105.250"
