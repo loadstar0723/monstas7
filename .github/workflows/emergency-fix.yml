@@ -1,7 +1,7 @@
-name: Emergency Deploy Fix
+name: Emergency Fix (백업용)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # 수동 실행 전용
     inputs:
       deployment_mode:
         description: 'Deployment Mode'

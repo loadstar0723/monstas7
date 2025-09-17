@@ -1,9 +1,9 @@
-name: Simple Deploy
+name: 🚀 메인 배포 (Simple Deploy)
 
 on:
   push:
-    branches: [ master ]
-  workflow_dispatch:
+    branches: [ master ]  # master 브랜치 푸시 시 자동 실행
+  workflow_dispatch:     # 수동 실행도 가능
 
 jobs:
   deploy:

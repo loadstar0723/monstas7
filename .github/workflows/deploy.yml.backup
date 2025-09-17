@@ -1,0 +1,18 @@
+# 이 파일은 simple-deploy.yml과 중복되어 백업됨
+# simple-deploy.yml만 사용하면 충분함
+
+name: Deploy to AWS (DEPRECATED - Use simple-deploy.yml)
+
+on:
+  workflow_dispatch:  # 수동 실행만 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deprecated Notice
+      run: |
+        echo "⚠️ 이 워크플로우는 더 이상 사용되지 않습니다."
+        echo "📌 대신 'Simple Deploy' 워크플로우를 사용하세요."
+        exit 1

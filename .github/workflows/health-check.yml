@@ -1,10 +1,10 @@
-name: Health Check
+name: 🏥 서버 모니터링 (Health Check)
 
 on:
   schedule:
-    # 매 30분마다 실행
+    # 매 30분마다 자동 실행
     - cron: '*/30 * * * *'
-  workflow_dispatch:
+  workflow_dispatch:  # 수동 실행도 가능
 
 jobs:
   health-check:
