@@ -1,0 +1,129 @@
+name: Emergency Deploy Fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_mode:
+        description: 'Deployment Mode'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - production
+          - restart-only
+
+jobs:
+  emergency-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Emergency Deployment
+        env:
+          DEPLOY_KEY: ${{ secrets.AWS_SERVER_KEY }}
+        run: |
+          # SSH 키 설정
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Known hosts 추가
+          ssh-keyscan -H 15.165.105.250 >> ~/.ssh/known_hosts
+
+          # 배포 모드별 실행
+          if [ "${{ inputs.deployment_mode }}" = "restart-only" ]; then
+            echo "🔄 Restarting server only..."
+            ssh -i ~/.ssh/deploy_key ubuntu@15.165.105.250 << 'EOF'
+              cd ~/monstas7/frontend
+              pm2 restart all || pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+              pm2 save
+              pm2 status
+              echo "✅ Server restarted!"
+EOF
+          else
+            echo "🚨 Emergency deployment mode: ${{ inputs.deployment_mode }}"
+            ssh -i ~/.ssh/deploy_key ubuntu@15.165.105.250 << 'EOF'
+              set -e  # 에러 발생 시 중단
+
+              echo "🚀 Starting emergency deployment..."
+
+              # 프로젝트 디렉토리
+              cd ~/monstas7 || { echo "❌ Project not found"; exit 1; }
+
+              # 최신 코드 가져오기 (강제)
+              echo "📥 Force pulling latest code..."
+              git fetch --all
+              git reset --hard origin/master
+
+              # Frontend 디렉토리
+              cd frontend
+
+              # 기존 프로세스 정리
+              echo "🧹 Cleaning up processes..."
+              pm2 delete all 2>/dev/null || true
+
+              # 캐시 완전 정리
+              echo "🗑️ Deep cleaning cache..."
+              rm -rf .next
+              rm -rf node_modules/.cache
+              rm -rf .npm
+
+              # 의존성 재설치
+              echo "📦 Reinstalling dependencies..."
+              rm -rf node_modules package-lock.json
+              npm cache clean --force
+              npm install --legacy-peer-deps
+
+              # react-is 패키지 확인
+              npm list react-is || npm install react-is --save
+
+              # 배포 모드 결정
+              if [ "${{ inputs.deployment_mode }}" = "production" ]; then
+                echo "🏗️ Attempting production build..."
+                if npm run build; then
+                  echo "✅ Production build successful!"
+                  pm2 start npm --name monsta-prod -- start -- -H 0.0.0.0 -p 3000
+                else
+                  echo "⚠️ Production build failed! Falling back to development..."
+                  pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+                fi
+              else
+                echo "🔧 Starting in development mode..."
+                pm2 start "npx next dev -H 0.0.0.0 -p 3000" --name monsta-frontend
+              fi
+
+              # PM2 설정 저장
+              pm2 save
+
+              # 대기
+              sleep 5
+
+              # PM2 상태
+              echo "📊 PM2 Status:"
+              pm2 status
+
+              # 헬스체크
+              echo "🏥 Running health check..."
+              for i in {1..15}; do
+                if curl -f -s http://localhost:3000 > /dev/null; then
+                  echo "✅ Server is responding!"
+                  echo "🎉 Emergency deployment successful!"
+                  echo "🌐 Server running at http://15.165.105.250:3000"
+
+                  # 포트 확인
+                  netstat -tlpn 2>/dev/null | grep -q :3000 && echo "✅ Port 3000 is listening!"
+                  exit 0
+                else
+                  echo "⏳ Waiting for server... ($i/15)"
+                  sleep 3
+                fi
+              done
+
+              echo "❌ Server failed to start after 15 attempts!"
+              echo "📋 PM2 Logs:"
+              pm2 logs --lines 100
+              exit 1
+EOF
+          fi

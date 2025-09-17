@@ -17,8 +17,13 @@ jobs:
       with:
         host: 15.165.105.250
         username: ubuntu
-        key: ${{ secrets.AWS_SSH_KEY }}
+        key: ${{ secrets.AWS_SERVER_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
         script: |
+          # 에러 발생 시 즉시 중단
+          set -e
           cd /home/ubuntu/monstas7
 
           # Git pull 최신 코드
@@ -62,6 +67,27 @@ jobs:
           pm2 save
           pm2 startup systemd -u ubuntu --hp /home/ubuntu || true
 
-          echo "✅ Deployment completed!"
-          echo "🌐 Server running at http://15.165.105.250:3000"
+          # PM2 상태 확인
           pm2 status
+
+          # 서버 시작 대기
+          echo "⏳ Waiting for server to start..."
+          sleep 5
+
+          # 헬스체크
+          echo "🏥 Running health check..."
+          for i in {1..10}; do
+            if curl -f -s http://localhost:3000 > /dev/null; then
+              echo "✅ Server is responding!"
+              echo "🎉 Deployment completed successfully!"
+              echo "🌐 Server running at http://15.165.105.250:3000"
+              exit 0
+            else
+              echo "⏳ Waiting for server... ($i/10)"
+              sleep 3
+            fi
+          done
+
+          echo "❌ Server failed to start!"
+          pm2 logs --lines 50
+          exit 1
