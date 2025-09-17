@@ -294,7 +294,20 @@
       "Bash(del \"C:\\monsta\\monstas7\\frontend\\app\\ai\\gru\\GRUModule.tsx\")",
       "Bash(start http://localhost:3900/ai/gru)",
       "Bash(start http://localhost:4000/ai/gru)",
-      "Bash(start http://localhost:4100/ai/gru)"
+      "Bash(start http://localhost:4100/ai/gru)",
+      "Bash(start http://localhost:5000/ai/lightgbm)",
+      "Bash(start http://localhost:5000/ai/randomforest)",
+      "Bash(start http://localhost:3500/ai/ensemble)",
+      "Bash(start http://localhost:3600/ai/ensemble)",
+      "Bash(start http://localhost:3700/ai/strategy-builder)",
+      "Bash(start http://localhost:3800/ai/strategy-builder)",
+      "Bash(start http://localhost:4500/ai/pattern-recognition)",
+      "Bash(start http://localhost:4600)",
+      "Bash(start http://localhost:4700)",
+      "Bash(start http://localhost:4800)",
+      "Bash(start http://localhost:4900)",
+      "Bash(start http://localhost:5173)",
+      "Bash(start http://localhost:8888)"
     ],
     "deny": [],
     "ask": []

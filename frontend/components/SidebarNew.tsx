@@ -562,7 +562,7 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaAtom, label: 'Neural Enhanced', path: '/ai/neural', category: 'premiumFeatures', isNew: true },
       { icon: BiData, label: 'Ensemble Enhanced', path: '/ai/ensemble', category: 'premiumFeatures', isNew: true },
       { icon: BiAnalyse, label: 'Pattern Recognition', path: '/ai/pattern-recognition', category: 'premiumFeatures', isNew: true },
-      { icon: FaChartPie, label: '포트폴리오 옵티마이저', path: '/portfolio-optimizer', category: 'premiumFeatures', isHot: true },
+      { icon: FaChartPie, label: '포트폴리오 옵티마이저', path: '/ai/portfolio-optimizer', category: 'premiumFeatures', isHot: true },
       { icon: FaRobot, label: 'AI 전략 빌더 3.0', path: '/ai/strategy-builder', category: 'premiumFeatures', isHot: true },
       { icon: FaCreditCard, label: '구독 시스템', path: '/subscription', category: 'premiumFeatures', isNew: true },
       { icon: FaShieldAlt, label: '보안 강화 (KYC/2FA)', path: '/security', category: 'premiumFeatures', isNew: true }

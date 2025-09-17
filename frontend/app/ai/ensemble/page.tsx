@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
 
-const EnsembleModule = dynamic(() => import('./EnsembleModule'), {
+const EnsembleModuleEnhanced = dynamic(() => import('./EnsembleModuleEnhanced'), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
@@ -18,7 +18,7 @@ const EnsembleModule = dynamic(() => import('./EnsembleModule'), {
 export default function EnsemblePage() {
   return (
     <ModuleErrorBoundary moduleName="앙상블 모델">
-      <EnsembleModule />
+      <EnsembleModuleEnhanced />
     </ModuleErrorBoundary>
   )
 }

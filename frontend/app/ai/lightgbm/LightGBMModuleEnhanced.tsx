@@ -3,10 +3,12 @@
 import React, { useState, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   FaBolt, FaLeaf, FaMemory, FaCogs, FaChartBar,
   FaTree, FaDatabase, FaRocket, FaLightbulb
 } from 'react-icons/fa'
+import { Zap, Cpu, Database as DatabaseIcon, Layers } from 'lucide-react'
+import GoEngineStatus from '@/components/GoEngineStatus'
 
 // 3D Leaf Boosting 배경 임포트
 import { DarkWaveBackground3D } from '@/components/backgrounds/DarkWaveBackground3D'
@@ -44,6 +46,27 @@ const AdvancedVisualization = dynamic(() => import('./components/AdvancedVisuali
 
 const DynamicAnalysis = dynamic(() => import('./components/DynamicAnalysis'), {
   ssr: false
+})
+
+// Go 하이브리드 컴포넌트
+const GoParallelBoosting = dynamic(() => import('./components/GoParallelBoosting'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoMemoryPool = dynamic(() => import('./components/GoMemoryPool'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoRealtimePredict = dynamic(() => import('./components/GoRealtimePredict'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoFeatureParallel = dynamic(() => import('./components/GoFeatureParallel'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
 })
 
 
@@ -95,6 +118,34 @@ export default function LightGBMModuleEnhanced() {
       icon: <FaChartBar className="text-2xl" />,
       description: '모델 내부 구조 분석',
       color: 'from-indigo-500 to-purple-500'
+    },
+    {
+      id: 'go-parallel',
+      title: 'Go 병렬 부스팅',
+      icon: <Zap className="text-2xl" />,
+      description: 'Go 병렬 처리 엔진',
+      color: 'from-green-500 to-teal-500'
+    },
+    {
+      id: 'go-memory',
+      title: 'Go 메모리 풀',
+      icon: <DatabaseIcon className="text-2xl" />,
+      description: 'Go 메모리 최적화',
+      color: 'from-blue-500 to-indigo-500'
+    },
+    {
+      id: 'go-predict',
+      title: 'Go 실시간 예측',
+      icon: <Cpu className="text-2xl" />,
+      description: 'Go 실시간 예측 엔진',
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      id: 'go-feature',
+      title: 'Go 특징 병렬',
+      icon: <Layers className="text-2xl" />,
+      description: 'Go 특징 병렬 처리',
+      color: 'from-yellow-500 to-orange-500'
     }
   ]
 
@@ -135,6 +186,30 @@ export default function LightGBMModuleEnhanced() {
             <DynamicAnalysis analysisType="visualization" />
           </ErrorBoundary>
         )
+      case 'go-parallel':
+        return (
+          <ErrorBoundary>
+            <GoParallelBoosting />
+          </ErrorBoundary>
+        )
+      case 'go-memory':
+        return (
+          <ErrorBoundary>
+            <GoMemoryPool />
+          </ErrorBoundary>
+        )
+      case 'go-predict':
+        return (
+          <ErrorBoundary>
+            <GoRealtimePredict />
+          </ErrorBoundary>
+        )
+      case 'go-feature':
+        return (
+          <ErrorBoundary>
+            <GoFeatureParallel />
+          </ErrorBoundary>
+        )
       default:
         return null
     }
@@ -149,6 +224,9 @@ export default function LightGBMModuleEnhanced() {
 
       {/* 메인 컨텐츠 */}
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Go 엔진 상태 */}
+        <GoEngineStatus />
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -159,7 +237,7 @@ export default function LightGBMModuleEnhanced() {
             LightGBM - Light Gradient Boosting Machine
           </h1>
           <p className="text-xl text-gray-300">
-            Microsoft의 초고속, 고효율 그래디언트 부스팅 프레임워크
+            Microsoft의 초고속, 고효율 그래디언트 부스팅 프레임워크 + Go 하이브리드
           </p>
         </motion.div>
 
@@ -182,7 +260,7 @@ export default function LightGBMModuleEnhanced() {
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-4 mb-8">
           {tabs.map((tab) => (
             <motion.button
               key={tab.id}

@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
 
-const PatternRecognitionModule = dynamic(() => import('./PatternRecognitionModule'), {
+const PatternRecognitionModuleEnhanced = dynamic(() => import('./PatternRecognitionModuleEnhanced'), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
@@ -18,7 +18,7 @@ const PatternRecognitionModule = dynamic(() => import('./PatternRecognitionModul
 export default function PatternRecognitionPage() {
   return (
     <ModuleErrorBoundary moduleName="패턴 인식">
-      <PatternRecognitionModule />
+      <PatternRecognitionModuleEnhanced />
     </ModuleErrorBoundary>
   )
 }

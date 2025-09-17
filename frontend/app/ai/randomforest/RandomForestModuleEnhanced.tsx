@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FaTree, FaBrain, FaChartBar, FaDatabase, FaVoteYea, 
+import {
+  FaTree, FaBrain, FaChartBar, FaDatabase, FaVoteYea,
   FaBalanceScale, FaChartArea, FaMagic, FaRobot, FaLeaf,
   FaChartLine, FaLightbulb, FaLayerGroup, FaCube
 } from 'react-icons/fa'
+import { Trees, Shuffle, Vote, TrendingUp } from 'lucide-react'
+import GoEngineStatus from '@/components/GoEngineStatus'
 
 // 동적 임포트로 성능 최적화
 const ErrorBoundary = dynamic(() => import('./components/ErrorBoundary'), { ssr: false })
@@ -19,6 +21,27 @@ const EnsembleVoting = dynamic(() => import('./components/EnsembleVoting'), { ss
 const OOBAnalysis = dynamic(() => import('./components/OOBAnalysis'), { ssr: false })
 const PartialDependence = dynamic(() => import('./components/PartialDependence'), { ssr: false })
 const DynamicAnalysis = dynamic(() => import('./components/DynamicAnalysis'), { ssr: false })
+
+// Go 하이브리드 컴포넌트
+const GoParallelTrees = dynamic(() => import('./components/GoParallelTrees'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoBootstrapSampling = dynamic(() => import('./components/GoBootstrapSampling'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoRealtimeVoting = dynamic(() => import('./components/GoRealtimeVoting'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
+
+const GoFeatureImportance = dynamic(() => import('./components/GoFeatureImportance'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-800 rounded-xl h-96" />
+})
 
 // 원래 3D 숲 배경 임포트
 import { ForestBackground3D } from '@/components/backgrounds/ForestBackground3D'
@@ -80,6 +103,34 @@ const tabs: TabConfig[] = [
     icon: <FaChartArea className="text-2xl" />,
     gradient: 'from-teal-500/20 to-green-500/20',
     description: '특성의 한계 효과를 분석하여 모델 행동을 이해합니다'
+  },
+  {
+    id: 'go-trees',
+    title: 'Go 병렬 트리',
+    icon: <Trees className="text-2xl" />,
+    gradient: 'from-green-500/20 to-teal-500/20',
+    description: 'Go 고루틴으로 병렬 트리 구축을 최적화합니다'
+  },
+  {
+    id: 'go-bootstrap',
+    title: 'Go Bootstrap',
+    icon: <Shuffle className="text-2xl" />,
+    gradient: 'from-blue-500/20 to-indigo-500/20',
+    description: 'Go로 Bootstrap 샘플링 속도를 극대화합니다'
+  },
+  {
+    id: 'go-voting',
+    title: 'Go 실시간 투표',
+    icon: <Vote className="text-2xl" />,
+    gradient: 'from-purple-500/20 to-pink-500/20',
+    description: 'Go로 앙상블 투표를 실시간 처리합니다'
+  },
+  {
+    id: 'go-importance',
+    title: 'Go 특성 분석',
+    icon: <TrendingUp className="text-2xl" />,
+    gradient: 'from-yellow-500/20 to-orange-500/20',
+    description: 'Go로 특성 중요도를 고속 계산합니다'
   }
 ]
 
@@ -150,6 +201,30 @@ export default function RandomForestModuleEnhanced() {
             <DynamicAnalysis analysisType="pdp" />
           </ErrorBoundary>
         )
+      case 'go-trees':
+        return (
+          <ErrorBoundary>
+            <GoParallelTrees />
+          </ErrorBoundary>
+        )
+      case 'go-bootstrap':
+        return (
+          <ErrorBoundary>
+            <GoBootstrapSampling />
+          </ErrorBoundary>
+        )
+      case 'go-voting':
+        return (
+          <ErrorBoundary>
+            <GoRealtimeVoting />
+          </ErrorBoundary>
+        )
+      case 'go-importance':
+        return (
+          <ErrorBoundary>
+            <GoFeatureImportance />
+          </ErrorBoundary>
+        )
       default:
         return null
     }
@@ -164,6 +239,9 @@ export default function RandomForestModuleEnhanced() {
       
       {/* 메인 컨텐츠 */}
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Go 엔진 상태 */}
+        <GoEngineStatus />
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -172,11 +250,11 @@ export default function RandomForestModuleEnhanced() {
         >
           <h1 className="text-5xl font-bold text-white mb-4 flex items-center justify-center gap-4">
             <FaTree className="text-green-400" />
-            Random Forest AI 트레이딩
+            Random Forest AI 트레이딩 + Go 하이브리드
             <FaLeaf className="text-green-400" />
           </h1>
           <p className="text-xl text-gray-300">
-            앙상블 학습의 힘으로 더 정확하고 안정적인 암호화폐 가격 예측
+            앙상블 학습의 힘 + Go 병렬 처리로 더 정확하고 안정적인 암호화폐 가격 예측
           </p>
           
           {/* 심볼 선택 */}
@@ -198,7 +276,7 @@ export default function RandomForestModuleEnhanced() {
         </motion.div>
 
         {/* 탭 네비게이션 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11 gap-3 mb-8">
           {tabs.map((tab, index) => (
             <motion.button
               key={tab.id}
@@ -212,7 +290,7 @@ export default function RandomForestModuleEnhanced() {
                   : 'bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50'
               }`}
             >
-              <div className="relative z-10 min-h-screen p-6">
+              <div className="relative z-10 p-3">
                 <div className="flex justify-center mb-2 text-white">{tab.icon}</div>
                 <div className="text-sm font-semibold text-white">{tab.title}</div>
               </div>

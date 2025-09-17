@@ -12,6 +12,7 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+// import GlobalErrorBoundary from "@/components/common/GlobalErrorBoundary";
 // Chrome 브라우저 자동 번역 사용 - GoogleTranslate 컴포넌트 제거
 
 const inter = Inter({ subsets: ["latin"] });

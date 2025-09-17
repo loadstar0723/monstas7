@@ -1,9 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import ModuleErrorBoundary from '@/components/common/ModuleErrorBoundary'
+import { Suspense } from 'react'
 
-const StrategyBuilderModule = dynamic(() => import('@/components/strategy-builder/StrategyBuilderModule'), {
+const StrategyBuilderModuleEnhanced = dynamic(() => import('./StrategyBuilderModuleEnhanced'), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
@@ -17,8 +17,15 @@ const StrategyBuilderModule = dynamic(() => import('@/components/strategy-builde
 
 export default function StrategyBuilderPage() {
   return (
-    <ModuleErrorBoundary moduleName="AI 전략 빌더 3.0">
-      <StrategyBuilderModule />
-    </ModuleErrorBoundary>
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-white text-lg">페이지 로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <StrategyBuilderModuleEnhanced />
+    </Suspense>
   )
 }

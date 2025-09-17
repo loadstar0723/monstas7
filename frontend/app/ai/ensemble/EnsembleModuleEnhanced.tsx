@@ -4,14 +4,14 @@ import React, { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  FaBrain, FaChartLine, FaRobot, FaGraduationCap,
-  FaEye, FaLayerGroup, FaCogs, FaLightbulb
+  FaUsers, FaChartPie, FaNetworkWired, FaCogs,
+  FaBalanceScale, FaChartLine, FaEye, FaBrain
 } from 'react-icons/fa'
-import { Brain, Cpu, TrendingDown, Zap } from 'lucide-react'
+import { Users, Settings, Network, Zap } from 'lucide-react'
 import GoEngineStatus from '@/components/GoEngineStatus'
 import ErrorBoundary from './components/ErrorBoundary'
-import { UltraDarkNeuralBackground3D } from '@/components/backgrounds/UltraDarkNeuralBackground3D'
-import styles from './neural.module.css'
+import EnsembleBackground3D from './components/EnsembleBackground3D'
+import styles from './ensemble.module.css'
 
 // Dynamic imports for code splitting
 const ModelOverview = dynamic(() => import('./components/ModelOverview'), {
@@ -19,48 +19,43 @@ const ModelOverview = dynamic(() => import('./components/ModelOverview'), {
   ssr: false
 })
 
-const NetworkArchitecture = dynamic(() => import('./components/NetworkArchitecture'), {
+const ModelCorrelation = dynamic(() => import('./components/ModelCorrelation'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const TrainingVisualization = dynamic(() => import('./components/TrainingVisualization'), {
+const MetaLearning = dynamic(() => import('./components/MetaLearning'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const AttentionMechanism = dynamic(() => import('./components/AttentionMechanism'), {
+const PredictionConsensus = dynamic(() => import('./components/PredictionConsensus'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const PredictionInterface = dynamic(() => import('./components/PredictionInterface'), {
+const RealTimeEnsemble = dynamic(() => import('./components/RealTimeEnsemble'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
-  ssr: false
-})
-
-const DynamicAnalysis = dynamic(() => import('./components/DynamicAnalysis'), {
-  loading: () => <div className="animate-pulse bg-gray-800/50 h-64 rounded-xl" />,
   ssr: false
 })
 
 // Go 하이브리드 컴포넌트
-const GoParallelLayers = dynamic(() => import('./components/GoParallelLayers'), {
+const GoParallelVoting = dynamic(() => import('./components/GoParallelVoting'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const GoTensorOperations = dynamic(() => import('./components/GoTensorOperations'), {
+const GoWeightOptimizer = dynamic(() => import('./components/GoWeightOptimizer'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const GoBackpropagation = dynamic(() => import('./components/GoBackpropagation'), {
+const GoModelOrchestration = dynamic(() => import('./components/GoModelOrchestration'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
 
-const GoRealtimeInference = dynamic(() => import('./components/GoRealtimeInference'), {
+const GoRealtimeConsensus = dynamic(() => import('./components/GoRealtimeConsensus'), {
   loading: () => <div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />,
   ssr: false
 })
@@ -77,69 +72,69 @@ const tabs: TabItem[] = [
   {
     id: 'overview',
     label: '모델 개요',
-    icon: <FaBrain className="w-5 h-5" />,
-    description: '신경망 모델 종류와 특성 비교',
+    icon: <FaUsers className="w-5 h-5" />,
+    description: '앙상블 모델 구성 및 성능',
     gradient: 'from-blue-500 to-cyan-500'
   },
   {
-    id: 'architecture',
-    label: '네트워크 구조',
-    icon: <FaLayerGroup className="w-5 h-5" />,
-    description: '3D 신경망 아키텍처 시각화',
+    id: 'correlation',
+    label: '모델 상관관계',
+    icon: <FaNetworkWired className="w-5 h-5" />,
+    description: '모델 간 상관관계 분석',
     gradient: 'from-purple-500 to-pink-500'
   },
   {
-    id: 'training',
-    label: '학습 과정',
-    icon: <FaGraduationCap className="w-5 h-5" />,
-    description: '실시간 훈련 과정 모니터링',
+    id: 'meta-learning',
+    label: '메타 러닝',
+    icon: <FaBrain className="w-5 h-5" />,
+    description: '메타 학습 최적화',
     gradient: 'from-green-500 to-emerald-500'
   },
   {
-    id: 'attention',
-    label: 'Attention',
-    icon: <FaEye className="w-5 h-5" />,
-    description: 'Transformer Attention 메커니즘',
+    id: 'consensus',
+    label: '예측 합의',
+    icon: <FaBalanceScale className="w-5 h-5" />,
+    description: '모델 간 합의 도출',
     gradient: 'from-yellow-500 to-orange-500'
   },
   {
-    id: 'prediction',
-    label: '예측 인터페이스',
+    id: 'realtime',
+    label: '실시간 앙상블',
     icon: <FaChartLine className="w-5 h-5" />,
-    description: 'AI 가격 예측 실행',
+    description: '실시간 예측 통합',
     gradient: 'from-cyan-500 to-blue-500'
   },
   {
-    id: 'go-parallel',
-    label: 'Go 병렬 레이어',
-    icon: <Brain className="w-5 h-5" />,
-    description: 'Go 병렬 신경망 처리',
+    id: 'go-voting',
+    label: 'Go 병렬 투표',
+    icon: <Users className="w-5 h-5" />,
+    description: 'Go 병렬 투표 시스템',
     gradient: 'from-green-500 to-teal-500'
   },
   {
-    id: 'go-tensor',
-    label: 'Go 텐서 연산',
-    icon: <Cpu className="w-5 h-5" />,
-    description: 'Go 텐서 최적화 엔진',
+    id: 'go-weight',
+    label: 'Go 가중치 최적화',
+    icon: <Settings className="w-5 h-5" />,
+    description: 'Go 가중치 최적화 엔진',
     gradient: 'from-blue-500 to-indigo-500'
   },
   {
-    id: 'go-backprop',
-    label: 'Go 역전파',
-    icon: <TrendingDown className="w-5 h-5" />,
-    description: 'Go 역전파 최적화',
+    id: 'go-orchestration',
+    label: 'Go 오케스트레이션',
+    icon: <Network className="w-5 h-5" />,
+    description: 'Go 모델 오케스트레이션',
     gradient: 'from-purple-500 to-pink-500'
   },
   {
-    id: 'go-inference',
-    label: 'Go 추론 엔진',
+    id: 'go-consensus',
+    label: 'Go 실시간 합의',
     icon: <Zap className="w-5 h-5" />,
-    description: 'Go 실시간 추론',
+    description: 'Go 실시간 합의 엔진',
     gradient: 'from-yellow-500 to-red-500'
   }
 ]
 
-export default function NeuralModuleEnhanced() {
+export default function EnsembleModuleEnhanced() {
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
   const [isLoading, setIsLoading] = useState(false)
@@ -164,55 +159,55 @@ export default function NeuralModuleEnhanced() {
       case 'overview':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <ModelOverview symbol={selectedSymbol} />
+            <ModelOverview />
           </Suspense>
         )
-      case 'architecture':
+      case 'correlation':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <NetworkArchitecture symbol={selectedSymbol} />
+            <ModelCorrelation />
           </Suspense>
         )
-      case 'training':
+      case 'meta-learning':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <TrainingVisualization symbol={selectedSymbol} />
+            <MetaLearning />
           </Suspense>
         )
-      case 'attention':
+      case 'consensus':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <AttentionMechanism symbol={selectedSymbol} />
+            <PredictionConsensus />
           </Suspense>
         )
-      case 'prediction':
+      case 'realtime':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <PredictionInterface symbol={selectedSymbol} />
+            <RealTimeEnsemble />
           </Suspense>
         )
-      case 'go-parallel':
+      case 'go-voting':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <GoParallelLayers />
+            <GoParallelVoting />
           </Suspense>
         )
-      case 'go-tensor':
+      case 'go-weight':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <GoTensorOperations />
+            <GoWeightOptimizer />
           </Suspense>
         )
-      case 'go-backprop':
+      case 'go-orchestration':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <GoBackpropagation />
+            <GoModelOrchestration />
           </Suspense>
         )
-      case 'go-inference':
+      case 'go-consensus':
         return (
           <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-96 rounded-xl" />}>
-            <GoRealtimeInference />
+            <GoRealtimeConsensus />
           </Suspense>
         )
       default:
@@ -225,12 +220,10 @@ export default function NeuralModuleEnhanced() {
       <div className={`${styles.darkBackground} relative min-h-screen`} style={{ backgroundColor: '#000000' }}>
         {/* 배경 그라데이션 */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
-        
-        {/* 완전 어두운 3D 배경 */}
+
+        {/* 3D 배경 */}
         <div className="absolute inset-0">
-          <div className="fixed inset-0 z-0">
-        <UltraDarkNeuralBackground3D />
-      </div>
+          <EnsembleBackground3D />
         </div>
 
         {/* Content */}
@@ -245,10 +238,10 @@ export default function NeuralModuleEnhanced() {
             className="text-center mb-12"
           >
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-4">
-              Neural Network AI
+              Ensemble AI Trading
             </h1>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto">
-              딥러닝 신경망을 활용한 차세대 암호화폐 가격 예측 시스템
+              7개 AI 모델의 집단 지성으로 최적의 트레이딩 결정
             </p>
           </motion.div>
 
@@ -284,21 +277,20 @@ export default function NeuralModuleEnhanced() {
             className="mb-8"
           >
             <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-2">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-9 gap-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-4 py-3 rounded-xl transition-all duration-300 ${
+                    className={`relative px-3 py-2 rounded-xl transition-all duration-300 ${
                       activeTab === tab.id
                         ? 'bg-gradient-to-r ' + tab.gradient + ' text-white shadow-lg'
                         : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
                     }`}
                   >
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1">
                       {tab.icon}
-                      <span className="hidden md:inline font-medium">{tab.label}</span>
-                      <span className="md:hidden text-sm">{tab.label.split(' ')[0]}</span>
+                      <span className="hidden lg:inline text-xs font-medium">{tab.label}</span>
                     </div>
                     {activeTab === tab.id && (
                       <motion.div
@@ -312,7 +304,7 @@ export default function NeuralModuleEnhanced() {
                 ))}
               </div>
             </div>
-            
+
             {/* Tab Description */}
             <AnimatePresence mode="wait">
               <motion.div
@@ -346,17 +338,6 @@ export default function NeuralModuleEnhanced() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Dynamic Analysis Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Suspense fallback={<div className="animate-pulse bg-gray-800/50 h-64 rounded-xl mt-8" />}>
-              <DynamicAnalysis analysisType={activeTab as any} />
-            </Suspense>
-          </motion.div>
-
           {/* Footer Tips */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -365,28 +346,28 @@ export default function NeuralModuleEnhanced() {
             className="mt-12 bg-gradient-to-r from-indigo-900/20 to-purple-900/20 rounded-xl p-6 border border-indigo-500/30"
           >
             <div className="flex items-center gap-3 mb-4">
-              <FaLightbulb className="text-2xl text-yellow-400" />
-              <h3 className="text-xl font-bold text-white">Neural Network AI 활용 팁</h3>
+              <FaCogs className="text-2xl text-yellow-400" />
+              <h3 className="text-xl font-bold text-white">앙상블 AI 활용 팁</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-indigo-400 font-semibold mb-2">모델 선택 가이드</h4>
+                <h4 className="text-indigo-400 font-semibold mb-2">앙상블의 강점</h4>
                 <ul className="space-y-1 text-sm text-gray-300">
-                  <li>• MLP: 기본적인 가격 예측에 적합</li>
-                  <li>• CNN: 차트 패턴 인식에 특화</li>
-                  <li>• LSTM/GRU: 시계열 예측의 표준</li>
-                  <li>• Transformer: 최신 기술, 장기 의존성</li>
+                  <li>• 개별 모델의 약점을 상호 보완</li>
+                  <li>• 다수결로 더 안정적인 예측</li>
+                  <li>• 과적합 위험 감소</li>
+                  <li>• 다양한 패턴 포착 가능</li>
                 </ul>
               </div>
-              
+
               <div>
                 <h4 className="text-purple-400 font-semibold mb-2">최적 활용 전략</h4>
                 <ul className="space-y-1 text-sm text-gray-300">
-                  <li>• 여러 모델 앙상블로 정확도 향상</li>
-                  <li>• 시장 상황에 따른 모델 가중치 조정</li>
-                  <li>• 정기적인 재학습으로 성능 유지</li>
-                  <li>• 신뢰도 70% 이상에서만 거래 실행</li>
+                  <li>• 합의율 70% 이상일 때 신뢰</li>
+                  <li>• 반대 모델이 2개 이하일 때 실행</li>
+                  <li>• 가중치 최적화 수렴 후 거래</li>
+                  <li>• Byzantine 내성 60% 이상 유지</li>
                 </ul>
               </div>
             </div>
