@@ -565,7 +565,11 @@ const menuStructure: { [key in MenuCategory]: { title: string, items: MenuItem[]
       { icon: FaChartPie, label: '포트폴리오 옵티마이저', path: '/ai/portfolio-optimizer', category: 'premiumFeatures', isHot: true },
       { icon: FaRobot, label: 'AI 전략 빌더 3.0', path: '/ai/strategy-builder', category: 'premiumFeatures', isHot: true },
       { icon: FaCreditCard, label: '구독 시스템', path: '/subscription', category: 'premiumFeatures', isNew: true },
-      { icon: FaShieldAlt, label: '보안 강화 (KYC/2FA)', path: '/security', category: 'premiumFeatures', isNew: true }
+      { icon: FaShieldAlt, label: '보안 강화 (KYC/2FA)', path: '/security', category: 'premiumFeatures', isNew: true },
+      { icon: FaServer, label: 'AI 모델 상태', path: '/ai/model-status', category: 'premiumFeatures', isHot: true },
+      { icon: FaBolt, label: 'Go AI 실시간 예측', path: '/ai/go-prediction', category: 'premiumFeatures', isNew: true },
+      { icon: FaChartLine, label: '백테스팅 엔진', path: '/trading/backtest', category: 'premiumFeatures', isHot: true },
+      { icon: MdQueryStats, label: 'AI 모델 상태', path: '/ai/status', category: 'premiumFeatures', isNew: true, badge: 'NEW' }
     ]
   }
 }

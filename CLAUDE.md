@@ -867,3 +867,9 @@ Binance WebSocket (무료) + CryptoCompare Free (무료) = 완벽한 솔루션
   성능 중요 → Go로 개발
   AI/ML → Python 유지
   UI/UX → TypeScript/Next.js
+
+# 데이터 베이스 구조
+
+ 1. Supabase: 인증, 사용자 데이터, 실시간 구독
+ 2. Go Backend: AI 모델, 기술지표, 트레이딩 로직
+ 3. Next.js: UI/UX, 프록시, 상태 관리

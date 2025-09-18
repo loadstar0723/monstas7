@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONSTA AI Trading System - Model Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #764ba2;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .model-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+
+        .model-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .status-loaded {
+            background: #4caf50;
+            color: white;
+        }
+
+        .model-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .accuracy-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 1s ease;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin: 40px 0;
+        }
+
+        .error {
+            background: #ff5252;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .loading-dot {
+            display: inline-block;
+            animation: pulse 1.4s infinite;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MONSTA AI Trading System</h1>
+        <p class="subtitle">실시간 AI 모델 상태 대시보드</p>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-models">-</div>
+                <div class="stat-label">전체 모델</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="active-models">-</div>
+                <div class="stat-label">활성 모델</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-accuracy">-</div>
+                <div class="stat-label">평균 정확도</div>
+            </div>
+        </div>
+
+        <div id="models-container">
+            <div class="loading">
+                모델 상태를 불러오는 중<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchModelStatus() {
+            try {
+                const response = await fetch('/api/v1/ai/models/status');
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('total-models').textContent = data.total || '0';
+                document.getElementById('active-models').textContent = data.active || '0';
+
+                // Calculate average accuracy
+                const models = data.models || {};
+                const accuracies = Object.values(models).map(m => m.accuracy || 0);
+                const avgAccuracy = accuracies.length > 0
+                    ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length * 100).toFixed(1)
+                    : '0';
+                document.getElementById('avg-accuracy').textContent = avgAccuracy + '%';
+
+                // Render models
+                const container = document.getElementById('models-container');
+                container.innerHTML = '<div class="models-grid">' +
+                    Object.entries(models).map(([name, model]) => `
+                        <div class="model-card">
+                            <div class="model-name">${name.replace(/_/g, ' ')}</div>
+                            <span class="model-status status-loaded">● 활성화</span>
+                            <div class="model-info">
+                                <div class="info-row">
+                                    <span class="info-label">버전</span>
+                                    <span class="info-value">${model.version || '1.0.0'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">정확도</span>
+                                    <span class="info-value">${(model.accuracy * 100).toFixed(0)}%</span>
+                                </div>
+                                <div class="accuracy-bar">
+                                    <div class="accuracy-fill" style="width: ${model.accuracy * 100}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') +
+                '</div>';
+
+            } catch (error) {
+                console.error('Error fetching model status:', error);
+                document.getElementById('models-container').innerHTML =
+                    '<div class="error">모델 상태를 불러오는 중 오류가 발생했습니다.</div>';
+            }
+        }
+
+        // Fetch on load
+        fetchModelStatus();
+
+        // Auto-refresh every 5 seconds
+        setInterval(fetchModelStatus, 5000);
+    </script>
+</body>
+</html>

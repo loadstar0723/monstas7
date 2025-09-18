@@ -1,0 +1,150 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-northeast-2
+  EC2_HOST: 15.165.105.250
+  GO_VERSION: 1.21
+  NODE_VERSION: 18
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Test Go Backend
+        working-directory: ./backend-go
+        run: |
+          go mod download
+          go test ./...
+
+      - name: Test Frontend
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run test --if-present
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Backend Docker Image
+        working-directory: ./backend-go
+        run: |
+          docker build -t monstas7-backend:${{ github.sha }} .
+          docker save monstas7-backend:${{ github.sha }} -o backend.tar
+
+      - name: Build Frontend Docker Image
+        working-directory: ./frontend
+        run: |
+          docker build -t monstas7-frontend:${{ github.sha }} .
+          docker save monstas7-frontend:${{ github.sha }} -o frontend.tar
+
+      - name: Upload Backend Image
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-image
+          path: backend-go/backend.tar
+
+      - name: Upload Frontend Image
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-image
+          path: frontend/frontend.tar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Backend Image
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-image
+          path: ./images
+
+      - name: Download Frontend Image
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-image
+          path: ./images
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy Docker Images to EC2
+        run: |
+          scp ./images/backend.tar ubuntu@${{ env.EC2_HOST }}:/tmp/
+          scp ./images/frontend.tar ubuntu@${{ env.EC2_HOST }}:/tmp/
+          scp ./docker-compose.yml ubuntu@${{ env.EC2_HOST }}:/home/ubuntu/
+          scp ./.env.production ubuntu@${{ env.EC2_HOST }}:/home/ubuntu/.env
+
+      - name: Deploy to EC2
+        run: |
+          ssh ubuntu@${{ env.EC2_HOST }} << 'EOF'
+            # Load Docker images
+            docker load -i /tmp/backend.tar
+            docker load -i /tmp/frontend.tar
+
+            # Tag images
+            docker tag monstas7-backend:${{ github.sha }} monstas7-backend:latest
+            docker tag monstas7-frontend:${{ github.sha }} monstas7-frontend:latest
+
+            # Stop existing containers
+            docker-compose down
+
+            # Start new containers
+            docker-compose up -d
+
+            # Clean up
+            rm /tmp/backend.tar /tmp/frontend.tar
+
+            # Prune old images
+            docker image prune -f
+          EOF
+
+      - name: Health Check
+        run: |
+          sleep 30
+          curl -f http://${{ env.EC2_HOST }}/health || exit 1
+          curl -f http://${{ env.EC2_HOST }}/api/v1/health || exit 1
+
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "✅ Deployment successful!"
+          echo "🌐 Frontend: http://${{ env.EC2_HOST }}"
+          echo "🚀 API: http://${{ env.EC2_HOST }}/api/v1"
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          # Add notification logic here (Slack, Email, etc.)
