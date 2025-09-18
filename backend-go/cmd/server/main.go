@@ -77,6 +77,7 @@ func main() {
 			aiGroup.POST("/lstm/predict", api.LSTMPredict)
 			aiGroup.POST("/gru/predict", api.GRUPredict)
 			aiGroup.POST("/xgboost/predict", api.XGBoostPredict)
+			aiGroup.POST("/xgboost/train", api.XGBoostTrain)
 			aiGroup.POST("/arima/predict", api.ARIMAPredict)
 			aiGroup.POST("/pattern/recognize", api.PatternRecognition)
 			aiGroup.POST("/portfolio/optimize", api.PortfolioOptimize)

@@ -35,6 +35,36 @@ const XGBoostSimple = dynamic(
   }
 )
 
+const XGBoostSimpleV2 = dynamic(
+  () => import('./XGBoostModuleSimpleV2'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Multi-Model 버전 로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+)
+
+const XGBoostRealPrediction = dynamic(
+  () => import('./XGBoostRealPrediction'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-white text-lg">실전 예측 시스템 로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+)
+
 export default function XgboostPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -95,6 +125,34 @@ export default function XgboostPage() {
               {version === 'simple' ? '안정성 + 빠른 실행' : '간단 버전'}
             </span>
           </button>
+
+          <button
+            onClick={() => handleVersionChange('multi')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              version === 'multi'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-800/70 border border-gray-700'
+            }`}
+          >
+            🎯 Multi-Model 버전
+            <span className="block text-xs mt-1 font-normal">
+              {version === 'multi' ? '모든 코인 자동 훈련' : '멀티 모델'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleVersionChange('real')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              version === 'real'
+                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-800/70 border border-gray-700'
+            }`}
+          >
+            🔥 실전 예측 시스템
+            <span className="block text-xs mt-1 font-normal">
+              {version === 'real' ? '최고 정확도 + 실전 분석' : '실전 예측'}
+            </span>
+          </button>
         </div>
 
         {/* Go 하이브리드 기능 설명 */}
@@ -121,13 +179,19 @@ export default function XgboostPage() {
         <div className="mb-4 p-3 bg-gray-900/50 backdrop-blur rounded-lg border border-gray-700/50">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full animate-pulse ${
-              version === 'enhanced' ? 'bg-green-500' : 'bg-blue-500'
+              version === 'enhanced' ? 'bg-green-500' :
+              version === 'simple' ? 'bg-blue-500' :
+              version === 'multi' ? 'bg-purple-500' : 'bg-red-500'
             }`} />
             <span className="text-sm text-gray-300">
               현재 실행 중: <span className={`font-bold ${
-                version === 'enhanced' ? 'text-green-400' : 'text-blue-400'
+                version === 'enhanced' ? 'text-green-400' :
+                version === 'simple' ? 'text-blue-400' :
+                version === 'multi' ? 'text-purple-400' : 'text-red-400'
               }`}>
-                {version === 'enhanced' ? 'Enhanced 버전' : 'Simple 버전'}
+                {version === 'enhanced' ? 'Enhanced 버전' :
+                 version === 'simple' ? 'Simple 버전' :
+                 version === 'multi' ? 'Multi-Model 버전' : '실전 예측 시스템'}
               </span>
             </span>
           </div>
@@ -137,6 +201,12 @@ export default function XgboostPage() {
         <div className="min-h-[500px]">
           {version === 'enhanced' ? (
             <XGBoostEnhanced />
+          ) : version === 'simple' ? (
+            <XGBoostSimple />
+          ) : version === 'multi' ? (
+            <XGBoostSimpleV2 />
+          ) : version === 'real' ? (
+            <XGBoostRealPrediction />
           ) : (
             <XGBoostSimple />
           )}

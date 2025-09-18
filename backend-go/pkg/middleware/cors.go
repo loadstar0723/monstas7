@@ -10,16 +10,9 @@ import (
 // CORS returns a CORS middleware
 func CORS() gin.HandlerFunc {
 	config := cors.Config{
-		AllowOrigins: []string{
-			"http://localhost:3000",
-			"http://localhost:3001",
-			"http://localhost:3002",
-			"http://localhost:3003",
-			"http://127.0.0.1:3000",
-			"http://15.165.105.250:3000",
-			"http://13.209.84.93:3000",
-			"https://monsta.ai",
-			"https://www.monsta.ai",
+		AllowOriginFunc: func(origin string) bool {
+			// 개발 환경에서 모든 localhost와 127.0.0.1 포트 허용
+			return true // 개발 중에는 모든 origin 허용 (프로덕션에서는 제한 필요)
 		},
 		AllowMethods: []string{
 			"GET",
