@@ -307,13 +307,13 @@ function ParticleScene() {
 
 export function ParticleBackground3D() {
   return (
-    <div className="fixed inset-0 z-0">
-      <Canvas>
+    <div className="fixed inset-0 z-0 pointer-events-none">
+      <Canvas style={{ pointerEvents: 'none' }}>
         <PerspectiveCamera makeDefault position={[0, 0, 20]} fov={75} />
         <ParticleScene />
-        <OrbitControls 
-          enablePan={false} 
-          enableZoom={false} 
+        <OrbitControls
+          enablePan={false}
+          enableZoom={false}
           enableRotate={true}
           autoRotate
           autoRotateSpeed={0.3}

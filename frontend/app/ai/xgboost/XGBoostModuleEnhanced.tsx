@@ -110,7 +110,7 @@ export default function XGBoostModuleEnhanced() {
   useEffect(() => {
     const checkGoStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8080/health')
+        const response = await fetch('http://localhost:8093/api/v1/health')
         if (response.ok) {
           const data = await response.json()
           setGoStatus(data)
@@ -287,11 +287,9 @@ export default function XGBoostModuleEnhanced() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* 화려한 3D 배경 */}
-      <div className="fixed inset-0 z-0">
-        <ParticleBackground3D />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900">
+      {/* 화려한 3D 배경 - pointer-events:none으로 클릭 통과 */}
+      <ParticleBackground3D />
 
       {/* 메인 컨텐츠 */}
       <div className="relative z-10 container mx-auto px-4 py-8">

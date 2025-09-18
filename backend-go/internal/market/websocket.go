@@ -142,7 +142,7 @@ func (ws *BinanceWebSocket) handleMessage(msg WebSocketMessage) {
 		return
 	}
 
-	symbol := strings.ToUpper(streamParts[0])
+	_ = strings.ToUpper(streamParts[0]) // symbol - currently unused but may be needed later
 	streamType := streamParts[1]
 
 	switch {
